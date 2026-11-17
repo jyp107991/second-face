@@ -214,7 +214,8 @@ KES, MAREN = 'npc_hs_01', 'npc_hs_02'
 npcs = [
     {'def': KES, 'x': 54, 'y': 22, 'facing': 2, 'if': {'not': {'inParty': KES}}},
     {'def': MAREN, 'x': 36, 'y': 7, 'facing': 2, 'if': {'not': {'flag': 'ks_maren', 'eq': 'hanged'}}},
-    {'def': 'npc_hs_03', 'x': 41, 'y': 8, 'facing': 2, 'if': {'not': {'flag': 'hs_rafe_dead'}}},
+    # Act 3 (B6m): away at the Spire's close with the Shift's powder cases while it gathers (gen_md_spire.py places him there)
+    {'def': 'npc_hs_03', 'x': 41, 'y': 8, 'facing': 2, 'if': {'all': [{'not': {'flag': 'hs_rafe_dead'}}, {'not': {'all': [{'flag': 'a3_summoned'}, {'not': {'flag': 'a3_pnr'}}, {'flag': 'a3_ally_shift'}]}}]}},
     {'def': 'npc_hs_04', 'x': 52, 'y': 6, 'facing': 2},
     {'def': 'npc_hs_05', 'x': 15, 'y': 5, 'facing': 2, 'if': {'not': {'flag': 'hs_dysart_gone'}}},
     {'def': 'npc_hs_06', 'x': 7, 'y': 10, 'facing': 2},

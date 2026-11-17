@@ -2188,6 +2188,14 @@ mid-range Android phone; deployed to Pages.
             people; placements, one trigger and one prop on the Spire close, and five other maps' placements stepped aside
             while their people are on the close (each generator first confirmed to reproduce the committed map).
             `tests/b6l.test.ts` (37). Next in this lane: B6m.
+      - [x] B6m **readiness and the last step before the final climb** DONE 2026-11-17 (content; no engine change; not exported):
+            `dialogue/a3_ready.ts` (three conversations, every node with a return line, all seven companions speak): a table on
+            the Spire close where the people who came are each asked once for the night after; an item made from what the player
+            carries, three ways; a set of letters with their replies; the notebook's tracker page filled with what the player holds
+            (never naming a way to finish); and the point of no return at the foot of the steps, signposted three ways, warned once
+            in plain words, with a named save kept before it and nothing changing on "not yet". One prop, one placement and one
+            trigger on the Spire close and one placement condition elsewhere (each generator first confirmed to reproduce the
+            committed map). `tests/b6m.test.ts` (28). Next: B6p.
 - [ ] B7 **Systemic depth + presentation**: ruins templates, bounty/gig templates, rare encounters, music
       and ambience, title art, menus, credits, settings, tips.
 - [ ] B8 **Balance, performance, deploy**: economy sim pass, difficulty, accessibility, Android perf

@@ -823,7 +823,7 @@ The default shared files touched by a content slice are the registries: `quests/
   case opens, and without it it does not.
 - **Estimate** 1 h.
 
-### B6m — Readiness, what you hold, the point of no return
+### B6m — Readiness, what you hold, the point of no return — BUILT 2026-11-17 (deviations under "As built")
 - **Create** `dialogue/a3_ready.ts` (`d_a3_ready`, the readiness hub with eight acts; `d_a3_charge` for making the charge;
   `a3_warn_*` letters to the living keystones in `world/a3_letters.ts`, each `inc a3_warned` once; `d_a3_pnr`) · fill
   `q_a3_hold`'s objectives (§3, done by the §4.1 sub-gates).
@@ -2229,6 +2229,103 @@ refused: "You will hear from it again, at a worse price, on the day you take the
   (Knock's door, Carrick with them, or at the Hospice gate saying their names: her held plan), `tam_pledge`.
 - **Runtime (§9.5):** the relocation lorry at the buffer and the trestle board while `PLATFORM_OPEN`; the chalk after it (PASSENGERS,
   STOOD, CREW); TAMSIN chalked inside the yellow line at Knock and her stone on the rise.
+
+### B6m (built 2026-11-17, after B6k and B6l)
+**Done, all of the slice:** `dialogue/a3_ready.ts` (3 trees: the works' trestle `d_a3_ready`, the charge `d_a3_charge`, the point of
+no return `d_a3_pnr`; its foot of the steps `PNR_NODES`/`PNR_START` also spread into `d_ar_steps` and `d_ar_doors`; every node with a
+return line; all seven companions speak) · `world/a3_letters.ts` (`A3_WARNINGS`: eleven letters `a3_warn_*` to ten people, and
+`WARN_LEFT`) · `quests/a3.ts` (`q_a3_hold` filled: `HOLD_LINES`, `HOLD_KEYS`) · `tools/maps/gen_md_spire.py` → `maps/md_spire.ts` and
+`tools/maps/gen_hs_skirts.py` → `maps/hs_skirts.ts` (both confirmed byte-identical first) · `tests/b6m.test.ts` (28). No engine change.
+`npm run check` green (1117 tests in 53 files; people gate red/stale as before).
+**Shared touches (small, local):** `a3_conds.ts` (a B6m block after `READY_ACTS`: `READY_DONE`, `READY_OPEN`, `RAFE`, `SHIFT_CASES`,
+`RAFE_WIRES`, `CHARGE_POWDER`, `CHARGE_OPEN`, `PNR_OPEN`; the registry's B6m block) · `md_spire.ts` (an import; one start-entry spread
+and the nodes in `d_ar_steps` and in `d_ar_doors`) · `quests/a3.ts` (`q_a3_spire`'s close journal names the lamp and the end) · the
+dialogue index · `tests/b6a.test.ts` (its exact "what you hold" list and id pattern now include the `key_*` lines).
+
+**How it plays (and where it differs from §3 and §8 B6m):**
+- **The works' trestle** (prop `a3_ready`, a table at 36,30 beside the fire barrel; "The works' trestle"): Faulk's plan table, cleared
+  for the designate (FOR THE DESIGNATE. DON'T STAND ON IT.). Plain before Act 3, relettered R30 before the card, the hub from the card to
+  the steps, bare after them. The framing makes every act true under any ending without naming one: whatever happens at the top of the
+  steps, the city has a night after it nobody planned for. **The eight acts**, each asked once of whoever does it (`READY_OPEN` = the
+  close ∧ `READY_ACTS` need ∧ not yet asked ∧ the doer): Keziah (the Choir sits with lamps on the close, the Sink's stair and every
+  Precinct pump, singing the long one), Ifeoma (the cranes chained at the jib, the fuel barges walked into mid-river, the Bond chained
+  from inside, nobody loaded), Tuan (a runner on every corner of the chain, nobody crossing a line, the Saints' tower open, the Gilt at
+  the Crown's stair), Lucan (a rider by a lamp at thirty-one stopping places: word to faces before any radio), the column (Lowe:
+  posts doubled at clinics and pumps, rifles slung, gates open, "I told them before you asked"; Reyes if he is dead; Kress from the lane
+  post if both are), Verity (every Bridgeward roof on the hiss band, a Saint at the door of anybody whose name is coming, before it
+  comes; a Saints' boy if she died after answering), Nine (its four hundred and eleven errors read first, so the rest is heard as the
+  record and not the sky), and the warned (the living on the list have had their lines from the player). Each sets `a3_ready_<act>`,
+  `inc a3_ready`, a decision, trust +3 with the one who promised. **The coordinator's decision applied:** the column's act reads
+  `a3_lowe` = stood_down only (withdrawn, yielded, carried, dead never; tested). **Deviation (presence):** Nine's act needs Nine on the
+  player's side (`WITH_YOU`) or its fair copy (`nine_log_given`, chalked on the plank as the count's first and last page); a conscience
+  Nine that has gone cannot read its errors. **No act spends a means or a keeper:** every gate key reads the same before and after all
+  eight (tested), so the readiness can never lock an ending out.
+- **Also at the trestle (services, `repeat`):** "(Lay out what you hold on the plank.)": the notebook's page read **live** as passives
+  (the page itself keeps a line once ticked, the engine's rule; the plank reads the pack: a paper given back leaves the plank and stays
+  ticked in the notebook, tested). "(Count who isn't at the table.)": allies whose own need is met but who were never written to (the
+  Choir, the Stand, the chain, the Wheel, the Saints, the Shift, the Wet's assessor), a column that did not stand down (by `a3_lowe`), a
+  count Nine keeps, the living on the list not yet written to. Nothing in either names a way to finish.
+- **The warning letters** (`a3_warn_<who>`: jonah, ada, kessler, vasha, calla (free) and calla_held (through the cells' warden), mason,
+  sarr, ocho, vane, maren): from the order's reading until the steps, to someone met, still living by that person's own keystone flags,
+  whose line the player knows (the docket read in full `ar_cast_list`, the copy `k_ar_list`, or that name's own lead or decode). Each
+  copies the line word for word and says the list may be read aloud on every radio before the year is out, by the player or anybody: a
+  warning, never a promise. One per person (`a3_warned_<who>` on sending). **Deviation:** `inc a3_warned` is on the **reply** (the warning
+  arrived), 3–6 days later, not on sending. Wren is not written to (she has read her own line under glass). Replies in each voice (Ada
+  burns it in the stove; Sarr has already sold the position; Calla's warden brings her shoes back; Maren: a threat made in public is a
+  thing a union can organise against).
+- **The charge** (`k_a3_charge`, once; `a3_charge_how`): made at the trestle ("(Lay out the powder.)") or with Rafe Ansel, who sits on two
+  of the Shift's cases at the trestle's end (`npc_hs_03_close`, `if: AT_CLOSE ∧ RAFE_WIRES`; his Skirts placement steps aside meanwhile).
+  Powder: the Shift's two cases (`a3_ally_shift`: its reply promised them "with a man who can wire them": Rafe, or **Orrin** from the cage
+  at Six if Rafe died in the revolt, narrated, no placement), Number Six's six cases (`k_hs_powder`), or **four twists of black powder**
+  (`j_powder`; **deviation:** Ida Szalai sells none, so the plan's "Ida's powder" is any seller's: Sallow Jack, Gaspard at Number Four, a
+  few lockers). Wiring: the Shift's hand (no check), **Kes travelling (added: a Skirts child crimps caps before she reads)**, or
+  Explosives 40 (a failure spends nothing; the check can be met later). Rafe's words by `hs_rafe` (told / stood_down / other): whatever
+  it is for, don't do it with people under it. B_MEANS holds at once (tested).
+- **The point of no return** (`d_a3_pnr`): the foot of the steps under the photograph's lamp. **Signposted three ways:** trigger `a3_pnr`
+  over the whole flight (x22–41, y16–25; once: the first step onto the steps after the card, from any side), the lamp (`d_ar_steps`) and
+  **the great doors (`d_ar_doors`, added)**, both carrying the same nodes; the close's and the hold page's journals name the lamp and say
+  there is no coming back down. **§3 step 1, reconciled with the coordinator's default:** "(Go through what you hold, one last time.)"
+  shows the notebook's lines live, as things held, never the gates' names. "(Go up.)" → the warning, once, plainly (the story ends
+  here; what is left undone is told as it stands; nobody not already asked will be asked) **and, added, the save's name in plain words**
+  ("A save is kept from this moment, 'Before the steps'..."). "(Go up.)" again applies, in order: `{ event: 'save', data: { slot:
+  'steps', label: 'Before the steps' } }`, `{ set: 'a3_pnr' }`, a decision, `{ event: 'goto', data: { location: 'md_spire', spawn:
+  'steps' } }`. "(Not yet.)" at either step changes nothing (tested: flags, quests, pack, post, timers, decisions, knowledge, clock).
+  After it: the trestle bare, the charge closed, the fire out, the letters closed, the close's people gone, the lamp and doors say only
+  "The steps, and you on them."
+- **The save:** the test copies the state at the save event (what the runtime must do: snapshot when the event fires, before the rest of
+  the option's effects; §9.3), writes it through the real codec, loads it: the close as it was, `a3_pnr` unset, the steps still to climb,
+  and climbable again from the loaded copy, any number of times.
+- **No lockout (tested from that loaded save):** a thorough game reaches A1, A2, B (the Shift's powder asked by letter after the load, made
+  up by Rafe), C (the officer's paper), D (the hill raised) and E; the hostile game, with the Court's reserve case won before the door,
+  reaches A1, A2, B (black powder and a trained hand), C (the officer, on worse terms), D (Calla spoken for at the Court, the hill raised,
+  a trained reader) and E (the register bought back, the second precedent, the file contested again on the steps). B6w plays the
+  remaining alternates through their own scenes.
+- **What you hold** (`q_a3_hold`, filled): the eleven ally lines, then the `key_*` lines (what is held toward the gates' keys, by source:
+  the Unwritten came east, the Choir's night, Ash with his orders refused, Bram's telling and the hands, Halcyon's seat, the guild's
+  night, the officer told yes, Signal Hill speaking with its switch kept, Nine reading, an archive clerk's hand, Science 65, the Choir's
+  own, Openfield behind you, Calla free, the Cistern's people out, the Archive open, the door open, MOTHER's replies and Tamsin's count,
+  CONTESTED or AGREED on the file, two rulings, the register kept or back), then the items, then the places, then "Climb the steps when
+  you are ready". **`HOLD_KEYS`**: every key of every gate (and C's paper) is exactly the disjunction of its lines (tested over seven
+  presets × 28 tweaks), so a player holding every key of an ending sees each on the page. The saints' and the assessor's ally lines now
+  also need the reader's own need (exact `D_READER`). E_FILE's third way (`a3_file`) is won on the steps, after the page closes, and has
+  no line. **Each ending's readiness from the presets** (tested, at the close after a sealed door, before any Act 3 alternate):
+  prepared holds E's keys and three of D's; choir holds B's means; guild holds a buyer but not the paper; hostile holds nothing but
+  the first way; every middling preset reads the city's hand itself (Science 65 with its attributes).
+
+**For later slices (what to read).**
+- **B6p (the steps):** after "(Go up.)" the player is at md_spire's spawn `steps` with `a3_pnr` set and nothing open: **open
+  `d_a3_steps` there** (a trigger `if: a3_pnr ∧ ¬a3_sash` on the flight, or append `{ event: 'dialogue', data: { tree: 'd_a3_steps' } }`
+  to `GO_UP` in a3_ready.ts). `d_ar_steps`/`d_ar_doors` show `pnr_after` once `a3_pnr` is set: put the steps' own entries before
+  `PNR_START` if they should open the scene instead. The Act 2 `steps` trigger (once, `k_photo`) can still fire for a player who never
+  stood on the photograph's step before; with `a3_pnr` it opens `pnr_after`.
+- **B6r (the climaxes):** B reads `k_a3_charge` and `a3_charge_how` (who wired it: shift | cases | powder | kes); D's escort reads M7 and
+  may read each `a3_ready_<act>` for what the night looks like (the Choir's lamps, the quays chained, a runner on every corner, riders on
+  the roads, rifles slung, a Saint at the door, the errors first); `a3_warned` and knowledge `a3_warned_<who>` for who heard it first.
+- **B6s–B6v (slides):** slide 2's keystone lines can read `a3_warned_<who>`; slides 8, 9, 11, 12 and 18 can read `a3_ready_choir`, `_lowe`,
+  `_gangs`, `_stand`, `_wheel`.
+- **Runtime (§9.3):** the `save` event writes the named slot from the state as it is when the event fires; the title's load menu shows it
+  first; loading puts the player at the foot of the steps with the dialogue closed. The trestle's chalk lines (one per act) and Rafe's
+  two cases are place-build details (§9.5).
 
 ## Defaults taken for the open questions (coordinator, 2026-11-17; the owner may override)
 1. After the ending: epilogue, credits, then the title screen; the named autosave at the point of no return stays

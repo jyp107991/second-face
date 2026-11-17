@@ -165,6 +165,20 @@ A3_CLOSE_TRIGGERS = [
     {'id': 'a3_close', 'x': 1, 'y': 27, 'w': 62, 'h': 27, 'if': AT_CLOSE, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_close', 'name': 'The close'}}]},
 ]
 
+# ---------------------------------------------------------------------------------------------- Act 3 (B6m): readiness, the charge, the steps
+# Mirrors src/content/world/a3_conds.ts (B6m block: RAFE_WIRES, PNR_OPEN = AT_CLOSE); tests/b6m.test.ts checks the mirror.
+# Faulk's works trestle beside the fire barrel: the readiness hub (d_a3_ready), where a charge is also made up (d_a3_charge)
+A3_READY_PROPS = [{'kind': 'table', 'x': 36, 'y': 30, 'id': 'a3_ready'}]
+RAFE_WIRES = ALL(F('a3_ally_shift'), NOT(F('hs_rafe_dead')), NOT({'dead': 'npc_hs_03'}))
+A3_READY_NPCS = [
+    # the Shift's shot-firer, on the two powder cases the Shift sent up the Line, at the trestle's end (gen_hs_skirts.py: away from home)
+    {'def': 'npc_hs_03', 'id': 'npc_hs_03_close', 'x': 37, 'y': 31, 'facing': 3, 'schedule': [], 'dialogue': 'd_a3_charge', 'if': ALL(AT_CLOSE, RAFE_WIRES)},
+]
+A3_READY_TRIGGERS = [
+    # the first time on the steps after the card, from any side: the point of no return (d_a3_pnr); after it the lamp and the doors carry it
+    {'id': 'a3_pnr', 'x': 22, 'y': 16, 'w': 20, 'h': 10, 'if': AT_CLOSE, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_pnr', 'name': 'The steps'}}]},
+]
+
 md_spire = {
     'id': 'md_spire', 'name': 'Meridian — Archive Spire', 'seed': 83, 'settlement': 'meridian',
     'layout': rows,
@@ -175,7 +189,7 @@ md_spire = {
         'C': {'wall': 'concrete', 'floor': 'tile', 'wallHeight': 3.6, 'roof': 'flat'},
         'B': {'wall': 'brick', 'floor': 'wood', 'wallHeight': 2.8, 'roof': 'flat'},
     },
-    'props': props,
+    'props': props + A3_READY_PROPS,
     'lights': [
         L(12, 30, '0xe8f0ff', 2.4, 10, 3.4), L(51, 30, '0xe8f0ff', 2.4, 10, 3.4), L(20, 44, '0xe8f0ff', 2.2, 10, 3.4), L(43, 44, '0xe8f0ff', 2.2, 10, 3.4),
         L(33, 18, '0xffe8c0', 2.2, 9, 3.4), L(31, 17, '0xe8f0ff', 1.6, 8, 4.0), L(20, 17, '0xa0c8ff', 1.0, 4, 1.6, 0.1),
@@ -209,6 +223,7 @@ md_spire = {
         'ar_stair_lens': {'dialogue': 'd_ar_stair', 'name': 'The stair'},
         'ar_lift': {'dialogue': 'd_ar_stair', 'name': 'The stair'},
         'ar_acquisitions': {'dialogue': 'd_a3_acquisitions', 'name': 'A drawer marked ACQUISITIONS'},
+        'a3_ready': {'dialogue': 'd_a3_ready', 'name': 'The works\' trestle'},
     },
     'containers': {
         'ar_slips': {'name': 'Slips Locker', 'items': [['k_ar_slip', 1]], 'lock': 45},
@@ -232,14 +247,14 @@ md_spire = {
         {'def': 'npc_ar_06', 'x': 37, 'y': 21, 'facing': 2},
         {'def': 'npc_ar_07', 'x': 6, 'y': 18, 'facing': 0, 'if': {'not': {'flag': 'prec_forecast_fine', 'eq': 'void'}}},
         {'def': 'npc_ar_g1', 'x': 18, 'y': 22, 'facing': 1}, {'def': 'npc_ar_g2', 'x': 31, 'y': 50, 'facing': 2},
-    ] + A3_CLOSE_NPCS,
+    ] + A3_CLOSE_NPCS + A3_READY_NPCS,
     'triggers': [
         {'id': 'arrive', 'x': 26, 'y': 46, 'w': 12, 'h': 9, 'text': 'The Spire close. A square of clean paving behind the Precinct, lamps that work, and at its north end the Archive Spire going up into the haze until you lose it: the city\'s records, ninety-odd floors of them, its doors shut behind scaffolding. The Crown\'s glass catches the light on its shoulders. Broad steps run up to the doors, and the steps are familiar the way a word on the tip of your tongue is familiar.', 'effects': [{'learn': 'seen_spire'}, {'quest': 'q_a2_calendar', 'start': True}, {'quest': 'q_a2_spire', 'start': True}]},
         {'id': 'steps', 'x': 27, 'y': 17, 'w': 10, 'h': 5, 'if': {'item': 'k_photo'}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_ar_steps', 'name': 'The steps'}}]},
         {'id': 'court', 'x': 3, 'y': 14, 'w': 13, 'h': 12, 'text': 'The Court of Accounts. A long hall with a bench at the far end, a rail across the middle, benches for the public, and on the bench a grey unit with a brass plate and two ledgers, very still. Behind it, against the wall, a second chair, dark wood, with dust on the seat. Nobody sits in the public benches who does not have to.', 'effects': [{'learn': 'seen_court'}, {'quest': 'q_ca_court', 'start': True}]},
         {'id': 'catalogue', 'x': 48, 'y': 15, 'w': 13, 'h': 11, 'text': 'The catalogue: shelves of bound indexes to the ceiling, reading tables with green-shaded lamps, a terminal, a counter with a keeper behind it, and in the far corner a stair going up into the dark with a lens on a post at its foot and a porter at a desk beside it.', 'effects': [{'learn': 'seen_catalogue'}]},
         {'id': 'copyroom', 'x': 3, 'y': 2, 'w': 7, 'h': 4, 'text': 'A room behind the court that smells of ink and a stove. Shelves of bound copies, a desk with a lamp, a cot made with corners. Somebody lives here, and has for a long time.', 'effects': [{'learn': 'seen_copyroom'}]},
-    ] + A3_CLOSE_TRIGGERS,
+    ] + A3_CLOSE_TRIGGERS + A3_READY_TRIGGERS,
     'extras': [
         {'count': 4, 'roles': ['corp', 'settler', 'trader'], 'faction': 'wardens', 'area': {'x': 10, 'y': 28, 'w': 44, 'h': 20}, 'spots': ['close_pair_a', 'close_pair_b', 'close_sit', 'close_lean', 'close_e', 'close_w', 'steps_sit'], 'hours': {'from': 7, 'to': 21}, 'barks': ['The steps reopen R49. It says so on the board.', 'Don\'t stand on the scaffold. They count the planks.', 'My sister had a case. Eleven times called. Then they stopped calling.', 'Ninety-one floors. Nobody\'s been to the top that came down to say.']},
         {'count': 3, 'roles': ['settler', 'street', 'labourer'], 'life': 'hard', 'area': {'x': 3, 'y': 15, 'w': 12, 'h': 9}, 'spots': ['court_sit', 'court_pair_a', 'court_pair_b', 'court_lean'], 'hours': {'from': 8, 'to': 18}, 'barks': ['Case four hundred and something. They said today.', 'It reads everything. Bring everything.', 'Nobody speaks for you unless you bring them.']},

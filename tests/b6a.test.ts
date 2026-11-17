@@ -250,12 +250,18 @@ describe('B6a: Act 3\'s quests as skeletons', () => {
     g.flags.a3_c9 = 'sealed';
     waitFor(g, q, 'c9_mouth', 7);
     const lines = () => q.journal().find((j) => j.id === 'q_a3_hold')!.objectives.map((o) => o.text);
-    expect(lines()).toEqual(['The copy of the Cistern\'s replies', 'The designate\'s warrant', 'Knock thinks well of you', 'Shale thinks well of you', 'Openfield thinks well of you', 'Climb the steps when you are ready']);
+    // B6m filled the page with what is held toward the gates' keys (`key_*`), named as the thing held, never as a way to finish
+    expect(lines()).toEqual([
+      'Nine walks with you, and reads the record as it is written', 'You can read the city\'s record yourself, every line of it', 'Openfield would walk out under any sky behind you',
+      'Sister Calla is free', 'MOTHER\'s replies and Tamsin\'s count, side by side', 'The Ledger wrote CONTESTED on your file', 'Two rulings or more in the Court\'s register are yours',
+      'The Court\'s register is in the Court\'s keeping',
+      'The copy of the Cistern\'s replies', 'The designate\'s warrant', 'Knock thinks well of you', 'Shale thinks well of you', 'Openfield thinks well of you', 'Climb the steps when you are ready',
+    ]);
     apply(g, q, { a3_ally_shale: true, a3_ally_stand: true });
     give(g, 'k_a3_charge');
     q.update();
     expect(lines()).toEqual(expect.arrayContaining(['Shale\'s militia will come', 'Carrick\'s dockers stand with you', 'A charge, made up and wired']));
-    for (const o of QUESTS.q_a3_hold.stages.holding.objectives!) expect(o.id, o.id).toMatch(/^(ally|item|place)_|^up$/);
+    for (const o of QUESTS.q_a3_hold.stages.holding.objectives!) expect(o.id, o.id).toMatch(/^(ally|item|place|key)_|^up$/);
   });
 });
 

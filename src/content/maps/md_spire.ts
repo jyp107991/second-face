@@ -593,6 +593,12 @@ export const md_spire: MapDef = {
       x: 53,
       y: 12,
       id: "ar_acquisitions"
+    },
+    {
+      kind: "table",
+      x: 36,
+      y: 30,
+      id: "a3_ready"
     }
   ],
   lights: [
@@ -855,6 +861,10 @@ export const md_spire: MapDef = {
     ar_acquisitions: {
       dialogue: "d_a3_acquisitions",
       name: "A drawer marked ACQUISITIONS"
+    },
+    a3_ready: {
+      dialogue: "d_a3_ready",
+      name: "The works' trestle"
     }
   },
   containers: {
@@ -2025,6 +2035,48 @@ export const md_spire: MapDef = {
           }
         ]
       }
+    },
+    {
+      def: "npc_hs_03",
+      id: "npc_hs_03_close",
+      x: 37,
+      y: 31,
+      facing: 3,
+      schedule: [],
+      dialogue: "d_a3_charge",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_summoned"
+              },
+              {
+                not: {
+                  flag: "a3_pnr"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "a3_ally_shift"
+              },
+              {
+                not: {
+                  flag: "hs_rafe_dead"
+                }
+              },
+              {
+                not: {
+                  dead: "npc_hs_03"
+                }
+              }
+            ]
+          }
+        ]
+      }
     }
   ],
   triggers: [
@@ -2135,6 +2187,34 @@ export const md_spire: MapDef = {
           data: {
             tree: "d_a3_close",
             name: "The close"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_pnr",
+      x: 22,
+      y: 16,
+      w: 20,
+      h: 10,
+      if: {
+        all: [
+          {
+            flag: "a3_summoned"
+          },
+          {
+            not: {
+              flag: "a3_pnr"
+            }
+          }
+        ]
+      },
+      effects: [
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_pnr",
+            name: "The steps"
           }
         }
       ]

@@ -1,6 +1,7 @@
 import type { DialogueDef, OptionDef, Text } from '../../engine/dialogue/dialogue';
 import type { Cond, Effect } from '../../engine/world/logic';
 import { COMFORT_TALLY_BACK, COMFORT_WORD_NODES, COMFORT_WORD_OPTION, MARWOOD_BACK_NODES, MARWOOD_BACK_OPTION } from './a3_close';
+import { PNR_NODES, PNR_START } from './a3_ready';
 
 /**
  * Meridian, the Archive Spire (B3.11): the photograph read from the pack (beat 14, the date), the close and its steps,
@@ -117,7 +118,8 @@ export const d_ar_board: DialogueDef = {
 };
 
 export const d_ar_steps: DialogueDef = {
-  id: 'd_ar_steps', owner: 'narrator', start: [{ if: { knows: 'ar_steps_known' }, node: 'again' }, { node: 'scene' }],
+  // Act 3 (B6m): from the Ledger's card until the steps are climbed, the lamp is the point of no return (a3_ready.ts)
+  id: 'd_ar_steps', owner: 'narrator', start: [...PNR_START, { if: { knows: 'ar_steps_known' }, node: 'again' }, { node: 'scene' }],
   nodes: {
     scene: {
       text: 'You stop on the fourth step without deciding to. The lamp behind your left shoulder. The doors above. The Crown\'s glass going up out of sight on either side. The wind off the canal, in your face, making you squint. It is the photograph. The angle is wrong by a stride, and the steps are cracked where the print has them whole, but it was made here, of you, standing about where you are standing now.',
@@ -142,12 +144,14 @@ export const d_ar_steps: DialogueDef = {
       again: 'The steps, and the lamp.',
       options: [{ text: '(Go on.)', exit: true }],
     },
+    ...PNR_NODES,
   },
 };
 
 export const d_ar_doors: DialogueDef = {
-  id: 'd_ar_doors', owner: 'narrator', start: [{ node: 'look' }],
-  nodes: { look: { text: 'The great doors: bronze, four storeys, green at the seams, chained through the handles with a chain that has been oiled. A card in a sleeve on the chain: CLOSED FOR WORKS — REOPEN R49. Through the gap at the hinge, a hall of records going back into the dark, and a smell of paper.', again: 'The bronze doors, chained and oiled. REOPEN R49.', effects: [{ learn: 'ar_doors_seen' }, { lead: 'l_cal_r49' }], options: [{ text: '(Leave it.)', exit: true }] } },
+  // Act 3 (B6m): from the Ledger's card until the steps are climbed, the doors are the point of no return too (a3_ready.ts)
+  id: 'd_ar_doors', owner: 'narrator', start: [...PNR_START, { node: 'look' }],
+  nodes: { look: { text: 'The great doors: bronze, four storeys, green at the seams, chained through the handles with a chain that has been oiled. A card in a sleeve on the chain: CLOSED FOR WORKS — REOPEN R49. Through the gap at the hinge, a hall of records going back into the dark, and a smell of paper.', again: 'The bronze doors, chained and oiled. REOPEN R49.', effects: [{ learn: 'ar_doors_seen' }, { lead: 'l_cal_r49' }], options: [{ text: '(Leave it.)', exit: true }] }, ...PNR_NODES },
 };
 
 export const d_ar_vault: DialogueDef = {

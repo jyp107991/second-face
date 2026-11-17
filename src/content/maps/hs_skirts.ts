@@ -1873,9 +1873,30 @@ export const hs_skirts: MapDef = {
       y: 8,
       facing: 2,
       if: {
-        not: {
-          flag: "hs_rafe_dead"
-        }
+        all: [
+          {
+            not: {
+              flag: "hs_rafe_dead"
+            }
+          },
+          {
+            not: {
+              all: [
+                {
+                  flag: "a3_summoned"
+                },
+                {
+                  not: {
+                    flag: "a3_pnr"
+                  }
+                },
+                {
+                  flag: "a3_ally_shift"
+                }
+              ]
+            }
+          }
+        ]
       }
     },
     {

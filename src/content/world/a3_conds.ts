@@ -427,6 +427,28 @@ export const READY_ACTS: { id: string; needs: Cond }[] = [
   { id: 'nine', needs: ANY(F('nine_log_given'), NINE_CONSCIENCE) },
   { id: 'warned', needs: { flag: 'a3_warned', gte: 3 } },
 ];
+/** B6m: an act at the works' trestle on the close (`d_a3_ready`) is open while the close gathers, its need holds, it has not been
+ * asked, and whoever does it is there to be asked. Only Nine's act needs more than its need: a conscience Nine that is no longer on
+ * the player's side cannot read its own errors, while its fair copy (`nine_log_given`) can be read without it. The column's act
+ * reads `a3_lowe` = stood_down only (the coordinator, on B6j's question: a column that withdrew did not choose to). */
+const READY_DOER: Record<string, Cond> = { nine: ANY(WITH_YOU('nine'), F('nine_log_given')) };
+export const READY_DONE = (id: string): Cond => F(`a3_ready_${id}`);
+export const READY_OPEN = (id: string): Cond => {
+  const a = READY_ACTS.find((x) => x.id === id);
+  if (!a) throw new Error(`no readiness act ${id}`);
+  return ALL(AT_CLOSE, a.needs, NOT(READY_DONE(id)), ...(READY_DOER[id] ? [READY_DOER[id]] : []));
+};
+/** B6m: the charge, B_MEANS's alternate made at the close (`d_a3_charge`): the Shift's cases (`a3_ally_shift`), which come up with
+ * a hand who wires them (Rafe Ansel, the Shift's shot-firer, or Orrin from the cage if Rafe died in the revolt); the six cases out
+ * of Number Six's magazine (`k_hs_powder`); or four twists of black powder bought on the road (`j_powder`). Wired by the Shift's
+ * hand, by Kes travelling (a Skirts child: they crimp caps before they read), or with Explosives 40. Made once. */
+export const RAFE = 'npc_hs_03';
+export const SHIFT_CASES: Cond = ALLY('shift');
+export const RAFE_WIRES: Cond = ALL(SHIFT_CASES, NOT(F('hs_rafe_dead')), NOT({ dead: RAFE }));
+export const CHARGE_POWDER: Cond = ANY(SHIFT_CASES, { item: 'k_hs_powder' }, { item: 'j_powder', count: 4 });
+export const CHARGE_OPEN: Cond = ALL(AT_CLOSE, NOT({ item: 'k_a3_charge' }), NOT(F('a3_charge_how')));
+/** B6m: the point of no return (§3) is the foot of the Spire's steps while the close gathers; going up sets `a3_pnr`. */
+export const PNR_OPEN: Cond = AT_CLOSE;
 
 // ---------------------------------------------------------------- §5 the modifiers (ordered; first match wins; the last is the default)
 
@@ -870,6 +892,26 @@ export const EP_SLIDES = ['steps', 'ledger', 'cistern', 'knock', 'shale', 'dogs'
  *                            KNOCK), a3_uw_close_met, a3_calla_told, a3_calla_freed, a3_close_choir / _wheel / _stand / _gangs /
  *                            _saints / _seventeen (each envoy or reader heard);  memories npc_ar_03 a3_book_lifted / a3_drawer_tried,
  *                            npc_md_01 a3_gave_list
+ * B6m (built; dialogue/a3_ready.ts: the works' trestle d_a3_ready (prop a3_ready on md_spire), the charge d_a3_charge (the same
+ *      nodes at the trestle; Rafe Ansel's placement npc_hs_03_close), the point of no return d_a3_pnr (trigger a3_pnr on the steps;
+ *      its nodes PNR_NODES also in d_ar_steps and d_ar_doors); the warning letters a3_warn_* in world/a3_letters.ts; q_a3_hold filled):
+ *   a3_ready                 0..8 (count)   readiness for the night after the steps; M7 reads it (held >= 5, hard >= 2)
+ *   a3_ready_<act>           true           one per READY_ACTS id, asked once at the trestle (READY_OPEN): choir | stand | gangs |
+ *                                            wheel | lowe (a3_lowe = stood_down only, never withdrawn) | saints | nine (Nine on the
+ *                                            player's side, or its fair copy) | warned (a3_warned >= 3)
+ *   a3_warned                1..10 (count)  the living on the city's list who answered the player's letter with their line in it
+ *                                            (a3_warn_jonah | _ada | _kessler | _vasha | _calla | _calla_held | _mason | _sarr |
+ *                                            _ocho | _vane | _maren; one per person); knowledge a3_warned_<who> on sending
+ *   a3_charge_how            shift | cases | powder | kes   how the charge was made: the Shift's two cases wired by its hand
+ *                                            (Rafe, or Orrin), Number Six's six cases (k_hs_powder) or four twists of black powder
+ *                                            (j_powder) wired with Explosives 40, either of those wired by Kes. Item k_a3_charge, once
+ *   a3_pnr                   true           the designate went up the steps from the lamp (d_a3_pnr's "(Go up.)", after its warning).
+ *                                            The same option first emits { event: 'save', data: { slot: 'steps', label: 'Before the
+ *                                            steps' } } (the save is of the state before a3_pnr), and after it { event: 'goto' } to
+ *                                            md_spire's spawn `steps`; decision a3_pnr
+ *   knowledge: a3_trestle (the trestle first seen); a3_warned_<who>;  decisions a3_ready_<act>, a3_charge, a3_pnr;
+ *                            memories <keystone> a3_warned; trust +3 with whoever promised an act
+ *   placements:              md_spire npc_hs_03_close (AT_CLOSE ∧ RAFE_WIRES); hs_skirts Rafe away while he is at the close
  * Planned (the slice named sets it; values as the plan fixes them):
  *   a3_recall                declined | stayed | handed | court | bought | hidden | fought | taken          B6b
  *   nine_disposed            true                                                                        B6b

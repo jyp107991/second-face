@@ -1,6 +1,6 @@
 import type { LetterDef } from '../../engine/world/letters';
 import type { Cond, Effect } from '../../engine/world/logic';
-import { ALLY, ALLY_NEEDS, CALLA_FREE, LN_PEOPLE, MASON_EXILED, MASON_LIVES, ORDER_READ, type Ally } from './a3_conds';
+import { ALLY, ALLY_NEEDS, CALLA_FREE, CALLA_HELD, LN_PEOPLE, MASON_EXILED, MASON_LIVES, ORDER_READ, SARR_ALIVE, type Ally } from './a3_conds';
 
 /**
  * Act 3's letters (B6c, beat 19): the muster, and the copy of MOTHER's replies sent home. Spread into LETTERS
@@ -139,4 +139,100 @@ export const LET_INES_REFUSALS: LetterDef = {
   },
 };
 
-export const A3_LETTERS: LetterDef[] = [...A3_MUSTER.map(muster), LET_INES_REFUSALS];
+// ---------------------------------------------------------------- B6m: the living on the city's list, warned in the player's own hand
+
+/**
+ * B6m: a letter to each keystone still living, from the order's reading until the steps, to someone met whose line the player
+ * knows (the docket read in full, the copy in the notebook, or that person's own name decoded). Each says the line word for
+ * word and that the list may be read aloud on every radio before the year is out, by the player or by anyone: a warning, not
+ * a promise. One letter per person (`a3_warned_<who>`; Sister Calla's has two forms, held or free); the reply, a duration
+ * later, counts the warning (`inc a3_warned`), which the readiness act `warned` reads at three. Story notes:
+ * story/B6_NOTES_SECRET.md §5 (M7) and "As built" → B6m.
+ */
+interface Warn { who: string; to: string; id?: string; topic: string; alive: Cond; known: Cond; days: number; text: string; reply: string }
+const LIST_KNOWN: Cond = ANY({ knows: 'ar_cast_list' }, { item: 'k_ar_list' });
+function warning(w: Warn): LetterDef {
+  return {
+    id: w.id ?? `a3_warn_${w.who}`, to: w.to, topic: w.topic, days: w.days, once: true,
+    if: ALL(ORDER_READ, NOT(F('a3_pnr')), NOT({ knows: `a3_warned_${w.who}` }), NOT({ dead: w.to }), ANY(LIST_KNOWN, w.known), w.alive),
+    text: w.text,
+    effects: [{ learn: `a3_warned_${w.who}` }, { memory: { npc: w.to, tag: 'a3_warned', valence: 5, strength: 70 } }],
+    reply: { text: w.reply, effects: [{ inc: 'a3_warned' }, { trust: { npc: w.to, by: 3 } }] },
+  };
+}
+const NAME = (n: number): Cond => ({ knows: `name${n}_decoded` });
+const CALLA_LIVES: Cond = NOT({ dead: 'npc_sh_05' });
+
+export const A3_WARNINGS: Warn[] = [
+  {
+    who: 'jonah', to: 'npc_sh_02', topic: 'His line on the city\'s list', days: 3,
+    alive: ALL(F('jonah_lived'), NOT(F('jonah_dead'))), known: ANY(F('jonah_named'), { lead: 'l_name_jonah' }, NAME(2)),
+    text: 'Jonah — There is a list in Meridian, under glass at the top of the Archive Spire, in the city\'s own hand. Your name is the second line: REESE, JONAH — SHALE — DECEASED WITHIN THE MONTH. Somebody has since written VARIANCE beside it, which is the city\'s word for you being alive. Before the year is out that list may be read aloud on every radio in the Reach, by me or by somebody else. I would rather you heard your line from me, in my hand, with the rest of the sentence: it was wrong.',
+    reply: 'Read it out to Ada on the office step. She laughed, which I\'ve not heard her do since the spring, then went round the back of the pump house and I heard her be sick, then came back and said, "Well, deputy, you\'d better not die now, it\'d look like you were agreeing with them." I\'m alive. I check most mornings. Thank you for telling me first. If they read it on the radio I\'ll turn it up. — J. Reese',
+  },
+  {
+    who: 'ada', to: 'npc_sh_01', topic: 'Her line on the city\'s list', days: 3,
+    alive: NOT(F('ks_ada', 'dead')), known: ANY({ lead: 'l_name_vey' }, NAME(3)),
+    text: 'Sheriff — The city keeps a list of twelve names under glass at the top of its Spire. Yours is the third: VEY, ADA — SHALE — RESIGNS; SHALE CONTRACTED. You\'ll know better than I do by now how much of that it got right. Before the year is out the list may be read aloud on every radio in the Reach. I didn\'t want you to hear your own name come out of a box on Mags\'s bar. I wanted you to have it from me first.',
+    reply: 'Got it. Read it twice, then put it in the stove, which is what I do with paper that thinks it knows me. Whatever it says, Shale knows whether I signed, and a radio can\'t tell this town a thing about its own sheriff that it didn\'t watch happen. Let them read it. Wherever I am when they do, I\'ll be sitting down. Thank you for the courtesy. Most people who know a thing like that sell it. — A. Vey',
+  },
+  {
+    who: 'kessler', to: 'npc_rd_01', topic: 'His line on the city\'s list', days: 4,
+    alive: NOT(F('rd_coup')), known: ANY({ lead: 'l_broadcast_kessler' }, NAME(4)),
+    text: 'Kessler — The city keeps a list of twelve names under glass in Meridian. Yours is the fourth: KESSLER — THE OVERPASS — KILLED BY KADE. It\'s a forecast, not a sentence, and some of the others on it have already come out wrong. Before the year is out it may be read aloud on every radio in the Reach. You\'ll want to have heard it before your hall does.',
+    reply: 'Read it out at the fire before anybody else could. Some laughed. Not many. It\'s a fair forecast; it\'s how men like me end, by somebody\'s hand, and the city\'s only guessing whose. It won\'t be hers. It won\'t be this year. I\'ve had worse written about me on walls, and spelled better. Obliged. — K.',
+  },
+  {
+    who: 'vasha', to: 'npc_rd_02', topic: 'Her line on the city\'s list', days: 4,
+    alive: NOT(F('vasha_dead')), known: NAME(5),
+    text: 'Vasha — The city keeps a list under glass in Meridian, twelve names in its own hand. Yours is the fifth: KADE, VASHA — THE OVERPASS, THE SALLOW — EXECUTIONER. That is the city\'s word for what it wants you for. Before the year is out it may be read aloud on every radio in the Reach. I thought you should know what they think you are before the whole Sallow does.',
+    reply: 'Executioner. I\'ve been called worse by better, and none of them had a list. You think I\'ll mind? Half the Sallow says it already, the half that\'s scared of me, and the other half\'s about to hear the city read it out like a job title. I\'ll stand by the set and smile so the pack sees me smile. Thank you for the warning. I\'ll pretend it was one. — V.K.',
+  },
+  {
+    who: 'calla', to: 'npc_sh_05', topic: 'Her line on the city\'s list', days: 4,
+    alive: ALL(CALLA_LIVES, CALLA_FREE), known: NAME(7),
+    text: 'Sister — The city keeps a list of twelve names under glass at the top of its Spire. Yours is the seventh: CALLA, SISTER — SHALE, OPENFIELD — IMPRISONED; SEDITION; THE TRIAL SETS PRECEDENT. You know what it has already tried to do with that line. Before the year is out it may be read aloud on every radio in the Reach, with the others. I wanted you to hear it from somebody who knows you set legs.',
+    reply: 'I know my line. I have had it said to me by wardens, who could not pronounce sedition, and by my own sisters, who could. Let them read it on every radio: the sky keeps no books, and now everyone will hear what the city kept instead. I will be in Shale, setting somebody\'s leg, and I will not stop to listen. Thank you for writing it in your own hand. That is the only kind of book I trust. — Calla',
+  },
+  {
+    who: 'calla', id: 'a3_warn_calla_held', to: 'npc_sh_05', topic: 'Her line on the city\'s list', days: 4,
+    alive: CALLA_HELD, known: NAME(7),
+    text: 'Sister — I\'m told letters to the Precinct\'s cells are read by a warden before anybody else. Warden, read this to her slowly. The city keeps a list of twelve names at the top of its Spire. Yours is the seventh: IMPRISONED; SEDITION; THE TRIAL SETS PRECEDENT. Before the year is out it may be read aloud on every radio in the Reach. I would rather you heard it from me, through a door, than from a speaker in a corridor.',
+    reply: 'The warden read it to me. He read it well; he paused in the right places. Then he read it again, to himself, and went away, and came back with my shoes. Tell whoever reads it on the radio to read mine slowly too. Somebody in a cell will be listening, and it will be the first time she has heard anyone say "precedent" as if it could go either way. — C.',
+  },
+  {
+    who: 'mason', to: 'npc_of_01', topic: 'His line on the city\'s list', days: 4,
+    alive: MASON_LIVES, known: NAME(8),
+    text: 'Elder — The city keeps twelve names under glass at the top of its Spire. Yours is the eighth: MASON — OPENFIELD — OPENFIELD BURNS IN THE LONG NIGHT. You know already how much of it came true. Before the year is out the list may be read aloud on every radio in the Reach. I didn\'t want the Choir to hear its Elder\'s line from a box in a city. I wanted you to hear it from me.',
+    reply: 'We heard it in the night, child, from the fields themselves, so a radio will not tell us anything new. But I am glad of your letter. The sky keeps no books: that was always our whole argument, and it was never quite true, because somebody always does. If they read the city\'s book aloud to everyone, then at last everyone keeps it. I will listen with the children, so they know what they were spared, or what they were not. — Mason',
+  },
+  {
+    who: 'sarr', to: 'npc_nb_01', topic: 'Her line on the city\'s list', days: 3,
+    alive: SARR_ALIVE, known: NAME(9),
+    text: 'Grand Factor — There is a list under glass at the top of the Archive Spire, twelve names in the city\'s hand. Yours is the ninth: SARR, IMELDA — NINEBRIDGE — TREASURER. I would be surprised if you had not already priced it. Before the year is out it may be read aloud on every radio in the Reach. I\'m telling you so that nobody can say you were the last to know.',
+    reply: 'Thank you for the notice. It is more than the city gave me. A forecast read aloud is a price published, and a published price is worth nothing to anyone but the person who heard it first, which, thanks to you, is me. I have already sold the position. If you are about to do what I think you are about to do, do it early in the week. The floor is thinnest on a Tuesday. — I. Sarr',
+  },
+  {
+    who: 'ocho', to: 'npc_sk_01', topic: 'His line on the city\'s list', days: 3,
+    alive: NOT(F('ks_ocho', 'drowned')), known: NAME(10),
+    text: 'Ocho — There\'s a list at the top of the Spire, twelve names in the city\'s hand. Yours is the tenth: OCHO — THE SINK — CLINIC CLOSED; DROWNED, THE SPRING FLOOD. The spring came and went and you are still on your stair, which the city did not write down. Before the year is out the list may be read aloud on every radio in the Reach. I wanted the Sink to hear your line from you, not from a wall.',
+    reply: 'Read it out on the clinic stair. The stair laughed, which a stair in the Sink does about once a year. Then Anju said, "Read the bit about the clinic again," and I did, and nobody laughed. Tell your radio to read mine slowly, twice, and to say after it that the clinic is open. We are open. We are always open. — Ocho',
+  },
+  {
+    who: 'vane', to: 'npc_cr_01', topic: 'Her line on the city\'s list', days: 3,
+    alive: NOT(F('cr_celestine_dead')), known: NAME(11),
+    text: 'Madam — The city keeps a list of twelve names under glass at the top of its Spire. Yours is the eleventh: VANE, CELESTINE — THE CROWN — HOUSE VANE RISES. Before the year is out it may be read aloud on every radio in the Reach, with what the city expected of the other eleven. I thought a House would prefer to hear its own line before Bridgeward does.',
+    reply: 'How very kind, and how like you to write it by hand. A House does not rise or fall on a radio; it rises or falls at table, and I have always set a good table. Let Bridgeward hear that the city expected great things of House Vane. They have always suspected it; it will be pleasant to be confirmed. — C. Vane. P.S. I should like to know, one day, whose idea it was to read it aloud. I am told it is never polite to ask.',
+  },
+  {
+    who: 'maren', to: 'npc_hs_02', topic: 'Her line on the city\'s list', days: 6,
+    alive: NOT(F('ks_maren', 'hanged')), known: NAME(12),
+    text: 'Maren — The city keeps twelve names under glass at the top of its Spire. Yours is the last: OKAFOR, MAREN — THE SKIRTS — STRIKE BROKEN; HANGED (THE CONCERN). You know the rope better than I do. Before the year is out the list may be read aloud on every radio in the Reach, and the Clean will hear it on theirs. I wanted you to hear it first, from somebody who has been up your hill.',
+    reply: 'I have had a rope with my name on it since I was nineteen and stood up in the canteen at Six. It was never the city\'s. It was the company\'s; the city only copied it out in a better hand. Let them read it. Let the Clean hear it on their sets in the gatehouse. A forecast read aloud is a threat made in public, and a threat made in public is a thing a union can organise against. Thank you. — M. Okafor',
+  },
+];
+
+/** A living name on the list whose line the player knows and has not yet written to (the trestle's count of who is missing). */
+export const WARN_LEFT: Cond = ANY(...A3_WARNINGS.map((w) => ALL(NOT({ knows: `a3_warned_${w.who}` }), NOT({ dead: w.to }), ANY(LIST_KNOWN, w.known), w.alive)));
+
+export const A3_LETTERS: LetterDef[] = [...A3_MUSTER.map(muster), LET_INES_REFUSALS, ...A3_WARNINGS.map(warning)];

@@ -2,6 +2,7 @@ import type { QuestDef } from '../../engine/quest/quest';
 import type { Cond } from '../../engine/world/logic';
 import {
   ALLIES_AT_KNOCK, ALLY, AT_KNOCK, IN_SALLOW, KNOCK_WATERED, ORDER_READ, RIDE_BUGGY, RIDE_CARTS, RIDE_COLUMN, RIDE_FIRST, RIDE_WHEEL, type Ally,
+  ALLY_NEEDS, ASH, ASH_REFUSED, C_BUYER_B4B, CALLA_FREE, IN, LN, NINE, NINE_CONSCIENCE,
 } from '../world/a3_conds';
 
 /**
@@ -305,7 +306,7 @@ export const q_a3_spire: QuestDef = {
   ],
   stages: {
     close: {
-      journal: 'A card from the Ledger, in the post: THE DESIGNATE WILL ATTEND THE STEPS. Everyone who walked with me has come to the Spire\'s close.',
+      journal: 'A card from the Ledger, in the post: THE DESIGNATE WILL ATTEND THE STEPS. Everyone who walked with me has come to the Spire\'s close. The steps go up from the lamp where the photograph was made; when I go up them, it ends there, one way or another.',
       objectives: [{ id: 'up', text: 'Climb the Spire\'s steps', done: PNR }],
       next: [{ if: END, stage: 'ended' }, { if: SASH, stage: 'vault' }, { if: PNR, stage: 'steps' }],
     },
@@ -325,13 +326,20 @@ export const q_a3_spire: QuestDef = {
 
 // ---------------------------------------------------------------- 21a what you hold (the tracker)
 
-/** The notebook's "what you hold" page before the climb (the coordinator's default): allies, things carried, and how the
- * places think of the player. Each line appears once it is held (hidden until done); none names a way to finish. */
-const ALLY_LINES: { id: Ally; text: string }[] = [
+/** The notebook's "what you hold" page before the climb (the coordinator's default; filled in B6m): who will come, what the
+ * player holds, what they carry, and how the places think of them. Each line appears once it is held (hidden until done) and
+ * names the thing held, never a way to finish. The `key_*` lines are the §4.1 gates' keys by where they came from: together with
+ * the ally and item lines that are keys too, every key has lines whose disjunction is the key itself (`HOLD_KEYS`, tested), so a
+ * player who holds every key of some ending sees each of them on the page. (E_FILE's third way, the second hearing, is won on
+ * the steps, after the page closes.) The same lines are read live at the works' trestle and at the foot of the steps (B6m).
+ * The engine keeps an objective ticked once done: a thing given back stays on the page; the gates read the live state. */
+const ALLY_LINES: { id: Ally; text: string; done?: Cond }[] = [
   { id: 'shale', text: 'Shale\'s militia will come' }, { id: 'dogs', text: 'The Rust Dogs will ride' }, { id: 'choir', text: 'The Choir will come' },
   { id: 'wheel', text: 'The Wheel will carry word' }, { id: 'shift', text: 'The Shift has sent powder' }, { id: 'stand', text: 'Carrick\'s dockers stand with you' },
   { id: 'boats', text: 'The shore\'s boats are yours to call' }, { id: 'barges', text: 'The Wet\'s barges are yours to call' }, { id: 'gangs', text: 'The chain\'s holders will keep their streets' },
-  { id: 'saints', text: 'The Saints will read for you' }, { id: 'seventeen', text: 'An assessor of the Wet will read for you' },
+  // the two readers, with what makes them readers (their own need, which the muster letter already asked)
+  { id: 'saints', text: 'The Saints will read for you', done: { all: [ALLY('saints'), ALLY_NEEDS.saints] } },
+  { id: 'seventeen', text: 'An assessor of the Wet will read for you', done: { all: [ALLY('seventeen'), ALLY_NEEDS.seventeen] } },
 ];
 const HELD_ITEMS: { id: string; text: string }[] = [
   { id: 'k_ar_refusals', text: 'The copy of the Cistern\'s replies' }, { id: 'k_ar_warrant', text: 'The designate\'s warrant' },
@@ -342,15 +350,67 @@ const PLACES: { id: string; text: string }[] = [
   { id: 'cistern9', text: 'Knock thinks well of you' }, { id: 'shale', text: 'Shale thinks well of you' },
   { id: 'openfield', text: 'Openfield thinks well of you' }, { id: 'meridian', text: 'Meridian thinks well of you' },
 ];
+/** What the player holds toward the gates' keys, by source (first person on the page is "you", as the other lines). */
+const KEY_LINES: { id: string; text: string; done: Cond }[] = [
+  // people who would go where the player goes, and something that would bring a roof down
+  { id: 'key_unwritten', text: 'The Unwritten came east with you, for the book', done: F('a3_unwritten', 'with_you') },
+  { id: 'key_choir_night', text: 'The Choir stood with you on the Long Night', done: LN('choir') },
+  { id: 'key_ash', text: 'Ash walks with you, his orders refused', done: { all: [IN(ASH), ASH_REFUSED] } },
+  { id: 'key_bram', text: 'Bram Coyle told you how the city\'s core is fed, and you have the hands to cut it', done: { all: [F('a3_bram_cut'), { skill: 'mechanics', gte: 50 }] } },
+  // someone who would buy what is under the Spire
+  { id: 'key_board', text: 'Halcyon\'s Board offered you a seat at its table', done: C_BUYER_B4B },
+  { id: 'key_guild_night', text: 'You stood with the guild and the Concern on the Long Night', done: LN('guild') },
+  { id: 'key_terms', text: 'You told the Concern\'s officer yes', done: F('a3_concern_terms', 'accepted') },
+  // a voice that reaches every radio, and its keeper
+  { id: 'key_mast', text: 'Signal Hill speaks to every radio in the Reach, and its switch is kept', done: F('a3_mast', 'raised') },
+  // someone who can read the record aloud
+  { id: 'key_nine_reads', text: 'Nine walks with you, and reads the record as it is written', done: { all: [IN(NINE), { any: [NINE_CONSCIENCE, F('nine_log_given')] }] } },
+  { id: 'key_clerk', text: 'You learned the city\'s hand as an archive clerk', done: { origin: 'archive_clerk' } },
+  { id: 'key_science', text: 'You can read the city\'s record yourself, every line of it', done: { skill: 'science', gte: 65 } },
+  // people to carry it
+  { id: 'key_sibling', text: 'The Choir counts you one of its own', done: { member: 'choir', rank: 'sibling' } },
+  { id: 'key_openfield', text: 'Openfield would walk out under any sky behind you', done: { standing: { settlement: 'openfield', gte: 20 } } },
+  { id: 'key_calla', text: 'Sister Calla is free', done: CALLA_FREE },
+  { id: 'key_reserve_out', text: 'The Cistern\'s people are out of their door, and would stand with you', done: { all: [F('a3_c9', 'opened'), { standing: { settlement: 'cistern9', gte: 20 } }] } },
+  // what the Cistern kept
+  { id: 'key_archive', text: 'The Cistern\'s Archive is open', done: F('a3_archive', 'open') },
+  { id: 'key_door_open', text: 'The Cistern\'s door stands open', done: F('a3_c9', 'opened') },
+  { id: 'key_copies', text: 'MOTHER\'s replies and Tamsin\'s count, side by side', done: { all: [{ item: 'k_ar_refusals' }, F('tam_why')] } },
+  // the file, the rulings, the register
+  { id: 'key_contested', text: 'The Ledger wrote CONTESTED on your file', done: F('ar_verdict', 'contested') },
+  { id: 'key_agreed', text: 'The Ledger wrote AGREED on your file', done: F('ar_verdict', 'agreed') },
+  { id: 'key_precedents', text: 'Two rulings or more in the Court\'s register are yours', done: { flag: 'ca_precedents', gte: 2 } },
+  { id: 'key_register', text: 'The Court\'s register is in the Court\'s keeping', done: { not: F('prec_register', 'catalogued') } },
+  { id: 'key_register_back', text: 'The Court\'s register is back on its desk under the bench', done: F('a3_register_back') },
+];
+/** Each of the gates' keys (world/a3_conds.ts `KEYS`, and C's paper) by the page's lines whose disjunction is that key. */
+export const HOLD_KEYS: Record<string, string[]> = {
+  B_MEANS: ['key_unwritten', 'key_choir_night', 'key_ash', 'item_k_a3_charge', 'key_bram'],
+  C_BUYER: ['key_board', 'key_guild_night', 'key_terms'],
+  C_PAPER: ['item_k_a3_transfer'],
+  D_VOICE: ['key_mast'],
+  D_READER: ['key_nine_reads', 'ally_seventeen', 'ally_saints', 'key_clerk', 'key_science'],
+  D_PEOPLE: ['key_choir_night', 'key_sibling', 'key_openfield', 'key_unwritten', 'key_calla', 'ally_choir', 'ally_wheel', 'key_reserve_out'],
+  D_ARCHIVE: ['key_archive', 'key_door_open', 'key_copies'],
+  E_FILE: ['key_contested', 'key_agreed'],
+  E_PREC: ['key_precedents'],
+  E_REG: ['key_register', 'key_register_back'],
+};
+export type HoldGroup = 'allies' | 'held' | 'carried' | 'places';
+/** Every line of the page in order, with its group (the trestle and the foot of the steps read them live as passives). */
+export const HOLD_LINES: { id: string; group: HoldGroup; text: string; done: Cond }[] = [
+  ...ALLY_LINES.map((a) => ({ id: `ally_${a.id}`, group: 'allies' as const, text: a.text, done: a.done ?? ALLY(a.id) })),
+  ...KEY_LINES.map((k) => ({ ...k, group: 'held' as const })),
+  ...HELD_ITEMS.map((i) => ({ id: `item_${i.id}`, group: 'carried' as const, text: i.text, done: { item: i.id } as Cond })),
+  ...PLACES.map((p) => ({ id: `place_${p.id}`, group: 'places' as const, text: p.text, done: { standing: { settlement: p.id, gte: 10 } } as Cond })),
+];
 export const q_a3_hold: QuestDef = {
   id: 'q_a3_hold', title: 'What You Hold', act: 'a3', start: 'holding',
   stages: {
     holding: {
-      journal: 'Before the steps: who came, what I carry, and what the places I have been think of me.',
+      journal: 'Before the steps: who came, what I hold, what I carry, and what the places I have been think of me. The ones who came can be asked for the night after at the works\' trestle by the fire. I go up from the lamp at the foot of the steps, where the photograph was made, and once I go up there is no coming back down to finish anything.',
       objectives: [
-        ...ALLY_LINES.map((a) => ({ id: `ally_${a.id}`, text: a.text, done: ALLY(a.id), hidden: true, optional: true })),
-        ...HELD_ITEMS.map((i) => ({ id: `item_${i.id}`, text: i.text, done: { item: i.id } as Cond, hidden: true, optional: true })),
-        ...PLACES.map((p) => ({ id: `place_${p.id}`, text: p.text, done: { standing: { settlement: p.id, gte: 10 } } as Cond, hidden: true, optional: true })),
+        ...HOLD_LINES.map((l) => ({ id: l.id, text: l.text, done: l.done, hidden: true, optional: true })),
         { id: 'up', text: 'Climb the steps when you are ready', done: PNR },
       ],
       next: [{ if: PNR, stage: 'climbed' }],
