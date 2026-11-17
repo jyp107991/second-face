@@ -304,8 +304,10 @@ camp's memory; npc_rd_06 — Brindle (16), scout, Wren's shadow; npc_rd_07 — S
 - **npc_of_01 — Elder Mason (67), Openfield:** keystone (burns, D+210); farmer-priest, patient, loves the
   blight problem more than he should; his son is the well-poisoner. Says "the sky keeps no books".
 - **npc_of_02 — Petra Mason (29):** his daughter, the Unwritten's local hand; keeps no likeness; wants the war.
-- **npc_rc_01 — Stationmaster Quill (50), the Junction:** timetable law; a decent tyrant; rail bandits
-  are his own halt's militia (side quest).
+- **npc_rc_01 — Stationmaster Casimir Brodsky (58), the Junction (Four Ways):** timetable law; a decent tyrant; rail
+  bandits are his own halt's militia (West Halt's watch, where he was born; side quest *Kettle Cut*). Renamed from "Quill"
+  for the one-name rule (Mr Quill is the Concern's officer in the Crown). Built in B5a: story/STORY_PLAN_SECRET.md, Build
+  notes — B5, with the rest of the corridor's cast.
 - **npc_sump_01 — Grel (45), Sump clan head:** scavenger pragmatist paid by Pike.
 
 ## F. Meridian

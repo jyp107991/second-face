@@ -1828,9 +1828,36 @@ mid-range Android phone; deployed to Pages.
             conversations not written). The writing of its first conversation file was stopped by the model's safety
             system on 2026-11-17 and not regenerated; how the rest is written is open (see the story plan's B4 notes).
             Main keeps B4a's `inside` stub for the beat.
-- [ ] B5 **Act 2 wilds**: Glass Flats (Ninebridge, Openfield, the Sump, Cistern 4), Rail Corridor (the
+- [~] B5 **Act 2 wilds**: Glass Flats (Ninebridge, Openfield, the Sump, Cistern 4), Rail Corridor (the
       Line, Junction, halts, rail bandits), Drowned Shore (stilt villages, Rigs, salvage dives), Teeth
       mines, Northern Wet (barges, Dam, timber), Ashlands (remnant machines); Long Night alliance. ~12 h.
+      Built in four parts (the Glass Flats were B3.1–B3.3); the plan for all four is in the story plan's "Build notes — B5".
+      - [x] B5a **the Rail Corridor** DONE 2026-11-17 (content; the Unity place build and the on-device playtest are P10
+            work; `npm run export` has not been run for it): `tools/maps/gen_rc_corridor.py` (walkability and reachability
+            checked) → `maps/rc_fourways.ts` (80×60, Four Ways, the Junction: the station under its clock, the ticket hall,
+            the signal box, the platforms, a market, sleeper-car berths on a dead siding, a handcar course, the road south to
+            Tollhouse 9), `rc_halt_w.ts` and `rc_halt_e.ts` (48×36 each), `rc_yard.ts` (64×44, Yard Nine, the depot), and
+            `rc_kettle.ts` (48×28, a cutting, the new hidden landmark `lm_rc_kettle` with tracks to West Halt and Yard Nine).
+            The four corridor locations bound to their maps; settlements `fourways`, `yard_nine`, `west_halt`, `east_halt`
+            (rail halts; gossip rides the Line both ways to Tollhouse 9, Openfield, Meridian and the Skirts); five open sites.
+            Cast `npcs/rc_corridor.ts` (ids `npc_rc_*`: 20 named, 4 guards and watch, 2 track gangers; one family). **The
+            Line as transport** (`net_line` unchanged): a ticket point at every stop built by one function (`lineBoard()`:
+            25 a leg, the wait for the seven o'clock and the legs' hours, the ride narrated, the stop's map, the field map
+            through the engine's own planner), and the Skirts' board opens its own; other ways on: a Line pass, a guild hand's
+            exemption, the footplate at Yard Nine, hopping the night freight on Yard Nine's curve, West Halt's handcar.
+            Dialogue `rc_line.ts`, `rc_fourways.ts`, `rc_halts.ts`, `rc_yard.ts` (59 trees, 253 nodes, every node with a
+            return line). Quests `quests/b5_corridor.ts`: the rail bandits' line `q_rc_kettle` (five ends: fight, knowledge,
+            tech, talk, barter; three without violence) and the follow-on `q_rc_abe` (four ends), and three side lines
+            `q_rc_stock` (four ends), `q_rc_engine` (three ends), `q_rc_east` (five ends), each with hook, investigation, turn,
+            choice and a visible outcome. Rail bandits as an encounter family on the corridor's roads (8 road encounters).
+            Items `items/story_b5.ts` (11); 18 leads + 7 conclusions; 5 world events that wait for the player; activities:
+            handcar sprints, a rented berth (safehouse), three merchants. Companions' interjections throughout (all seven).
+            `tests/b5a.test.ts` (39). No engine change.
+      - [ ] B5b **the Drowned Shore** (planned: Gull Stilts, the Rigs, Meridian's Docks as the Line's far end; ids `ds_*`).
+      - [ ] B5c **the Teeth mines and the Northern Wet** (planned: Number Four Pit, Sawtown, Ashby Dam, Low Landing, the
+            barges; ids `tm_*`, `nw_*`).
+      - [ ] B5d **the Ashlands and the Long Night** (planned: the Ashlands' sites and beat 17, the act's alliance; ids
+            `an_*`, `ln_*`; reads the corridor's `rc_*` flags listed in the build notes).
 - [ ] B6 **Act 3 + endings**: return, lockdown, Spire, finale, endings A–E + modifiers, epilogue slides.
 - [ ] B7 **Systemic depth + presentation**: ruins templates, bounty/gig templates, rare encounters, music
       and ambience, title art, menus, credits, settings, tips.
@@ -1849,7 +1876,7 @@ mid-range Android phone; deployed to Pages.
 | Act 1 wilds | 5/5 | 15/15 | 17/17 | 2/2 | playable; ten road encounters, discoveries on foot, hunting and traps, the windpumps, the wreck, the orchard |
 | Meridian | 12/14 | 121/125 | 206/210 | 29/30 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward, the Crown, the Archive Spire (the close and landing ninety-one), the Court of Accounts and the Dead Ring written; the Loop joins six stops (one outside the Wall), stairs the Sink, the chain Bridgeward, the invitation car the Crown, a lane the Spire close, the gate road the Ring. Loose ends: the far bank (NO BRIDGE) is Act 2 part 2 / B5; Unity sites for the Spire close and the Ring (P10 place build); vehicle travel reading the buggy flag (P12); the Spire beat's end now opens beat 16 (B4a) |
 | Halcyon/Skirts | 2/6 | 22/40 | 40/55 | 6/12 | the Skirts written (B4a): the town under the arcology and a gallery under its pit; the Line's last stop; beat 16 opened; the seventh companion joins here. The arcology itself is B4b |
-| Act 2 wilds | 4/14 | 38/50 | 64/80 | 9/16 | Ninebridge, Openfield, the Sump and Cistern 4 playable (counts approximate) |
+| Act 2 wilds | 9/18 | 64/110 | 123/200 | 14/24 | Ninebridge, Openfield, the Sump and Cistern 4 playable; the Rail Corridor written (B5a): Four Ways, both halts, Yard Nine and Kettle Cut, the Line ridden from every stop, the rail bandits' line and four side lines. B5b–d planned (counts approximate) |
 | Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |
 | Companions | — | 7/7 | 0/7 arcs | 0/7 | Tamsin, Wren, Ilya, Odile, Ash, Nine can join; Kes joins in the Skirts (B4a, with her arc and quest); arcs later |
 | Factions joinable | — | — | — | 0/9 | design pending |

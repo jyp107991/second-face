@@ -1,4 +1,5 @@
 import type { WorldEventDef } from '../../engine/world/frontier';
+import { DS_EVENTS } from './ds_shore';
 
 /**
  * Scheduled world events. There are no day limits in this game: an event waits for the player (it fires at its
@@ -76,6 +77,54 @@ export const WORLD_EVENTS: Record<string, WorldEventDef> = {
       { news: { tag: 'hs_nils_up', text: 'Joran Haber\'s boy went up on the freight at two; the Window wrote DISCHARGED IN SERVICE', valence: -4, size: 3, at: 'skirts' } },
     ],
   },
+  /** Kettle Cut exposed (B5a): the guild's riders take West Halt's watch at the next dawn the player is at Four Ways. Abe
+   * Mutasa is hanged at Kettle for the guard; Chela Ortega is put in the stocks on Four Ways' platform and off the Line. */
+  rc_riders: {
+    id: 'rc_riders', at: { hour: 6, where: 'rc_fourways' }, armedIf: { flag: 'rc_bandits', eq: 'exposed' },
+    effects: [
+      { set: 'rc_abe', value: 'hanged' }, { set: 'rc_chela', value: 'stocks' }, { set: 'rc_watch_gone' },
+      { decision: { id: 'rc_abe', text: 'The guild\'s riders took West Halt\'s watch. Abe Mutasa was hanged at Kettle for Hamish Gorse; Chela Ortega was put off the Line.' } },
+      { news: { tag: 'rc_riders', text: 'the guild\'s riders broke West Halt\'s watch and hanged a boy at Kettle Cut for the guard', valence: -4, size: 7, at: 'fourways' } },
+    ],
+  },
+  /** Murder hangs (B5a): once the stationmaster has sentenced Abe Mutasa, the boy is hanged at the next dawn the player is at
+   * Four Ways, unless the player has settled it first (argued, taken him off, or given him to the guild). */
+  rc_abe_rope: {
+    id: 'rc_abe_rope', at: { hour: 6, where: 'rc_fourways' }, armedIf: { all: [{ flag: 'rc_abe_sentenced' }, { not: { flag: 'rc_abe' } }] }, preventedIf: { flag: 'rc_abe' },
+    effects: [
+      { set: 'rc_abe', value: 'hanged' }, { approval: { companion: 'npc_of_03', by: -10 } },
+      { memory: { npc: 'npc_rc_02', tag: 'abe_hanged', valence: -30, strength: 80 } },
+      { decision: { id: 'rc_abe', text: 'Brodsky hanged Abe Mutasa at dawn at the end of Four Ways\' platform, under the clock, for Hamish Gorse.' } },
+      { news: { tag: 'rc_abe_hanged', text: 'the stationmaster at Four Ways hanged a West Halt boy at dawn for the guard killed at Kettle', valence: -3, size: 6, at: 'fourways' } },
+    ],
+  },
+  /** Stock Car sold (B5a): the Concern's men take the twelve from West Halt's tower at the next dawn the player is there. */
+  rc_stock_taken: {
+    id: 'rc_stock_taken', at: { hour: 6, where: 'rc_halt_w' }, armedIf: { flag: 'rc_stock', eq: 'sold' },
+    effects: [
+      { set: 'rc_joaquin', value: 'taken' }, { set: 'rc_stock_gone' },
+      { decision: { id: 'rc_stock_taken', text: 'The Concern\'s men came to West Halt at dawn with a paper and took the twelve from the water tower, Joaquin Ortega among them, for the Weighhouse.' } },
+      { news: { tag: 'rc_stock_taken', text: 'the Concern took twelve debtors out of West Halt\'s water tower at dawn; somebody had told', valence: -6, size: 6, at: 'west_halt' } },
+    ],
+  },
+  /** The East Length helped (B5a): the Concern's through comes off the rails at East Halt at the next two o'clock the player
+   * is there. Unwarned, its driver dies; warned, he takes it at walking pace and jumps. */
+  rc_derail: {
+    id: 'rc_derail', at: { hour: 2, where: 'rc_halt_e' }, armedIf: { all: [{ flag: 'rc_east', eq: 'helped' }, { not: { flag: 'rc_willem_warned' } }] }, preventedIf: { flag: 'rc_derailed' },
+    effects: [
+      { set: 'rc_derailed' }, { set: 'rc_willem_dead' }, { rep: { faction: 'tollmen', respect: -10 } }, { rep: { faction: 'concern', respect: -10 } },
+      { decision: { id: 'rc_derail', text: 'The Concern\'s through came off the rails on East Halt\'s east length at two in the morning. Willem Visser died in the cab.' } },
+      { news: { tag: 'rc_derailed', text: 'the Concern\'s through came off the rails at East Halt in the night; its driver was killed; the halt is stripping the cars', valence: -5, size: 8, at: 'east_halt' } },
+    ],
+  },
+  rc_derail_slow: {
+    id: 'rc_derail_slow', at: { hour: 2, where: 'rc_halt_e' }, armedIf: { all: [{ flag: 'rc_east', eq: 'helped' }, { flag: 'rc_willem_warned' }] }, preventedIf: { flag: 'rc_derailed' },
+    effects: [
+      { set: 'rc_derailed' }, { rep: { faction: 'concern', respect: -10 } },
+      { decision: { id: 'rc_derail', text: 'The Concern\'s through came off the rails on East Halt\'s east length at walking pace. Willem Visser jumped clear.' } },
+      { news: { tag: 'rc_derailed', text: 'the Concern\'s through came off the rails at East Halt in the night at walking pace; the halt is stripping the cars', valence: -2, size: 7, at: 'east_halt' } },
+    ],
+  },
   /** Tamsin out of the Cistern (U8): once her letter's reply has come, or she has been asked at the Grille, she waits at
    * Mags's (the map places her there); at six the first evening the player is in Shale, she comes up to them. If they have
    * already found her, nothing happens. */
@@ -87,3 +136,5 @@ export const WORLD_EVENTS: Record<string, WorldEventDef> = {
     ],
   },
 };
+// the Drowned Shore's events (B5b) live in ds_shore.ts
+Object.assign(WORLD_EVENTS, DS_EVENTS);

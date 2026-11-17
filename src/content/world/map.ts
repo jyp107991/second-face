@@ -25,14 +25,18 @@ const L: LocationDef[] = [
   { id: 'sump', name: 'Sump', region: 'glass_flats', x: 362, y: 382, kind: 'minor', settlement: 'sump', map: 'sump' },
   { id: 'lm_flats_01', name: 'Stilted freeway', region: 'glass_flats', x: 370, y: 318, kind: 'landmark', hidden: true },
   // The Rail Corridor
-  { id: 'junction', name: 'Four Ways', region: 'rail_corridor', x: 380, y: 232, kind: 'major' },
-  { id: 'halt_e', name: 'East Halt', region: 'rail_corridor', x: 520, y: 220, kind: 'minor' },
-  { id: 'halt_w', name: 'West Halt', region: 'rail_corridor', x: 215, y: 238, kind: 'minor' },
-  { id: 'depot', name: 'Yard Nine', region: 'rail_corridor', x: 300, y: 205, kind: 'minor' },
+  { id: 'junction', name: 'Four Ways', region: 'rail_corridor', x: 380, y: 232, kind: 'major', settlement: 'fourways', map: 'rc_fourways' },
+  { id: 'halt_e', name: 'East Halt', region: 'rail_corridor', x: 520, y: 220, kind: 'minor', settlement: 'east_halt', map: 'rc_halt_e' },
+  { id: 'halt_w', name: 'West Halt', region: 'rail_corridor', x: 215, y: 238, kind: 'minor', settlement: 'west_halt', map: 'rc_halt_w' },
+  { id: 'depot', name: 'Yard Nine', region: 'rail_corridor', x: 300, y: 205, kind: 'minor', settlement: 'yard_nine', map: 'rc_yard' },
+  // a cutting on the Line between Yard Nine and West Halt (B5a): seen from the car, told of on Four Ways' platform, or found on foot
+  { id: 'lm_rc_kettle', name: 'Kettle Cut', region: 'rail_corridor', x: 256, y: 224, kind: 'landmark', hidden: true, map: 'rc_kettle' },
   // The Drowned Shore & Meridian
   { id: 'meridian', name: 'Meridian', region: 'meridian', x: 95, y: 340, kind: 'major', settlement: 'meridian', map: 'md_precinct' },
-  { id: 'hamlet_shore', name: 'Gull Stilts', region: 'drowned_shore', x: 60, y: 420, kind: 'minor' },
-  { id: 'rigs', name: 'Rigs', region: 'drowned_shore', x: 22, y: 300, kind: 'landmark' },
+  { id: 'hamlet_shore', name: 'Gull Stilts', region: 'drowned_shore', x: 60, y: 420, kind: 'minor', settlement: 'hamlet_shore', map: 'ds_stilts' },
+  { id: 'rigs', name: 'Rigs', region: 'drowned_shore', x: 22, y: 300, kind: 'landmark', settlement: 'rigs', map: 'ds_rigs' },
+  // the drowned terminal's last tank east of Gull Stilts (B5b): told of in the village, seen from the sea wall, or found on foot
+  { id: 'lm_shore_01', name: 'Blackcap', region: 'drowned_shore', x: 68, y: 414, kind: 'landmark', hidden: true, map: 'ds_terminal' },
   // The Teeth
   { id: 'skirts', name: 'Skirts', region: 'teeth', x: 628, y: 142, kind: 'major', settlement: 'skirts', map: 'hs_skirts' },
   { id: 'halcyon', name: 'Halcyon', region: 'teeth', x: 642, y: 118, kind: 'major' },
@@ -83,6 +87,11 @@ const R: RouteDef[] = [
   { a: 'wheel', b: 'rustdogs', terrain: 'track', danger: 0.3 },
   { a: 'drywells', b: 'lm_sallow_02', terrain: 'rough', danger: 0.3 },
   { a: 'ninebridge', b: 'lm_flats_01', terrain: 'glass', danger: 0.4 },
+  // the old service road along the Line through Kettle Cut (B5a)
+  { a: 'halt_w', b: 'lm_rc_kettle', terrain: 'track', danger: 0.3 },
+  { a: 'lm_rc_kettle', b: 'depot', terrain: 'track', danger: 0.3 },
+  // the old sea wall east from Gull Stilts to Blackcap, under water at high tide (B5b)
+  { a: 'hamlet_shore', b: 'lm_shore_01', terrain: 'marsh', danger: 0.1, km: 8 },
 ];
 
 const N: NetworkDef[] = [
@@ -95,6 +104,9 @@ const N: NetworkDef[] = [
   // Tollmen caravan run: work or pay your passage; safe-ish, slow, on a schedule.
   { id: 'net_caravan', name: 'the Tollmen caravan', kind: 'caravan', stops: ['shale', 'tollhouse', 'ninebridge', 'meridian'],
     legHours: [30, 60, 140], fare: 12, every: 72, firstHour: 6, danger: 0.05 },
+  // The tide boat (B5b): Moana Tui's delta boat, up the channels to the city at six and round the coast to the Rigs.
+  { id: 'net_tide', name: 'the tide boat', kind: 'barge', stops: ['meridian', 'hamlet_shore', 'rigs'],
+    legHours: [8, 7], fare: 6, every: 24, firstHour: 6, danger: 0.05 },
 ];
 
 export const WORLD_MAP: WorldMap = {
