@@ -371,7 +371,7 @@ props = [
 spots = {'stair': {'x': 39, 'y': 3}, 'pins': {'x': 9, 'y': 6}}
 spawns = [{'id': 'start', 'x': 39, 'y': 3, 'facing': 2}, {'id': 'stair', 'x': 39, 'y': 3, 'facing': 2}]
 nw_gallery = {
-    'id': 'nw_gallery', 'name': 'Ashby Gallery', 'seed': 543,
+    'id': 'nw_gallery', 'name': 'Ashby Gallery', 'seed': 543, 'settlement': 'ashby',
     'layout': rows, 'legend': legend_for(rows), 'props': props,
     'lights': [light(36, 5, 2.4, COLD, 1.0, 7), light(9, 6, 1.6, LAMP, 0.6, 4, 0.1)],
     'spawns': spawns,

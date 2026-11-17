@@ -300,7 +300,7 @@ props = [
 spots = {'cage': {'x': 17, 'y': 4}, 'mouth': {'x': 3, 'y': 7}, 'adit': {'x': 44, 'y': 7}, 'digger': {'x': 34, 'y': 18}, 'pumps': {'x': 21, 'y': 22}}
 spawns = [{'id': 'start', 'x': 17, 'y': 4, 'facing': 2}, {'id': 'cage', 'x': 17, 'y': 4, 'facing': 2}, {'id': 'mouth', 'x': 3, 'y': 7, 'facing': 1}, {'id': 'adit', 'x': 44, 'y': 7, 'facing': 3}]
 tm_level = {
-    'id': 'tm_level', 'name': 'Four\'s Old Level', 'seed': 532,
+    'id': 'tm_level', 'name': 'Four\'s Old Level', 'seed': 532, 'settlement': 'number_four',
     'layout': rows, 'legend': legend_for(rows), 'props': props,
     'lights': [light(17, 3, 2.4, LAMP, 1.4, 6), light(21, 21, 1.6, LAMP, 0.9, 5, 0.1), light(35, 17, 1.0, '0x80ff90', 0.5, 4, 0.5)],
     'spawns': spawns,

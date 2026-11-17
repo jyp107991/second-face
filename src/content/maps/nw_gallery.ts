@@ -5,6 +5,7 @@ export const nw_gallery: MapDef = {
   id: "nw_gallery",
   name: "Ashby Gallery",
   seed: 543,
+  settlement: "ashby",
   layout: [
     "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH",
     "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH",

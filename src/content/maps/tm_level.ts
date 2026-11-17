@@ -5,6 +5,7 @@ export const tm_level: MapDef = {
   id: "tm_level",
   name: "Four's Old Level",
   seed: 532,
+  settlement: "number_four",
   layout: [
     "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
     "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
