@@ -423,7 +423,8 @@ namespace SecondFace.Game.Play
             var path = new NavMeshPath();
             if (!NavMesh.CalculatePath(body.position, hit.position, NavMesh.AllAreas, path) || path.status == NavMeshPathStatus.PathInvalid) yield break;
             // as far along the path as the AP goes
-            var metres = Mathf.Min(PathLength(path), u.C.Ap * (float)Battle.MetresPerAp);
+            // (at the stance's pace: a crouch or a crawl goes less far for the AP)
+            var metres = Mathf.Min(PathLength(path), (float)_battle.Reach(u));
             var goal = PointAlong(path, metres);
             var t0 = Time.time;
             // a fight's moves are at a jog (a walk across a square under fire reads as a stroll, and drags the turn)
