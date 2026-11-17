@@ -514,6 +514,31 @@ namespace SecondFace.Core.Combat
         /// <summary>A fist (the guard, a blow).</summary>
         public static readonly Grip Fist = new((0, 1, 0), (-1, 0, 0), 92, 100, 70, 92, 50);
 
+        /// <summary>Where a hand holds (the palm's centre, the axis of a handle in a closed hand) from its wrist, in shares of the
+        /// hand's length (wrist to the middle finger's knuckle): along the hand towards the knuckles, and out of the palm (a
+        /// palm is ~3 cm thick at the metacarpals; handles 3-4 cm across). The game's hands (Game/Fighting/Limbs.cs Hand) are
+        /// measured by the same shares.</summary>
+        public const double PalmAlong = 0.55, PalmOut = 0.33;
+
+        /// <summary>A grip's palm frame in the weapon's frame as Unity builds it (LookRotation(across, palm)): its right, up and
+        /// forward axes.</summary>
+        public static ((double X, double Y, double Z) Right, (double X, double Y, double Z) Up, (double X, double Y, double Z) Forward) PalmFrame(Grip g)
+        {
+            var f = Unit(g.Across);
+            var r = Unit(Cross(g.Palm, f));
+            return (r, Cross(f, r), f);
+        }
+
+        /// <summary>The palm's centre from the wrist, in the weapon's frame, for a hand of <paramref name="hand"/> m (wrist to
+        /// the middle knuckle) on a grip: the hand runs along the palm frame's right axis on a left hand and against it on a
+        /// right one (the knuckles' line little-to-index is the frame's forward, the palm its up). The IK chain the game solves
+        /// ends at the wrist, so this is where it has to reach to put the palm on the grip.</summary>
+        public static (double X, double Y, double Z) PalmFromWrist(Grip g, bool left, double hand)
+        {
+            var (r, u, _) = PalmFrame(g);
+            return Add(Mul(r, (left ? 1 : -1) * PalmAlong * hand), Mul(u, PalmOut * hand));
+        }
+
         /// <summary>A long gun's model (a stock and a fore-end: two hands, a butt for the shoulder).</summary>
         public static bool LongGun(string model) => model is "rifle_auto" or "rifle_bolt" or "shotgun_sawn";
 
@@ -577,22 +602,29 @@ namespace SecondFace.Core.Combat
         }
 
         /// <summary>Where a hold puts the main grip on a body (shoulders' frame, m), and the line it holds the weapon on: its
-        /// <see cref="ReadyHold.Grip"/> on this body's main arm; where grip_off falls beyond 0.95 of the off arm's reach (a body
-        /// whose shoulders stand wide for its arms, a long gun), the weapon turned further across the body, 5° at a time up to
-        /// 15° (the fore-end comes in toward the off shoulder, the main hand keeps its bend), and only then moved (with its
-        /// grip) just as far as brings grip_off into reach.</summary>
+        /// <see cref="ReadyHold.Grip"/> on this body's main arm (<paramref name="mainReach"/>: shoulder to palm); where the off
+        /// hand's wrist, with its palm on grip_off, falls beyond 0.95 of the off arm (<paramref name="offArm"/>: shoulder to
+        /// wrist, the chain the IK solves; <paramref name="offPalm"/>: the palm's centre from that wrist in the weapon's frame,
+        /// <see cref="PalmFromWrist"/>) (a body whose shoulders stand wide for its arms, a long gun), the weapon turned further
+        /// across the body, 5° at a time up to 15° (the fore-end comes in toward the off shoulder, the main hand keeps its bend),
+        /// and only then moved (with its grip) just as far as brings that wrist into 0.95 of the arm: the elbow bent about 36°
+        /// at the least.
+        /// (The reach was the palm's on a straight wrist, shoulder to palm; but a fore-end's grip holds the hand across the
+        /// line from the shoulder, palm up, so the palm reaches 6-8 % less: grip_off at 0.95 of that reach put the wrist at or
+        /// past the arm's full length and the IK straightened the off arm, 2° (CombatMotionPlayTests, 2026-11-17).)</summary>
         public static ((double X, double Y, double Z) Grip, ReadyHold Line) PlaceHold(ReadyHold h, (double X, double Y, double Z) offShoulder,
-            double mainReach, double offReach, (double X, double Y, double Z) gripOff)
+            double mainReach, double offArm, (double X, double Y, double Z) gripOff, (double X, double Y, double Z) offPalm)
         {
             var grip = Mul(h.Grip, mainReach);
-            var most = 0.95 * offReach;
+            var most = 0.95 * offArm;
+            var wrist = Sub(gripOff, offPalm);
             var line = h;
             for (var extra = 0; extra <= 15; extra += 5)
             {
                 line = new ReadyHold(h.Pitch, h.Across + extra, h.Grip);
-                if (Len(Sub(Add(grip, HoldTurn(line, gripOff)), offShoulder)) <= most) return (grip, line);
+                if (Len(Sub(Add(grip, HoldTurn(line, wrist)), offShoulder)) <= most) return (grip, line);
             }
-            var gap = Sub(Add(grip, HoldTurn(line, gripOff)), offShoulder);
+            var gap = Sub(Add(grip, HoldTurn(line, wrist)), offShoulder);
             var d = Len(gap);
             return (Add(grip, Mul(gap, (most - d) / d)), line);
         }
@@ -602,6 +634,9 @@ namespace SecondFace.Core.Combat
         private static (double X, double Y, double Z) Mul((double X, double Y, double Z) a, double k) => (a.X * k, a.Y * k, a.Z * k);
         private static double Dot((double X, double Y, double Z) a, (double X, double Y, double Z) b) => a.X * b.X + a.Y * b.Y + a.Z * b.Z;
         private static double Len((double X, double Y, double Z) a) => Math.Sqrt(Dot(a, a));
+        private static (double X, double Y, double Z) Cross((double X, double Y, double Z) a, (double X, double Y, double Z) b) =>
+            (a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X);
+        private static (double X, double Y, double Z) Unit((double X, double Y, double Z) a) { var l = Len(a); return l > 1e-12 ? Mul(a, 1.0 / l) : a; }
 
         /// <summary>Where the support hand's palm sits on a pistol (no <c>grip_off</c> staged): against the grip's left side,
         /// a little below and behind the shooting hand's palm (m, weapon frame).</summary>

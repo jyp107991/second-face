@@ -850,7 +850,8 @@ namespace SecondFace.Game.Fighting
         /// <summary>A long gun's or a two-handed club's ready hold made for this body (Core <see cref="CombatMotion.ReadyHold"/>,
         /// <see cref="HandsIk.Hold"/>), in the frame of its own shoulders as the clip has them now (the line from the off
         /// shoulder's joint to the main one, level; up the world's): the main grip at the hold's share of this arm's reach
-        /// (Core <see cref="CombatMotion.PlaceHold"/>, which keeps grip_off within the off arm's reach), the weapon's line
+        /// (Core <see cref="CombatMotion.PlaceHold"/>, which keeps the off hand's wrist, its palm on grip_off, within 0.95 of
+        /// the off arm's chain to the wrist, the chain this IK solves), the weapon's line
         /// tipped and turned by the hold, the main hand put on its grip with the elbow bent down and out; the off hand goes to
         /// grip_off after (<see cref="OffHand"/>).</summary>
         private void ReadyHold(float w, bool crouched)
@@ -864,7 +865,9 @@ namespace SecondFace.Game.Fighting
             var fwd = Vector3.Cross(across.normalized, Vector3.up);
             var frame = Quaternion.LookRotation(fwd, Vector3.up);
             var inv = Quaternion.Inverse(frame);
-            var (local, line) = CombatMotion.PlaceHold(hold, T(inv * (sL - sR)), _right.Reach, _left.Reach, T(_w.GripOff));
+            // (the off hand's wrist, where its IK chain ends, from its palm on grip_off: the palm in the off grip's frame)
+            var offPalm = Quaternion.LookRotation(Hand.V(CombatMotion.OffGrip(Held.Model).Across), Hand.V(CombatMotion.OffGrip(Held.Model).Palm)) * _left.PalmFromWrist;
+            var (local, line) = CombatMotion.PlaceHold(hold, T(inv * (sL - sR)), _right.Reach, _left.Arm, T(_w.GripOff), T(offPalm));
             var grip = sR + frame * Hand.V(local);
             var weapon = frame * Quaternion.Euler(0f, -(float)line.Across, 0f) * Quaternion.Euler((float)line.Pitch, 0f, 0f);
             HoldGrip = grip;
