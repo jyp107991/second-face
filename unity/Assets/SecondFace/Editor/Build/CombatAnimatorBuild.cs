@@ -23,8 +23,8 @@ namespace SecondFace.EditorTools
     /// the import of the rebuilt controller puts these back (CombatImportPostprocessor).</item>
     /// <item>The weapons: each staged model's materials (URP Lit from its BaseColor, Normal and Mask: R metallic, G occlusion,
     /// A smoothness; the bottle's glass transparent, premultiplied) in both lore paints, remapped onto the model by name.</item>
-    /// <item>The set (Combat/CombatSet.asset): the controller, the weapons with their grip, muzzle and tip points (the
-    /// sidecars' <c>points_unity</c>), each clip's length and beats (impact, release, fire, the magazine) as normalized
+    /// <item>The set (Combat/CombatSet.asset): the controller, the weapons with their grip, muzzle, tip and butt points (the
+    /// sidecars' <c>points_unity</c>) and the model's place in that frame fitted from its own nulls, each clip's length and beats (impact, release, fire, the magazine) as normalized
     /// times; given to WorldAssets.Combat so the game's fights use it.</item>
     /// </list>
     /// </summary>
@@ -254,6 +254,7 @@ namespace SecondFace.EditorTools
                 {
                     Id = id, HasOff = pts?["grip_off"] != null, HasMuzzle = pts?["muzzle"] != null,
                     GripOff = P("grip_off"), Muzzle = P("muzzle"), Tip = pts?["tip"] != null ? P("tip") : P("muzzle"),
+                    HasButt = pts?["butt"] != null, Butt = P("butt"),
                 };
                 var size = j["size_m"] is JArray sz ? sz[2].Value<float>() : 0.4f;
                 w.Length = Mathf.Max(size, Mathf.Max(Mathf.Abs(w.Tip.z), Mathf.Abs(w.Muzzle.z)));
@@ -271,15 +272,22 @@ namespace SecondFace.EditorTools
                     var mat2 = spec2 != null ? Material(dir, id, m.Name, "v2", spec2, spec1) : mat1;
                     paint1.Add(mat1); paint2.Add(mat2);
                     if (imp != null)
-                    {
-                        var key = new AssetImporter.SourceAssetIdentifier(typeof(Material), m.Name);
-                        imp.GetExternalObjectMap().TryGetValue(key, out var now);
-                        if (now != mat1) { imp.AddRemap(key, mat1); changed = true; }
-                    }
+                        // the model's material by the sidecar's slot name, or as the staging tool names it in the FBX,
+                        // "<weapon>_<slot>" (bat's "baseball_bat" is "bat_baseball_bat" in bat.fbx: remapped by the plain
+                        // name alone, the model kept its imported material and the test of the paints failed, 2026-11-17)
+                        foreach (var name in new[] { m.Name, $"{id}_{m.Name}" })
+                        {
+                            var key = new AssetImporter.SourceAssetIdentifier(typeof(Material), name);
+                            imp.GetExternalObjectMap().TryGetValue(key, out var now);
+                            if (now != mat1) { imp.AddRemap(key, mat1); changed = true; }
+                        }
                 }
                 if (changed) imp.SaveAndReimport();
                 w.Prefab = AssetDatabase.LoadAssetAtPath<GameObject>(fbx);
                 w.Paint1 = paint1.ToArray(); w.Paint2 = paint2.ToArray();
+                // the model laid in the weapon's frame by its own nulls (the FBX root carries the exporter's axis turn)
+                var fit = w.Fit();
+                if (fit > 0.001f) Debug.LogWarning($"CombatAnimatorBuild: {id}: its nulls fit the sidecar's points within {fit * 100f:0.0} cm only");
                 l.Add(w);
             }
             return l.ToArray();

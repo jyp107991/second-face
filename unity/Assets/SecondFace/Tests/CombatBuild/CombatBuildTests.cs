@@ -139,6 +139,38 @@ namespace SecondFace.Tests
         {
             var weapons = CombatAnimatorBuild.Weapons();
             Assert.That(weapons.Select(w => w.Id), Is.EquivalentTo(CombatMotion.Models));
+            // the nulls where the sidecar's points are, in the frame the game holds the weapon in (CombatSet.Weapon.Spawn: the
+            // holder's +Z the barrel, +Y the top, origin the main grip): every weapon checked, every miss listed
+            var wrong = new System.Collections.Generic.List<string>();
+            foreach (var w in weapons)
+            {
+                var held = w.Spawn("_test_" + w.Id);
+                try
+                {
+                    Transform Null(string n) => held.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == n);
+                    var main = Null("grip_main");
+                    if (main != null && held.transform.InverseTransformPoint(main.position).magnitude > 0.001f)
+                        wrong.Add($"{w.Id}: grip_main {held.transform.InverseTransformPoint(main.position).magnitude * 100f:0.0} cm from the hand's origin");
+                    foreach (var (n, p, has) in new[] { ("grip_off", w.GripOff, w.HasOff), ("muzzle", w.Muzzle, w.HasMuzzle), ("butt", w.Butt, w.HasButt) })
+                    {
+                        if (!has) continue;
+                        var t = Null(n);
+                        if (t == null) { wrong.Add($"{w.Id}: no {n} null"); continue; }
+                        var d = (held.transform.InverseTransformPoint(t.position) - p).magnitude;
+                        if (d > 0.001f) wrong.Add($"{w.Id}: {n} {d * 100f:0.0} cm from where the sidecar says");
+                    }
+                    // the mesh along the frame: its far end at the sidecar's length along +Z, not across it
+                    var r = held.GetComponentsInChildren<Renderer>(true);
+                    if (r.Length > 0)
+                    {
+                        var b = r[0].bounds; foreach (var x in r) b.Encapsulate(x.bounds);
+                        var size = held.transform.InverseTransformVector(b.size);
+                        if (Mathf.Abs(size.z) < Mathf.Max(Mathf.Abs(size.x), Mathf.Abs(size.y))) wrong.Add($"{w.Id}: the model lies across its frame ({size})");
+                    }
+                }
+                finally { Object.DestroyImmediate(held); }
+            }
+            Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
             foreach (var w in weapons)
             {
                 Assert.That(w.Prefab, Is.Not.Null, w.Id);
@@ -148,18 +180,11 @@ namespace SecondFace.Tests
                 Assert.That(w.Paint1.Zip(w.Paint2, (a, b) => a != b).Any(x => x), Is.True, w.Id + ": a second paint");
                 var renderers = w.Prefab.GetComponentsInChildren<Renderer>(true);
                 Assert.That(renderers.SelectMany(r => r.sharedMaterials).Any(m => w.Paint1.Contains(m)), Is.True, w.Id + ": its lore materials on the model");
-                // the staged nulls where the sidecar's points are (an axis or scale wrong moves them): within 1 mm
-                Transform Find(string n) => w.Prefab.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == n);
-                var main = Find("grip_main");
-                if (main != null) Assert.That(w.Prefab.transform.InverseTransformPoint(main.position).magnitude, Is.LessThan(0.001f), w.Id + ": grip_main at the origin");
-                foreach (var (n, p, has) in new[] { ("grip_off", w.GripOff, w.HasOff), ("muzzle", w.Muzzle, w.HasMuzzle) })
-                {
-                    if (!has) continue;
-                    var t = Find(n);
-                    Assert.That(t, Is.Not.Null, $"{w.Id}: the {n} null");
-                    Assert.That((w.Prefab.transform.InverseTransformPoint(t.position) - p).magnitude, Is.LessThan(0.001f), $"{w.Id}: {n} where the sidecar says");
-                }
+                Assert.That(w.Fitted, Is.True, w.Id + ": its model fitted to its frame");
                 Assert.That(w.Length, Is.GreaterThan(0.1f), w.Id);
+                // a long gun's butt for the low ready's shoulder (CombatMotion.LongGunReady)
+                if (CombatMotion.LongGun(w.Id))
+                    Assert.That(w.HasButt, Is.True, w.Id + ": a long gun's butt");
             }
         }
 

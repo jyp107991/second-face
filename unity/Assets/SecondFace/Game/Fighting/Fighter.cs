@@ -93,7 +93,7 @@ namespace SecondFace.Game.Fighting
 
         // ------------------------------------------------------------------------------------------- the hands
 
-        private float _offW, _pistolW, _arcW, _fixW, _fistW;
+        private float _offW, _pistolW, _arcW, _fixW, _fistW, _holdW;
         private Vector3 _aimAt;
         private bool _haveAim;
         /// <summary>The off hand's palm from its grip_off this frame (m; -1: not held), and the weapon's main grip from the
@@ -222,8 +222,9 @@ namespace SecondFace.Game.Fighting
 
         private GameObject Make(CombatSet.Weapon w, int variant)
         {
-            var go = Instantiate(w.Prefab);
-            go.name = "held_" + w.Id;
+            // (the model laid in the weapon's own frame, the frame the grips, holsters and points are in: placed by its root
+            // alone it lay a quarter turn off, CombatSet.Weapon.ModelRot)
+            var go = w.Spawn("held_" + w.Id);
             foreach (var c in go.GetComponentsInChildren<Collider>()) Destroy(c);
             if (variant == 2 && w.Paint1 != null && w.Paint2 != null && w.Paint2.Length > 0)
                 foreach (var r in go.GetComponentsInChildren<Renderer>())
@@ -662,16 +663,19 @@ namespace SecondFace.Game.Fighting
                 Mathf.Max(full != null && full.Hands == mode ? Smooth(_fullW) : 0f, carry != null && carry.Hands == mode ? Smooth(_armsW) : 0f);
             var weapon = InHand && _weapon != null && _w != null;
             var step = dt / 0.15f;
-            _offW = Mathf.MoveTowards(_offW, weapon && (_w.HasOff || Held.Arms == Arms.Pistol) ? Mathf.Max(Want(HandsIk.OffHand), 0f) : 0f, step);
+            // a long gun's or a two-handed club's ready hold, made for this body (CombatMotion.ReadyHold): both hands on it
+            _holdW = Mathf.MoveTowards(_holdW, weapon && _w.HasOff && CombatMotion.Hold(Held.Arms, false) != null ? Want(HandsIk.Hold) : 0f, step);
+            _offW = Mathf.MoveTowards(_offW, weapon && (_w.HasOff || Held.Arms == Arms.Pistol) ? Mathf.Max(Want(HandsIk.OffHand), Want(HandsIk.Hold)) : 0f, step);
             _pistolW = Mathf.MoveTowards(_pistolW, weapon && _haveAim ? Want(HandsIk.PistolAim) : 0f, step);
             _arcW = Mathf.MoveTowards(_arcW, weapon && Current == "melee_slash" ? Smooth(_fullW) : 0f, step);
             _fixW = Mathf.MoveTowards(_fixW, weapon && _haveAim && Held.Arms == Arms.Rifle && full != null && full.Gate == "aim" ? Smooth(_fullW) : 0f, step);
             var fists = full != null && (full.Gate == "guard" || full.Gate == "strike") && !weapon ? Smooth(_fullW) : 0f;
             _fistW = Mathf.MoveTowards(_fistW, fists, step);
+            if (_holdW > 0f) ReadyHold(_holdW, full != null && full.Gate == "crouch");
             if (_pistolW > 0f) PistolAim(_pistolW);
             if (_arcW > 0f) Arc(_arcW, full);
             if (_fixW > 0f) AimFix(_fixW);
-            if (_offW > 0f && _pistolW < 0.99f) OffHand(_offW * (1f - _pistolW));
+            if (_offW > 0f && _pistolW < 0.99f) OffHand(_offW * (1f - _pistolW), _holdW);
             // the fingers round what they hold
             var grip = Mathf.Max(Smooth(_fullW), Smooth(_armsW));
             if (weapon) _right.Close(CombatMotion.MainGrip(Held.Model), grip);
@@ -695,12 +699,46 @@ namespace SecondFace.Game.Fighting
             return t.position + t.rotation * local;
         }
 
-        private void OffHand(float w)
+        private void OffHand(float w, float hold = 0f)
         {
+            // (the weight eases out after the weapon is put away: nothing left to hold)
+            if (_weapon == null || _w == null || _left == null) return;
             var t = _weapon.transform;
             var palm = Hand.PalmOn(t.rotation, CombatMotion.OffGrip(Held.Model));
-            _left.Reach_(OffPoint(), palm, w);
+            // in the ready hold the elbow bends down and out (the stopgap's own arm is straight: its bend says nothing)
+            Vector3? pole = null;
+            if (hold > 0.5f && _left.Ready) pole = _left.Upper.position + Vector3.down * 0.3f - RightAx * 0.12f;
+            _left.Reach_(OffPoint(), palm, w, pole);
         }
+
+        private static (double X, double Y, double Z) T(Vector3 v) => (v.x, v.y, v.z);
+
+        /// <summary>A long gun's or a two-handed club's ready hold made for this body (Core <see cref="CombatMotion.ReadyHold"/>,
+        /// <see cref="HandsIk.Hold"/>), in the frame of its own shoulders as the clip has them now (the line from the off
+        /// shoulder's joint to the main one, level; up the world's): the main grip at the hold's share of this arm's reach
+        /// (Core <see cref="CombatMotion.PlaceHold"/>, which keeps grip_off within the off arm's reach), the weapon's line
+        /// tipped and turned by the hold, the main hand put on its grip with the elbow bent down and out; the off hand goes to
+        /// grip_off after (<see cref="OffHand"/>).</summary>
+        private void ReadyHold(float w, bool crouched)
+        {
+            var h = CombatMotion.Hold(Held.Arms, crouched || Crouched);
+            if (h == null || _w == null || !_w.HasOff || !_right.Ready || !_left.Ready) return;
+            var hold = h.Value;
+            var sR = _right.Upper.position; var sL = _left.Upper.position;
+            var across = sR - sL; across.y = 0f;
+            if (across.sqrMagnitude < 1e-4f) across = RightAx;
+            var fwd = Vector3.Cross(across.normalized, Vector3.up);
+            var frame = Quaternion.LookRotation(fwd, Vector3.up);
+            var inv = Quaternion.Inverse(frame);
+            var (local, line) = CombatMotion.PlaceHold(hold, T(inv * (sL - sR)), _right.Reach, _left.Reach, T(_w.GripOff));
+            var grip = sR + frame * Hand.V(local);
+            var weapon = frame * Quaternion.Euler(0f, -(float)line.Across, 0f) * Quaternion.Euler((float)line.Pitch, 0f, 0f);
+            HoldGrip = grip;
+            _right.Reach_(grip, Hand.PalmOn(weapon, CombatMotion.MainGrip(Held.Model)), w, sR + Vector3.down * 0.3f + frame * Vector3.right * 0.15f - fwd * 0.1f);
+        }
+
+        /// <summary>Where the ready hold put the main grip this frame (tests read it).</summary>
+        public Vector3 HoldGrip { get; private set; }
 
         /// <summary>The pistol's aim: both hands on the line from the eyes to the target at the arms' reach, the support hand
         /// wrapping the grip; the recoil flips the muzzle up and back.</summary>

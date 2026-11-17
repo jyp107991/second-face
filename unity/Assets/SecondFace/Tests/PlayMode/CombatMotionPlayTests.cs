@@ -294,6 +294,74 @@ namespace SecondFace.Tests
             Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
         }
 
+        /// <summary>The ready holds made for each body (HandsIk.Hold, Core CombatMotion.ReadyHold): in a long gun's ready stance,
+        /// crouched behind cover with it, carrying it over a walk, and in a two-handed club's ready, the off hand on grip_off
+        /// within 2 cm every frame and both elbows bent as a held weapon bends them (the authored stopgap's arms stood straight,
+        /// 0-21°, and its off hand 26-46 cm from the grip, 2026-11-17).</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator TheReadyHoldsHaveBothHandsOnTheWeapon()
+        {
+            yield return Arena();
+            var wrong = new List<string>();
+            static float Bend(Animator a, bool left)
+            {
+                var u = a.GetBoneTransform(left ? HumanBodyBones.LeftUpperArm : HumanBodyBones.RightUpperArm);
+                var l = a.GetBoneTransform(left ? HumanBodyBones.LeftLowerArm : HumanBodyBones.RightLowerArm);
+                var h = a.GetBoneTransform(left ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand);
+                return Vector3.Angle(l.position - u.position, h.position - l.position);
+            }
+            foreach (var item in new[] { "w_carbine556", "w_bolt308", "w_sledge" })
+                foreach (var id in new[] { Man, Woman })
+                {
+                    var v = Person(id, Vector3.zero, item);
+                    var f = v.Fighter;
+                    var a = f.Animator;
+                    var who = $"{id} with {item}";
+                    IEnumerator Watch(string what, float seconds, System.Func<bool> on)
+                    {
+                        var off = new List<float>(); var bendR = new List<float>(); var bendL = new List<float>();
+                        for (var t = 0f; t < seconds; t += Time.deltaTime)
+                        {
+                            if (t > 0.6f && on())
+                            {
+                                if (f.OffError >= 0f) off.Add(f.OffError);
+                                bendR.Add(Bend(a, false)); bendL.Add(Bend(a, true));
+                            }
+                            yield return null;
+                        }
+                        if (off.Count < 20) { wrong.Add($"{who}, {what}: the off hand held {off.Count} frames"); yield break; }
+                        if (off.Max() > 0.02f) wrong.Add($"{who}, {what}: the off hand {off.Max() * 100f:0.0} cm from its grip (≤ 2)");
+                        if (bendR.Min() < 60f) wrong.Add($"{who}, {what}: the main elbow bent {bendR.Min():0}° (a held weapon bends it)");
+                        if (bendL.Min() < 15f) wrong.Add($"{who}, {what}: the off elbow bent {bendL.Min():0}° (straight)");
+                    }
+                    yield return Wait(0.5f);
+                    var idle = CombatMotion.Idle(f.Arms);
+                    yield return Watch("the ready stance", 2f, () => f.Current == idle);
+                    if (f.Arms == Arms.Rifle)
+                    {
+                        v.OnStance("crouch");
+                        yield return Watch("crouched behind cover", 4f, () => f.Current == CombatMotion.Cover(f.Arms));
+                        v.OnStance("stand");
+                        yield return Wait(1.5f);
+                    }
+                    if (CombatMotion.Carry(f.Arms) != null)
+                    {
+                        f.Locomote(true, false);
+                        var t0 = Time.time;
+                        IEnumerator Walk() { while (Time.time - t0 < 3f) { v.Body.position += v.Body.forward * Walker.WalkSpeed * Time.deltaTime; Pace.Set(a, Walker.WalkSpeed, false, 0.12f, Time.deltaTime); yield return null; } }
+                        _host.StartCoroutine(Walk());
+                        yield return Watch("carried over a walk", 3f, () => f.Carrying == CombatMotion.Carry(f.Arms));
+                        f.Locomote(false, false);
+                        a.SetFloat("Speed", 0f);
+                    }
+                    v.OnEnd();
+                    yield return Wait(0.2f);
+                    Object.Destroy(v.Body.gameObject);
+                    yield return null;
+                }
+            Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
+        }
+
         /// <summary>Every one-shot state of the table, played on its own, goes on where the table says (the weapon's idle, its
         /// crouch, or the named state) within its own length at its speed; the loops hold; nothing is left hanging.</summary>
         [UnityTest, Timeout(1800000)]
@@ -325,6 +393,12 @@ namespace SecondFace.Tests
                         if (!f.Is(s.Name)) wrong.Add($"{id}: {s.Name} (a hold) left for {f.Current}");
                         continue;
                     }
+                    // (the Animator takes a crossfade asked for in its next update: in the frame it is asked, the state is not
+                    // yet current nor next, and timing it from there read every one-shot as "still playing 0.0 s on" once it had
+                    // started, 2026-11-17)
+                    var entered = 0f;
+                    while (entered < 0.5f && !f.Is(s.Name)) { entered += Time.deltaTime; yield return null; }
+                    if (!f.Is(s.Name)) { wrong.Add($"{id}: {s.Name} never began ({f.Current} playing)"); continue; }
                     var limit = length * (s.Cut - s.From) + 1f;
                     var t = 0f;
                     while (t < limit && f.Is(s.Name)) { t += Time.deltaTime; yield return null; }
