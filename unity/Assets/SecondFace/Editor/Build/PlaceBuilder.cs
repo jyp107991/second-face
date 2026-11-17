@@ -104,6 +104,7 @@ namespace SecondFace.EditorTools
                 EditorUtility.SetDirty(group);
                 entries.Add(new PlaceSet.Entry { Id = id, Address = entry.address });
             }
+            CityMaterialEntries(settings);
             var set = AssetDatabase.LoadAssetAtPath<PlaceSet>(SetPath);
             var fresh = set == null;
             if (fresh) set = ScriptableObject.CreateInstance<PlaceSet>();

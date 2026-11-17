@@ -64,6 +64,24 @@ namespace SecondFace.EditorTools
             ["bag"] = new[] { "compost_bag_02", "cardboard_box_01" },
         };
 
+        /// <summary>The city's materials as entries of the library's materials group (one bundle each, as the library's), so
+        /// the districts' bundles (packed separately) share them instead of each carrying their maps; missed when that group
+        /// is not made yet (the places built alone from the menu: they are then each district's own).</summary>
+        private static void CityMaterialEntries(UnityEditor.AddressableAssets.Settings.AddressableAssetSettings settings)
+        {
+            var group = settings.FindGroup(AddressablesBuild.MaterialsGroup);
+            if (group == null || !Directory.Exists(CityDir)) return;
+            foreach (var mat in Directory.GetFiles(CityDir, "*.mat").Select(p => p.Replace('\\', '/')).OrderBy(p => p, StringComparer.Ordinal))
+            {
+                var guid = AssetDatabase.AssetPathToGUID(mat);
+                if (string.IsNullOrEmpty(guid)) continue;
+                var entry = settings.CreateOrMoveEntry(guid, group, false, false);
+                entry.address = $"{AddressablesBuild.MaterialsGroup}/city_{Path.GetFileNameWithoutExtension(mat)}";
+                entry.SetLabel("material", true, true, false);
+            }
+            EditorUtility.SetDirty(group);
+        }
+
         /// <summary>The district in its city: its own footprint, its neighbours' (the skyline is shared out between them),
         /// every place's (the towers keep clear), the roads and rails (likewise).</summary>
         private static CityKit.City City(string id, MapDef map, PlacePlan plan, CityKit.Style style, WorldLayout layout)
