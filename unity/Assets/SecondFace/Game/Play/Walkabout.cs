@@ -193,6 +193,7 @@ namespace SecondFace.Game.Play
         {
             Begun = false;
             _arriving = null;
+            _movesAsked = 0;
             _placing++;   // a setting down under way is dropped
             if (Walker != null) Destroy(Walker.gameObject);
             Walker = null;
@@ -647,8 +648,9 @@ namespace SecondFace.Game.Play
         /// and logic hosts): camp (a bed of one's own); trade with whoever is being talked to; everyone healed; someone
         /// comes to talk; a move to another map (goto); a fight with whoever has turned (combat) or with the person talked
         /// to (fight; a pit bout with <c>{ pit: { win, lose } }</c>); another conversation (dialogue); a recorded memory
-        /// (reverie: the picture turns cold while it plays); a title card (title). The rest go to <see cref="Asked"/>.
-        /// What opens a screen or moves the player waits for the conversation to close first.</summary>
+        /// (reverie: the picture turns cold while it plays); a title card (title). The rest go to <see cref="Asked"/>. What
+        /// opens a screen or moves the player waits for the conversation to close first, and a conversation asked for with a
+        /// move waits for the arrival (arrive, then talk).</summary>
         private void OnEvent(string name, Newtonsoft.Json.Linq.JToken data)
         {
             // the person being talked to: only while their conversation is open (a quest's or a trigger's effect later has
@@ -667,7 +669,12 @@ namespace SecondFace.Game.Play
                     break;
                 case "goto":
                     var order = GotoOrder.From(data);
-                    if (order != null) StartCoroutine(AfterTalk(() => Move(order)));
+                    if (order != null)
+                    {
+                        // (counted now: a conversation asked for in the same breath waits for the arrival)
+                        _movesAsked++;
+                        StartCoroutine(AfterTalk(() => { _movesAsked--; Move(order); }));
+                    }
                     break;
                 case "combat":
                     // a word, a quest or a trigger turned someone: the hostility is tested again and whoever turned fights
@@ -684,11 +691,13 @@ namespace SecondFace.Game.Play
                     break;
                 case "dialogue":
                     var tree = (string)data?["tree"];
-                    if (!string.IsNullOrEmpty(tree)) StartCoroutine(AfterTalk(() => OpenTree(tree, (string)data["name"] ?? "")));
+                    if (string.IsNullOrEmpty(tree)) break;
+                    // arrive, then talk: with a move asked in the same breath, the tree opens where the move sets the player down
+                    StartCoroutine(AfterTalkAndMove(() => OpenTree(tree, (string)data["name"] ?? "")));
                     break;
                 case "reverie":
                     var memory = (string)data?["tree"];
-                    if (!string.IsNullOrEmpty(memory)) StartCoroutine(AfterTalk(() => OpenReverie(memory, (string)data["name"])));
+                    if (!string.IsNullOrEmpty(memory)) StartCoroutine(AfterTalkAndMove(() => OpenReverie(memory, (string)data["name"])));
                     break;
                 case "title":
                     ShowTitle((string)data?["text"] ?? "");
@@ -821,6 +830,8 @@ namespace SecondFace.Game.Play
         private IEnumerator Comes(string id)
         {
             if (string.IsNullOrEmpty(id)) yield break;
+            yield return null;   // (a move asked in the same breath is counted)
+            yield return Arrived();
             var t = Time.unscaledTime;
             Interactable it = null;
             while (Time.unscaledTime - t < 8f)
@@ -840,6 +851,33 @@ namespace SecondFace.Game.Play
         {
             yield return null;
             if (Conversation != null && Conversation.IsOpen) Conversation.Close();
+            then();
+        }
+
+        /// <summary>The content's moves asked for and not yet begun (a goto waits a frame for its conversation to close).</summary>
+        private int _movesAsked;
+        /// <summary>A move the content asked for is pending or under way (the walker not yet set down where it goes).</summary>
+        public bool MoveUnderWay => _movesAsked > 0 || (Begun && !Placed);
+
+        /// <summary>Waits until no move is pending or under way (the walker set down where the content sent them), a load's
+        /// time at most.</summary>
+        private IEnumerator Arrived()
+        {
+            var t0 = Time.unscaledTime;
+            while (MoveUnderWay && Time.unscaledTime - t0 < LoadTimeout) yield return null;
+        }
+
+        /// <summary>As <see cref="AfterTalk"/>, and arrive first: a conversation asked for with a move (an exit carrying a
+        /// goto and a dialogue: arrive, then talk) opens once the walker stands where the move set them down.</summary>
+        private IEnumerator AfterTalkAndMove(System.Action then)
+        {
+            yield return null;   // (the choice that asked runs to its end: a move asked with it is counted)
+            if (Conversation != null && Conversation.IsOpen) Conversation.Close();
+            if (MoveUnderWay)
+            {
+                yield return Arrived();
+                yield return null;   // (the place's people and things stood up in the frame of the setting down)
+            }
             then();
         }
 
