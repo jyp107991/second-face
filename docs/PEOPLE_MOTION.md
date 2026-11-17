@@ -40,6 +40,10 @@ It is binding. It sits beside the face and skin gate (`docs/PEOPLE_QA.md`) and i
    - each gesture: talk, talk_b, argue, drink, wave, stretch, yawn, yawn_b, and the 0.6 s after it ends;
    - turning to face someone behind (the conversation turn);
    - walking and jogging at the game's speeds, straight and on a 3 m radius; starting and stopping; sneaking;
+   - following the player as a companion does (2026-11-17): on the party's own NavMeshAgent, paced as the townsfolk are
+     (from the agent's speed) and sent by the party's own step (`PartyFollowers.Pursue`), after a player who sets off,
+     walks (then jogs) and stops, measured as a walk (a jog) from the companion's first step to their halt (§2.4), then
+     standing from 0.6 s after it, for 2 s (§2.1);
    - the conversation pose: two people at the game's talking distance, facing as the game faces them.
 3. **People.** The quick set in every CI run: women and men; slim, broad and heavy; young and old; the player's body.
    The full set (`Category("Heavy")`, before every build to the owner): every Rocketbox person in the catalogue and

@@ -10,6 +10,7 @@ using SecondFace.Game.People;
 using SecondFace.Game.Play;
 using SecondFace.Game.World;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.TestTools;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -22,7 +23,7 @@ namespace SecondFace.Tests
     /// by the game's own code (<see cref="PeopleService.Animate"/> for residents, <see cref="Walker.Animate"/> for the
     /// player's body) with every runtime system on, played through every state the game shows them in (the four idles on
     /// flat and sloped ground, looking at someone round them, each gesture and its end, the conversation turn, walking,
-    /// jogging, sneaking, straight and round a bend, two people talking), measured every frame by <see cref="MotionProbe"/>
+    /// jogging, sneaking, straight and round a bend, following the player as a companion does, two people talking), measured every frame by <see cref="MotionProbe"/>
     /// and held to the limits taken from real people (§2 there). Writes test-results/motion_gate.json and .md; captures
     /// from the game camera (default and closest zoom), the conversation view and human height. Any measure past its
     /// limit fails the gate (S2).
@@ -91,7 +92,7 @@ namespace SecondFace.Tests
             if (state.StartsWith("gesture:")) return GestureLimits(state.Substring(8));
             if (state == "turn") return TurnLimits;
             if (state.EndsWith(":jog")) return JogLimits;
-            if (state.StartsWith("walk:") || state.StartsWith("bend:")) return WalkLimits;
+            if (state.StartsWith("walk:") || state.StartsWith("bend:") || state.StartsWith("follow:")) return WalkLimits;
             if (state == "talk") return TalkLimits;
             return StandLimits;
         }
@@ -567,6 +568,10 @@ namespace SecondFace.Tests
                 }
                 foreach (var s in people) s.A.SetBool("Sneak", false);
             }
+            // 6b. following the player, as a companion does (PartyFollowers): on a NavMeshAgent made as the party's, paced by
+            // the townsfolk's path (Townsperson: the pace from the agent's speed), sent by the party's own step every 0.2 s
+            // after a player who sets off from a standstill, walks (then jogs) at the walker's speeds and stops
+            yield return Following(people, flat, runner);
             // 7. two people talking, as the game sets them: the other turned to face, both looking at each other's head, the
             // opening gesture, then the talk
             Place(Vector3.zero, 0f);
@@ -704,6 +709,125 @@ namespace SecondFace.Tests
             Assert.Ignore("editor only");
             yield break;
 #endif
+        }
+
+        /// <summary>A companion following the player, in the gate (<see cref="Following"/>).</summary>
+        private sealed class Follower
+        {
+            public Subject S;
+            public NavMeshAgent Agent;
+            public Townsperson P;
+            public Vector3 Lead;   // the player they follow (a point moved as the gate moves a walker)
+            public Vector3 Asked = new(float.NaN, 0f, 0f);
+            public bool Jogging, Turned, Walking, Halted;
+            public float StillSince = -1f;
+            public Coroutine Turn;
+        }
+
+        /// <summary>The "following" states (docs/PEOPLE_MOTION.md §1.2, walking): each person as a companion following a player
+        /// who sets off from a standstill, walks at <see cref="Walker.WalkSpeed"/> (then jogs at <see cref="Walker.JogSpeed"/>)
+        /// a stretch with the walker's acceleration and stops. The companion is on a NavMeshAgent made as the party's
+        /// (<see cref="PartyFollowers.Configure"/>), paced as the townsfolk are (<see cref="Townsperson"/>: the pace from the
+        /// agent's speed), and sent by the party's own step (<see cref="PartyFollowers.Pursue"/>, <see cref="PartyFollowers.Stand"/>)
+        /// every <see cref="PartyFollowers.Step"/> s, on a NavMesh built over the gate's ground as a place builds one
+        /// (<see cref="PlaceNav.Settings"/>). Measured as a walk (a jog) from each companion's first step to their halt, then
+        /// standing ("after:follow_walk", "after:follow_jog") from 0.6 s after the last halt, for 2 s.</summary>
+        private static IEnumerator Following(List<Subject> people, GameObject flat, MonoBehaviour runner)
+        {
+            var area = new Bounds(new Vector3(0f, 0f, -12f), new Vector3(people.Count * Lane + 20f, 4f, 50f));
+            var ground = new NavMeshBuildSource
+            {
+                shape = NavMeshBuildSourceShape.Box, transform = Matrix4x4.TRS(flat.transform.position, flat.transform.rotation, Vector3.one),
+                size = flat.transform.localScale, area = 0,
+            };
+            var data = NavMeshBuilder.BuildNavMeshData(PlaceNav.Settings(), new List<NavMeshBuildSource> { ground }, area, Vector3.zero, Quaternion.identity);
+            var nav = NavMesh.AddNavMeshData(data);
+            var party = new List<Follower>();
+            foreach (var s in people)
+            {
+                var at = s.Home + new Vector3(0f, 0f, -30f);
+                s.Go.transform.SetPositionAndRotation(at, Quaternion.identity);
+                s.A.SetFloat("Speed", 0f);
+                var agent = s.Go.AddComponent<NavMeshAgent>();
+                PartyFollowers.Configure(agent, 70);
+                var tp = s.Go.AddComponent<Townsperson>();
+                tp.Id = s.Id; tp.Animator = s.A; tp.Ambient = s.Ambient; tp.Agent = agent; tp.Post = at;
+                agent.Warp(at);
+                // the player ahead: the companion stands on their first slot, behind and beside
+                var slot = PartyFollowers.Slots[0];
+                party.Add(new Follower { S = s, Agent = agent, P = tp, Lead = at - new Vector3(slot.x, 0f, slot.y) });
+            }
+            yield return Wait(1.2f);
+            var heading = Vector3.forward;
+            var clock = 0f;
+            var every = Frames(PartyFollowers.Step);
+            IEnumerator Turning(Follower x, Vector3 look) { yield return Walkabout.Face(x.S.Go.transform, look); x.Turn = null; }
+            foreach (var (gait, v) in new[] { ("walk", Walker.WalkSpeed), ("jog", Walker.JogSpeed) })
+            {
+                // measured as a walk from the companion's first step to their halt (as the walk states are, from the first
+                // step to the stop), then standing from 0.6 s after it (as after a gesture), each companion on their own
+                foreach (var x in party) { x.S.Probe.State = "follow:" + gait; x.S.Probe.Kind = null; x.Walking = x.Halted = false; }
+                var speed = 0f; var travelled = 0f; var length = Mathf.Min(45f, v * 7f);
+                var still = 0;
+                for (int frame = 0, cap = Frames(length / v + 20f); frame < cap; frame++)
+                {
+                    var dt = Time.deltaTime;
+                    // the player: from a standstill to the gait's speed and to a stop, at the walker's acceleration
+                    var lv = 0f;
+                    if (travelled < length)
+                    {
+                        var left = length - travelled;
+                        var stopping = speed * speed / (2f * Walker.Acceleration);
+                        speed = left <= stopping ? Mathf.Max(0.05f, speed - Walker.Acceleration * dt) : Mathf.Min(v, speed + Walker.Acceleration * dt);
+                        var step = Mathf.Min(left, speed * dt);
+                        travelled += step;
+                        foreach (var x in party) x.Lead += Vector3.forward * step;
+                        lv = dt > 0f ? step / dt : 0f;
+                    }
+                    heading = PartyFollowers.Heading(heading, Vector3.forward * lv, dt);
+                    clock += dt;
+                    // the party's step, as PartyFollowers takes it
+                    if (frame % every == 0)
+                        foreach (var x in party)
+                        {
+                            var fp = x.S.Go.transform.position;
+                            var slot = PartyFollowers.SlotPoint(0, x.Lead, heading);
+                            if (PartyFollowers.Pursue(x.Agent, ref x.Asked, ref x.Jogging, slot, x.Lead, fp, heading, lv > 0.3f, lv, false, out var sent))
+                            {
+                                if (PartyFollowers.Stand(x.Agent, x.S.Go.transform, x.Lead, heading, clock, ref x.StillSince, ref x.Turned, out var look))
+                                    x.Turn = runner.StartCoroutine(Turning(x, look));
+                            }
+                            else if (sent)
+                            {
+                                if (x.Turn != null) { runner.StopCoroutine(x.Turn); x.Turn = null; }
+                                x.Turned = false; x.StillSince = -1f;
+                            }
+                        }
+                    yield return null;
+                    foreach (var x in party)
+                    {
+                        var vel = x.Agent.velocity.magnitude;
+                        if (!x.Walking && !x.Halted && vel > 0.05f) { x.Walking = true; x.S.Probe.Kind = MotionProbe.K.Walk; }
+                        else if (x.Walking && travelled >= length && vel < 0.05f && !x.Agent.hasPath) { x.Walking = false; x.Halted = true; x.S.Probe.Kind = null; }
+                    }
+                    // done once the player has stopped and every companion has stood still for 0.6 s
+                    if (travelled >= length && party.All(x => !x.Walking && x.Agent.velocity.magnitude < 0.05f && !x.Agent.hasPath && x.Turn == null)) { if (++still >= Frames(0.6f)) break; }
+                    else still = 0;
+                }
+                foreach (var x in party) { x.S.Probe.Kind = null; x.Walking = false; }
+                foreach (var x in party) { x.S.Probe.State = "after:follow_" + gait; x.S.Probe.Kind = MotionProbe.K.Stand; }
+                yield return Wait(2f);
+                foreach (var x in party) x.S.Probe.Kind = null;
+                yield return Wait(0.4f);
+            }
+            foreach (var x in party)
+            {
+                if (x.Turn != null) runner.StopCoroutine(x.Turn);
+                Object.Destroy(x.P); Object.Destroy(x.Agent);
+                x.S.A.SetFloat("Speed", 0f);
+            }
+            yield return null;
+            NavMesh.RemoveNavMeshData(nav);
         }
 
         /// <summary>The gate's verdict where the lock reads it (docs/qa/gates/motion_gate.json; tools/qa/people_gate.mjs, run by
