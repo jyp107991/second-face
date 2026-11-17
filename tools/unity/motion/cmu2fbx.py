@@ -32,6 +32,10 @@ RATES = {'77': 60}
 REFINE = os.environ.get('SF_REFINE', 'near')
 # a gait loop's seam as a share of its stride (blended with an eased weight); 0.12 unless a clip's best loop needs longer
 SEAM = float(os.environ.get('SF_SEAM', '0.12'))
+# loops end open (motion v5, as v1): no closing key. A closed loop (its last key its first, v3-v4) with Unity's Loop Pose popped
+# the stance foot once a stride in game (jog_test, 2026-11-17: the open cut reads W6 0, every closed one lifted it 4-9 cm).
+# SF_CLOSED_LOOP=1 makes v4's closed loops (for comparison only)
+OPEN = not os.environ.get('SF_CLOSED_LOOP')
 # listed at 120 but captured at 60: their own jumps fit gravity at 56-61 fps (141/106: jumps 04-06; 143: 05-06) and their runs
 # read at 120 would be 335-354 steps a minute (clip_qa.py, docs/qa/motion_calibration.md); 106 ("Female General Subject") is
 # byte for byte 141
@@ -383,7 +387,7 @@ def build_clip(d):
         mx = sum(r['pos'].x for r in cyc) / len(cyc); mz = sum(r['pos'].z for r in cyc) / len(cyc)
         for r in cyc: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, r['pos'].z - mz))
         surge = max(r['pos'].z for r in cyc) - min(r['pos'].z for r in cyc); sway = max(r['pos'].x for r in cyc) - min(r['pos'].x for r in cyc)
-        if os.environ.get('SF_OPEN_LOOP'):   # test cuts: v1's open loop, fixed-step resample
+        if OPEN or os.environ.get('SF_OPEN_LOOP'):   # v1's open loop, fixed-step keys; the speed the stance foot runs back at
             out = resample(cyc, OUT_FPS); speed = dv.length / (P / SRC_FPS); d['_open'] = True
         else:
             out = resample_loop(cyc, OUT_FPS)
@@ -395,7 +399,8 @@ def build_clip(d):
         cyc = cut_loop(rows, 0, P, seam)
         mx = sum(r['pos'].x for r in cyc) / len(cyc); mz = sum(r['pos'].z for r in cyc) / len(cyc)
         for r in cyc: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, r['pos'].z - mz))
-        out = resample_loop(cyc, OUT_FPS)
+        if OPEN: out = resample(cyc, OUT_FPS); d['_open'] = True
+        else: out = resample_loop(cyc, OUT_FPS)
     else:
         if not d.get('root'):
             # the hips' own sway kept about its mean, as the idles keep it (pinned in place, the hips held still while the

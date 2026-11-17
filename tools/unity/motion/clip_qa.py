@@ -42,6 +42,29 @@ def dump(out_dir, paths):
         act = arm.animation_data.action if arm.animation_data else None
         f0, f1 = (int(act.frame_range[0]), int(act.frame_range[1])) if act else (1, 1)
         sc = bpy.context.scene
+        side = os.path.splitext(path)[0] + '.json'
+        meta = json.load(open(side)) if os.path.exists(side) else {}
+        blended = bool(act and meta.get('loop') and not meta.get('closed'))
+        if blended:
+            # an open loop as Unity's Loop Pose plays it: each curve's end-to-start mismatch spread over the clip (rotations by
+            # slerp, locations linearly), so its last key meets its first (motion v5's loops end open, as v1's, jog_test)
+            from mathutils import Quaternion
+            n = f1 - f0
+            for pb in arm.pose.bones:
+                q = [act.fcurves.find(f'pose.bones["{pb.name}"].rotation_quaternion', index=i) for i in range(4)]
+                l = [act.fcurves.find(f'pose.bones["{pb.name}"].location', index=i) for i in range(3)]
+                if all(q):
+                    Q = [Quaternion([c.evaluate(f) for c in q]) for f in range(f0, f1 + 1)]
+                    D = Q[0] @ Q[-1].inverted()
+                    if D.w < 0: D = -D
+                    for k, f in enumerate(range(f0, f1 + 1)):
+                        v = Quaternion().slerp(D, k / max(1, n)) @ Q[k]
+                        for i, c in enumerate(q): c.keyframe_points.insert(f, v[i], options={'REPLACE', 'FAST'})
+                if all(l):
+                    L = [[c.evaluate(f) for c in l] for f in range(f0, f1 + 1)]
+                    for k, f in enumerate(range(f0, f1 + 1)):
+                        for i, c in enumerate(l): c.keyframe_points.insert(f, L[k][i] + (k / max(1, n)) * (L[0][i] - L[-1][i]), options={'REPLACE', 'FAST'})
+            for c in act.fcurves: c.update()
         names = [b for b in BONES if b in arm.pose.bones]
         rest = {b: (arm.matrix_world @ arm.data.bones[b].matrix_local).to_3x3().normalized() for b in ROTS if b in arm.pose.bones}
         P = {b: [] for b in names}; R = {b: [] for b in rest}; tips = {'LeftToeTip': [], 'RightToeTip': [], 'HeadTop': []}
@@ -62,7 +85,7 @@ def dump(out_dir, paths):
         arrs.update({'R_' + k: np.array(v) for k, v in R.items()})
         arrs.update({'P_' + k: np.array(v) for k, v in tips.items() if v})
         arrs['fps'] = np.array(sc.render.fps / sc.render.fps_base)
-        arrs['frames'] = np.array(frames)
+        arrs['frames'] = np.array(frames); arrs['loop_blended'] = np.array(int(blended))
         np.savez_compressed(os.path.join(out_dir, name + '.npz'), **arrs)
         print('dumped', name, len(frames), 'frames')
 
@@ -451,8 +474,9 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False):
         name = f[:-4]
         meta = json.load(open(os.path.join(json_dir, name + '.json')))
         m = load_dump(os.path.join(dump_dir, f))
-        if meta.get('closed') and m.n > 2:
-            # a closed loop's last key is its first again (Unity's convention): the loop's own frames are all but the last
+        _z = _np().load(os.path.join(dump_dir, f)); blended = 'loop_blended' in _z.files and bool(_z['loop_blended'])
+        if meta.get('loop') and (meta.get('closed') or blended) and m.n > 2:
+            # a closed (or loop-blended) loop's last key is its first again: the loop's own frames are all but the last
             m = m.slice(0, (m.n - 1) / m.fps)
         src = meta.get('src', '')
         subj = src.split()[-1].split('_')[0] if src.startswith('CMU') else src

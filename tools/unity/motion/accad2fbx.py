@@ -352,8 +352,11 @@ def build(d, joints, order, frames, fps):
         cyc = C.cut_loop(rows, start, P, seam)
         mx = sum(r['pos'].x for r in cyc) / len(cyc); mz = sum(r['pos'].z for r in cyc) / len(cyc)
         for r in cyc: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, r['pos'].z - mz))
-        out = C.resample_loop(cyc, C.OUT_FPS)
-        speed = dv.length / ((len(out) - 1) / C.OUT_FPS)     # the pace at which the loop as played lays one stride (closed loop)
+        if C.OPEN:   # open loop (motion v5, cmu2fbx.OPEN): fixed-step keys, the speed the stance foot runs back at
+            out = C.resample(cyc, C.OUT_FPS); speed = dv.length / (P / fps)
+        else:
+            out = C.resample_loop(cyc, C.OUT_FPS)
+            speed = dv.length / ((len(out) - 1) / C.OUT_FPS)     # the pace at which the loop as played lays one stride (closed loop)
         print(f'  {d["name"]}: stride {dv.length:.2f} m over {P / fps:.3f} s ({120 / (P / fps):.0f} steps/min; {len(out)} frames), off the trial line by {math.degrees(math.atan2(dv.x, dv.z)):.1f} deg')
     elif d.get('loop') == 'seam':
         seam = round(d.get('seam', 1.0) * fps); P = len(rows) - seam
@@ -361,7 +364,7 @@ def build(d, joints, order, frames, fps):
         cyc = C.cut_loop(rows, 0, P, seam)
         mx = sum(r['pos'].x for r in cyc) / len(cyc); mz = sum(r['pos'].z for r in cyc) / len(cyc)
         for r in cyc: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, r['pos'].z - mz))
-        out = C.resample_loop(cyc, C.OUT_FPS)
+        out = C.resample(cyc, C.OUT_FPS) if C.OPEN else C.resample_loop(cyc, C.OUT_FPS)
     else:
         mx = sum(r['pos'].x for r in rows) / len(rows); mz = sum(r['pos'].z for r in rows) / len(rows)
         for r in rows: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, r['pos'].z - mz))
@@ -426,7 +429,7 @@ def export(d, joints, order, rows, speed, hip, out_dir, src_fps):
                    'set': d.get('set', 'f' if d['src'].startswith('Female') else 'm'), 'licence': LICENCE,
                    'resolved': bool(d.get('resolve')), 'cycle': C.REFINE,
                    'seam_share': C.SEAM if d.get('loop') == 'gait' and not d.get('mirror') else None, 'range': list(d['range']) if d.get('range') else None,
-                   'knee_correction': d.get('_knees'), 'mirrored': bool(d.get('mirror')), 'joins': d.get('_joins'), 'closed': bool(d.get('loop')),
+                   'knee_correction': d.get('_knees'), 'mirrored': bool(d.get('mirror')), 'joins': d.get('_joins'), 'closed': bool(d.get('loop')) and not C.OPEN,
                    'flips_repaired': d.get('_flips') or None, 'inbetween': d.get('_inbetween') or None}, f)
     print(f'clip {d["name"]}: {len(rows)} frames, speed {speed:.2f} m/s')
 
