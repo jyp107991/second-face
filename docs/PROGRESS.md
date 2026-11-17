@@ -717,6 +717,29 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-17, B5a and B5b in; the Unity runtime's gaps found and being filled on `side/core`.** Gate: red, 89. The
+  editor is held by the A1 work (flank correctives re-baked at the real resting angle; WIP on `wip/gate-batch`, committed
+  only after a whole-cast run with no measure worse than 89). Meanwhile Unity-side code is written and compile-checked in a
+  sparse side worktree (`git worktree add`; `/home/user/sf-core`, branch `side/core`; `unity/Library` symlinked read-only;
+  `dotnet build core/Game.Check.csproj`, `dotnet test core/SecondFace.Core.Tests`) so the running editor is never touched.
+  Content (main): B5a the Rail Corridor (921366ba) and B5b the Drowned Shore (7b9a6884); two companions who leave for good
+  are found at home again (8c101604). On `side/core`, not yet run in the editor: (1) crowd names never take a named
+  person's first name (`Extras.CastNames`; eight clashes found); (2) **party followers** (`Game/Play/PartyFollowers.cs`):
+  companions who join were never shown in Unity at all — now they follow on the NavMesh with the townsfolk's locomotion at
+  the gate's speeds, wait where dismissed (`CompanionSave.WaitingAt`, saved), leave for good, fight as allies, show in the
+  HUD (`Tests/PlayMode/PartyTests.cs`); (3) in progress: the **content events** the Unity game ignored (`goto` 71 uses,
+  `combat` 41, `dust` 10, `reverie` 9, `title` 8, `surgery` 8, `fight` 7, `dialogue` 2; only camp, barter, heal, talk and
+  map were handled). CI run 425 (25a97b61): APK built; PlayMode 6 of 82 failed — three BootTests in Shale with "not close
+  enough to the NavMesh" (walker on the mesh after 27 s; c2947ca4's pad wait may fix them: read run 426), the quick motion
+  gate, KnockTests' fight (line 167) and the shelter's path (PathPartial, PlacePlayTests line 225).
+  **Next, when the editor is free (in order):** merge `side/core` into main; EditMode suite; PlayMode PartyTests and the
+  content-events test (check first: followers' Speed above 1 in batch mode, no visible jumps, the raid fight starts, a
+  waiting companion is back after a load, a ragdoll's stand-up re-enables the agent); add `Game/Play/PartyFollowers.cs`
+  and `Game/Play/Townsfolk.cs` to the gate's inputs (they decide how people move) with a "following" state in the gate,
+  then a whole-cast run; `npm run export` (B3.11 to B5 are not exported yet; `places.json` still names "the Junction" and
+  "the Depot" where the content has Four Ways and Yard Nine); PlaceBuilder for the new places (Meridian's districts need a
+  city kit); Ninebridge's empty tiles (`V`, a gap in the bridge deck) read as flat ground: lower the pad there and put water
+  below; its concrete roads read as flat grey slabs; the arrival view frames bare ground; CI's six failures above.
 - **2026-11-16 (late), A1's remainder diagnosed.** Gate: red, 89. A pick of the six worst (Police_Male_06,
   cap_Police_Male_03n, Construction_Male_02, cap_Military_Male_03n, Business_Male_06, cap_DM01s) with the push's body
   point traced (`tools/qa/patches/push_diag.py` adds `pbH/pbOff/pbD/pbPart` to the gate trace; apply it, run a pick with
