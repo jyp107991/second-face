@@ -1035,7 +1035,7 @@ const NODES: Record<string, NodeDef> = {
         { t: 'When the grey has gone up the toll road, the door opens from inside, by hand, the way the ring voted. Bram works the cycle with Ines beside him, and the seam splits along her mother\'s weld with a crack like river ice, and the door swings out over the concrete, and the light goes into the hall.' },
       ],
       [
-        { if: F('a3_maud_wish'), t: 'Maud said once that she would like to see a face. She stands on the apron with her stick and sees sixty, one after another, and does not say anything, and does not need to.' },
+        { if: KNOWS('a3_maud_wish'), t: 'Maud said once that she would like to see a face. She stands on the apron with her stick and sees sixty, one after another, and does not say anything, and does not need to.' },
         { t: 'Maud stands on the apron with her hand over her mouth and watches them come.' },
       ],
     ], (door, maud) => `${door} / They come out the way people come out of deep water, a few at a time, shading their eyes. Effie Calder first, nineteen, all the way out onto the concrete, where she stands with her arms held a little away from her sides, as if the air were something she had to keep her balance in. Wes Benn after her, looking up for rain. A girl of six with dust on her hand. Ines last but one, very straight, and she stops at the edge of the apron and looks up, and stays like that. / Nobody has told them what to do next. Nobody has to. Knock comes down the lane, slowly at first and then not slowly, with cups. / ${maud}`),

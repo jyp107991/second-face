@@ -234,6 +234,9 @@ export function actThree(preset: Preset = 'prepared', over: Over = {}): A3 {
   // Acts 1–2 behind the player
   Object.assign(g.flags, { ch1_done: true, visited_shale: true, ln_called: true, ln_calla_taken: true, ln_at_openfield: true, ln_done: true, act2_done: true, ln_alliance: side });
   Object.assign(g.flags, h.flags, night(side, band, h.flags.prec_unrecorded as string | undefined));
+  // Dry Wells' console writes its outcome twice, as `dw_outcome` and as its own flag (drywells.ts, shale.ts): Ada's Act 1 topic
+  // offered on `dw_outcome` answers on the second, so a history with only the first would leave her with nothing to say (B6w).
+  g.flags[`dw_${String(g.flags.dw_outcome)}`] = true;
   for (const k of h.knows.concat(over.knows ?? [])) g.world.knowledge[k] = true;
   const b4b = over.b4b ? { ...h.b4b, ...(typeof over.b4b === 'object' ? over.b4b : {}) } : {};
   Object.assign(g.flags, b4b);

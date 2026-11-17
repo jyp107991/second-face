@@ -1311,7 +1311,10 @@ export const AMENDS_FULL: Cond = { flag: 'a3_amends', gte: 3 };
  *                                            down ∧ trust ≥ 25 ∧ alive), the couriers' drop (Stealth 45; failed → hands up or the fight),
  *                                            hands up (or beaten: the card says stair and pumps, nothing about the player), the fight won.
  *                                            decision a3_vault_out.  a3_dark  true  the dark close seen (stars).  decision a3_sash_left (worn:
- *                                            the sash folded on the top step, slide 1's)
+ *                                            the sash folded on the top step, slide 1's); flag a3_sash_left  true  the same act (B6w: the
+ *                                            dark close stays due until it is done, so a save on the dark close keeps the folding to do).
+ *                                            a3_vault_up  true  up the stair out of the dark (every way out's exit; B6w: a save taken in the
+ *                                            vault after the way out was settled resumes on the stair, beat b_stair, not on the close)
  *   (C) a3_sold              true            the paper signed slowly and read back (TRANSFERRED, AS SCHEDULED BY OTHERS); k_a3_transfer taken;
  *                                            decision a3_sold.  a3_sold_up  true  up to the close at night (goto; { until: 23 })
  *   wren_left / kes_left     concern         (U8's flags, new value) walked out of the vault (travelling; `leave`; approval −40) or found gone

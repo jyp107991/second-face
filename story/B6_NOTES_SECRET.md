@@ -916,7 +916,7 @@ The default shared files touched by a content slice are the registries: `quests/
   ending and home.
 - **Estimate** 1 h.
 
-### B6w — The ending playtests and the no-lockout proof
+### B6w — The ending playtests and the no-lockout proof — BUILT 2026-11-17 (deviations under "As built")
 - **Create** `tests/b6_endings.test.ts`: one headless playthrough script per ending from a save before the PNR. Each script:
   - builds its fixture (`prepared` and `hostile` presets);
   - plays Act 3 from `a3_order` through the door, the close and the PNR (writes the `steps` save with
@@ -2870,6 +2870,84 @@ was fire; the sash folded on the top step (decision `a3_sash_left`); (5) C: the 
 racks (`a3_sold`); (6) D: the Choir's lamps on the steps when `a3_ready_choir`, Bridgeward and the Crown burning on the skyline at `ep_sky`
 burning; (7) E: the register open on the plinth; (8) the credits on the epilogue's last page, then the title with the "Before the steps"
 save first in the load menu (§9.4, unchanged).
+
+### B6w (built 2026-11-17, after B6r; Act 3 complete)
+**Done, all of the slice:** `tests/b6w.test.ts` (16: the ending playtests) · `tests/b6w_routes.test.ts` (22, and one expected failure:
+the no-lockout proof and Act 3 checked whole) · `tests/b6w_fixture.ts` (the playtest kit both files share: a game with the runtime's
+host, conversations driven by preferences, the long run from the earliest save to the steps, the steps, the stair, the desk, the
+epilogue). No engine change, no map change, no new person. `npm run check` green (1296 tests and one expected failure in 62 files,
+about 30 s; the two files add about 14 s; people gate red/stale as before, "ok").
+**Deviations from §8 B6w:** the files are `b6w.test.ts` and `b6w_routes.test.ts` (the coordinator's names), not `b6_endings` /
+`b6_nolock`; a shared kit, `b6w_fixture.ts`, rather than helpers copied twice. The PNR's `save` event is snapshotted by the kit's host
+as it fires (§9.3), written through `SaveManager(MemoryBackend)` and read back (the fixture's `saveAndLoad`); every ending is played
+from the loaded copy. PROGRESS.md: the B6 line ticked and one neutral sub-line; STORY_PLAN's B6 pointer was already B6a's.
+
+**How the scripts play.** Nothing sets an Act 3 flag: every flag read back was written by a scene, a trigger, a world event, a letter
+or a timer. The long run (`earliest` → `readOrder` → `muster` → `court` → `register` → `home` → `archive` → `door` → `mast` →
+`summons` → `officer` → `charge` → `ready` → `goUp`): the fixture's `eve` (Acts 1–2 closed, the post not come) written through the
+codec and read back; the post at seven and the order read; the muster's letters (a thorough game met their recipients) and their
+replies; at the Court, Reserve 9's case (consent, else attendance) and Sister Calla's while she is held; the register bought back
+when catalogued; home on foot (the first midnight on Knock's map) and the arrival; inside by MOTHER's tray lift and the Archive opened
+by Ines, only when no archive is held; the column brought down and stood down at the yellow line; Signal Hill raised at the feed
+cabinet and kept by Knock; the card at seven, the close and who came; the officer's paper; the charge (the Shift's hand, the six
+cases, or black powder bought on the road and a trained hand); the readiness acts at the trestle; "(Go up.)" twice. **Training:**
+at the order's reading the player trains Speech 60, Science 65 and Explosives 40 (§3's trainable alternates: the reading desk, the
+charge, the Court's rail and the second hearing); some route tests set a skill for the check under test; the earned Tolls for the
+register (when short) are the only other stand-in. **History stand-ins** (said in each test): a door outcome, the arcology's flags and
+a few Act 1–2 flags for the coverage table's histories (the door's own routes are B6j's); the Unwritten turned and Bram's cut for the
+one save that holds every means.
+
+**Covered (counts):**
+- Each end from the loaded save, through its climax, every epilogue page and the credits, on the prepared game (6 ways) and on the
+  hostile game (6 ways; at its earliest save it holds none of the nine keys; its Act 3 alternates gather all of them, the file won
+  back on the steps); D at each price from the prepared game's own saves (7 acts held, 3 hard, 1 burning). For every epilogue played
+  (182 in the two files): every slide is shown exactly when its subject was met and on the first variant whose selector holds
+  (`ep_<slide>` records it), the pages in order; §6.3's ids by end; the modifiers' own pages (M4 cistern, M2 sink, M5 ashlands, M3
+  skirts, M6 steps, M7 ledger); the Leash's line by M1.
+- Routes: B by each means (charge, fire, coupling), the four ways out (Lowe, the drop, hands up, the fight won), the failed climb
+  (taken, or the fight), the fight lost; C's four answers (talked, shot, let, fought), the failed word, nobody (the blade given to the
+  wardens on the steps); D held (its one way), hard (read, read failed, the wardens, standing still), burning (talked, the wardens,
+  the failed word then the wardens, the fight won and lost, the failed word then the fight), each reader (self, Nine, Verity,
+  Seventeen); E with one, two and three clauses, struck and rewritten, opened again after closing, and the empty page.
+- What the climaxes write: Wren and Kes walking out of the vault (travelling) or found gone (waiting), and never met; Nine's plea at
+  the core's door or on the dark close; Tamsin's walk under A1 and E, her slide the chair's whether at the desk or waiting; Ilya's;
+  `ep_sky` holding the ledger's page whatever the count reads after.
+- A save at every beat of the five climaxes (fights included: saved mid-fight, the fight won and lost; and after the climax, the
+  epilogue offered again): 20 runs, every beat but the wrong end's guard, each loaded copy playing on to the same pages.
+- The coverage table: every value of M1–M7 reached by a played script (38 epilogues: 4 long-run saves × 6 ways, and 14 histories).
+- §3's table row by row from the hostile game (A for every verdict; B_MEANS three ways; C_BUYER from the officer and from the Grand
+  Factor; D_VOICE by the cabinet, the crown and the Hollow; D_READER five ways; D_PEOPLE four; D_ARCHIVE two; E_FILE won and failed;
+  E_PREC by the reserve, Calla and the recall; E_REG bought and lifted).
+- The property: from the earliest Act 3 save, each of the seven presets played forward reaches all six ways to the credits.
+- No loops: in all 916 trees (6,235 nodes reachable from a start) every node reaches an exit; in play, the 118 Act 3 trees under 7
+  presets at every stage and every end (and the long runs' own states) show an option at every node reached and can be left (about 820
+  nodes reached in play). Every flag Act 3 reads (about 670) is written with every value read; every thing known it reads is learned.
+
+**Content bugs found and fixed (minimal, in the slice that owns them):**
+1. **B6j** `a3_door.ts`: the opened door's line for Maud's wish read `a3_maud_wish` as a flag; B6f writes it as knowledge, so the line
+   never showed. Now `KNOWS('a3_maud_wish')`.
+2. **B6r** `a3_ends.ts`: a save on B's dark close resumed past the sash, so the folding (decision `a3_sash_left`) was lost. The dark
+   close stays due until the sash is left when worn; `b_sash` sets the flag `a3_sash_left` (registry, B6r block).
+3. **B6r** `a3_ends.ts`: a save in the vault after the way out was settled (Lowe, the drop, hands up, beaten, the fight won) resumed on
+   the close without going up the stair. New beat `b_stair` ("(Up the stair.)") between the fight and the close; every way up sets
+   `a3_vault_up` (registry). A save at A1's salute still resumes at the last page (only the words and the hours to six are skipped,
+   nothing recorded): tested as harmless.
+4. Fixture (`tests/a3_fixture.ts`): Dry Wells writes its outcome twice (`dw_outcome` and `dw_<outcome>`); the histories wrote only the
+   first, which left Ada's Act 1 topic with no answer in the fixture's games (not a content bug).
+
+**What §3 promised that cannot be reached (reported, not fixed):** E_PREC in one history. With Sister Calla freed at the Long Night
+(no case for her), Nine gone (no recall) and the Act 2 cases spent (the squatter's lost, no fines contested, no deed), the reserve's
+case is the only precedent Act 3 gives, and E needs two. Pinned by a test, and §3's promise for that history is an `it.fails` (it will
+turn red when a fix lands). A fix is a design call: e.g. a third Act 3 precedent (the Harbour court's passenger finding, B6k, or
+Carrick's, counted in `ca_precedents`), or the Court letting the designate bring an Act 2 case back. Everything else in §3 holds from
+the hostile game; the alternates that need a history (Nine, Seventeen, Verity, the Grand Factor alive, the Choir or the Wheel by
+letter, the copy with Tamsin's why) were each played where the history allows.
+**Also noted:** `md_fight` (Act 2's switch for the city at war with the player, read by every Meridian warden and by Act 3's recall
+wardens) is written by nothing; the flag check names it as the one dormant read. Ash at the fire has no option for `ash_orders` =
+carried, which the Long Night writes only with Ash gone (unreachable in play; the in-play check keeps hostile's Ash out of the
+everyone-present games for that reason).
+
+**For later:** the coordinator's decision on E_PREC (above); the runtime asks are B6r's, unchanged, plus the `b_stair` beat's goto.
 
 ## Defaults taken for the open questions (coordinator, 2026-11-17; the owner may override)
 1. After the ending: epilogue, credits, then the title screen; the named autosave at the point of no return stays

@@ -292,10 +292,16 @@ const B_BEATS = beats(DOWN, [
   { node: 'b_beaten', when: ALL(VAULT_FIGHTING, F('a3_vault_beaten')) },
   { node: 'b_fought', when: ALL(VAULT_FIGHTING, VAULT_WARDENS_DOWN) },
   { node: 'b_fighting', when: VAULT_FIGHTING },
-  { node: 'b_close', when: NOT(F('a3_dark')) },
+  // out of the dark but not yet up the stair (a save taken in the vault after the way out was settled): the stair, and up it
+  { node: 'b_stair', when: ALL(F('a3_vault_out'), NOT(F('a3_vault_up'))) },
+  // the dark close is due until it is seen, and (the sash worn) until the sash is left on the top step: a save on the dark close
+  // resumes there with the folding still to do
+  { node: 'b_close', when: ANY(NOT(F('a3_dark')), ALL(SASH_WORN, NOT(F('a3_sash_left')))) },
   { node: 'b_nine_close', when: ALL(ON_STEPS('nine'), NOT(IN(NINE))) },
   { node: 'b_end' },
 ]);
+/** Every way out of the dark goes up the stair to the close, and says so (`a3_vault_up`), so a save in between resumes on the stair. */
+const UP_THE_STAIR: Effect[] = [{ set: 'a3_vault_up' }, UP_TO_CLOSE, reopen(DOWN, 'The close')];
 const PETRA_FIRE: Cond = ALL(F('a3_unwritten', 'with_you'), NOT(PETRA_DEAD));
 const JUNIPER_FIRE: Cond = ALL(F('a3_unwritten', 'with_you'), PETRA_DEAD);
 const ASH_FIRE: Cond = ALL(NOT(F('a3_unwritten', 'with_you')), IN(ASH), ASH_REFUSED);
@@ -392,7 +398,7 @@ const DOWN_NODES: Record<string, NodeDef> = {
     effects: [{ set: 'a3_vault_out', value: 'lowe' }, { trust: { npc: LOWE, by: 5 } }, DECIDE('a3_vault_out', 'When the core was down, Captain Lowe came down the stair with the wardens, and stood aside, and let me go up past them.')],
     text: 'Lowe comes down the last of the stair with the lamp held up, and looks past you at the racks for a long time: the dark, the smell, the one note gone. Nobody behind him moves. "Stair," he says at last, to the wardens behind him, as if it were a word he had found in his pocket. "Then the pumps. In that order." He stands aside against the wall with the lamp, and so do they. As you pass him he says, without looking at you, "Mind the ninth step. It\'s worn." He does not say anything else.',
     again: 'Lowe against the wall, the lamp held up.',
-    options: [{ id: 'b.lowe.up', text: '(Go up past them.)', exit: true, effects: [UP_TO_CLOSE, reopen(DOWN, 'The close')] }],
+    options: [{ id: 'b.lowe.up', text: '(Go up past them.)', exit: true, effects: UP_THE_STAIR }],
   },
   b_drop: {
     speaker: 'narrator',
@@ -402,7 +408,7 @@ const DOWN_NODES: Record<string, NodeDef> = {
       { text: 'Forty metres of iron rungs in the dark, with the wardens\' lamp swinging in the drop room below and not once looking up. Third rung, thirtieth: you feel the scuffs of whoever went up here fast before you, and you know now why they went fast. At the top a letter\'s width of air that is not light any more, and a brass flap that opens outward, and the close.' },
     ],
     again: 'The slot at the Spire\'s foot.',
-    options: [{ id: 'b.drop.out', text: '(Out onto the close.)', exit: true, effects: [UP_TO_CLOSE, reopen(DOWN, 'The close')] }],
+    options: [{ id: 'b.drop.out', text: '(Out onto the close.)', exit: true, effects: UP_THE_STAIR }],
   },
   b_drop_seen: {
     speaker: 'narrator',
@@ -418,13 +424,18 @@ const DOWN_NODES: Record<string, NodeDef> = {
     effects: [{ set: 'a3_vault_out', value: 'taken' }, DECIDE('a3_vault_out', 'When the core was down I put my hands up for the Spire\'s wardens, and they took me up the stair, and found nothing in their orders about me.')],
     text: 'They take you up the stair by the arms, not roughly, a warden on each side and the lamps going ahead. Nobody speaks. At the top, two of them stay by the steel door.',
     again: 'The stair, a warden on each side.',
-    options: [{ id: 'b.taken.up', text: '(Up, with them.)', exit: true, effects: [UP_TO_CLOSE, reopen(DOWN, 'The close')] }],
+    options: [{ id: 'b.taken.up', text: '(Up, with them.)', exit: true, effects: UP_THE_STAIR }],
   },
   b_draw: {
     speaker: 'narrator',
     effects: [{ set: 'a3_vault_fight' }, { rep: { faction: 'wardens', respect: -15 } }, DECIDE('a3_vault_out', 'When the core was down and the Spire\'s wardens came down the stair to keep it, I fought them in the dark under the Spire.'), { event: 'combat' }],
     text: 'You draw. In the lamplight four wardens unsling their rifles in one movement, as they were drilled to, without hurry and without anger, because the clause says stair. "Stand down," the first of them says. You don\'t.',
     options: [{ id: 'b.draw.fight', text: '(Fight.)', exit: true }],
+  },
+  b_stair: {
+    speaker: 'narrator',
+    text: 'The stair up out of the dark, and the steel door open at the top of it.',
+    options: [{ id: 'b.stair.up', text: '(Up the stair.)', exit: true, effects: UP_THE_STAIR }],
   },
   b_fighting: {
     speaker: 'narrator',
@@ -436,14 +447,14 @@ const DOWN_NODES: Record<string, NodeDef> = {
     effects: [{ set: 'a3_vault_out', value: 'taken' }],
     text: 'You come to on the stair with a warden\'s coat folded under your head and nothing in your hands. Somebody has bound the cut on your arm with a strip of the Spire\'s grey. They take you up the rest of the stair by the arms, not roughly, and nobody speaks.',
     again: 'The stair, a warden on each side.',
-    options: [{ id: 'b.beaten.up', text: '(Up, with them.)', exit: true, effects: [UP_TO_CLOSE, reopen(DOWN, 'The close')] }],
+    options: [{ id: 'b.beaten.up', text: '(Up, with them.)', exit: true, effects: UP_THE_STAIR }],
   },
   b_fought: {
     speaker: 'narrator',
     effects: [{ set: 'a3_vault_out', value: 'fought' }, { xp: 100 }],
     text: 'Four wardens on the tile of the drop room, in the light of their own lamps, which go on burning where they fell. It is the only light left under the Spire. One of them is still holding the card the clause is printed on; you can read STAIR on it from where you stand.',
     again: 'The lamps on the tile. The stair.',
-    options: [{ id: 'b.fought.up', text: '(Up the stair.)', exit: true, effects: [UP_TO_CLOSE, reopen(DOWN, 'The close')] }],
+    options: [{ id: 'b.fought.up', text: '(Up the stair.)', exit: true, effects: UP_THE_STAIR }],
   },
   b_close: {
     speaker: 'narrator',
@@ -474,7 +485,7 @@ const DOWN_NODES: Record<string, NodeDef> = {
   },
   b_sash: {
     speaker: 'narrator',
-    effects: [DECIDE('a3_sash_left', 'When the city went dark I took the Magistrate\'s sash off on the Spire\'s steps, and folded it, and left it on the top step.')],
+    effects: [{ set: 'a3_sash_left' }, DECIDE('a3_sash_left', 'When the city went dark I took the Magistrate\'s sash off on the Spire\'s steps, and folded it, and left it on the top step.')],
     text: 'You take it off and fold it the way Three folded it, in thirds, the darned grey wool over the clasp, and leave it on the top step, where the photograph was made. The first act of the chair, and the last. Nobody on the close sees you do it. Nobody can see anything.',
     again: 'The sash, folded, on the top step.',
     options: B_BEATS.on('b_sash'),

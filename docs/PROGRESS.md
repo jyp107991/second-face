@@ -2091,7 +2091,7 @@ mid-range Android phone; deployed to Pages.
             roads while the Long Night is called). Activities: picking runs in three bands, a room to rent (safehouse), four
             merchants. The flags B6 reads are listed in the notes. `tests/b5d.test.ts` (32: the places, every end of every
             Ashlands line, and the alliance played strong, mixed, thin, as a truce, failed and as none). No engine change.
-- [ ] B6 **Act 3 + endings**: return, lockdown, Spire, finale, endings A–E + modifiers, epilogue slides.
+- [x] B6 **Act 3 + endings**: return, lockdown, Spire, finale, endings A–E + modifiers, epilogue slides.
       - [x] B6a **Act 3's groundwork** DONE 2026-11-17 (content; no engine change; not exported): `world/a3_conds.ts` (the
             shared conditions every Act 3 slice reads: the Long Night read only through aliases, now reconciled to the flags
             B5d writes; the arcology slice's flags read only here, each with an Act 3 alternate; the five gates and their
@@ -2238,6 +2238,13 @@ mid-range Android phone; deployed to Pages.
             left and resumed. Seven new background people, placements and triggers on the last room and the square above (both
             generators first confirmed to reproduce the committed maps); two earlier pages and one line made to agree with the
             new scenes. `tests/b6r.test.ts` (32). Next: B6w.
+      - [x] B6w **the ending playtests and the no-lockout proof: Act 3 complete** DONE 2026-11-17 (tests; three small content fixes;
+            no engine change; not exported; not committed): every ending played headless from the earliest Act 3 save through the
+            act's own scenes to the named save before the final climb, then from the loaded save through its climax and every closing
+            page to the credits, on a thorough game and on the worst plausible one, every route and failed check, a save at every
+            beat; the "no ending locked out by earlier choices" promise checked key by key (one gap found in one rare history,
+            reported in the story notes); no conversation in the game that cannot be left; every flag read is written.
+            `tests/b6w.test.ts` (16), `tests/b6w_routes.test.ts` (22 + 1 known gap), `tests/b6w_fixture.ts`. Next: B7.
 - [ ] B7 **Systemic depth + presentation**: ruins templates, bounty/gig templates, rare encounters, music
       and ambience, title art, menus, credits, settings, tips.
 - [ ] B8 **Balance, performance, deploy**: economy sim pass, difficulty, accessibility, Android perf
