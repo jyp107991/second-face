@@ -174,6 +174,12 @@ export const md_spire: MapDef = {
       id: "ar_board"
     },
     {
+      kind: "fire_barrel",
+      x: 29,
+      y: 28,
+      id: "a3_fire"
+    },
+    {
       kind: "lamp_post",
       x: 12,
       y: 30
@@ -791,6 +797,10 @@ export const md_spire: MapDef = {
     ar_board: {
       dialogue: "d_ar_board",
       name: "The works board"
+    },
+    a3_fire: {
+      dialogue: "d_a3_fire",
+      name: "A fire barrel"
     },
     ar_plinth: {
       dialogue: "d_ar_plinth",

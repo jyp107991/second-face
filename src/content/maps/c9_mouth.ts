@@ -816,7 +816,7 @@ export const c9_mouth: MapDef = {
       name: "The drop-hatch"
     },
     grille: {
-      dialogue: "d_kn_grille",
+      dialogue: "d_a3_grille",
       name: "The Grille"
     },
     great_door: {
@@ -1146,6 +1146,106 @@ export const c9_mouth: MapDef = {
     out_b: {
       x: 30,
       y: 17
+    },
+    lowe_camp: {
+      x: 22,
+      y: 5
+    },
+    camp_tent_a: {
+      x: 16,
+      y: 3
+    },
+    camp_tent_b: {
+      x: 17,
+      y: 6
+    },
+    camp_tent_c: {
+      x: 15,
+      y: 9
+    },
+    ward_camp: {
+      x: 19,
+      y: 4
+    },
+    ward_stand: {
+      x: 31,
+      y: 5
+    },
+    ward_road: {
+      x: 24,
+      y: 9
+    },
+    ward_apron: {
+      x: 34,
+      y: 40
+    },
+    cadet_post: {
+      x: 21,
+      y: 7
+    },
+    linnet_hatch: {
+      x: 25,
+      y: 39
+    },
+    dace_boards: {
+      x: 17,
+      y: 19
+    },
+    guild_hale: {
+      x: 42,
+      y: 2
+    },
+    guild_hand_a: {
+      x: 45,
+      y: 2
+    },
+    guild_hand_b: {
+      x: 47,
+      y: 3
+    },
+    dace_guild: {
+      x: 43,
+      y: 1
+    },
+    corin_slope: {
+      x: 42,
+      y: 9
+    },
+    dogs_slope: {
+      x: 47,
+      y: 33
+    },
+    uw_lead: {
+      x: 19,
+      y: 39
+    },
+    uw_a: {
+      x: 18,
+      y: 41
+    },
+    uw_b: {
+      x: 20,
+      y: 42
+    },
+    tam_door: {
+      x: 27,
+      y: 42
+    },
+    apron_1: {
+      x: 25,
+      y: 40
+    },
+    apron_2: {
+      x: 30,
+      y: 40
+    },
+    apron_3: {
+      x: 26,
+      y: 38
+    },
+    apron_4: {
+      x: 31,
+      y: 38
     }
   },
   npcs: [
@@ -1155,18 +1255,27 @@ export const c9_mouth: MapDef = {
       y: 18,
       facing: 2,
       if: {
-        not: {
-          all: [
-            {
-              flag: "kn_stranger_dead"
-            },
-            {
-              not: {
-                flag: "kn_outriders"
-              }
+        all: [
+          {
+            not: {
+              all: [
+                {
+                  flag: "kn_stranger_dead"
+                },
+                {
+                  not: {
+                    flag: "kn_outriders"
+                  }
+                }
+              ]
             }
-          ]
-        }
+          },
+          {
+            not: {
+              flag: "a3_open"
+            }
+          }
+        ]
       }
     },
     {
@@ -1179,11 +1288,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_stranger_dead"
+            all: [
+              {
+                flag: "kn_stranger_dead"
+              },
+              {
+                not: {
+                  flag: "kn_outriders"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_outriders"
+              flag: "a3_open"
             }
           }
         ]
@@ -1195,14 +1313,23 @@ export const c9_mouth: MapDef = {
       y: 21,
       facing: 1,
       if: {
-        any: [
+        all: [
           {
-            not: {
-              flag: "kn_linnet_away"
-            }
+            any: [
+              {
+                not: {
+                  flag: "kn_linnet_away"
+                }
+              },
+              {
+                flag: "kn_linnet_home"
+              }
+            ]
           },
           {
-            flag: "kn_linnet_home"
+            not: {
+              flag: "a3_open"
+            }
           }
         ]
       }
@@ -1217,11 +1344,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_linnet_away"
+            all: [
+              {
+                flag: "kn_linnet_away"
+              },
+              {
+                not: {
+                  flag: "kn_linnet_home"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_linnet_home"
+              flag: "a3_open"
             }
           }
         ]
@@ -1233,18 +1369,27 @@ export const c9_mouth: MapDef = {
       y: 8,
       facing: 3,
       if: {
-        not: {
-          all: [
-            {
-              flag: "kn_rib_open"
-            },
-            {
-              not: {
-                flag: "kn_rib_done"
-              }
+        all: [
+          {
+            not: {
+              all: [
+                {
+                  flag: "kn_rib_open"
+                },
+                {
+                  not: {
+                    flag: "kn_rib_done"
+                  }
+                }
+              ]
             }
-          ]
-        }
+          },
+          {
+            not: {
+              flag: "a3_open"
+            }
+          }
+        ]
       }
     },
     {
@@ -1257,11 +1402,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_rib_open"
+            all: [
+              {
+                flag: "kn_rib_open"
+              },
+              {
+                not: {
+                  flag: "kn_rib_done"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_rib_done"
+              flag: "a3_open"
             }
           }
         ]
@@ -1271,13 +1425,23 @@ export const c9_mouth: MapDef = {
       def: "npc_kn_corin",
       x: 44,
       y: 8,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_kn_factor",
       x: 36,
       y: 4,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_kn_buyer",
@@ -1287,11 +1451,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_linnet_away"
+            all: [
+              {
+                flag: "kn_linnet_away"
+              },
+              {
+                not: {
+                  flag: "kn_linnet_settled"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_linnet_settled"
+              flag: "a3_open"
             }
           }
         ]
@@ -1301,25 +1474,45 @@ export const c9_mouth: MapDef = {
       def: "npc_kn_r1",
       x: 14,
       y: 37,
-      facing: 0
+      facing: 0,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_kn_r2",
       x: 24,
       y: 30,
-      facing: 2
+      facing: 2,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_kn_r3",
       x: 20,
       y: 21,
-      facing: 1
+      facing: 1,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_kn_r4",
       x: 45,
       y: 29,
-      facing: 3
+      facing: 3,
+      if: {
+        not: {
+          flag: "a3_open"
+        }
+      }
     },
     {
       def: "npc_kn_rib_a",
@@ -1328,19 +1521,28 @@ export const c9_mouth: MapDef = {
       facing: 2,
       schedule: [],
       if: {
-        not: {
-          any: [
-            {
-              flag: "kn_rib_shared"
-            },
-            {
-              flag: "kn_rib_scared"
-            },
-            {
-              flag: "kn_rib_done"
+        all: [
+          {
+            not: {
+              any: [
+                {
+                  flag: "kn_rib_shared"
+                },
+                {
+                  flag: "kn_rib_scared"
+                },
+                {
+                  flag: "kn_rib_done"
+                }
+              ]
             }
-          ]
-        }
+          },
+          {
+            not: {
+              flag: "a3_open"
+            }
+          }
+        ]
       }
     },
     {
@@ -1350,19 +1552,28 @@ export const c9_mouth: MapDef = {
       facing: 1,
       schedule: [],
       if: {
-        not: {
-          any: [
-            {
-              flag: "kn_rib_shared"
-            },
-            {
-              flag: "kn_rib_scared"
-            },
-            {
-              flag: "kn_rib_done"
+        all: [
+          {
+            not: {
+              any: [
+                {
+                  flag: "kn_rib_shared"
+                },
+                {
+                  flag: "kn_rib_scared"
+                },
+                {
+                  flag: "kn_rib_done"
+                }
+              ]
             }
-          ]
-        }
+          },
+          {
+            not: {
+              flag: "a3_open"
+            }
+          }
+        ]
       }
     },
     {
@@ -1373,11 +1584,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_night"
+            all: [
+              {
+                flag: "kn_night"
+              },
+              {
+                not: {
+                  flag: "kn_stranger_dead"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_stranger_dead"
+              flag: "a3_open"
             }
           }
         ]
@@ -1391,11 +1611,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_outriders"
+            all: [
+              {
+                flag: "kn_outriders"
+              },
+              {
+                not: {
+                  flag: "kn_outriders_gone"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_outriders_gone"
+              flag: "a3_open"
             }
           }
         ]
@@ -1409,11 +1638,20 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_outriders"
+            all: [
+              {
+                flag: "kn_outriders"
+              },
+              {
+                not: {
+                  flag: "kn_outriders_gone"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_outriders_gone"
+              flag: "a3_open"
             }
           }
         ]
@@ -1427,11 +1665,839 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            flag: "kn_outriders"
+            all: [
+              {
+                flag: "kn_outriders"
+              },
+              {
+                not: {
+                  flag: "kn_outriders_gone"
+                }
+              }
+            ]
           },
           {
             not: {
-              flag: "kn_outriders_gone"
+              flag: "a3_open"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_maud",
+      id: "npc_kn_maud_a3",
+      x: 24,
+      y: 39,
+      facing: 0,
+      dialogue: "d_a3_maud",
+      schedule: [
+        {
+          from: 6,
+          to: 12,
+          spot: "maud_hatch",
+          activity: "idle"
+        },
+        {
+          from: 12,
+          to: 18,
+          spot: "maud_post",
+          activity: "work"
+        },
+        {
+          from: 18,
+          to: 22,
+          spot: "maud_fire",
+          activity: "idle"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "maud_bed",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        flag: "a3_open"
+      }
+    },
+    {
+      def: "npc_kn_linnet",
+      id: "npc_kn_linnet_a3",
+      x: 25,
+      y: 39,
+      facing: 0,
+      dialogue: "d_a3_linnet",
+      schedule: [
+        {
+          from: 6,
+          to: 12,
+          spot: "linnet_hatch",
+          activity: "work"
+        },
+        {
+          from: 12,
+          to: 18,
+          spot: "linnet_square",
+          activity: "work"
+        },
+        {
+          from: 18,
+          to: 22,
+          spot: "linnet_fire",
+          activity: "idle"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "linnet_cot",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            any: [
+              {
+                flag: "a3_linnet_down"
+              },
+              {
+                all: [
+                  {
+                    not: {
+                      flag: "kn_linnet_will_run"
+                    }
+                  },
+                  {
+                    not: {
+                      flag: "kn_linnet_to_shale"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_linnet",
+      id: "npc_kn_linnet_column",
+      x: 21,
+      y: 7,
+      facing: 1,
+      dialogue: "d_a3_linnet",
+      schedule: [
+        {
+          from: 6,
+          to: 22,
+          spot: "cadet_post",
+          activity: "work"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "camp_tent_c",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                flag: "kn_linnet_will_run"
+              },
+              {
+                not: {
+                  flag: "a3_linnet_down"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_linnet",
+      id: "npc_kn_linnet_dogs",
+      x: 47,
+      y: 33,
+      facing: 3,
+      dialogue: "d_a3_linnet",
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            all: [
+              {
+                all: [
+                  {
+                    flag: "kn_linnet_to_shale"
+                  },
+                  {
+                    not: {
+                      flag: "kn_linnet_will_run"
+                    }
+                  }
+                ]
+              },
+              {
+                flag: "a3_ally_dogs"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_dace",
+      id: "npc_kn_dace_a3",
+      x: 17,
+      y: 19,
+      facing: 3,
+      dialogue: "d_a3_dace",
+      schedule: [
+        {
+          from: 7,
+          to: 14,
+          spot: "dace_boards",
+          activity: "work"
+        },
+        {
+          from: 14,
+          to: 19,
+          spot: "dace_square",
+          activity: "idle"
+        },
+        {
+          from: 19,
+          to: 23,
+          spot: "dace_shack",
+          activity: "idle"
+        },
+        {
+          from: 23,
+          to: 7,
+          spot: "dace_shack",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              all: [
+                {
+                  flag: "a3_guild_in"
+                },
+                {
+                  not: {
+                    any: [
+                      {
+                        flag: "a3_dace",
+                        eq: "square"
+                      },
+                      {
+                        flag: "a3_dace",
+                        eq: "quit"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_dace",
+      id: "npc_kn_dace_guild",
+      x: 43,
+      y: 1,
+      facing: 2,
+      dialogue: "d_a3_dace",
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            flag: "a3_guild_in"
+          },
+          {
+            not: {
+              any: [
+                {
+                  flag: "a3_dace",
+                  eq: "square"
+                },
+                {
+                  flag: "a3_dace",
+                  eq: "quit"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_corin",
+      id: "npc_kn_corin_a3",
+      x: 42,
+      y: 9,
+      facing: 3,
+      dialogue: "d_a3_corin",
+      schedule: [
+        {
+          from: 5,
+          to: 21,
+          spot: "corin_slope",
+          activity: "work"
+        },
+        {
+          from: 21,
+          to: 5,
+          spot: "corin_bed",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_corin",
+              eq: "down"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_corin",
+      id: "npc_kn_corin_down",
+      x: 45,
+      y: 15,
+      facing: 2,
+      dialogue: "d_a3_corin",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            flag: "a3_corin",
+            eq: "down"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_factor",
+      id: "npc_kn_factor_a3",
+      x: 36,
+      y: 4,
+      facing: 2,
+      dialogue: "d_a3_orme",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            all: [
+              {
+                not: {
+                  dead: "npc_kn_factor"
+                }
+              },
+              {
+                not: {
+                  dead: "npc_kn_factor_a3"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_r1",
+      id: "npc_kn_r1_a3",
+      x: 14,
+      y: 37,
+      facing: 0,
+      dialogue: "d_a3_kn_r1",
+      if: {
+        flag: "a3_open"
+      }
+    },
+    {
+      def: "npc_kn_r2",
+      id: "npc_kn_r2_a3",
+      x: 24,
+      y: 30,
+      facing: 2,
+      dialogue: "d_a3_kn_r2",
+      if: {
+        flag: "a3_open"
+      }
+    },
+    {
+      def: "npc_kn_r3",
+      id: "npc_kn_r3_a3",
+      x: 20,
+      y: 21,
+      facing: 1,
+      dialogue: "d_a3_kn_r3",
+      if: {
+        flag: "a3_open"
+      }
+    },
+    {
+      def: "npc_kn_r4",
+      id: "npc_kn_r4_a3",
+      x: 45,
+      y: 29,
+      facing: 3,
+      dialogue: "d_a3_kn_r4",
+      if: {
+        flag: "a3_open"
+      }
+    },
+    {
+      def: "npc_md_01",
+      x: 22,
+      y: 5,
+      facing: 1,
+      dialogue: "d_a3_lowe",
+      schedule: [
+        {
+          from: 6,
+          to: 22,
+          spot: "lowe_camp",
+          activity: "work"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "camp_tent_a",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_md_01"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_md_12",
+      x: 22,
+      y: 5,
+      facing: 1,
+      dialogue: "d_a3_lowe",
+      schedule: [
+        {
+          from: 6,
+          to: 22,
+          spot: "lowe_camp",
+          activity: "work"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "camp_tent_a",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                not: {
+                  flag: "a3_c9"
+                }
+              }
+            ]
+          },
+          {
+            dead: "npc_md_01"
+          },
+          {
+            not: {
+              dead: "npc_md_12"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g3",
+      x: 19,
+      y: 4,
+      facing: 1,
+      schedule: [
+        {
+          from: 6,
+          to: 22,
+          spot: "ward_camp",
+          activity: "work"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "camp_tent_b",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_c9"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g4",
+      x: 31,
+      y: 5,
+      facing: 3,
+      schedule: [
+        {
+          from: 6,
+          to: 22,
+          spot: "ward_stand",
+          activity: "work"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "camp_tent_b",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_c9"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g5",
+      x: 24,
+      y: 9,
+      facing: 2,
+      schedule: [
+        {
+          from: 6,
+          to: 22,
+          spot: "ward_road",
+          activity: "patrol"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "camp_tent_c",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_c9"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g6",
+      x: 34,
+      y: 40,
+      facing: 0,
+      schedule: [
+        {
+          from: 6,
+          to: 22,
+          spot: "ward_apron",
+          activity: "work"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "camp_tent_a",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_c9"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_out_lead",
+      id: "npc_kn_out_lead_a3",
+      x: 42,
+      y: 2,
+      facing: 2,
+      dialogue: "d_a3_hale",
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            flag: "a3_guild_in"
+          },
+          {
+            all: [
+              {
+                not: {
+                  dead: "npc_kn_out_lead"
+                }
+              },
+              {
+                not: {
+                  dead: "npc_kn_out_lead_a3"
+                }
+              },
+              {
+                not: {
+                  flag: "a3_hale",
+                  eq: "gone"
+                }
+              },
+              {
+                not: {
+                  flag: "a3_hale",
+                  eq: "dead"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g11",
+      x: 45,
+      y: 2,
+      facing: 2,
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            flag: "a3_hounds_in"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g12",
+      x: 47,
+      y: 3,
+      facing: 3,
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            flag: "a3_hounds_in"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_of_02",
+      x: 19,
+      y: 39,
+      facing: 1,
+      dialogue: "d_a3_petra",
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                hour: {
+                  from: 21,
+                  to: 4
+                }
+              },
+              {
+                not: {
+                  flag: "a3_unwritten"
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "npc_of_02"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_u1",
+      x: 19,
+      y: 39,
+      facing: 1,
+      schedule: [],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_open"
+              },
+              {
+                hour: {
+                  from: 21,
+                  to: 4
+                }
+              },
+              {
+                not: {
+                  flag: "a3_unwritten"
+                }
+              }
+            ]
+          },
+          {
+            dead: "npc_of_02"
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_u2",
+      x: 18,
+      y: 41,
+      facing: 1,
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            hour: {
+              from: 21,
+              to: 4
+            }
+          },
+          {
+            not: {
+              flag: "a3_unwritten"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_u3",
+      x: 20,
+      y: 42,
+      facing: 1,
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            hour: {
+              from: 21,
+              to: 4
+            }
+          },
+          {
+            not: {
+              flag: "a3_unwritten"
             }
           }
         ]
@@ -1601,6 +2667,165 @@ export const c9_mouth: MapDef = {
           }
         }
       ]
+    },
+    {
+      id: "a3_guild",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 26,
+      if: {
+        all: [
+          {
+            flag: "a3_order_read"
+          },
+          {
+            any: [
+              {
+                flag: "ln_alliance",
+                eq: "guild"
+              },
+              {
+                flag: "hc_offer",
+                eq: "accepted"
+              },
+              {
+                flag: "hc_offer",
+                eq: "feigned"
+              },
+              {
+                flag: "rc_line",
+                eq: "guild"
+              },
+              {
+                flag: "nw_controllers",
+                eq: "guild"
+              }
+            ]
+          }
+        ]
+      },
+      effects: [
+        {
+          set: "a3_guild_in"
+        }
+      ]
+    },
+    {
+      id: "a3_hounds",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 26,
+      if: {
+        all: [
+          {
+            flag: "a3_order_read"
+          },
+          {
+            all: [
+              {
+                any: [
+                  {
+                    flag: "ln_alliance",
+                    eq: "guild"
+                  },
+                  {
+                    flag: "hc_offer",
+                    eq: "accepted"
+                  },
+                  {
+                    flag: "hc_offer",
+                    eq: "feigned"
+                  },
+                  {
+                    flag: "rc_line",
+                    eq: "guild"
+                  },
+                  {
+                    flag: "nw_controllers",
+                    eq: "guild"
+                  }
+                ]
+              },
+              {
+                any: [
+                  {
+                    flag: "nw_controllers",
+                    eq: "guild"
+                  },
+                  {
+                    flag: "ln_alliance",
+                    eq: "guild"
+                  },
+                  {
+                    flag: "an_reserve",
+                    eq: "concern"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      effects: [
+        {
+          set: "a3_hounds_in"
+        }
+      ]
+    },
+    {
+      id: "a3_arrive",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 26,
+      if: {
+        flag: "a3_order_read"
+      },
+      effects: [
+        {
+          set: "a3_at_knock"
+        },
+        {
+          set: "a3_in_sallow"
+        },
+        {
+          learn: "loc_cistern9"
+        },
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_home",
+            name: "Knock"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_camp",
+      x: 13,
+      y: 1,
+      w: 11,
+      h: 12,
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              flag: "a3_c9"
+            }
+          }
+        ]
+      },
+      text: "The column's camp: grey tents in a row, pegged square to the wind; a table under a canvas fly with a lamp on it and the order under a stone; water barrels stencilled PRECINCT SUPPLY under a tarp, more than four wardens could drink in a month. Nobody is cleaning a rifle. That is the first thing you notice, and the thing you keep noticing.",
+      effects: [
+        {
+          learn: "a3_column_seen"
+        }
+      ]
     }
   ],
   extras: [
@@ -1624,7 +2849,7 @@ export const c9_mouth: MapDef = {
         to: 18
       },
       barks: [
-        "Hatch day. Wool for water, same as my mother did.",
+        "Wool for water. Same as my mother did, and hers.",
         "MOTHER says thank you. MOTHER always says thank you.",
         "Get your goats off the apron, Afua!"
       ]

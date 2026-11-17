@@ -15,6 +15,29 @@ import json, os, re
 ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
 W, H = 56, 46
 
+# Act 3 (B6f, Knock under the column): the conditions the Act 3 placements and triggers read, mirrored from
+# src/content/world/a3_conds.ts (tests/b6f.test.ts checks each against the TS one on the fixture's states).
+A3 = {'flag': 'a3_open'}
+NOT_A3 = {'not': A3}
+ORDER_READ = {'flag': 'a3_order_read'}
+COLUMN_HERE = {'all': [A3, {'not': {'flag': 'a3_c9'}}]}
+LOWE_DEAD = {'dead': 'npc_md_01'}
+LIN_RAN = {'flag': 'kn_linnet_will_run'}
+LIN_TO_SHALE = {'all': [{'flag': 'kn_linnet_to_shale'}, {'not': LIN_RAN}]}
+LINNET_COLUMN = {'all': [LIN_RAN, {'not': {'flag': 'a3_linnet_down'}}]}
+LINNET_DOGS = {'all': [LIN_TO_SHALE, {'flag': 'a3_ally_dogs'}]}
+LINNET_KNOCK = {'any': [{'flag': 'a3_linnet_down'}, {'all': [{'not': LIN_RAN}, {'not': {'flag': 'kn_linnet_to_shale'}}]}]}
+GUILD_IN_PLAY = {'any': [{'flag': 'ln_alliance', 'eq': 'guild'}, {'flag': 'hc_offer', 'eq': 'accepted'}, {'flag': 'hc_offer', 'eq': 'feigned'},
+                         {'flag': 'rc_line', 'eq': 'guild'}, {'flag': 'nw_controllers', 'eq': 'guild'}]}
+HOUNDS_IN_PLAY = {'all': [GUILD_IN_PLAY, {'any': [{'flag': 'nw_controllers', 'eq': 'guild'}, {'flag': 'ln_alliance', 'eq': 'guild'}, {'flag': 'an_reserve', 'eq': 'concern'}]}]}
+GUILD_IN = {'flag': 'a3_guild_in'}
+HOUNDS_IN = {'flag': 'a3_hounds_in'}
+DACE_FREE = {'any': [{'flag': 'a3_dace', 'eq': 'square'}, {'flag': 'a3_dace', 'eq': 'quit'}]}
+ORME_HERE = {'all': [{'not': {'dead': 'npc_kn_factor'}}, {'not': {'dead': 'npc_kn_factor_a3'}}]}
+HALE_HERE = {'all': [{'not': {'dead': 'npc_kn_out_lead'}}, {'not': {'dead': 'npc_kn_out_lead_a3'}}, {'not': {'flag': 'a3_hale', 'eq': 'gone'}}, {'not': {'flag': 'a3_hale', 'eq': 'dead'}}]}
+PETRA_DEAD = {'dead': 'npc_of_02'}
+UNWRITTEN_HERE = {'all': [A3, {'hour': {'from': 21, 'to': 4}}, {'not': {'flag': 'a3_unwritten'}}]}
+
 
 def ts(obj):
     s = json.dumps(obj, indent=2)
@@ -127,6 +150,83 @@ for (k, x, y, rot) in DRESSING:
     _taken.add((x, y))
     props.append({'kind': k, 'x': x, 'y': y, 'rot': rot} if rot else {'kind': k, 'x': x, 'y': y})
 
+# Act 3 (B6f): Knock under the column. The column camps on the flat west of the toll road, opposite the stand (its tents and
+# its car are the runtime's to build: props have no conditions, so the camp is people, a trigger's description and the
+# runtime's place build, B6 plan §9.5); the guild's party, when the guild is in play, on its own ground east of the stand;
+# the Unwritten at the dark west end of the apron by night. Spots for later slices too: Tamsin in the door (B6j), the
+# residents on the apron after an opened door (B6k).
+A3_SPOTS = {
+    'lowe_camp': {'x': 22, 'y': 5}, 'camp_tent_a': {'x': 16, 'y': 3}, 'camp_tent_b': {'x': 17, 'y': 6}, 'camp_tent_c': {'x': 15, 'y': 9},
+    'ward_camp': {'x': 19, 'y': 4}, 'ward_stand': {'x': 31, 'y': 5}, 'ward_road': {'x': 24, 'y': 9}, 'ward_apron': {'x': 34, 'y': 40},
+    'cadet_post': {'x': 21, 'y': 7}, 'linnet_hatch': {'x': 25, 'y': 39}, 'dace_boards': {'x': 17, 'y': 19},
+    'guild_hale': {'x': 42, 'y': 2}, 'guild_hand_a': {'x': 45, 'y': 2}, 'guild_hand_b': {'x': 47, 'y': 3}, 'dace_guild': {'x': 43, 'y': 1},
+    'corin_slope': {'x': 42, 'y': 9}, 'dogs_slope': {'x': 47, 'y': 33},
+    'uw_lead': {'x': 19, 'y': 39}, 'uw_a': {'x': 18, 'y': 41}, 'uw_b': {'x': 20, 'y': 42},
+    'tam_door': {'x': 27, 'y': 42}, 'apron_1': {'x': 25, 'y': 40}, 'apron_2': {'x': 30, 'y': 40}, 'apron_3': {'x': 26, 'y': 38}, 'apron_4': {'x': 31, 'y': 38},
+}
+
+
+def sched(*entries):
+    return [{'from': a, 'to': b, 'spot': s, 'activity': act} for (a, b, s, act) in entries]
+
+
+A3_NPCS = [
+    # Knock's people in Act 3: Maud at the hatch she can't open, Linnet by her fate, Dace (the guild's guide if it came),
+    # Corin on the slope (or down, if asked), Orme at her stand, Knock's others
+    {'def': 'npc_kn_maud', 'id': 'npc_kn_maud_a3', 'x': 24, 'y': 39, 'facing': 0, 'dialogue': 'd_a3_maud',
+     'schedule': sched((6, 12, 'maud_hatch', 'idle'), (12, 18, 'maud_post', 'work'), (18, 22, 'maud_fire', 'idle'), (22, 6, 'maud_bed', 'sleep')), 'if': A3},
+    {'def': 'npc_kn_linnet', 'id': 'npc_kn_linnet_a3', 'x': 25, 'y': 39, 'facing': 0, 'dialogue': 'd_a3_linnet',
+     'schedule': sched((6, 12, 'linnet_hatch', 'work'), (12, 18, 'linnet_square', 'work'), (18, 22, 'linnet_fire', 'idle'), (22, 6, 'linnet_cot', 'sleep')), 'if': {'all': [A3, LINNET_KNOCK]}},
+    {'def': 'npc_kn_linnet', 'id': 'npc_kn_linnet_column', 'x': 21, 'y': 7, 'facing': 1, 'dialogue': 'd_a3_linnet',
+     'schedule': sched((6, 22, 'cadet_post', 'work'), (22, 6, 'camp_tent_c', 'sleep')), 'if': {'all': [COLUMN_HERE, LINNET_COLUMN]}},
+    {'def': 'npc_kn_linnet', 'id': 'npc_kn_linnet_dogs', 'x': 47, 'y': 33, 'facing': 3, 'dialogue': 'd_a3_linnet', 'schedule': [], 'if': {'all': [A3, LINNET_DOGS]}},
+    {'def': 'npc_kn_dace', 'id': 'npc_kn_dace_a3', 'x': 17, 'y': 19, 'facing': 3, 'dialogue': 'd_a3_dace',
+     'schedule': sched((7, 14, 'dace_boards', 'work'), (14, 19, 'dace_square', 'idle'), (19, 23, 'dace_shack', 'idle'), (23, 7, 'dace_shack', 'sleep')),
+     'if': {'all': [A3, {'not': {'all': [GUILD_IN, {'not': DACE_FREE}]}}]}},
+    {'def': 'npc_kn_dace', 'id': 'npc_kn_dace_guild', 'x': 43, 'y': 1, 'facing': 2, 'dialogue': 'd_a3_dace', 'schedule': [], 'if': {'all': [A3, GUILD_IN, {'not': DACE_FREE}]}},
+    {'def': 'npc_kn_corin', 'id': 'npc_kn_corin_a3', 'x': 42, 'y': 9, 'facing': 3, 'dialogue': 'd_a3_corin',
+     'schedule': sched((5, 21, 'corin_slope', 'work'), (21, 5, 'corin_bed', 'sleep')), 'if': {'all': [A3, {'not': {'flag': 'a3_corin', 'eq': 'down'}}]}},
+    {'def': 'npc_kn_corin', 'id': 'npc_kn_corin_down', 'x': 45, 'y': 15, 'facing': 2, 'dialogue': 'd_a3_corin', 'if': {'all': [A3, {'flag': 'a3_corin', 'eq': 'down'}]}},
+    {'def': 'npc_kn_factor', 'id': 'npc_kn_factor_a3', 'x': 36, 'y': 4, 'facing': 2, 'dialogue': 'd_a3_orme', 'if': {'all': [A3, ORME_HERE]}},
+    {'def': 'npc_kn_r1', 'id': 'npc_kn_r1_a3', 'x': 14, 'y': 37, 'facing': 0, 'dialogue': 'd_a3_kn_r1', 'if': A3},
+    {'def': 'npc_kn_r2', 'id': 'npc_kn_r2_a3', 'x': 24, 'y': 30, 'facing': 2, 'dialogue': 'd_a3_kn_r2', 'if': A3},
+    {'def': 'npc_kn_r3', 'id': 'npc_kn_r3_a3', 'x': 20, 'y': 21, 'facing': 1, 'dialogue': 'd_a3_kn_r3', 'if': A3},
+    {'def': 'npc_kn_r4', 'id': 'npc_kn_r4_a3', 'x': 45, 'y': 29, 'facing': 3, 'dialogue': 'd_a3_kn_r4', 'if': A3},
+    # the column: Captain Lowe (or Sergeant Reyes if he is dead) and four wardens, until the door is settled
+    {'def': 'npc_md_01', 'x': 22, 'y': 5, 'facing': 1, 'dialogue': 'd_a3_lowe', 'schedule': sched((6, 22, 'lowe_camp', 'work'), (22, 6, 'camp_tent_a', 'sleep')),
+     'if': {'all': [COLUMN_HERE, {'not': LOWE_DEAD}]}},
+    {'def': 'npc_md_12', 'x': 22, 'y': 5, 'facing': 1, 'dialogue': 'd_a3_lowe', 'schedule': sched((6, 22, 'lowe_camp', 'work'), (22, 6, 'camp_tent_a', 'sleep')),
+     'if': {'all': [COLUMN_HERE, LOWE_DEAD, {'not': {'dead': 'npc_md_12'}}]}},
+    {'def': 'npc_a3_g3', 'x': 19, 'y': 4, 'facing': 1, 'schedule': sched((6, 22, 'ward_camp', 'work'), (22, 6, 'camp_tent_b', 'sleep')), 'if': COLUMN_HERE},
+    {'def': 'npc_a3_g4', 'x': 31, 'y': 5, 'facing': 3, 'schedule': sched((6, 22, 'ward_stand', 'work'), (22, 6, 'camp_tent_b', 'sleep')), 'if': COLUMN_HERE},
+    {'def': 'npc_a3_g5', 'x': 24, 'y': 9, 'facing': 2, 'schedule': sched((6, 22, 'ward_road', 'patrol'), (22, 6, 'camp_tent_c', 'sleep')), 'if': COLUMN_HERE},
+    {'def': 'npc_a3_g6', 'x': 34, 'y': 40, 'facing': 0, 'schedule': sched((6, 22, 'ward_apron', 'work'), (22, 6, 'camp_tent_a', 'sleep')), 'if': COLUMN_HERE},
+    # the guild's party when the guild is in play: Hale if he lives, the handlers when it brought hounds (the hounds are the
+    # runtime's stand-ins until a live hound exists)
+    {'def': 'npc_kn_out_lead', 'id': 'npc_kn_out_lead_a3', 'x': 42, 'y': 2, 'facing': 2, 'dialogue': 'd_a3_hale', 'schedule': [], 'if': {'all': [A3, GUILD_IN, HALE_HERE]}},
+    {'def': 'npc_a3_g11', 'x': 45, 'y': 2, 'facing': 2, 'schedule': [], 'if': {'all': [A3, HOUNDS_IN]}},
+    {'def': 'npc_a3_g12', 'x': 47, 'y': 3, 'facing': 3, 'schedule': [], 'if': {'all': [A3, HOUNDS_IN]}},
+    # the Unwritten by night: Petra, or the first of them if she is dead, and two more (B6g: what they came for)
+    {'def': 'npc_of_02', 'x': 19, 'y': 39, 'facing': 1, 'dialogue': 'd_a3_petra', 'schedule': [], 'if': {'all': [UNWRITTEN_HERE, {'not': PETRA_DEAD}]}},
+    {'def': 'npc_a3_u1', 'x': 19, 'y': 39, 'facing': 1, 'schedule': [], 'if': {'all': [UNWRITTEN_HERE, PETRA_DEAD]}},
+    {'def': 'npc_a3_u2', 'x': 18, 'y': 41, 'facing': 1, 'schedule': [], 'if': UNWRITTEN_HERE},
+    {'def': 'npc_a3_u3', 'x': 20, 'y': 42, 'facing': 1, 'schedule': [], 'if': UNWRITTEN_HERE},
+]
+
+# Act 3's triggers on the north half of the hamlet (the toll road in, the camp, the stand, the square): the guild and its
+# hounds seen, then home (whatever brought the player: a ride's own scene, or their own feet; B6c's `a3_home` sees a player
+# who never walks in), then the camp's description
+NORTH = {'x': 1, 'y': 1, 'w': 54, 'h': 26}
+A3_TRIGGERS = [
+    {'id': 'a3_guild', **NORTH, 'if': {'all': [ORDER_READ, GUILD_IN_PLAY]}, 'effects': [{'set': 'a3_guild_in'}]},
+    {'id': 'a3_hounds', **NORTH, 'if': {'all': [ORDER_READ, HOUNDS_IN_PLAY]}, 'effects': [{'set': 'a3_hounds_in'}]},
+    {'id': 'a3_arrive', **NORTH, 'if': ORDER_READ,
+     'effects': [{'set': 'a3_at_knock'}, {'set': 'a3_in_sallow'}, {'learn': 'loc_cistern9'}, {'event': 'dialogue', 'data': {'tree': 'd_a3_home', 'name': 'Knock'}}]},
+    {'id': 'a3_camp', 'x': 13, 'y': 1, 'w': 11, 'h': 12, 'if': COLUMN_HERE,
+     'text': 'The column\'s camp: grey tents in a row, pegged square to the wind; a table under a canvas fly with a lamp on it and the order under a stone; water barrels stencilled PRECINCT SUPPLY under a tarp, more than four wardens could drink in a month. Nobody is cleaning a rifle. That is the first thing you notice, and the thing you keep noticing.',
+     'effects': [{'learn': 'a3_column_seen'}]},
+]
+
 knock = {
     'id': 'c9_mouth', 'name': 'Knock', 'seed': 91, 'settlement': 'cistern9',
     'layout': rows,
@@ -232,13 +332,25 @@ knock = {
         {'id': 'outriders_seen', 'x': 18, 'y': 12, 'w': 20, 'h': 14, 'once': True, 'if': {'all': [{'flag': 'kn_outriders'}, {'not': {'flag': 'kn_outriders_met'}}]}, 'effects': [{'event': 'talk', 'data': {'npc': 'npc_kn_out_lead'}}]},
     ],
     'extras': [
-        {'count': 5, 'roles': ['settler', 'settler', 'labourer', 'drifter'], 'life': 'hard', 'area': {'x': 17, 'y': 19, 'w': 20, 'h': 8}, 'hours': {'from': 7, 'to': 18}, 'barks': ['Hatch day. Wool for water, same as my mother did.', 'MOTHER says thank you. MOTHER always says thank you.', 'Get your goats off the apron, Afua!']},
+        {'count': 5, 'roles': ['settler', 'settler', 'labourer', 'drifter'], 'life': 'hard', 'area': {'x': 17, 'y': 19, 'w': 20, 'h': 8}, 'hours': {'from': 7, 'to': 18}, 'barks': ['Wool for water. Same as my mother did, and hers.', 'MOTHER says thank you. MOTHER always says thank you.', 'Get your goats off the apron, Afua!']},
         {'count': 2, 'roles': ['settler'], 'ages': [8, 13], 'area': {'x': 12, 'y': 26, 'w': 16, 'h': 10}, 'hours': {'from': 8, 'to': 18}, 'barks': ['I put my ear to the door. It hums.', 'Linnet says she\'s going to the city.', 'Race you to the tank!']},
     ],
     'ambience': {'indoor': False, 'fogColor': 'hex:0xcdb48c', 'fogDensity': 0.012, 'dust': 0.6, 'grade': 0.75, 'mood': 'peaceful', 'sound': 'wind'},
 }
 
-HEADER = "import type { MapDef } from '../../engine/data/types';\n\n// Generated by tools/maps/gen_knock.py — edit the generator, then re-run it.\n"
+# Act 3 (B6f): the opening's placements step aside once Act 3 is open, and their Act 3 selves take their places; the Grille
+# opens its lockdown scenes (d_a3_grille carries the opening's Grille whole, so nothing before Act 3 changes)
+for p_ in knock['npcs']:
+    p_['if'] = {'all': [p_['if'], NOT_A3]} if 'if' in p_ else NOT_A3
+knock['npcs'] += A3_NPCS
+knock['triggers'] += A3_TRIGGERS
+knock['spots'].update(A3_SPOTS)
+knock['talk']['grille'] = {'dialogue': 'd_a3_grille', 'name': 'The Grille'}
+for sid, sp in A3_SPOTS.items():
+    assert rows[sp['y']][sp['x']] in '.,rsc', f'spot {sid} at {sp} on {rows[sp["y"]][sp["x"]]!r}'
+    assert (sp['x'], sp['y']) not in _taken, f'spot {sid} at {sp} on a prop'
+
+HEADER ="import type { MapDef } from '../../engine/data/types';\n\n// Generated by tools/maps/gen_knock.py — edit the generator, then re-run it.\n"
 with open(os.path.join(ROOT, 'src', 'content', 'maps', 'c9_mouth.ts'), 'w') as f:
     f.write(f"{HEADER}export const c9_mouth: MapDef = {ts(knock)};\n")
 print('knock', W, 'x', H)

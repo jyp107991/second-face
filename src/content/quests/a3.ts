@@ -1,7 +1,7 @@
 import type { QuestDef } from '../../engine/quest/quest';
 import type { Cond } from '../../engine/world/logic';
 import {
-  ALLIES_AT_KNOCK, ALLY, AT_KNOCK, IN_SALLOW, ORDER_READ, RIDE_BUGGY, RIDE_CARTS, RIDE_COLUMN, RIDE_FIRST, RIDE_WHEEL, type Ally,
+  ALLIES_AT_KNOCK, ALLY, AT_KNOCK, IN_SALLOW, KNOCK_WATERED, ORDER_READ, RIDE_BUGGY, RIDE_CARTS, RIDE_COLUMN, RIDE_FIRST, RIDE_WHEEL, type Ally,
 } from '../world/a3_conds';
 
 /**
@@ -199,7 +199,10 @@ export const q_a3_cistern: QuestDef = {
     knock: {
       journal: 'Knock is dry since the hatch shut. The city\'s column is camped on the toll road by the stand, and its captain will not move on the door until I attend it. Nobody in Knock has ever been inside.',
       objectives: [
+        { id: 'maud', text: 'Go home to Maud, at the hatch', done: F('a3_maud_home'), optional: true },
         { id: 'lowe', text: 'Hear the column\'s captain out', done: F('a3_lowe_heard'), optional: true },
+        { id: 'grille', text: 'Speak at the Grille', done: { knows: 'a3_mother_named' }, optional: true },
+        { id: 'water', text: 'See that Knock has water while the hatch is shut', done: KNOCK_WATERED, optional: true },
         { id: 'in', text: 'Find a way into the Cistern', done: F('a3_inside') },
       ],
       next: [...C9_ENDS, { if: F('a3_in_how', 'door'), stage: 'door' }, { if: F('a3_inside'), stage: 'inside' }],

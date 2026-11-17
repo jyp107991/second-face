@@ -102,6 +102,7 @@ import { BRIDGEWARD_NPCS } from './npcs/md_bridgeward';
 import { CROWN_NPCS } from './npcs/md_crown';
 import { BENCH_NPCS } from './npcs/bench';
 import { A3_NPCS } from './npcs/a3';
+import { A3_KNOCK_NPCS } from './npcs/a3_knock';
 import { DIALOGUES } from './dialogue';
 import { QUESTS } from './quests';
 import { SETTLEMENTS } from './world/settlements';
@@ -128,7 +129,7 @@ export const MAPS: Record<string, MapDef> = {
   an_spindle, an_kelso, an_hall, an_pemberton, an_saddleback, an_glass,
 };
 
-export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...KNOCK, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...TOLLHOUSE_NPCS, ...SIGNALHILL_NPCS, ...DRYWELLS_NPCS, ...WILDS_NPCS, ...LANDMARK_NPCS, ...ORCHARD_NPCS, ...WHEEL_NPCS, ...NINEBRIDGE_NPCS, ...OPENFIELD_NPCS, ...SUMP_NPCS, ...MERIDIAN_NPCS, ...MARKET_NPCS, ...SINK_NPCS, ...LANTERN_NPCS, ...STACKS_NPCS, ...BRIDGEWARD_NPCS, ...CROWN_NPCS, ...SPIRE_NPCS, ...RING_NPCS, ...SKIRTS_NPCS, ...CORRIDOR_NPCS, ...SHORE_NPCS, ...DOCKS_NPCS, ...TEETH_NPCS, ...WET_NPCS, ...ASHLANDS_NPCS, ...LONGNIGHT_NPCS, ...BENCH_NPCS, ...A3_NPCS].map((n) => [n.id, n]));
+export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...KNOCK, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...TOLLHOUSE_NPCS, ...SIGNALHILL_NPCS, ...DRYWELLS_NPCS, ...WILDS_NPCS, ...LANDMARK_NPCS, ...ORCHARD_NPCS, ...WHEEL_NPCS, ...NINEBRIDGE_NPCS, ...OPENFIELD_NPCS, ...SUMP_NPCS, ...MERIDIAN_NPCS, ...MARKET_NPCS, ...SINK_NPCS, ...LANTERN_NPCS, ...STACKS_NPCS, ...BRIDGEWARD_NPCS, ...CROWN_NPCS, ...SPIRE_NPCS, ...RING_NPCS, ...SKIRTS_NPCS, ...CORRIDOR_NPCS, ...SHORE_NPCS, ...DOCKS_NPCS, ...TEETH_NPCS, ...WET_NPCS, ...ASHLANDS_NPCS, ...LONGNIGHT_NPCS, ...BENCH_NPCS, ...A3_NPCS, ...A3_KNOCK_NPCS].map((n) => [n.id, n]));
 
 export { FAMILIES, LETTERS, FACTIONS, WORLD_MAP, REGIONS, TRAITS, PERKS, CHROME, ITEMS, ORIGINS, DIALOGUES, QUESTS, SETTLEMENTS, LEADS, CONCLUSIONS, WORLD_EVENTS, ROAD_ENCOUNTERS };
 registerRules({ traits: TRAITS, perks: PERKS });

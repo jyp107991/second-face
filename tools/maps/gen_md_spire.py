@@ -71,6 +71,8 @@ props = [
     {'kind': 'fence_post', 'x': 23, 'y': 17}, {'kind': 'fence_post', 'x': 23, 'y': 20}, {'kind': 'fence_post', 'x': 40, 'y': 17}, {'kind': 'fence_post', 'x': 40, 'y': 20},
     {'kind': 'crate', 'x': 39, 'y': 23}, {'kind': 'crate', 'x': 40, 'y': 23}, {'kind': 'machine', 'x': 38, 'y': 18, 'rot': 3}, {'kind': 'barrel', 'x': 24, 'y': 23},
     {'kind': 'lamp_post', 'x': 33, 'y': 18, 'id': 'ar_steps'}, {'kind': 'sign', 'x': 27, 'y': 25, 'rot': 2, 'id': 'ar_board'},
+    # the works' fire barrel at the foot of the steps (Act 3, B6n: the fire the close gathers at, the night before the steps)
+    {'kind': 'fire_barrel', 'x': 29, 'y': 28, 'id': 'a3_fire'},
     # the square: lamps, an empty plinth, benches, the works' stone
     {'kind': 'lamp_post', 'x': 12, 'y': 30}, {'kind': 'lamp_post', 'x': 51, 'y': 30}, {'kind': 'lamp_post', 'x': 20, 'y': 44}, {'kind': 'lamp_post', 'x': 43, 'y': 44},
     {'kind': 'sign', 'x': 31, 'y': 36, 'rot': 2, 'id': 'ar_plinth'}, {'kind': 'planter', 'x': 29, 'y': 34}, {'kind': 'planter', 'x': 34, 'y': 34}, {'kind': 'planter', 'x': 29, 'y': 38}, {'kind': 'planter', 'x': 34, 'y': 38},
@@ -127,6 +129,7 @@ md_spire = {
         'ar_vault': {'dialogue': 'd_ar_vault', 'name': 'A steel door'},
         'ar_steps': {'dialogue': 'd_ar_steps', 'name': 'A lamp on the steps'},
         'ar_board': {'dialogue': 'd_ar_board', 'name': 'The works board'},
+        'a3_fire': {'dialogue': 'd_a3_fire', 'name': 'A fire barrel'},
         'ar_plinth': {'dialogue': 'd_ar_plinth', 'name': 'An empty plinth'},
         'ar_close_sign': {'dialogue': 'd_ar_close_sign', 'name': 'A sign on the post'},
         'ca_chair': {'dialogue': 'd_ca_chair', 'name': 'The chair behind the bench'},

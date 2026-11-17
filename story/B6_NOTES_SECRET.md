@@ -737,7 +737,7 @@ The default shared files touched by a content slice are the registries: `quests/
   Shale.
 - **Estimate** 1 h.
 
-### B6f — Knock under the column
+### B6f — Knock under the column — BUILT 2026-11-17 (deviations under "As built")
 - **Create** `dialogue/a3_knock.ts` (`d_a3_maud`, `d_a3_corin`, `d_a3_dace`, `d_a3_linnet`, `d_a3_grille`, `d_a3_lowe` at the
   camp, wardens' barks, Knock's others' Act 3 barks) · column NPC defs (`npc_a3_g3..g6`) in `npcs/a3.ts`.
 - **Touch** `tools/maps/gen_knock.py` → `maps/c9_mouth.ts`: **all** of Knock's Act 3 placements in this one pass (the column
@@ -834,7 +834,7 @@ The default shared files touched by a content slice are the registries: `quests/
   is final; "(Not yet.)" changes nothing.
 - **Estimate** 1 h.
 
-### B6n — Last nights I: the romances (Tamsin, Wren, Ilya, Kes) and their red lines
+### B6n — Last nights I: the romances (Tamsin, Wren, Ilya, Kes) and their red lines — BUILT 2026-11-17, ahead of B6f–B6m (deviations under "As built")
 - **Create** `dialogue/a3_fire.ts` part 1 (the fire hub `d_a3_fire` listing who is present; one scene each for Tamsin (R3,
   and the friendship variant), Wren, Ilya and Kes: the romance's last step before the steps and what each can live beside;
   the non-romance variants).
@@ -1362,6 +1362,176 @@ fight beside the player; Ada and Jonah deliberately not combatants, so neither c
   end has its seed in Ada's `kept` node ("Ask me again in a year"). **B6c/B6j:** Shale's muster letter already reads
   `ks_ada` (resigns | dead); a militia that fought the guild (`a3_sh_fight`) could be read at Knock. Ada's Act 3 death is
   `ks_ada` = dead, never an NPC death: read the flag.
+
+### B6n (built 2026-11-17, ahead of B6f–B6m, while B6f–B6k were being built in parallel)
+**Why this slice, now.** B6f–B6k (the hamlet) were one agent's lane, in progress. Of B6l–B6w, the earliest whose reads were
+all met by B6a–B6e: **B6l** reads `a3_unwritten` (B6g) and `a3_lowe` (B6j); **B6m** reads `a3_lowe` (B6j) and sits on B6l's
+close; **B6n** reads only the companions' own Act 1–2 flags (U8) and B6a's helpers. Its one hamlet-bound item, Kes numbed
+at Knock, the plan already gives to B6j first: left there, and read here through the new alias `KES_NUMBED`.
+
+**Done, all of the slice but that one item:** `dialogue/a3_fire.ts` (one tree, `d_a3_fire`: the hub and the four scenes; 99
+nodes, about 6,700 words; plus the hook nodes for Wren's and Kes's own trees) · `tools/maps/gen_md_spire.py` →
+`maps/md_spire.ts` (confirmed byte-identical first; additions only: prop `a3_fire`, a `fire_barrel` at 29,28 at the steps'
+foot, and its talk entry "A fire barrel" → `d_a3_fire`): **this is the prop B6l's list names; B6l need not add it** ·
+`tests/b6n.test.ts` (29). No engine change. `npm run check` green (731 tests; people gate red/stale as before).
+**Shared touches (small, local, new lines only):** `a3_conds.ts` (`WITH_YOU`, `KES_NUMBED`; the registry's B6n block) ·
+`dialogue/index.ts` (registration) · `overpass.ts` (an import, one start entry `WREN_GUILD_START` after `c_floor`, the node
+spread at the end of `d_rd_wren`) · `hs_kes.ts` (the same: `KES_GUILD_START` after `c_handed`).
+
+**How it plays (and where it differs from §7 and §8 B6n):**
+- **The fire.** A works barrel at the foot of the steps, there in every act (props have no conditions): cold, the R30
+  labourers' barrel, until the Ledger's card (`a3_summoned`). Then by day (7–19) it is laid for tonight, with "(Sit down by it
+  and wait for dark.)" (→ 20:00); at night it is lit and is the hub; "(Sleep by the fire.)" goes to seven in the morning. It is
+  lit every night until the point of no return: the last night is whichever night the player makes it (no time limit). After
+  `a3_pnr`: ash. Who sits at it: **`WITH_YOU(c)`** = ON_SIDE less a Tamsin broken in Act 2 (`tam_broken` takes her out of the
+  party without `tam_left`, so **ON_SIDE('tamsin') counts a broken Tamsin**; only the door wins her back). A companion is
+  offered while something is left to say (U7); the hub's text speaks of "the ones who came", so B6o's three slot in.
+- **Each scene, in the companion's voice** (node speaker = the companion; no companion tree edited for them):
+  (1) **what they think is possible** (coordinator default 3): a chain over `WAY_HELD`: the two ways always open (wear and
+  sign; or walk down, and the Plan finds another face), then each held way in order: B (its means named by where they came
+  from: Petra's people, the Choir, Ash, the charge, Bram's trunk; its cost said: the drains and the city's water within a
+  year), C (a buyer and the paper in the pack; worn sash), D in full, or "halfway" when the hill speaks wide without a
+  reader, people or the archive (`part`), E. Ilya counts them aloud, his numbers following what is held. Never named as
+  endings; nothing the player does not hold is mentioned. (2) **what they cannot walk beside** (said the night before, never
+  sprung): Tamsin, don't count people, and with the reserve only sealed (not stayed on consent) the door is the chair's first
+  paper; Wren, the Concern, and while `wren_rope` is unset the rope ("I'll not sleep beside the rope"); Ilya, the chair (he
+  goes) and the Concern (he stays to watch, not to lie down beside it); Kes, the eyes. The answer: a word (`a3_<c>_word`, +3),
+  an honest no-promise (+2/+3), or "mine to decide" (−3). (3) **the romance's last step**, or the last night as friends (the
+  Grille's game turned round; the long version of Wren's roads; counting with Ilya; Kes's gardens). Kes also has **slack**,
+  by `kes_link` (cut, cut with fits, dark, kept).
+- **The last steps, by state.** Tamsin `together` → her **R3, here and not "before the door"** (U8 §7; B6n's plan already put
+  it at the fire, and the door is behind them by now, so "after it" is after the steps): "what are we, after?", her after
+  pictured by §7's end states (deputy, sheriff, the Wheel, Knock's open door) → together / not yet (deferred) / don't wait
+  (`stopped`); `open` → the rain's ask without rain → yes leads into R3 / not tonight (`tam_r2_later`) / no (`declined`).
+  Wren `committed` → "still the stop?"; `roof` → her r3, route or stop; `yes`/`later_roof` → the scaffold on the steps as her
+  roof (the dream said aloud, or "so it knows it's done" if the rope is settled), then r3 before light. Ilya (sober ≥ 30)
+  `committed` → a well in the after; `well` → his r3; `yes`/`later_well` → **not here**: no well in a city that counts its
+  water by the cup; ask at one before the steps (his own tree's r2 at Shale, Dry Wells, Openfield or the windpumps still
+  works: nothing locked); under 30 after a relapse → not while counting from one. Kes `committed` → still a thing; `dark` → her
+  r3; `yes`/`later_dark` → the dark hour (the scar's variant if cut) and her r3 before it is up.
+- **Romance rules held at the fire**, first, as in their own trees: Tamsin's list at two lies (ends a romance); Wren's, Ilya's
+  and Kes's count at approval ≤ 30. A romance committed elsewhere closes theirs kindly (`apart`; their flag `no`, the partner
+  untouched). Every no costs no approval; nothing is given or taken. `romance_partner` is set on a commitment and cleared
+  whenever the romance holding it ends here (option-level where a node cannot branch: the guild leavings, the counts).
+- **`a3_<c>_last`** = together (committed at or through the fire) | apart (ended there) | none (friends); `a3_<c>_night` = the
+  beat was had (deferrals set only this). **B6v:** together still reads the romance's own flag (§7: `tam_romance` together;
+  `wren_rom`/`ilya_rom`/`kes_rom` committed), which the fire writes; `last` = apart means it ended the night before.
+- **The red line at the first Act 3 fire** (U8 Wren's "still to wire"), **and Kes's too (added: the plan named only Wren)**:
+  B5d makes both leave at the guild night's dawn only when they were there. A Wren or Kes who waited through it leaves at the
+  first word after it where she waited; fetched before Act 3 and travelling, at the first camp (not on the road); gathered at
+  the close and never spoken to, at the fire before anything else. `wren_left`/`kes_left` = `guild`, −40, a decision; Kes's
+  `kes_rom` ended by her tree's own GONE convention. Their `left` nodes offer no way back for it. Conditions, not proximity.
+- **Not wired, said:** the `a3_kes_numbed` interjection at Knock (B6j; the fire shows her hand at her neck since Knock);
+  Kes telling the Lieutenant to stand down (§7; needs a `d_an_lt` entry: B6o/B6u decide).
+- **For later slices.** **B6l:** gather by `WITH_YOU`; place the waiting companions round the barrel (29,28); the prop is
+  there. **B6o:** add Odile's, Ash's and Nine's options to `SIT` and their nodes in `a3_fire.ts` (`waysNodes`, `WAY_HELD`,
+  `LAST`/`NIGHT_HAD` are there to reuse); a waiting Ash or Odile whose Long Night red line was crossed while away (B5d's
+  RL_ASH: guild or ledger; RL_ODILE: price sarr ∧ Sarr dead) should leave the same way (`*_GUILD_START/NODES` pattern). The
+  three already speak at the fire through interjections. **B6p:** Tamsin's question on the steps can follow `a3_tamsin_word`.
+  **B6r:** a leaving at the vault (Wren and Kes under C; Ilya under A1) can name a broken `a3_<c>_word`.
+
+### B6f (built 2026-11-17, after B6e, while B6n was built alongside)
+**Done, all of the slice, with two placements left to the slices that write their scenes (below):** `dialogue/a3_knock.ts`
+(12 trees: `d_a3_home` (the first walk home), `d_a3_maud`, `d_a3_linnet`, `d_a3_dace`, `d_a3_corin`, `d_a3_lowe` (Reyes's nodes in
+it), `d_a3_warden`, Knock's others `d_a3_kn_r1..r4`, `d_a3_grille`) · `dialogue/a3_forces.ts` (**holding scenes for B6g**:
+`d_a3_petra`, `d_a3_orme`, `d_a3_hale`, a first meeting each; see below) · `npcs/a3_knock.ts` (**its own file, not `npcs/a3.ts`**,
+which B6e was editing: the column's four wardens `npc_a3_g3..g6` (Garrick Kress, Suri Pahl, Selwyn Okeke, Odalys Tolland), the
+guild's two hound handlers `npc_a3_g11/g12` (Ansgar Wilmot, Ebun Nkemelu), the Unwritten `npc_a3_u1..u3` (Juniper Lowry, who leads
+when Petra is dead; Thaddeus Wolde, the blade B6p names; Rhoda Kalder)) · `tools/maps/gen_knock.py` → `maps/c9_mouth.ts` (the
+generator first brought in line with the committed map: one extras bark's name, Hesper → Afua; then byte-identical; then the
+Act 3 pass) · `tests/b6f.test.ts` (34). 113 nodes, about 10,000 words. No engine change. `npm run check` green (765 tests at
+the time; people gate red/stale as before).
+**Shared touches (small, local):** `a3_conds.ts` (a B6f block after B6c's: `LINNET_COLUMN/DOGS/SHALE/KNOCK`, mod `LINNET_AT`, mod
+`KNOCK_WATER` with `KNOCK_WATERED`, `COLUMN_HERE`, `ORME_HERE`, `HALE_HERE`; the registry's B6f block) · `quests/a3.ts`
+(`q_a3_cistern` stage `knock` only: three optional objectives, home to Maud, the Grille, Knock's water) · the content and
+dialogue indexes · `npcs/knock.ts` (Sim Nassar's lockdown bark made true in both acts) · the map's extras' "Hatch day" bark
+(likewise).
+
+**How it plays (and where it differs from §2.3 20a and §8 B6f):**
+- **The opening steps aside.** Every Act 1 placement on Knock now carries `not a3_open`; Act 3's instances (`npc_kn_maud_a3`,
+  `_linnet_a3/_column/_dogs`, `_dace_a3/_guild`, `_corin_a3/_down`, `npc_kn_factor_a3`, `npc_kn_r1..r4_a3`) take their places with
+  Act 3 trees. The Grille's talk prop opens `d_a3_grille`, which carries `d_kn_grille` whole after its lockdown entries (tested
+  identical before Act 3, and again once the door is settled). **The hatch is untouched (B6h's way in).**
+- **Arrival** (B6c's ask): three triggers over the north half of the hamlet (x1–54, y1–26: the road in, the camp, the stand,
+  the square), in order: `a3_guild` (ORDER_READ ∧ GUILD_IN_PLAY → `a3_guild_in`), `a3_hounds` (→ `a3_hounds_in`), `a3_arrive`
+  (ORDER_READ → `a3_at_knock`, `a3_in_sallow`, opens `d_a3_home`). It plays whether or not a ride or B6c's midnight `a3_home`
+  came first, and does **not** write `a3_route_home` (B6c's `a3_home_road` still writes foot, with its xp and decision; an unset
+  route reads as on foot). **No world event at Knock** (B6e's lesson: waits at Knock in other tests list their events exactly).
+  The scene reads the route (car, coach, carts, buggy, Wheel, foot), the water, the guild (and the hounds, "low and grey on short
+  leads"), and Knock's standing (applause or closing doors: local, never karma); all seven companions speak.
+- **Props have no conditions**, so the column's camp is people (Lowe or Reyes at the table, four wardens: the camp, the stand,
+  the top of the lane, the apron), a trigger's description (`a3_camp`: tents, the table, the order under a stone, PRECINCT SUPPLY
+  barrels, "nobody is cleaning a rifle"), and the runtime's place build (§9.5). **The hounds likewise** (§9.6): their handlers
+  are placed; the hounds are text until the runtime's stand-ins. **The relocation car** is only said to be at the stand when the
+  player rode it (B6c leaves it in the gate road otherwise); B6j decides how it comes for an order or a forced door.
+- **Water** (`KNOCK_WATER`, first match): `drywells` (Dry Wells restored or freed) · `carts` (B6c's `a3_carts_water`) · `column`
+  (**added**: ask Lowe for the column's barrels: no check at trust ≥ 20, else Speech 45, −10 an honest answer at Tollhouse 9,
+  −5 his grief heard, +10 Knock already watered; Reyes the same at trust 15) · `pump` (**added**: Corin's windpump draws again,
+  the foot valve lowered (Mechanics 40, −15 `pump_hand`, −10 `kn_valve`) or the sump dug (Survival 40, −10 Brawn 7); a failure
+  leaves the other way) · `ration` (a cup a head). Maud, Afua and the arrival say which.
+- **Maud** (`d_a3_maud`): the reunion (lame by `kn_maud_scarred`; "I watched you get down out of that" after the car), trust +10;
+  topics once each: the hatch (four lockdowns: ten, twenty, the PC's age, now; she sits at it at seven), the water, the wardens
+  ("men with guns who say good morning"), Linnet by fate, being at the hatch with her at seven (+5), what she wants at the door
+  (alive, all of them; "I'd like to see a face, once": `a3_maud_wish`; +5). **The secret at trust ≥ 20** = home + seven o'clock
+  + what she wants, so it comes only to a player who sat with her. **What the letter was** (decided here; the plan said only "a
+  Cistern letter sold for medicine"): in the third lockdown, a winter, her mother's wet chest; a guild buyer at the stand paid
+  in blue tablets for "anything with their hand on it"; one letter from inside **to her own mother**, never opened; her mother
+  died in the spring anyway; and now she fears it was the first name the city had. Answers set `a3_maud`: `eased` (only with
+  `tam_why`, the census, the reserves list or Pell's chart known: "the city has had their names from MOTHER's own returns") ·
+  `forgiven` ("you bought her a spring") · `told` (silence, a hand). "Who was it from?" → "I never opened it" → **the player may
+  promise to ask MOTHER (`a3_maud_letter_ask`): B6h's MOTHER can answer it** (suggested: she kept the letter's return, as she
+  keeps everything; who wrote it is B6h's to decide, and should not be a plot-bearing reveal). Asked about the margin too early:
+  "Old business. Not today."
+- **Linnet** (`LINNET_AT`; `a3_linnet` = where met): **column** (she ran: a ward-cadet, "the Precinct takes cadets at sixteen if
+  they can read"; "don't say anything about the driving" if she drove the car) with three choices: go to Maud (Speech 35 with
+  her Act 1 memories), stand down under clause 30 (Speech 50, −10 having been to Maud, −10 Lowe's leave heard, ±; → `knock`,
+  placed at home), or **stay in the column "so somebody in the grey knows Maud's name"** (`a3_linnet_stay`: **B6j may use her at
+  the door**) · **dogs** (taken to Shale, the Dogs called: on the slope with them, a red rag over the stolen guild scarf; go to
+  Maud) · **shale** (at Mags's: **not placed**; Shale's map was B6e's in use, and Linnet was never placed at Mags's in Act 1–2
+  either (§18's P8 TODO); the tree has her `shale` nodes for whoever places her) · **knock** (stayed, or never asked: with
+  Corin's yoke; "when this is done": `a3_linnet_after` road | maud). Maud's lines follow each.
+- **Dace**: `guide` (the guild's guide, brass tag turned in: "a stranger wouldn't know which houses to go round") when the guild
+  came, else `knock` (the post-house's new boards: "I owed her a house"); pay his 42 on Orme's book → `square` (he leaves the
+  guild's party); Speech 45 (−15 forgiven in Act 1, −5 the Rib fought together, +10 condemned) → `quit`.
+- **Corin** on the rise with a rifle (with `kn_corin_rifle`, "the other one", kept back from before): the well; the door: **hold
+  the slope** (`holds`) or **come down** (Speech 40: `down`, placed in his workshop, rifle on the shelf; a failure is `holds`);
+  Hale (guild here, Hale alive): "Maud decides what happens to Hale. It was her house" (`a3_corin_hale`, **B6g**); why he left
+  the outriders (a door like this one; he held the horses; Hale went in).
+- **Lowe** (`d_a3_lowe`, Reyes's own nodes when he is dead): the intro reads B6c's `a3_lowe_asked`, `lowe_met` (a stranger's
+  full name-and-title otherwise) and the car; sets `a3_lowe_heard`. Topics: **attend** ("you, at the door, in the open... come and
+  tell me, or stand on the apron and I will see you there; I will bring the column down the lane behind you": `a3_attend_how`,
+  **B6j's entry**) · the water · the sixty names and Knock's ("Afua Danso, and her boy, who coughs") · grief (unless told in the
+  car) · **the third word** (with `lowe_grieves` from Act 2: "Home." → memory `a3_third_word`: **B6j may lower the stand-down
+  with it**) · the old promise (memory `designate`) · the cadet (clause 30) · the guild ("I have not read it. I am a slow reader":
+  **B6g's paper meets this**). The senior warden Kress has a short tree (line six: "residents are not to be frightened").
+- **The Grille in lockdown**: the first time, MOTHER through the plate: "{name}. Welcome home. A lockdown is in effect." Then
+  once each: open the hatch ("resolved at the door"; she now logs Maud's attendance) · are they well (Tamsin still inside asks
+  what the sky is doing, "not blue": answer → +5; else Pell asks after Afua's boy) · why ("a lockdown is not a refusal. It is a
+  pause... until the designate attends. I have known for some time that the designate was you": a seed for B6h's letter, no
+  more) · **Ines: the third no** (her mother's weld, Maud, now) **and the hatch offered** ("MOTHER holds the tray for whom she
+  chooses": `a3_hatch_offered`, **B6h may lower the hatch route with it**); **added: the replies' copy told to Ines here also
+  gives `a3_archive_promise`** (memory `a3_told_refusals`, not `player_wrote_refusals`: B6h's "+10 the PC never wrote" still
+  reads the letter's absence) · Tamsin at the holes from the wrong side, Ines's hand on the plate.
+- **Knock's others** (`d_a3_kn_r1..r4`): Afua (her boy, the Knit-Kit if the player still has one; Knock split: "you're the one on
+  the card, you tell us") · Sim (three lockdowns in his life, MOTHER's slip "for you") · Binta (chalking the dry days on the
+  tank; Tamsin's face) · Amos (the captain wrote his name in a book).
+- **The forces' placements** (B6g writes the scenes): Petra by night (21–4) at the apron's dark west end with `npc_a3_u2/u3`,
+  or `npc_a3_u1` leading when Petra is dead; gone once `a3_unwritten` is set (B6g may keep some through `burning`); Hale
+  (`npc_kn_out_lead_a3`, alive under both ids, not `a3_hale` gone/dead) with the guild; Orme at her stand in every Act 3
+  (`npc_kn_factor_a3`, trade kept). **`a3_forces.ts` is B6g's file now**: rewrite `d_a3_petra`, `d_a3_orme` (keep the trade
+  option) and `d_a3_hale` whole; give the handlers and u2/u3 trees if wanted (they have barks), and their `hostileIf` for the
+  Unwritten's fight.
+- **Left to later slices, with their spots placed now:** **Tamsin in the door** (`a3_tam_door`, spot `tam_door` 27,42: B6j,
+  whose scene she is in) and **the residents on the apron** after an opened door (spots `apron_1..4`: B6k, whose trees they
+  need; their defs' own trees are the retired shelter opening's). One line each in `gen_knock.py`'s `A3_NPCS`.
+- **For later slices.** **B6g:** `a3_lowe_guild` (Lowe hasn't read the paper), `a3_corin_hale` (Maud decides Hale),
+  `kn_out_choice` is unread so far (how the outriders went: Hale's scene can read it). **B6h:** `a3_hatch_offered`,
+  `a3_maud_letter_ask`, `a3_told_refusals`; MOTHER's "I have known for some time". **B6j:** the column's defs are hostile on
+  `a3_door_fight` ∨ `md_fight` (Lowe's and Reyes's own defs are not: their `hostileIf` is `md_fight` only, so B6j adds
+  `a3_door_fight` to them); `a3_attend_how`; `a3_corin` (Corin's def `ally` is still Act 1's `kn_out_fight`: B6j adds `a3_corin`
+  = holds for the door fight); `a3_linnet_stay`; memory `a3_third_word`; `a3_column_water` (the captain's discretion already
+  bent once). **B6k / B6d's suggestion:** Amos as Knock's keeper up the hill was not wired. **B6s (slide 4):** `a3_maud`,
+  `LINNET_AT` (not `a3_linnet`), `a3_linnet_after`, `a3_dace`, `a3_corin`, `KNOCK_WATER`.
 
 ## Defaults taken for the open questions (coordinator, 2026-11-17; the owner may override)
 1. After the ending: epilogue, credits, then the title screen; the named autosave at the point of no return stays

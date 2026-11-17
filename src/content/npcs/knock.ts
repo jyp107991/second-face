@@ -52,7 +52,7 @@ export const KNOCK: NpcDef[] = [
   {
     id: 'npc_kn_r2', name: 'Sim Nassar', look: { seed: 1212, frame: 'broad', age: 52, ancestry: 'mediterranean' }, role: 'labourer', level: 1, ...KN, courage: 40,
     schedule: [{ from: 7, to: 18, spot: 'wash', activity: 'work' }, sleep('home_b')],
-    barks: ['Three lockdowns in my life. Three. Each time she said "continuity".', 'Wash water\'s grey water. Don\'t drink it.', 'The road takes more than it brings.'],
+    barks: ['Every lockdown in my life, she said "continuity". Every one.', 'Wash water\'s grey water. Don\'t drink it.', 'The road takes more than it brings.'],
   },
   {
     id: 'npc_kn_r3', name: 'Binta Diop', look: { seed: 1213, frame: 'narrow', age: 34, ancestry: 'west_african' }, role: 'settler', level: 1, ...KN, courage: 50,

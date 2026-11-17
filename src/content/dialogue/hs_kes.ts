@@ -3,6 +3,7 @@ import type { Cond, Effect } from '../../engine/world/logic';
 import { LEASHED } from '../chrome/catalogue';
 import { QUESTS } from '../quests';
 import { A, ASH, ILYA, K, KES, KES_IN, NINE, ODILE, PROOF, SCABS_GONE, TAMSIN, WREN, bye } from './hs_skirts';
+import { KES_GUILD_NODES, KES_GUILD_START } from './a3_fire';
 
 /**
  * Kes Oyelaran (npc_hs_01), the seventh companion (U8; story/U8_kes_SECRET.md): a grid-hand at the Window with a Concern
@@ -45,6 +46,7 @@ export const d_hs_kes: DialogueDef = {
     { if: { all: [{ any: [SOLD_STRIKE, SOLD_NAME] }, { flag: 'kes_joined' }, { not: { flag: 'kes_left' } }] }, node: 'c_betrayed' },
     { if: { all: [SOLD_DOOR, { not: { flag: 'kes_left' } }] }, node: 'c_sold' },
     { if: { all: [HANDED, { not: { flag: 'kes_left' } }] }, node: 'c_handed' },
+    KES_GUILD_START,
     { if: { all: [KES_IN, CAMP, FLOOR] }, node: 'c_floor' },
     { if: { all: [KES_IN, CAMP, ROM_ON, { approval: { companion: KES, lte: 30 } }] }, node: 'c_rom_end' },
     { if: { all: [KES_IN, CAMP] }, node: 'camp' },
@@ -424,6 +426,8 @@ export const d_hs_kes: DialogueDef = {
     },
     left_back: { text: '"That\'s the first true thing in a while." She stands, and puts the box in her jacket. "Once. I do this once. Obviously."', again: 'Kes, at your shoulder again.', options: [{ text: 'Keep up.', exit: true }] },
     left_no: { text: '"No." She plugs the cable back in. "Go on."', again: 'Kes, plugged in.', options: [{ text: '(Leave her be.)', exit: true }] },
+    // Act 3 (B6n): her red line after a guild night she was not at (a3_fire.ts)
+    ...KES_GUILD_NODES,
   },
 };
 

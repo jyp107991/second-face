@@ -164,6 +164,13 @@ export const NINE_REGISTERED: Cond = ANY(F('ca_deed', 'self'), F('ca_deed', 'cit
 /** The recall is open: the notice has come, nothing has answered it, and Nine is still on the player's side. */
 export const RECALL_OPEN: Cond = ALL(F('a3_recall_due'), NOT(F('a3_recall')), ON_SIDE('nine'));
 
+/** B6n: on the player's side and willing to sit with them. ON_SIDE, less a Tamsin broken in Act 2: `tam_broken` takes
+ * her out of the party without `tam_left` (U8 S3), and only the door wins her back (B6j clears it). The fire at the close
+ * reads this; the close's gathering (B6l) should too. */
+export const WITH_YOU = (c: CompanionKey): Cond => (c === 'tamsin' ? ALL(ON_SIDE(c), NOT(F('tam_broken'))) : ON_SIDE(c));
+/** Kes numbed by the Concern at Knock, mid-siege (§7; B6j sets `a3_kes_numbed`). Read by her last night at the fire. */
+export const KES_NUMBED: Cond = F('a3_kes_numbed');
+
 // ---------------------------------------------------------------- §4.1 the gates of the five endings
 
 export const SASH_WORN: Cond = F('a3_sash', 'worn');
@@ -268,6 +275,33 @@ export const RIDE_WHEEL: Cond = ANY(ALLY_NEEDS.wheel, ALLY('wheel'));
 export const RIDE_BUGGY: Cond = ALL(F('dr_buggy'), NOT(F('dr_buggy_hurt')));
 /** Stood against the guild at the Long Night (and not one of its own): its riders remember it on the road. */
 export const AGAINST_GUILD: Cond = ALL(ANY(LN('choir'), LN('ledger')), NOT({ member: 'tollmen' }));
+
+/** B6f: Knock under the column (20a). Linnet in Act 3, by her Act 1 fate: in the column as a ward-cadet (she ran to the
+ * city on her own), with the Rust Dogs on the slope (taken to Shale, the Dogs called to Knock), at Mags's in Shale (taken
+ * to Shale), or at home beside Maud (she stayed). A cadet who stands down comes home. `a3_linnet` records where the player
+ * found her; `LINNET_AT` is the live answer (the map's placements and the epilogue read it). */
+const LIN_RAN: Cond = F('kn_linnet_will_run');
+const LIN_TO_SHALE: Cond = ALL(F('kn_linnet_to_shale'), NOT(LIN_RAN));
+export const LINNET_COLUMN: Cond = ALL(LIN_RAN, NOT(F('a3_linnet_down')));
+export const LINNET_DOGS: Cond = ALL(LIN_TO_SHALE, ALLY('dogs'));
+export const LINNET_SHALE: Cond = ALL(LIN_TO_SHALE, NOT(ALLY('dogs')));
+export const LINNET_KNOCK: Cond = ANY(F('a3_linnet_down'), ALL(NOT(LIN_RAN), NOT(F('kn_linnet_to_shale'))));
+export const LINNET_AT: Mod = { id: 'linnet', values: [{ id: 'column', if: LINNET_COLUMN }, { id: 'dogs', if: LINNET_DOGS }, { id: 'shale', if: LINNET_SHALE }, { id: 'knock' }] };
+/** Knock's water while the hatch is shut: Dry Wells' carts (its station put right in Act 1), Openfield's barrels (B6c), the
+ * column's own barrels (asked of its captain), the windpump turning again on a deeper draw (with Corin), or a cup a head. */
+export const KNOCK_WATER: Mod = { id: 'knock_water', values: [
+  { id: 'drywells', if: ANY(F('dw_outcome', 'restored'), F('dw_outcome', 'freed')) },
+  { id: 'carts', if: F('a3_carts_water') },
+  { id: 'column', if: F('a3_column_water') },
+  { id: 'pump', if: F('a3_well', 'deepened') },
+  { id: 'ration' },
+] };
+export const KNOCK_WATERED: Cond = ANY(...KNOCK_WATER.values.filter((v) => v.if).map((v) => v.if!));
+/** The column at Knock: camped from the order until the door is settled. The guild's people there, alive under either of
+ * their placements (Act 1's and Act 3's), Hale not sent off or killed (B6g's `a3_hale`). */
+export const COLUMN_HERE: Cond = ALL(A3_OPEN, NOT(F('a3_c9')));
+export const ORME_HERE: Cond = ALL(NOT({ dead: ORME }), NOT({ dead: 'npc_kn_factor_a3' }));
+export const HALE_HERE: Cond = ALL(HALE_ALIVE, NOT({ dead: 'npc_kn_out_lead_a3' }), NOT(F('a3_hale', 'gone')), NOT(F('a3_hale', 'dead')));
 
 /** The readiness hub's eight acts at the close (`d_a3_ready`, B6m): each adds 1 to `a3_ready`, once (`a3_ready_<id>`). */
 export const READY_ACTS: { id: string; needs: Cond }[] = [
@@ -443,6 +477,52 @@ export const EP_SLIDES = ['steps', 'ledger', 'cistern', 'knock', 'shale', 'dogs'
  *                            hundred), a3_buyout_sheet (the price rests on Odile's sheet), a3_buyout_forward (brought forward the
  *                            morning after Openfield), a3_buyout_clause, a3_mags_hand, a3_buyout_priced / a3_buyout_fair (Teo's
  *                            reading), a3_buyout_street (Issa's warning)
+ * B6n (built; dialogue/a3_fire.ts: the fire at the Spire's close (prop a3_fire on md_spire, lit on a3_summoned), the scenes of
+ *      Tamsin, Wren, Ilya and Kes; hooks in overpass.ts and hs_kes.ts):
+ *   a3_<c>_last              together | apart | none   (c = tamsin | wren | ilya | kes) the last night's romance beat: together =
+ *                            committed at or through the fire; apart = the romance ended there (declined, the count, the list,
+ *                            or a committed romance elsewhere); none = the last night as friends. Unset = not had, or deferred.
+ *                            The epilogue's together still reads the romance's own flag (tam_romance together; wren_rom,
+ *                            ilya_rom, kes_rom committed), which the fire writes when it commits or ends a romance
+ *   a3_<c>_night             true            the last night's beat was had (deferrals included: "not tonight", no well, sober < 30)
+ *   a3_<c>_word              true            the player gave their word on the companion's line for the ending (Tamsin: not to
+ *                            count people / sign the door; Wren: not to sell it to the Concern; Ilya: not to sit in the chair;
+ *                            Kes: not to hand the Concern the eyes). B6r: a leaving at the vault can name the word broken
+ *   wren_left / kes_left     guild           left on hearing of a guild night they were not at (at the first camp or meeting
+ *                            after it, in their own trees; or at the fire if gathered at the close). B5d's longnight covers
+ *                            the ones who were there
+ *   romance flags written    tam_romance together | declined | stopped | ended, tam_r2_later, tam_listed; wren_rom roof |
+ *                            committed | no | ended; ilya_rom committed | no | ended; kes_rom dark | committed | no | ended;
+ *                            romance_partner set on a commitment, cleared when the romance holding it ends
+ *   (read, set by B6j)       a3_kes_numbed   KES_NUMBED: Kes's opener at the fire says her hand goes to her neck since Knock
+ * B6f (built; dialogue/a3_knock.ts, holding scenes in dialogue/a3_forces.ts for B6g, npcs/a3_knock.ts, map c9_mouth via
+ *      tools/maps/gen_knock.py: the opening's placements step aside on a3_open, Act 3's take their places):
+ *   a3_at_knock / a3_in_sallow  true         also set by Knock's trigger a3_arrive (the first walk into the north half once the
+ *                                            order is read; opens d_a3_home whether or not a ride or B6c's a3_home came first)
+ *   a3_guild_in / a3_hounds_in  true         Knock's triggers a3_guild / a3_hounds (GUILD_IN_PLAY / HOUNDS_IN_PLAY, on the same
+ *                                            walk in): the guild's party (Hale, Dace as guide) / its two handlers are placed
+ *   a3_lowe_heard            true            Lowe (or Reyes, Lowe dead) at the column's table: the attendance clause heard
+ *   a3_column_water          true            the column's own barrels down the lane (Lowe on trust ≥ 20, else Speech 45)
+ *   a3_well                  deepened        Corin's windpump turning again (Mechanics 40, or Survival 40); KNOCK_WATER reads
+ *                                            drywells | carts | column | pump | ration (first match)
+ *   a3_maud_home             true            Maud met at the hatch (trust +10);  a3_maud_secret  true  her sold letter said
+ *                                            (trust ≥ 20: home +10, the hatch at seven +5, what she wants +5)
+ *   a3_maud                  eased | forgiven | told   the answer to the letter (eased only for a player who knows the city
+ *                                            has MOTHER's returns);  knowledge a3_maud_letter_ask (ask MOTHER who wrote it: B6h)
+ *   a3_linnet                column | dogs | shale | knock   where the player met her in Act 3 (LINNET_AT is the live answer:
+ *                                            the epilogue reads that);  a3_linnet_down  true  the cadet stood down (clause 30),
+ *                                            home;  a3_linnet_stay  true  asked to stay in the column for Knock (B6j may read);
+ *                                            a3_linnet_maud  true  she went to Maud;  a3_linnet_after  road | maud  (at home)
+ *   a3_dace                  guide | knock | square | quit   the guild's guide when it came, else home; his 42 paid on
+ *                                            Orme's book, or talked out of guiding (Speech 45)
+ *   a3_corin_met             true;  a3_corin  holds | down   the slope at the door (B6j: down = no rifle on the rise)
+ *   knowledge: a3_lowe_clause, a3_attend_how (B6j: "come and tell me, or stand on the apron"), a3_lowe_names, a3_lowe_guild
+ *                            (B6g: he has not read Orme's paper), a3_cadet_charter, a3_mother_named, a3_mother_pause,
+ *                            a3_mother_logs_maud, a3_hatch_offered (B6h: Ines offers the hatch), a3_ines_refused,
+ *                            a3_corin_hale (B6g: Maud decides Hale), a3_corin_past, a3_column_seen;  memories npc_md_01
+ *                            a3_third_word ("home"), a3_grief_told; npc_kn_linnet a3_trusted / a3_stood_down; npc_c9_01
+ *                            a3_told_refusals (the Archive promise told at the Grille, not by letter)
+ *   a3_archive_promise       true            also at the Grille in lockdown (the replies' copy held, told to Ines)
  * Planned (the slice named sets it; values as the plan fixes them):
  *   a3_recall                declined | stayed | handed | court | bought | hidden | fought | taken          B6b
  *   nine_disposed            true                                                                        B6b

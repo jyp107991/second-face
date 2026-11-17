@@ -298,7 +298,11 @@ at the door only if it is forced while she stands in it; (15) "Halcyon burned" d
 two Act 3 Court cases are precedents, and the amendment's clauses come from the player's own rulings (at most three);
 (17) the steps reopen at R30, with the Ledger's reason by alliance. B6a as built (the Long Night's real flags behind the
 aliases, the first letter dated by the PC's first toll card, the tracker without named ways to finish): the plan's "As
-built".
+built". B6f as built: Maud's secret made specific (in the third lockdown she sold a guild buyer one unopened letter from
+inside, addressed to her own mother, for blue tablets; her mother died in the spring anyway; she fears it was the city's
+first name; the player can ease it with the census, forgive it, or hold her hand, and may promise to ask MOTHER who wrote
+it: B6h); Linnet the cadet can stay in the column "so somebody in the grey knows Maud's name"; Knock's water can also come
+from the column's own barrels or Corin's windpump on a deeper draw.
 
 ## 17. Questions for the owner (ask spoiler-free, only when needed)
 - None open. (Engine choice is a tech question, asked in docs/TECH_EVALUATION.md.)
