@@ -19,6 +19,10 @@ namespace SecondFace.Core.Content
             "garments", "outfits", "builds",
         };
 
+        /// <summary>Registries the game reads when they are there (a place's dressing by the story); a game without them
+        /// plays as before.</summary>
+        public static readonly string[] Optional = { "dressing" };
+
         private readonly Dictionary<string, JToken> _tables = new();
 
         /// <summary>Install one registry from its JSON text.</summary>

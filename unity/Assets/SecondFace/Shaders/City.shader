@@ -5,7 +5,8 @@
 // screen, 3 a window pane (lit at night by the vertex's alpha), 4 a window grid over a megablock or a tower (bays of
 // _GridBay by _GridStorey on the face's metres; uv1.y the pane's share of a bay, the vertex alpha the share lit).
 // Light comes up at dusk with the global _SF_Night (SkyController: 0 by day, 1 at night); neon and screens burn by day
-// too, dimmer (_EmissionDay). Grime: the vertex alpha scales it on surfaces (0.5 as the material). A recoloured material
+// too, dimmer (_EmissionDay); the global _SF_CityDark (0 by default) puts every one of them out. Grime: the vertex
+// alpha scales it on surfaces (0.5 as the material). A recoloured material
 // (_Recolour) takes the vertex colour as its colour and the texture (its luminance over _MeanLum) as detail: the library's
 // painted concrete is green paint and its concrete a dark brown-grey, and a district's palette must read as itself.
 // Interiors (PlaceInteriors): inside the box _SF_CutMin.._SF_CutMax, grown by 1.3 m (CityKit.CutMargin: a balcony, an
@@ -51,6 +52,7 @@ Shader "SecondFace/City"
         float4 _SF_CutMin, _SF_CutMax;
         float _SF_CutHeight;
         float _SF_Night;
+        float _SF_CityDark;
         float4 _SF_RevealAt, _SF_RevealFrom;
         CBUFFER_START(UnityPerMaterial)
             float4 _BaseMap_ST;
@@ -267,6 +269,9 @@ Shader "SecondFace/City"
                     half lum = dot(albedo.rgb, half3(0.2126h, 0.7152h, 0.0722h));
                     albedo.rgb = lerp(albedo.rgb * tint, tint * _Albedo * min(lum / max(_MeanLum, 0.01h), 3.0h), _Recolour);
                 }
+
+                // the city's power cut (PlaceDressing sets _SF_CityDark: 0 lit, as by default, 1 every light out)
+                emission *= 1.0h - (half)saturate(_SF_CityDark);
 
                 // patches: broad and small, brightness and a little warmth
                 half broad = (half)Noise(p.xz / 9.0 + along * 0.02);

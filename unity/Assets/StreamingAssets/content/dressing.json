@@ -1,0 +1,182 @@
+{
+ "a3_dress_01": {
+  "if": {
+   "all": [
+    {
+     "flag": "a3_end",
+     "eq": "unwritten"
+    },
+    {
+     "flag": "a3_down"
+    }
+   ]
+  },
+  "settlement": "meridian",
+  "cityDark": true
+ },
+ "a3_dress_02": {
+  "if": {
+   "all": [
+    {
+     "flag": "a3_end",
+     "eq": "concern"
+    },
+    {
+     "flag": "a3_sold"
+    }
+   ]
+  },
+  "props": [
+   {
+    "map": "md_spire",
+    "anchor": "close_w",
+    "kind": "wagon",
+    "x": 0,
+    "z": 0,
+    "yaw": 90,
+    "count": 3,
+    "step": [
+     5.5,
+     0
+    ]
+   },
+   {
+    "map": "md_spire",
+    "anchor": "close_w",
+    "kind": "crate",
+    "x": 0,
+    "z": 3.5,
+    "yaw": 0,
+    "count": 6,
+    "step": [
+     1.5,
+     0
+    ]
+   },
+   {
+    "map": "md_spire",
+    "anchor": "close_w",
+    "kind": "crate",
+    "x": 0.7,
+    "z": 3.5,
+    "yaw": 8,
+    "count": 3,
+    "step": [
+     3.0,
+     0
+    ]
+   }
+  ]
+ },
+ "a3_dress_03": {
+  "if": {
+   "all": [
+    {
+     "flag": "a3_end",
+     "eq": "concern"
+    },
+    {
+     "flag": "a3_sold"
+    }
+   ]
+  },
+  "props": [
+   {
+    "map": "md_vault",
+    "anchor": "a3_vault_core",
+    "kind": "chalk",
+    "x": -6,
+    "z": 1.2,
+    "yaw": 0,
+    "count": 9,
+    "step": [
+     1.5,
+     0
+    ]
+   },
+   {
+    "map": "md_vault",
+    "anchor": "a3_vault_core",
+    "kind": "chalk",
+    "x": -6,
+    "z": -1.2,
+    "yaw": 180,
+    "count": 9,
+    "step": [
+     1.5,
+     0
+    ]
+   }
+  ]
+ },
+ "a3_dress_04": {
+  "if": {
+   "flag": "ep_sky",
+   "eq": "held"
+  },
+  "props": [
+   {
+    "map": "md_spire",
+    "anchor": "steps_sit",
+    "kind": "lamp",
+    "x": -6,
+    "z": 0,
+    "yaw": 0,
+    "count": 11,
+    "step": [
+     1.2,
+     0
+    ]
+   }
+  ]
+ },
+ "a3_dress_05": {
+  "if": {
+   "flag": "ep_sky",
+   "eq": "burning"
+  },
+  "settlement": "meridian",
+  "smoke": 0.85,
+  "props": [
+   {
+    "map": "md_bridgeward",
+    "anchor": "tower",
+    "kind": "fire_glow",
+    "x": 0,
+    "z": 0,
+    "count": 3,
+    "step": [
+     9,
+     6
+    ]
+   },
+   {
+    "map": "md_crown",
+    "anchor": "terraces",
+    "kind": "fire_glow",
+    "x": -8,
+    "z": 0,
+    "count": 3,
+    "step": [
+     8,
+     -4
+    ]
+   }
+  ]
+ },
+ "a3_dress_06": {
+  "if": {
+   "flag": "a3_amended"
+  },
+  "props": [
+   {
+    "map": "md_spire",
+    "anchor": "ar_plinth",
+    "kind": "register",
+    "x": 0,
+    "z": 0,
+    "yaw": 0
+   }
+  ]
+ }
+}

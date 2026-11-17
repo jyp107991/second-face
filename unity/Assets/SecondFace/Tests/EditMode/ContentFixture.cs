@@ -34,6 +34,8 @@ namespace SecondFace.Tests
             var dir = ContentDir();
             var db = new ContentDb();
             foreach (var name in ContentDb.Registries) db.Load(name, File.ReadAllText(Path.Combine(dir, name + ".json")));
+            foreach (var name in ContentDb.Optional)
+                if (File.Exists(Path.Combine(dir, name + ".json"))) db.Load(name, File.ReadAllText(Path.Combine(dir, name + ".json")));
             Registry.Load(db);
             _db = db;
             return db;

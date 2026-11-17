@@ -112,6 +112,7 @@ namespace SecondFace.Game.Play
             Quests.Update();
             if (Party != null) Party.Sync();
             if (People != null) People.Refresh();
+            if (Dressing != null) Dressing.Refresh();
         }
 
         /// <summary>The story moved on after a conversation or a fight: the quests, the places' people, a fight if anyone
@@ -123,6 +124,7 @@ namespace SecondFace.Game.Play
             // the party first: one who joined goes on in the body they stood in before the place's people are brought anew
             if (Party != null) Party.Sync();
             if (People != null) People.Refresh();
+            if (Dressing != null) Dressing.Refresh();
             if (Combat != null) Combat.Check(true);
         }
         /// <summary>The story moved on (a conversation closed, a fight is about to start): a moment to keep (the auto slot).</summary>
@@ -194,6 +196,7 @@ namespace SecondFace.Game.Play
             Begun = false;
             _arriving = null;
             _movesAsked = 0;
+            if (Dressing != null) Dressing.Clear();
             _placing++;   // a setting down under way is dropped
             if (Walker != null) Destroy(Walker.gameObject);
             Walker = null;
@@ -314,6 +317,9 @@ namespace SecondFace.Game.Play
                 Quests.Update();
             }
             _arriving = null;
+            if (Dressing == null) { Dressing = gameObject.AddComponent<PlaceDressing>(); Dressing.Walkabout = this; }
+            Dressing.Spawner = Stage.Streamer != null ? Stage.Streamer.PlaceSpawner : null;
+            Dressing.Refresh();
             SetDown?.Invoke();
         }
 
@@ -1013,6 +1019,10 @@ namespace SecondFace.Game.Play
             if (Triggers != null) Triggers.CheckNow();
         }
 
+        /// <summary>The place's dressing by the story (Core <see cref="Core.World.Dressing"/>; null until the walker is first
+        /// set down).</summary>
+        public PlaceDressing Dressing { get; private set; }
+
         /// <summary>A talking prop's conversation (a sign, the pumps, a bed): false when it has none to give.</summary>
         public bool LookAt(Interactable thing, MapDef map)
         {
@@ -1306,7 +1316,7 @@ namespace SecondFace.Game.Play
                 if (!Game.World.KnownLocations.Contains(p.Id)) { Game.World.KnownLocations.Add(p.Id); changed = true; }
                 foreach (var map in new[] { p.Map, p.Id })
                     if (!string.IsNullOrEmpty(map) && !Game.Flags.ContainsKey("visited_" + map)) { Game.Flags["visited_" + map] = true; changed = true; }
-                if (changed) { Quests.Update(); Party?.Sync(); People?.Refresh(); }
+                if (changed) { Quests.Update(); Party?.Sync(); People?.Refresh(); if (Dressing != null) Dressing.Refresh(); }
                 return;
             }
         }

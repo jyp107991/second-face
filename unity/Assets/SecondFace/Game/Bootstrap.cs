@@ -93,6 +93,20 @@ namespace SecondFace.Game
                 _status = $"LOADING… {name}";
                 _card?.Set($"{Strings.Get("title.loading")} {name}");
             }
+            // the registries read when they are there (a place's dressing by the story)
+            foreach (var name in ContentDb.Optional)
+            {
+                var path = Path.Combine(Application.streamingAssetsPath, "content", name + ".json");
+                string text = null;
+                if (path.Contains("://") || path.StartsWith("jar:"))
+                {
+                    using var req = UnityWebRequest.Get(path);
+                    yield return req.SendWebRequest();
+                    if (req.result == UnityWebRequest.Result.Success) text = req.downloadHandler.text;
+                }
+                else if (File.Exists(path)) text = File.ReadAllText(path);
+                if (!string.IsNullOrEmpty(text)) db.Load(name, text);
+            }
             Content = db;
             try { Registry.Load(db); }   // the typed registries the rules read (conversations, people, quests)
             catch (System.Exception e) { Debug.LogError($"Bootstrap: the content registries did not load: {e.Message}"); }

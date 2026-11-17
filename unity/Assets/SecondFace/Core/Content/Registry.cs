@@ -40,6 +40,8 @@ namespace SecondFace.Core.Content
         public static List<string> GarmentIds = new();
         public static Dictionary<string, RoleDef> OutfitRoles = new();
         public static Dictionary<string, FactionLook> FactionLooks = new();
+        /// <summary>A place's dressing by the story (the optional dressing registry; empty without it).</summary>
+        public static Dictionary<string, SecondFace.Core.World.DressingDef> Dressing = new();
 
         public static readonly JsonSerializer Strict = new() { MissingMemberHandling = MissingMemberHandling.Error };
         public static readonly JsonSerializer Lenient = new();
@@ -85,6 +87,7 @@ namespace SecondFace.Core.Content
             var outfits = (JObject)db.Table("outfits");
             OutfitRoles = outfits["roles"].ToObject<Dictionary<string, RoleDef>>(Lenient);
             FactionLooks = outfits["factions"].ToObject<Dictionary<string, FactionLook>>(Lenient);
+            Dressing = SecondFace.Core.World.Dressing.Load(db);
         }
     }
 }
