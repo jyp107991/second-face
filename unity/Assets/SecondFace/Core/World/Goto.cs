@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using SecondFace.Core.Content;
 using SecondFace.Core.Scene;
+using SecondFace.Core.Dialogue;
 
 namespace SecondFace.Core.World
 {
@@ -94,7 +95,9 @@ namespace SecondFace.Core.World
             return null;
         }
 
-        /// <summary>The maps a map's exits lead to, and the maps whose exits lead to it.</summary>
+        /// <summary>The maps a map's exits lead to, and the maps whose exits lead to it; also the maps its doors lead to
+        /// by conversation (a <c>goto</c> in the dialogue of one of its talk props, or in the map's own data: a crank,
+        /// a stair, a lift), and the maps whose doors lead to it that way.</summary>
         public static IEnumerable<string> Neighbours(string mapId)
         {
             if (Registry.Maps.TryGetValue(mapId, out var map) && map.Exits != null)
@@ -106,6 +109,58 @@ namespace SecondFace.Core.World
                 foreach (var e in other.Exits)
                     if (e.To?.Location == mapId) { yield return other.Id; break; }
             }
+            var links = DoorLinks();
+            if (links.TryGetValue(mapId, out var near))
+                foreach (var n in near) yield return n;
+        }
+
+        private static Dictionary<string, MapDef> _linksMaps;
+        private static Dictionary<string, DialogueDef> _linksDialogues;
+        private static int _linksCount = -1;
+        private static Dictionary<string, HashSet<string>> _links;
+
+        /// <summary>Both ways, the maps joined by a conversation's or a map's own <c>goto</c> (built once per content load).</summary>
+        public static Dictionary<string, HashSet<string>> DoorLinks()
+        {
+            var count = Registry.Maps.Count * 100003 + Registry.Dialogues.Count;
+            if (_links != null && ReferenceEquals(_linksMaps, Registry.Maps) && ReferenceEquals(_linksDialogues, Registry.Dialogues)
+                && _linksCount == count) return _links;
+            var links = new Dictionary<string, HashSet<string>>();
+            void Join(string a, string b)
+            {
+                if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b) || a == b || !Registry.Maps.ContainsKey(b)) return;
+                if (!links.TryGetValue(a, out var x)) links[a] = x = new HashSet<string>();
+                if (!links.TryGetValue(b, out var y)) links[b] = y = new HashSet<string>();
+                x.Add(b); y.Add(a);
+            }
+            var serializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
+            var dialogueGotos = new Dictionary<string, List<string>>();
+            List<string> GotosOfDialogue(string id)
+            {
+                if (string.IsNullOrEmpty(id)) return null;
+                if (dialogueGotos.TryGetValue(id, out var known)) return known;
+                var list = new List<string>();
+                if (Registry.Dialogues.TryGetValue(id, out var def) && def != null)
+                    foreach (var (_, order, _) in InContent(("d", JToken.FromObject(def, serializer))))
+                        if (order != null) list.Add(order.Location);
+                return dialogueGotos[id] = list;
+            }
+            foreach (var m in Registry.Maps.Values)
+            {
+                if (m == null) continue;
+                if (m.Talk != null)
+                    foreach (var t in m.Talk.Values)
+                    {
+                        var to = GotosOfDialogue(t?.Dialogue);
+                        if (to != null) foreach (var loc in to) Join(m.Id, loc);
+                    }
+                // gotos written in the map's own data (its triggers' effects)
+                if (m.Triggers != null)
+                    foreach (var (_, order, _) in InContent(("t", JToken.FromObject(m.Triggers, serializer))))
+                        if (order != null) Join(m.Id, order.Location);
+            }
+            _links = links; _linksMaps = Registry.Maps; _linksDialogues = Registry.Dialogues; _linksCount = count;
+            return links;
         }
 
         /// <summary>The world place holding a map as the content alone has it (the web game's sites): the world map's

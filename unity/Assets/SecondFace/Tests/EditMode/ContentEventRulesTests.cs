@@ -57,10 +57,19 @@ namespace SecondFace.Tests
             var under = Goto.Resolve("md_sink", "clinic", Places);
             Assert.That(under.Place, Is.EqualTo("meridian"));
             Assert.That(under.Via, Is.EqualTo("exits"));
-            // a room of a town with no way in on the maps (a lift's top): the town
-            var town = Goto.Resolve("md_crown", "hall", Places);
+            // a room of a town reached by a lift's conversation: through the map the lift stands on
+            var lift = Goto.Resolve("md_crown", "hall", Places);
+            Assert.That(lift.Place, Is.EqualTo("meridian"));
+            Assert.That(lift.Via, Is.EqualTo("exits"));
+            // a room whose neighbours stand nowhere in the world: its town
+            var town = Goto.Resolve("md_crown", "hall", m => m == "meridian" ? "meridian" : null);
             Assert.That(town.Place, Is.EqualTo("meridian"));
             Assert.That(town.Via, Is.EqualTo("settlement"));
+            // a cell whose only door is a conversation (a crank, a stair): the place of the map that door stands on
+            var cell = Goto.Resolve("an_hall", "stair", Places);
+            Assert.That(cell, Is.Not.Null, "a cell entered by a conversation's goto is found through the map of its door");
+            Assert.That(cell.Place, Is.EqualTo(Goto.Resolve("an_kelso", null, Places).Place));
+            Assert.That(cell.Via, Is.EqualTo("exits"));
             // as the world's layout has it at run time: a place whose map it is wins
             var layout = Goto.Resolve("md_bridgeward", "loop", m => m == "md_bridgeward" ? "site_md_bridgeward" : m == "meridian" ? "meridian" : null);
             Assert.That(layout.Place, Is.EqualTo("site_md_bridgeward"));
