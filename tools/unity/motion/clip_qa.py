@@ -16,7 +16,12 @@ Checks, per clip (the converter's FBX + json) and per source trial (CMU ASF/AMC,
   configuration  Unity's own in-between rule: each in-between bone in every frame against the avatar configuration the clip
             is imported with (the staged .meta's, or with --project the project's .meta: its stored humanDescription.skeleton;
             none stored, Unity builds it from the file's first frame); fails above 0.5° (Unity's "Rig Error: Avatar Rig
-            Configuration mis-match"; reproduces Unity's figures to 1e-4°)
+            Configuration mis-match"; reproduces Unity's figures to 1e-4°), the in-between bones by the decided mapping
+            (the hands LeftHand/RightHand, the wrist twist bones in-between); a stored mapping that makes another bone a
+            hand fails (`mapping`)
+  hand turn every gesture (no travel): each hand's world turn in the file against the capture's, the two skeletons' constant
+            axis turns fitted over the hips, the head and the hands, a seamed loop's blended frames and the frames of a
+            repaired solver flip left out; fails above 5°
   stance    gaits: the planted foot as the editor measured it in game (2026-11-17): the loop as Loop Pose plays it, its travel
             added, each stance from the key before touchdown to toe-off, key by key, the ground speed of the slower of the
             ankle and the ball and of the contact point (the lower sole point); fails where the slowest of the three moves
@@ -329,7 +334,18 @@ def meta_avatar(meta_path):
     return human, {e[0]: [float(v) for v in e[2:6]] for e in ents}
 
 
-def inbetween_configuration(path, meta_path):
+def stored_hands(meta_path):
+    """The transforms a .meta's stored Humanoid mapping makes the hands ({'LeftHand': boneName, 'RightHand': boneName}; empty
+    when it stores none). The decided mapping (coordinator, 2026-11-17) is LeftHand/RightHand themselves, the wrist twist
+    bones in-between: the mappings Unity stored for the CMU clips made the twist bones the hands, which convention D holds at
+    rest, so the hands' captured turn (in LeftHand/RightHand) was discarded."""
+    import re
+    if not meta_path or not os.path.exists(meta_path): return {}
+    txt = open(meta_path).read().split('\n    skeleton:', 1)[0]
+    return {h: b for b, h in re.findall(r'- boneName: (\S+)\n\s+humanName: (LeftHand|RightHand)\n', txt)}
+
+
+def inbetween_configuration(path, meta_path, mapping='decided'):
     """Unity's own in-between rule, computed as Unity computes it ("Rig Error: Avatar Rig Configuration mis-match. Inbetween
     bone rotation in configuration does not match rotation in animation file: 'Neck2' : rotation error = N deg"): for each
     in-between bone, the largest angle over the take's frames between its local rotation in the file and its rotation in the
@@ -338,13 +354,13 @@ def inbetween_configuration(path, meta_path):
     frame (the stored configurations match their takes' first frames: talk's spine and legs within 0.05°, run_c's chest,
     neck and head within 0.03°), so a bone held in every frame reads 0. Measured on motion set v6 imported over the project's
     metas: Unity's twelve figures reproduced to 1e-4° (jog 14.2743, jog_f 39.7747, walk_f_c 45.2163, ...; 2026-11-17).
-    The in-between bones are the stored mapping's (Unity's), or the Mecanim names' when none is stored.
+    The in-between bones are the decided mapping's (`mapping='decided'`: the Mecanim names, the hands LeftHand/RightHand and
+    the wrist twist bones in-between, coordinator 2026-11-17), or the .meta's stored mapping (`mapping='stored'`, as Unity
+    judged the project's clips before: the twist bones as the hands, so only Neck2 and the hip joints).
     {bone: (deg or None when the stored configuration lacks the bone, 'stored' | 'file')}."""
     np = _np()
     human, conf = meta_avatar(meta_path)
-    # the in-between bones by the meta's stored mapping (Unity's), else by the Mecanim names (a fresh mapping; Unity's own
-    # auto-mapping made the CMU clips' wrist twist bone the Hand every time it ran, so it may judge fewer bones than this)
-    names = list(inbetween_errors(path, human or None).keys())
+    names = list(inbetween_errors(path, (human or None) if mapping == 'stored' else None).keys())
     if not names: return {}
     curves = fbx_rotation_curves(path)
     objs, _ = _fbx_tree(path); bind = {}
@@ -365,6 +381,114 @@ def inbetween_configuration(path, meta_path):
             ref, src = q[0], 'file'
         ref = ref / np.linalg.norm(ref)
         out[nm] = (float(np.degrees(2 * np.arccos(np.clip(np.abs(q @ ref), 0, 1))).max()), src)
+    return out
+
+
+def fbx_world_rotations(path, names):
+    """World rotations (N, 3, 3) of the named nodes as the file stores them (FBX axes): each node's chain of local rotations
+    (its curves where it has them, its default Lcl Rotation otherwise, with any Pre/PostRotation), no Loop Pose spread."""
+    np = _np()
+    objs, conns = _fbx_tree(path)
+    ids, props = {}, {}
+    for n in objs:
+        if n[0] != 'Model': continue
+        nm = n[1][1].split('\x00')[0]; ids[n[1][0]] = nm; P = {}
+        for k in n[2]:
+            if k[0] == 'Properties70':
+                for p in k[2]:
+                    if p[0] == 'P' and p[1][0] in ('Lcl Rotation', 'PreRotation', 'PostRotation'): P[p[1][0]] = [float(v) for v in p[1][4:7]]
+        props[nm] = P
+    parent = {}
+    for c in conns:
+        if c[1][0] == 'OO' and c[1][1] in ids and c[1][2] in ids: parent[ids[c[1][1]]] = ids[c[1][2]]
+    curves = fbx_rotation_curves(path)
+    N = max((len(v) for v in curves.values()), default=1)
+    cache = {}
+
+    def world(nm):
+        if nm not in cache:
+            P = props.get(nm, {})
+            pre = _euler_R(P.get('PreRotation', [0, 0, 0]))[0]; post = _euler_R(P.get('PostRotation', [0, 0, 0]))[0]
+            R = _euler_R(curves[nm]) if nm in curves else np.repeat(_euler_R(P.get('Lcl Rotation', [0, 0, 0])), N, 0)
+            L = np.einsum('ij,njk,kl->nil', pre, R, post.T)
+            cache[nm] = np.einsum('nij,njk->nik', world(parent[nm]), L) if nm in parent else L
+        return cache[nm]
+    return {nm: world(nm) for nm in names if nm in props}
+
+
+def _polar(M):
+    np = _np()
+    U, _, Vt = np.linalg.svd(M); D = np.eye(3); D[2, 2] = np.sign(np.linalg.det(U @ Vt))
+    return U @ D @ Vt
+
+
+def _angles(X, Y):
+    np = _np()
+    return np.degrees(np.arccos(np.clip((np.einsum('nij,nij->n', X, Y) - 1) / 2, -1, 1)))
+
+
+def fit_frames(X, Y, iters=40):
+    """X[bone], Y[bone]: (N, 3, 3) world rotations of the same bones on two skeletons whose world axes differ by one constant
+    turn A (the file's axes, the converter's facing turn) and whose bone axes differ by a constant turn B[bone] each: the A
+    and B that best give X = A Y B (alternating Procrustes from the 24 axis turns and the first frame's, the least squares
+    kept). Returns A, B, {bone: per-frame angle (deg) of what the constants cannot explain}."""
+    np = _np()
+    sys.path.insert(0, os.path.join(HERE, '..', '..', 'qa', 'calibration'))
+    import skel
+    bs = [b for b in X if b in Y]
+    best = None
+    for A in [X[bs[0]][0] @ Y[bs[0]][0].T] + skel._rotations24():
+        for _ in range(iters):
+            B = {b: _polar(np.einsum('nji,njk->ik', np.einsum('ij,njk->nik', A, Y[b]), X[b])) for b in bs}
+            A = _polar(sum(np.einsum('nij,nkj->ik', X[b], Y[b] @ B[b]) for b in bs))
+        res = {b: _angles(X[b], np.einsum('ij,njk->nik', A, Y[b]) @ B[b]) for b in bs}
+        cost = sum(float((r ** 2).sum()) for r in res.values())
+        if best is None or cost < best[0]: best = (cost, A, B, res)
+    return best[1], best[2], best[3]
+
+
+def hand_turn(fbx, meta, source):
+    """The hands' world turn in the file against the capture's (motion v6.1, coordinator 2026-11-17: the Humanoid Hand is the
+    LeftHand/RightHand bone, the wrist twist bones in-between under convention D, so the hands keep their captured turn).
+    The clip's frames are matched to the capture's at the clip's own rate (the clip starts where its range does); a seamed
+    loop's first frames, blended from past its end, are left out (at most the range's length less the loop's). The constant
+    turns between the two skeletons' world and bone axes are fitted over the hips, the head and both hands together; what
+    they leave is each hand's turn lost or added. Frames of a repaired solver flip above the hands or the head are left out.
+    Returns {'LeftHand': {'max', 'p98'}, ..., 'fit': {...}, 'frames': [first, end], 'flip_frames_left_out'} or None where it
+    cannot be measured."""
+    np = _np()
+    bones = ['Hips', 'Head', 'LeftHand', 'RightHand']
+    if source is None or not all(b in source.R for b in bones): return None
+    W = fbx_world_rotations(fbx, bones)
+    if not all(b in W for b in bones): return None
+    fps = float(meta.get('fps') or 30)
+    src = source.resample(fps) if abs(source.fps - fps) > 1e-6 else source
+    n = min(len(W['Hips']), src.n)
+    k0 = 0
+    if meta.get('loop') and meta.get('range'):
+        k0 = max(0, int(math.ceil(((meta['range'][1] - meta['range'][0]) - (meta.get('frames') or n) / fps) * fps - 1e-6)))
+    # the frames where the converter repaired a solver flip of the capture (the json's `flips_repaired`: a joint turned over
+    # for a few frames and back, slerped across) on a joint above a hand or the head: the capture there is the solver's error,
+    # not a turn to keep (stretch's right hand 48.8°, sit_ground's 130.6°, talk_b's left 44.1°, fall's left 27.8° all fell
+    # on such frames), so they are left out, with a frame either side
+    keep = np.ones(n, bool); keep[:k0] = False
+    sfps = float(meta.get('src_fps') or fps)
+    off = round(meta['range'][0] * sfps) if meta.get('range') and str(meta.get('src', '')).startswith('ACCAD') else 0
+    below = ('toe', 'foot', 'tibia', 'femur', 'hipjoint', 'leg', 'thumb', 'finger', 'index', 'middle', 'ring', 'pinky')
+    left_out = 0
+    for joint, spans in (meta.get('flips_repaired') or {}).items():
+        if any(w in joint.lower() for w in below): continue
+        for sp in spans:
+            if not isinstance(sp, (list, tuple)): continue
+            a = int(math.floor((sp[0] - off) * fps / sfps)) - 1; b = int(math.ceil((sp[1] - off) * fps / sfps)) + 1
+            a, b = max(0, a), min(n - 1, b)
+            if a <= b: left_out += int(keep[a:b + 1].sum()); keep[a:b + 1] = False
+    if keep.sum() < 10: return None
+    X = {b: W[b][:n][keep] for b in bones}; Y = {b: src.R[b][:n][keep] for b in bones}
+    _, _, res = fit_frames(X, Y)
+    out = {b: {'max': round(float(res[b].max()), 2), 'p98': round(float(np.percentile(res[b], 98)), 2)} for b in ('LeftHand', 'RightHand')}
+    out['fit'] = {b: round(float(res[b].max()), 2) for b in ('Hips', 'Head')}
+    out['frames'] = [k0, n]; out['flip_frames_left_out'] = left_out
     return out
 
 
@@ -655,7 +779,7 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False, proj
             # is imported with, read from that .meta (humanDescription.skeleton; none stored: Unity builds it from the file).
             # v6 passed inbetween_rest (the files hold Neck2 at its rest, 0.00°) yet Unity reported a Neck2 Rig Error on 12
             # gaits: they were imported over the project's metas, whose stored configurations date from each clip's first
-            # import (2026-10-29 for the old names). The figures below reproduce Unity's to 1e-4°.
+            # import (2026-10-29 for the old names). Their Neck2 figures reproduce Unity's to 1e-4°.
             cmeta = os.path.join(project, name + '.fbx.meta') if project else fbx + '.meta'
             cfg = inbetween_configuration(fbx, cmeta)
             r['checks']['inbetween_config_deg'] = {k: round(v[0], 4) if v[0] is not None else None for k, v in sorted(cfg.items())}
@@ -664,6 +788,12 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False, proj
                 where = 'the configuration stored in ' + os.path.relpath(cmeta) if frm == 'stored' else 'the configuration Unity builds from the file'
                 if v is None: fails.append(f'configuration: {k} is missing from {where}')
                 elif v > 0.5: fails.append(f"configuration: {k} is {v:.1f}° from {where} (Unity's Rig Error; import the staged .meta, which stores none)")
+            # the decided mapping: the Humanoid hands are LeftHand/RightHand, the wrist twist bones in-between (a stored mapping
+            # that makes the twist bones the hands discards the hands' captured turn; MotionImportPostprocessor maps them)
+            hands = stored_hands(cmeta)
+            r['checks']['hands_mapped_to'] = hands or None
+            for h, b in sorted(hands.items()):
+                if b != h: fails.append(f"mapping: the stored mapping makes {b} the {h} (decided: {h} itself, the twist bone in-between)")
             ib = inbetween_errors(fbx)
             r['checks']['inbetween_deg'] = {k: {'mean': round(v[0], 2), 'max': round(v[1], 2)} for k, v in sorted(ib.items())}
             # (the bind-vs-mean-take angle is reported, not judged: it read 0 on v4, which Unity rejected, 2026-11-17)
@@ -675,6 +805,14 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False, proj
         if source is not None and meta.get('range') and not sp > 0.3:
             # a gesture or an idle against the stretch of its capture it was cut from (not the whole take)
             source = source.slice(meta['range'][0], meta['range'][1])
+        if sp <= 0.3 and not combat and not meta.get('mirrored') and os.path.exists(fbx):
+            # every gesture's hands against the capture (the decided mapping: the Hand is LeftHand/RightHand, so its turn
+            # is what Unity retargets): the world turn left after the two skeletons' constant axis turns, above 5° fails
+            ht = hand_turn(fbx, meta, source)
+            r['checks']['hand_turn_deg'] = ht
+            if ht:
+                for b in ('LeftHand', 'RightHand'):
+                    if ht[b]['max'] > 5.0: fails.append(f"hand turn: {b} leaves the capture's world turn by up to {ht[b]['max']:.1f}° (p98 {ht[b]['p98']:.1f})")
         if combat:
             combat_checks(mt, meta, r, fails, source)
         elif not meta.get('root'):

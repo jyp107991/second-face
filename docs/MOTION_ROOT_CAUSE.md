@@ -178,6 +178,24 @@ frame rates), `/home/user/second-face-staging/motion/README.md` (clip QA, clips 
   body, models fitted to their nulls, the fight's feet on the ground, the foot lock following the clip, stances stepped,
   rounds fired on the hold), with the gate's own items (a)-(d): F1 by the lowest sole point in strikes, strike A1/A2 per
   strike class from its own actor, the guard's A2 against the clip played, the aim's head turn traced with the gaze off.
+- **Motion set v6.1: the Neck2 Rig Error was the project's stored avatar configurations (2026-11-17, offline helper).**
+  v6's files hold Neck2 at its rest in the bind and every frame (0.00°), and above the legs v6 equals v5. Unity judges a take
+  against the configuration stored in the clip's `.meta` (`humanDescription.skeleton`), which it builds at a clip's first
+  import and reuses on every later one: 2026-10-29 for the old names, each newer clip's first import since. That angle
+  reproduces Unity's twelve figures to 1e-4° (jog 14.2743 ... walk_f_c 45.2163); v5 read the same against the same metas, and
+  the 16 CMU clips not re-imported carry it too (10-50°). Fix: v6.1 is imported with its staged metas (none stored); the
+  clip QA's `configuration` check judges Unity's own rule (`--project` against the project's metas) and the converters'
+  last step checks the written FBX and `.meta`. **Decisions (coordinator):** `MotionImportPostprocessor` rebuilds the stored
+  configuration whenever a clip's file changes (editor owner); the Humanoid hands are LeftHand/RightHand themselves with the
+  wrist twist bones in-between under convention D (Unity's stored mappings made the twist bones the hands, held at rest, so
+  the hands' captured turn, up to 54° in `talk` and 107° in `wave`, was discarded). The clip QA judges the in-between bones by
+  that mapping, fails a stored mapping that makes a twist bone a hand, and checks every gesture's hand turn against the
+  capture (fails above 5°; v6.1's gestures read 0.00-0.03°, the frames of repaired solver flips left out).
+- **Known fact, left as it is: Unity builds a clip's avatar configuration from the take's first key, not from P4.8's T-pose.**
+  The converters key the T-pose (`t_pose_key`) only as the FBX models' default values; the take starts at frame 1 (1/30 s).
+  The configurations Unity stored match their takes' first keys on the trunk within 0.1° wherever the cut has not changed
+  since (drink, fall, pickup, sit, stretch, talk, wave, yawn). Kept (coordinator, 2026-11-17): the first key is a real
+  standing pose, which is the reference wanted.
 - **The clips were wrong in ways the gate could not see.** 21 of the 28 clips fail the new clip QA: `idle` and `stretch`
   played at twice their speed (CMU 141 is 60 fps, not the listed 120; it is subject 106, a woman); six clips from women
   played on men, every gait of unrecorded sex on women; slides and seam pops. 41 sex-matched clips are staged (25 pass).
