@@ -1880,10 +1880,11 @@ mid-range Android phone; deployed to Pages.
             conversations not written). The writing of its first conversation file was stopped by the model's safety
             system on 2026-11-17 and not regenerated; how the rest is written is open (see the story plan's B4 notes).
             Main keeps B4a's `inside` stub for the beat.
-- [~] B5 **Act 2 wilds**: Glass Flats (Ninebridge, Openfield, the Sump, Cistern 4), Rail Corridor (the
+- [x] B5 **Act 2 wilds**: Glass Flats (Ninebridge, Openfield, the Sump, Cistern 4), Rail Corridor (the
       Line, Junction, halts, rail bandits), Drowned Shore (stilt villages, Rigs, salvage dives), Teeth
       mines, Northern Wet (barges, Dam, timber), Ashlands (remnant machines); Long Night alliance. ~12 h.
       Built in four parts (the Glass Flats were B3.1–B3.3); the plan for all four is in the story plan's "Build notes — B5".
+      All four parts DONE 2026-11-17 in content (Unity place builds, `npm run export` and the on-device playtest are P10 work).
       - [x] B5a **the Rail Corridor** DONE 2026-11-17 (content; the Unity place build and the on-device playtest are P10
             work; `npm run export` has not been run for it): `tools/maps/gen_rc_corridor.py` (walkability and reachability
             checked) → `maps/rc_fourways.ts` (80×60, Four Ways, the Junction: the station under its clock, the ticket hall,
@@ -1973,8 +1974,33 @@ mid-range Android phone; deployed to Pages.
             drive, the winch, eels at the tailrace; three rooms to rent (safehouses); five merchants; hunting 0.7/0.6.
             Reads `hs_shift`, `ks_maren`, `hs_gate_shut`, `hs_car_down`, `hs_parts`, `sk_pumps`, `rc_engine`.
             `tests/b5c.test.ts` (43). No engine change.
-      - [ ] B5d **the Ashlands and the Long Night** (planned: the Ashlands' sites and beat 17, the act's alliance; ids
-            `an_*`, `ln_*`; reads the corridor's `rc_*` flags listed in the build notes).
+      - [x] B5d **the Ashlands and the Long Night** DONE 2026-11-17 (content; the Unity place build and the on-device
+            playtest are P10 work; `npm run export` has not been run for it; build notes `story/B5d_NOTES_SECRET.md`):
+            `tools/maps/gen_an_ashlands.py` (walkability and reachability checked) → `maps/an_spindle.ts` (64×48, Spindle:
+            a pickers' camp in a pre-war school and a laager of dead convoy trucks under a bladeless turbine tower, the
+            weigher's table and the board, the doctor's shack, a hound-keeper's yard), `an_kelso.ts` (72×52, Kelso: a
+            cratered army depot, its apron, tower, hangar, motor pool and engine shed), `an_hall.ts` (40×24 cell, the hall
+            under its apron), `an_pemberton.ts` (56×40, Pemberton: a solar farm on the glass and its inverter house),
+            `an_saddleback.ts` (44×28, a ridge and a spotter's hide) and `an_glass.ts` (40×26 roadside cell). `lm_ash_01`
+            renamed Kelso and bound to its map; three new locations (`spindle`, `lm_ash_02`, `lm_ash_03`) and five routes
+            from Dry Wells onto the glass; settlement `spindle` (gossip two-way to Dry Wells); four open sites, two cells.
+            Cast `npcs/an_ashlands.ts` (9 named, 2 hired guns; one family), `npcs/ln_longnight.ts` (8 wardens and guild
+            riders); the Long Night also places 12 people from earlier slices at Openfield, West Halt and Carrick
+            (`gen_openfield.py`, `gen_rc_corridor.py`, `gen_md_docks.py`, each regenerated). Dialogue `an_spindle.ts`,
+            `an_kelso.ts`, `ln_longnight.ts` (65 trees, 284 nodes, every node with a return line; 102 companion
+            interjections, all seven). Quests `quests/b5d_ashlands.ts`: the Ashlands' line `q_an_kelso` (four ends:
+            talk, tech, fight, barter; two without violence; plus three ways with the man who wants the job done), side
+            lines `q_an_kite` (four ends) and `q_an_board` (three ends; finishes Yard Nine's open route, `rc_engine` =
+            ashlands, a stage added to `q_rc_engine` and a line to Ida at Yard Nine), **beat 17 `q_a2_longnight`**
+            (critical; the act's exclusive alliance: four sides or none, a table that needs two favours owed and Speech 75,
+            who comes at dusk read from Act 2's flags across every region (26 world events that wait for the player at
+            Openfield), the night as one chain with the player's own act at midnight, eleven ends by side and strength,
+            companions' red lines) and a side line on the Line itself (eight ways, by who holds which section). Act 2 closes at the night's dawn
+            (`act2_done`). Items `items/b5d_ashlands.ts` (8); 16 leads + 6 conclusions (`world/b5d_ashlands.ts`); 29 world
+            events; 12 road encounters (remnant machines on the glass: 7 passing, 3 on the roadside cell; 2 on the Flats'
+            roads while the Long Night is called). Activities: picking runs in three bands, a room to rent (safehouse), four
+            merchants. The flags B6 reads are listed in the notes. `tests/b5d.test.ts` (32: the places, every end of every
+            Ashlands line, and the alliance played strong, mixed, thin, as a truce, failed and as none). No engine change.
 - [ ] B6 **Act 3 + endings**: return, lockdown, Spire, finale, endings A–E + modifiers, epilogue slides.
 - [ ] B7 **Systemic depth + presentation**: ruins templates, bounty/gig templates, rare encounters, music
       and ambience, title art, menus, credits, settings, tips.
@@ -1993,7 +2019,7 @@ mid-range Android phone; deployed to Pages.
 | Act 1 wilds | 5/5 | 15/15 | 17/17 | 2/2 | playable; ten road encounters, discoveries on foot, hunting and traps, the windpumps, the wreck, the orchard |
 | Meridian | 13/14 | 142/145 | 250/255 | 32/33 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward, the Crown, the Archive Spire (the close and landing ninety-one), the Court of Accounts and the Dead Ring written; the Docks across the dry river written (B5b, Carrick: the Line's end, the tide boat's and the barges' landing, the district's line and two side lines); the Loop joins six stops (one outside the Wall), stairs the Sink, the chain Bridgeward, the invitation car the Crown, a lane the Spire close, the gate road the Ring, the river road and the quay tram the Docks, and every board answers NO BRIDGE. Loose ends: Unity sites for the Spire close, the Ring and the Docks (P10 place build); vehicle travel reading the buggy flag (P12); the Spire beat's end now opens beat 16 (B4a) |
 | Halcyon/Skirts | 2/6 | 22/40 | 40/55 | 6/12 | the Skirts written (B4a): the town under the arcology and a gallery under its pit; the Line's last stop; beat 16 opened; the seventh companion joins here. The arcology itself is B4b |
-| Act 2 wilds | 22/26 | 118/140 | 257/300 | 23/28 | Ninebridge, Openfield, the Sump and Cistern 4 playable; the Rail Corridor written (B5a): Four Ways, both halts, Yard Nine and Kettle Cut, the Line ridden from every stop, the rail bandits' line and four side lines; the Drowned Shore written (B5b): Gull Stilts, the Rigs, Blackcap and the dike road, the tide boat, the shore's line, two side lines and the dives in three bands; the Teeth mines and the Northern Wet written (B5c): Number Four and its old level, Sawtown, Ashby Dam and its gallery, Low Landing, two roadside maps, the barges from every river stop, the north track, the ropeway, the mines' line and the Wet's line and three side lines, activities in bands. B5d planned (counts approximate; Meridian's Docks are counted under Meridian) |
+| Act 2 wilds | 28/28 | 137/137 | 322/322 | 28/28 | Ninebridge, Openfield, the Sump and Cistern 4 playable; the Rail Corridor written (B5a): Four Ways, both halts, Yard Nine and Kettle Cut, the Line ridden from every stop, the rail bandits' line and four side lines; the Drowned Shore written (B5b): Gull Stilts, the Rigs, Blackcap and the dike road, the tide boat, the shore's line, two side lines and the dives in three bands; the Teeth mines and the Northern Wet written (B5c): Number Four and its old level, Sawtown, Ashby Dam and its gallery, Low Landing, two roadside maps, the barges from every river stop, the north track, the ropeway, the mines' line and the Wet's line and three side lines, activities in bands; the Ashlands and the Long Night written (B5d): Spindle, Kelso and its hall, Pemberton, Saddleback and a roadside map, the remnant machines on the glass, the Ashlands' line and two side lines, picking runs in bands, the act's alliance at Openfield and a side line on the Line. Act 2's wilds complete in content (counts approximate; Meridian's Docks are counted under Meridian) |
 | Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |
 | Companions | — | 7/7 | 0/7 arcs | 0/7 | Tamsin, Wren, Ilya, Odile, Ash, Nine can join; Kes joins in the Skirts (B4a, with her arc and quest); arcs later |
 | Factions joinable | — | — | — | 0/9 | design pending |

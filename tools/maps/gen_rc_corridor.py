@@ -345,6 +345,10 @@ npcs = [
     {'def': 'npc_rc_10', 'x': 40, 'y': 23, 'facing': 0},
     {'def': 'npc_rc_11', 'x': 35, 'y': 15, 'facing': 2, 'schedule': [], 'if': FREED},
     {'def': 'npc_rc_12', 'x': 22, 'y': 15, 'facing': 2, 'schedule': [], 'if': {'any': [FREED, {'flag': 'rc_joaquin', 'eq': 'home'}]}},
+    # the Long Night (B5d): the city's warden car with the order's first name in it, held at the platform road
+    {'def': 'npc_sh_05', 'id': 'ln_calla_wh', 'x': 12, 'y': 14, 'facing': 2, 'schedule': [], 'dialogue': 'd_ln_car', 'if': {'all': [{'flag': 'ln_car', 'eq': 'west_halt'}, {'not': {'flag': 'ln_calla'}}]}},
+    {'def': 'npc_ln_e1', 'x': 11, 'y': 15, 'facing': 1, 'if': {'all': [{'flag': 'ln_car', 'eq': 'west_halt'}, {'not': {'flag': 'ln_calla'}}]}},
+    {'def': 'npc_ln_e2', 'x': 14, 'y': 14, 'facing': 3, 'if': {'all': [{'flag': 'ln_car', 'eq': 'west_halt'}, {'not': {'flag': 'ln_calla'}}]}},
 ]
 spawns = [
     {'id': 'start', 'x': 24, 'y': 15, 'facing': 2}, {'id': 'platform', 'x': 24, 'y': 15, 'facing': 2},
@@ -369,6 +373,7 @@ rc_halt_w = {
     'spots': spots, 'npcs': npcs,
     'triggers': [
         {'id': 'arrive', 'x': 1, 'y': 11, 'w': 46, 'h': 9, 'text': 'West Halt: a platform, a water tower, a keeper\'s house and a handful of others, half of them with their doors nailed. A board on the platform once said TRAINS STOP ON REQUEST. Somebody has painted THROUGH over it in guild green, and somebody else has scratched the green half off again.', 'effects': [{'learn': 'seen_halt_w'}, {'learn': 'loc_halt_w'}, {'set': 'rc_open'}]},
+        {'id': 'ln_car', 'x': 1, 'y': 11, 'w': 46, 'h': 9, 'if': {'all': [{'flag': 'ln_car', 'eq': 'west_halt'}, {'not': {'flag': 'ln_calla'}}]}, 'text': 'On the platform road west of the halt, a warden car: plated windows, a chained door, two wardens in the Precinct\'s grey beside it, and through the slot in its door a woman in a grey scarf sitting with her hands in her lap.', 'effects': [{'learn': 'ln_car_seen'}, {'quest': 'q_ln_calla', 'start': True}]},
         {'id': 'tower', 'x': 29, 'y': 11, 'w': 10, 'h': 2, 'text': 'The water tower\'s ladder has been pulled up and its hatch padlocked with a new lock. From inside, once, somebody coughs, and somebody else hushes them.', 'effects': [{'learn': 'rc_tower_cough'}, {'quest': 'q_rc_stock', 'start': True}]},
     ],
     'extras': [

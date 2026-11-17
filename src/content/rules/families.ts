@@ -30,4 +30,6 @@ export const FAMILIES: Record<string, string[]> = {
   Wexford: ['npc_nw_01', 'npc_nw_02'],
   Brandvold: ['npc_nw_06', 'npc_nw_07'],
   Huaman: ['npc_nw_09', 'npc_nw_10'],
+  // the Ashlands (B5d): Spindle's weigher and her grandson
+  Kwarteng: ['npc_an_01', 'npc_an_02'],
 };

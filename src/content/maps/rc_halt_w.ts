@@ -582,6 +582,66 @@ export const rc_halt_w: MapDef = {
           }
         ]
       }
+    },
+    {
+      def: "npc_sh_05",
+      id: "ln_calla_wh",
+      x: 12,
+      y: 14,
+      facing: 2,
+      schedule: [],
+      dialogue: "d_ln_car",
+      if: {
+        all: [
+          {
+            flag: "ln_car",
+            eq: "west_halt"
+          },
+          {
+            not: {
+              flag: "ln_calla"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_ln_e1",
+      x: 11,
+      y: 15,
+      facing: 1,
+      if: {
+        all: [
+          {
+            flag: "ln_car",
+            eq: "west_halt"
+          },
+          {
+            not: {
+              flag: "ln_calla"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_ln_e2",
+      x: 14,
+      y: 14,
+      facing: 3,
+      if: {
+        all: [
+          {
+            flag: "ln_car",
+            eq: "west_halt"
+          },
+          {
+            not: {
+              flag: "ln_calla"
+            }
+          }
+        ]
+      }
     }
   ],
   triggers: [
@@ -601,6 +661,36 @@ export const rc_halt_w: MapDef = {
         },
         {
           set: "rc_open"
+        }
+      ]
+    },
+    {
+      id: "ln_car",
+      x: 1,
+      y: 11,
+      w: 46,
+      h: 9,
+      if: {
+        all: [
+          {
+            flag: "ln_car",
+            eq: "west_halt"
+          },
+          {
+            not: {
+              flag: "ln_calla"
+            }
+          }
+        ]
+      },
+      text: "On the platform road west of the halt, a warden car: plated windows, a chained door, two wardens in the Precinct's grey beside it, and through the slot in its door a woman in a grey scarf sitting with her hands in her lap.",
+      effects: [
+        {
+          learn: "ln_car_seen"
+        },
+        {
+          quest: "q_ln_calla",
+          start: true
         }
       ]
     },

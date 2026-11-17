@@ -47,6 +47,9 @@ export const SITES: Record<string, SiteDef> = {
   md_lantern: { kind: 'open', beside: { site: 'md_market', side: 'e' }, rim: 'keep' },
   md_bridgeward: { kind: 'open', beside: { site: 'md_lantern', side: 'e' }, rim: 'keep' },
   md_stacks: { kind: 'open', beside: { site: 'md_market', side: 's' }, rim: 'keep' },
+  // the Archive Spire's close up the Precinct's lane (north); the Dead Ring outside the Wall by the gate road (west)
+  md_spire: { kind: 'open', beside: { site: 'md_precinct', side: 'n' }, rim: 'keep' },
+  md_ring: { kind: 'open', beside: { site: 'md_precinct', side: 'w' }, rim: 'keep' },
   // the Teeth: the Skirts under Halcyon (B4a)
   hs_skirts: { kind: 'open', at: 'skirts', rim: 'strip' },
   // the Rail Corridor (B5a)
@@ -66,6 +69,11 @@ export const SITES: Record<string, SiteDef> = {
   nw_sawtown: { kind: 'open', at: 'timber', rim: 'strip' },
   nw_dam: { kind: 'open', at: 'dam', rim: 'strip' },
   nw_landing: { kind: 'open', at: 'riverdock', rim: 'strip' },
+  // the Ashlands (B5d): the pickers' camp, the dead base, the solar farm, the ridge over the reserve
+  an_spindle: { kind: 'open', at: 'spindle', rim: 'strip' },
+  an_kelso: { kind: 'open', at: 'lm_ash_01', rim: 'strip' },
+  an_pemberton: { kind: 'open', at: 'lm_ash_02', rim: 'strip' },
+  an_saddleback: { kind: 'open', at: 'lm_ash_03', rim: 'keep' },
   // cells: enclosed places, entered through their doors
   cistern9: { kind: 'cell' },
   cistern4: { kind: 'cell' },
@@ -73,6 +81,7 @@ export const SITES: Record<string, SiteDef> = {
   md_stacks_9: { kind: 'cell' },
   md_stacks_roof: { kind: 'cell' },
   md_crown: { kind: 'cell' },
+  md_spire_top: { kind: 'cell' },
   hs_six: { kind: 'cell' },
   dev_yard: { kind: 'cell' },
   dev_bunker: { kind: 'cell' },
@@ -85,4 +94,6 @@ export const SITES: Record<string, SiteDef> = {
   tm_trail: { kind: 'cell' },
   nw_gallery: { kind: 'cell' },
   nw_bank: { kind: 'cell' },
+  an_hall: { kind: 'cell' },
+  an_glass: { kind: 'cell' },
 };

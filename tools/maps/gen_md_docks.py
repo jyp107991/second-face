@@ -274,6 +274,10 @@ npcs = [
     {'def': 'npc_dk_h3', 'x': 50, 'y': 38, 'facing': 0, 'schedule': [], 'if': ALL(F('dk_crane', 'black'), ANY(NOT(F('dk_black')), F('dk_breakers_fight')), HOURS(4, 10))},
     # a factor the shore put off: sent back to a desk under the Harbour Master (B5b, Oil on the Water)
     {'def': 'npc_ds_04', 'id': 'npc_ds_04_carrick', 'x': 70, 'y': 21, 'facing': 3, 'schedule': [], 'dialogue': 'd_dk_thorne', 'if': F('ds_thorne', 'fled')},
+    # the Long Night (B5d): the city's warden car run straight through on the guild's green, at the buffer, waiting for the van
+    {'def': 'npc_sh_05', 'id': 'ln_calla_dk', 'x': 61, 'y': 9, 'facing': 3, 'schedule': [], 'dialogue': 'd_ln_carrick', 'if': ALL(F('ln_car', 'carrick'), NOT(F('ln_calla')))},
+    {'def': 'npc_ln_e1', 'x': 62, 'y': 10, 'facing': 3, 'if': ALL(F('ln_car', 'carrick'), NOT(F('ln_calla')))},
+    {'def': 'npc_ln_e2', 'x': 64, 'y': 9, 'facing': 3, 'if': ALL(F('ln_car', 'carrick'), NOT(F('ln_calla')))},
 ]
 
 spawns = [

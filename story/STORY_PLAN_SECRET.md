@@ -945,7 +945,8 @@ reach; hunting and trapping in the Teeth), Sawtown (`timber`), Ashby Dam (`dam`)
 `sk_pumps`), a timber camp's feud, a barge run. Yard Nine's north track (depot–timber) carries timber when Dorcas runs
 (`rc_engine`). Reads `hs_shift`, `ks_maren`, `hs_gate_shut`.
 
-### B5d — the Ashlands and the Long Night (planned)
+### B5d — the Ashlands and the Long Night (built 2026-11-17: the lines, the alliance's table of who comes, the cast and the flags
+B6 reads are in `story/B5d_NOTES_SECRET.md`; the plan as it stood is kept below)
 The Ashlands (`lm_ash_01` and new sites: a dead base, a kite field, the hound reserve seen from a ridge; remnant machines;
 *A Kite Day*; a pre-Scald board that finishes `q_rc_engine`'s open route). **Beat 17 `q_a2_longnight`** (critical): Choir
 against the Tollmen over Openfield's stores; the Ledger's eviction order (reads `prec_unrecorded`); the Concern backs the

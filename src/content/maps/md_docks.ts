@@ -2090,6 +2090,66 @@ export const md_docks: MapDef = {
         flag: "ds_thorne",
         eq: "fled"
       }
+    },
+    {
+      def: "npc_sh_05",
+      id: "ln_calla_dk",
+      x: 61,
+      y: 9,
+      facing: 3,
+      schedule: [],
+      dialogue: "d_ln_carrick",
+      if: {
+        all: [
+          {
+            flag: "ln_car",
+            eq: "carrick"
+          },
+          {
+            not: {
+              flag: "ln_calla"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_ln_e1",
+      x: 62,
+      y: 10,
+      facing: 3,
+      if: {
+        all: [
+          {
+            flag: "ln_car",
+            eq: "carrick"
+          },
+          {
+            not: {
+              flag: "ln_calla"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_ln_e2",
+      x: 64,
+      y: 9,
+      facing: 3,
+      if: {
+        all: [
+          {
+            flag: "ln_car",
+            eq: "carrick"
+          },
+          {
+            not: {
+              flag: "ln_calla"
+            }
+          }
+        ]
+      }
     }
   ],
   triggers: [

@@ -45,8 +45,11 @@ const L: LocationDef[] = [
   { id: 'timber', name: 'Sawtown', region: 'northern_wet', x: 300, y: 92, kind: 'minor', settlement: 'sawtown', map: 'nw_sawtown' },
   { id: 'dam', name: 'Ashby Dam', region: 'northern_wet', x: 196, y: 62, kind: 'landmark', settlement: 'ashby', map: 'nw_dam' },
   { id: 'riverdock', name: 'Low Landing', region: 'northern_wet', x: 150, y: 150, kind: 'minor', settlement: 'low_landing', map: 'nw_landing' },
-  // The Ashlands
-  { id: 'lm_ash_01', name: 'Cratered base', region: 'ashlands', x: 630, y: 402, kind: 'landmark', hidden: true },
+  // The Ashlands (B5d): the pickers' camp on the plateau's edge, the army's dead base, its solar farm, the ridge over its reserve
+  { id: 'spindle', name: 'Spindle', region: 'ashlands', x: 575, y: 388, kind: 'minor', settlement: 'spindle', map: 'an_spindle' },
+  { id: 'lm_ash_01', name: 'Kelso', region: 'ashlands', x: 630, y: 402, kind: 'landmark', hidden: true, map: 'an_kelso' },
+  { id: 'lm_ash_02', name: 'Pemberton', region: 'ashlands', x: 622, y: 432, kind: 'landmark', hidden: true, map: 'an_pemberton' },
+  { id: 'lm_ash_03', name: 'Saddleback', region: 'ashlands', x: 668, y: 410, kind: 'landmark', hidden: true, map: 'an_saddleback' },
 ];
 
 const R: RouteDef[] = [
@@ -76,6 +79,12 @@ const R: RouteDef[] = [
   { a: 'dam', b: 'riverdock', terrain: 'marsh', danger: 0.3 },
   { a: 'riverdock', b: 'meridian', terrain: 'road', danger: 0.3 },
   { a: 'drywells', b: 'lm_ash_01', terrain: 'rough', danger: 0.8 },
+  // the Ashlands (B5d): the old wind-farm road from Dry Wells to Spindle, then the glass
+  { a: 'drywells', b: 'spindle', terrain: 'rough', danger: 0.35 },
+  { a: 'spindle', b: 'lm_ash_01', terrain: 'glass', danger: 0.6 },
+  { a: 'spindle', b: 'lm_ash_02', terrain: 'glass', danger: 0.6 },
+  { a: 'lm_ash_01', b: 'lm_ash_02', terrain: 'glass', danger: 0.6 },
+  { a: 'lm_ash_01', b: 'lm_ash_03', terrain: 'rough', danger: 0.7 },
   // Off-road to landmarks (found on foot nearby, then walkable).
   { a: 'shale', b: 'lm_sallow_01', terrain: 'rough', danger: 0.3 },
   { a: 'rustdogs', b: 'lm_sallow_01', terrain: 'rough', danger: 0.3 },

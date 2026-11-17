@@ -5,7 +5,7 @@ export const SETTLEMENTS: Record<string, SettlementDef> = Object.fromEntries(([
   { id: 'cistern9', name: 'Knock', roads: { shale: 1 }, traffic: 0.2, type: 'shelter', region: 'sallow', prosperity: 0.45, kit: 'concrete' },
   { id: 'shale', name: 'Shale', roads: { cistern9: 1, rustdogs: 1, drywells: 1, tollhouse: 2, wheel: 1 }, traffic: 0.7, type: 'well_town', region: 'sallow', prosperity: 0.3, kit: 'adobe', crisis: 'drought' },
   { id: 'rustdogs', name: 'Rust Dogs\' overpass', roads: { shale: 1, tollhouse: 2, wheel: 1 }, traffic: 0.5, type: 'raider_camp', region: 'sallow', prosperity: 0.25, kit: 'wreck', owner: 'rust_dogs' },
-  { id: 'drywells', name: 'Dry Wells', roads: { shale: 1, wheel: 1 }, traffic: 0.4, type: 'well_town', region: 'sallow', prosperity: 0.15, kit: 'scrap' },
+  { id: 'drywells', name: 'Dry Wells', roads: { shale: 1, wheel: 1, spindle: 2 }, traffic: 0.4, type: 'well_town', region: 'sallow', prosperity: 0.15, kit: 'scrap' },
   { id: 'wheel', name: 'Wheel', roads: { shale: 1, drywells: 1, rustdogs: 1 }, traffic: 0.6, type: 'nomad_camp', region: 'sallow', prosperity: 0.4, kit: 'wagons', owner: 'wheel' },
   { id: 'tollhouse', name: 'Tollhouse 9', roads: { shale: 2, rustdogs: 2, ninebridge: 4, fourways: 2 }, traffic: 0.9, type: 'toll_fort', region: 'sallow', prosperity: 0.6, kit: 'concrete', owner: 'tollmen' },
   { id: 'ninebridge', name: 'Ninebridge', roads: { tollhouse: 4, openfield: 2, meridian: 3, sump: 2 }, traffic: 1, type: 'trade_town', region: 'glass_flats', prosperity: 0.6, kit: 'wreck', owner: 'tollmen' },
@@ -27,5 +27,7 @@ export const SETTLEMENTS: Record<string, SettlementDef> = Object.fromEntries(([
   // the Northern Wet (B5c): a logging town, the dam's keepers, a barge port; news goes up and down the river with the barges
   { id: 'sawtown', name: 'Sawtown', roads: { yard_nine: 2, ashby: 1 }, traffic: 0.4, type: 'well_town', region: 'northern_wet', prosperity: 0.35, kit: 'timber', crisis: 'feud' },
   { id: 'ashby', name: 'Ashby', roads: { sawtown: 1, low_landing: 1 }, traffic: 0.2, type: 'salvage_camp', region: 'northern_wet', prosperity: 0.3, kit: 'concrete' },
+  // the Ashlands (B5d): the pickers' camp on the plateau's edge; its news goes west to Dry Wells with whoever comes back off the glass
+  { id: 'spindle', name: 'Spindle', roads: { drywells: 2 }, traffic: 0.25, type: 'salvage_camp', region: 'ashlands', prosperity: 0.2, kit: 'scrap', crisis: 'drought' },
   { id: 'low_landing', name: 'Low Landing', roads: { ashby: 1, meridian: 2 }, traffic: 0.6, type: 'trade_town', region: 'northern_wet', prosperity: 0.3, kit: 'timber', owner: 'tollmen' },
 ] as SettlementDef[]).map((s) => [s.id, s]));

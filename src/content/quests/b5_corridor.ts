@@ -114,6 +114,7 @@ export const q_rc_engine: QuestDef = {
     { id: 'contract', kind: 'barter', label: 'Have the depot sign the Concern\'s exclusive for a new board' },
     { id: 'dark', kind: 'chrome', label: 'Wake the board without its channel, through a grid link or with Kes', requires: { any: [{ chrome: 'ch_neural_link' }, { chrome: 'ch_neural_lattice' }] } },
     { id: 'spare', kind: 'talk', label: 'Talk the signalwoman out of her last pre-war spare', requires: { skill: 'speech', gte: 45 } },
+    { id: 'ashlands', kind: 'survival', label: 'Bring an army board out of a shunter in the Ashlands (B5d)' },
     { id: 'read', kind: 'knowledge', label: 'Read the board and when it died', requires: { skill: 'mechanics', gte: 40 } },
   ],
   stages: {
@@ -123,15 +124,17 @@ export const q_rc_engine: QuestDef = {
         { id: 'board', text: 'Find out what is wrong with Dorcas', done: { knows: 'rc_leashed_known' } },
         { id: 'run', text: 'Get Dorcas running', done: { flag: 'rc_engine' } },
       ],
-      next: [{ if: E('contract'), stage: 'contract' }, { if: E('dark'), stage: 'dark' }, { if: E('spare'), stage: 'spare' }, { if: { knows: 'rc_leashed_known' }, stage: 'leashed' }],
+      next: [{ if: E('contract'), stage: 'contract' }, { if: E('dark'), stage: 'dark' }, { if: E('spare'), stage: 'spare' }, { if: E('ashlands'), stage: 'ashlands' }, { if: { knows: 'rc_leashed_known' }, stage: 'leashed' }],
     },
     leashed: {
       journal: 'Dorcas did not die. Her board is the Concern\'s, and it was switched off from far away the night after the yard sent the Concern\'s first letter back unsigned.',
       objectives: [{ id: 'run', text: 'Get Dorcas running', done: { flag: 'rc_engine' } }],
-      next: [{ if: E('contract'), stage: 'contract' }, { if: E('dark'), stage: 'dark' }, { if: E('spare'), stage: 'spare' }],
+      next: [{ if: E('contract'), stage: 'contract' }, { if: E('dark'), stage: 'dark' }, { if: E('spare'), stage: 'spare' }, { if: E('ashlands'), stage: 'ashlands' }],
     },
     contract: { journal: 'Ida signed the Concern\'s exclusive and Whitlock fitted a new board. Dorcas runs, on the Concern\'s board and the Concern\'s terms: twenty years of its freight first on every path.', end: 'done' },
     dark: { journal: 'Dorcas\'s board was woken without the Concern\'s channel. She runs dark: nobody up the hill can switch her off again. The Concern\'s man left Yard Nine the next morning.', end: 'done' },
+    // B5d: the army board out of Kelso's shunter (q_an_board)
+    ashlands: { journal: 'Dorcas runs on an army board out of a shunter at Kelso, in the Ashlands: pre-war, with nobody in it but its makers. Four Ways keeps its last spare.', end: 'done' },
     spare: { journal: 'Dorcas runs on Halina Wrona\'s last spare, a pre-war board with nobody in it but the maker. If one of the instruments at Four Ways goes now, it stays gone.', end: 'done' },
   },
 };

@@ -2,6 +2,7 @@ import type { WorldEventDef } from '../../engine/world/frontier';
 import { DS_EVENTS } from './ds_shore';
 import { DK_EVENTS } from './md_docks';
 import { B5C_EVENTS } from './b5c_wilds';
+import { B5D_EVENTS } from './b5d_ashlands';
 
 /**
  * Scheduled world events. There are no day limits in this game: an event waits for the player (it fires at its
@@ -144,3 +145,5 @@ Object.assign(WORLD_EVENTS, DS_EVENTS);
 Object.assign(WORLD_EVENTS, DK_EVENTS);
 // the Teeth mines' and the Northern Wet's events (B5c) live in b5c_wilds.ts
 Object.assign(WORLD_EVENTS, B5C_EVENTS);
+// the Ashlands' and the Long Night's events (B5d) live in b5d_ashlands.ts
+Object.assign(WORLD_EVENTS, B5D_EVENTS);
