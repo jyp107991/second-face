@@ -74,7 +74,7 @@ export const SHALE_NPCS: NpcDef[] = [
   },
   {
     id: 'npc_sh_11', name: 'Corporal Issa Lind', look: { seed: 2111, frame: 'narrow', age: 34, over: { hair: { style: 'paint_fade', color: 0x120e0b } } }, role: 'guard',
-    level: 4, ...SH, faction: 'shale_militia', ally: { flag: 'tribute_fight' }, courage: 85, dialogue: 'd_sh_issa', attrs: { reflex: 7, brawn: 6 }, skills: { firearms: 30, melee: 25 },
+    level: 4, ...SH, faction: 'shale_militia', ally: { any: [{ flag: 'tribute_fight' }, { flag: 'a3_sh_fight' }] }, courage: 85, dialogue: 'd_sh_issa', attrs: { reflex: 7, brawn: 6 }, skills: { firearms: 30, melee: 25 },
     equip: ['w_bolt308', 'r_scrap'], inventory: [['a_308', 12]], tolls: 10,
     schedule: [{ from: 6, to: 12, spot: 'yard', activity: 'work' }, { from: 12, to: 18, spot: 'street_w', activity: 'patrol' }, { from: 18, to: 22, spot: 'corporal', activity: 'work' }, home('home_f')],
     barks: ['Eyes up.', 'Jonah\'s a good kid. Kids die first.', 'When the Dogs come we fight. Ada knows it. Ada just hasn\'t said it.'],
@@ -106,7 +106,7 @@ export const SHALE_NPCS: NpcDef[] = [
     barks: ['Tribute\'s due. Everybody knows it, nobody says it.', 'I carried water for the Dogs once. Once.', 'Pike pays in Tolls. Mags pays in drink. Guess who I work for.'],
   },
   {
-    id: 'npc_sh_16', name: 'Benno Strand', look: { seed: 2116, frame: 'broad', age: 30 }, role: 'guard', level: 3, ...SH, faction: 'shale_militia', ally: { flag: 'tribute_fight' }, courage: 60,
+    id: 'npc_sh_16', name: 'Benno Strand', look: { seed: 2116, frame: 'broad', age: 30 }, role: 'guard', level: 3, ...SH, faction: 'shale_militia', ally: { any: [{ flag: 'tribute_fight' }, { flag: 'a3_sh_fight' }] }, courage: 60,
     equip: ['w_zip38'], inventory: [['a_38', 6]],
     schedule: [{ from: 6, to: 14, spot: 'street_e', activity: 'patrol' }, { from: 14, to: 22, spot: 'yard_b', activity: 'work' }, home('home_f', 22, 6)],
     barks: ['Militia. Volunteer. Mostly volunteer.', 'My cousin Ilya shot a bottle off a post at two hundred paces. Then he shot the post.', 'Keep the gun down in town.'],

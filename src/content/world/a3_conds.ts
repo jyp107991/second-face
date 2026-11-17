@@ -254,6 +254,21 @@ export const ALLY = (a: Ally): Cond => F(`a3_ally_${a}`);
 export const ALLIES_AT_KNOCK: Ally[] = ['shale', 'dogs', 'choir', 'wheel'];
 export const ALLIES_AT_CLOSE: Ally[] = ['choir', 'wheel', 'stand', 'gangs', 'saints'];
 
+/** B6c: the road home (19). It is open from the order's reading until the player has a way home or is at Knock. The rides
+ * by the Long Night's side: the wardens' car (the city's side), the guild's first class (the guild's), Openfield's carts
+ * (the Choir's); a truce has every side's debt to call, by asking (`ln_owed`); a member of the side may ride with it too.
+ * The Wheel carries road-kin and friends; the player's own buggy, if it is fit to drive. `none` has no side's ride. */
+export const HOME_OPEN: Cond = ALL(ORDER_READ, NOT(F('a3_route_home')), NOT(AT_KNOCK));
+export const ORME = 'npc_kn_factor';
+const TRUCE_OWED: Cond = ALL(LN('truce'), LN_OWED);
+export const RIDE_COLUMN: Cond = ALL(ANY(LN('ledger'), { member: 'wardens' }, TRUCE_OWED), NOT(ALL(LOWE_DEAD, { dead: REYES })));
+export const RIDE_FIRST: Cond = ALL(ANY(LN('guild'), { member: 'tollmen', rank: 'hand' }, TRUCE_OWED), NOT({ dead: ORME }));
+export const RIDE_CARTS: Cond = ALL(ANY(LN('choir'), { member: 'choir' }, TRUCE_OWED), NOT(LN_PEOPLE('removed')), NOT(LN_PEOPLE('relocated')));
+export const RIDE_WHEEL: Cond = ANY(ALLY_NEEDS.wheel, ALLY('wheel'));
+export const RIDE_BUGGY: Cond = ALL(F('dr_buggy'), NOT(F('dr_buggy_hurt')));
+/** Stood against the guild at the Long Night (and not one of its own): its riders remember it on the road. */
+export const AGAINST_GUILD: Cond = ALL(ANY(LN('choir'), LN('ledger')), NOT({ member: 'tollmen' }));
+
 /** The readiness hub's eight acts at the close (`d_a3_ready`, B6m): each adds 1 to `a3_ready`, once (`a3_ready_<id>`). */
 export const READY_ACTS: { id: string; needs: Cond }[] = [
   { id: 'choir', needs: ALLY('choir') },
@@ -389,6 +404,26 @@ export const EP_SLIDES = ['steps', 'ledger', 'cistern', 'knock', 'shale', 'dogs'
  *   an_board                 mast            B5d's flag, written through MAST_BOARDS: the shunter's board went into the head box
  *   knowledge: a3_list_heard, a3_broadcast_seen (the rack's isolated circuit; also relay_log_read), a3_crown_told,
  *                            a3_hollow_price, a3_verity_band (Verity's letter), a3_ledger_granted (the grid said GRANTED)
+ * B6c (built; dialogue/a3_road.ts, world/a3_letters.ts, world/a3_roads.ts; hooks on Lowe, Reyes, Femi's board, Doria, the Ring's buggies):
+ *   a3_route_home            column | first | carts | wheel | buggy | foot   how the player came home: a ride's scene sets its own on
+ *                            arrival (or on getting down at Shale); foot = under their own steam (on foot, the Line, a caravan),
+ *                            set by world event a3_home_road at Knock when no ride was taken. (The plan's `line` folds into foot.)
+ *   a3_ride                  column | first | carts | buggy | wheel   the ride boarded (set on departure; a reopened scene resumes)
+ *   a3_in_sallow             true            a ride came down into the Sallow (also any Sallow map: IN_SALLOW)
+ *   a3_at_knock              true            a ride arrived at Knock, or world event a3_home (the player at Knock after the order)
+ *   a3_ally_<ally>           true            a muster letter's reply (world/a3_letters.ts; one per ALLY_NEEDS key, alternates by
+ *                                            recipient); knowledge a3_ally_<ally> with it
+ *   a3_archive_promise       true            Ines's reply to let_ines_refusals (Act 2 or Act 3, the replies' copy held); knowledge
+ *                                            ines_promised_archive
+ *   a3_lowe_asked            down | unsure | on | none   what the player told Lowe at Tollhouse 9 in the column's car (B6f/B6j may read)
+ *   a3_carts_water           true            Openfield's carts brought water barrels to a dry Knock (B6f: Knock's water)
+ *   a3_riders                paid | talked | fought   the guild's riders on the road home (only against the guild);  a3_riders_fight
+ *                                            true  their hostileIf
+ *   a3_refugees              water | tolls | wheel | told   what the player did for Openfield's walkers on the road
+ *   knowledge: a3_ride_column / a3_ride_first / a3_ride_carts (a side's offer by post), a3_lowe_clause (the order has no line for
+ *                            a designate who says no), a3_column_seen, a3_trader_news, a3_first_folder (Orme's folder),
+ *                            a3_wheel_ride;  memory npc_c9_01 player_wrote_refusals (the copy sent home)
+ *                            (Linnet drives the column's car when kn_linnet_will_run: B6f reads a3_route_home = column with it)
  * Planned (the slice named sets it; values as the plan fixes them):
  *   a3_recall                declined | stayed | handed | court | bought | hidden | fought | taken          B6b
  *   nine_disposed            true                                                                        B6b

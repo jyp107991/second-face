@@ -1,5 +1,6 @@
 import type { DialogueDef, NodeDef, OptionDef } from '../../engine/dialogue/dialogue';
 import type { Cond, Effect } from '../../engine/world/logic';
+import { BUGGY_HOME } from './a3_road';
 
 /**
  * Meridian, the Dead Ring (B3.12): outside the Wall. The Loop's last halt at Clover and its turnstile; the circuit and
@@ -143,7 +144,7 @@ export const d_dr_mule: DialogueDef = {
   id: 'd_dr_mule', owner: 'narrator', start: [{ if: { flag: 'dr_buggy', eq: 'mule' }, node: 'yours' }, { node: 'look' }],
   nodes: {
     look: { text: 'The Mule: a buggy of welded doors with a different colour on every door, roll bars of scaffold pipe, two seats of which one is a crate, and an engine that has at one time or another been every engine in the Ring. Painted very small on the bonnet: ONE MORE SEASON.', again: 'The Mule, every door a different colour. ONE MORE SEASON.', effects: [{ learn: 'dr_mule_seen' }], options: [leave] },
-    yours: { text: 'The Mule, yours, with ONE MORE SEASON on the bonnet and a new line under it in Emil\'s shaking hand: AND ANOTHER.', again: 'ONE MORE SEASON. AND ANOTHER.', options: [leave] },
+    yours: { text: 'The Mule, yours, with ONE MORE SEASON on the bonnet and a new line under it in Emil\'s shaking hand: AND ANOTHER.', again: 'ONE MORE SEASON. AND ANOTHER.', options: [BUGGY_HOME('mule'), leave] },
   },
 };
 export const d_dr_slate_sign: DialogueDef = {
@@ -570,7 +571,7 @@ export const d_dr_heron: DialogueDef = {
     fixed: { text: 'Half an hour on your back under the Heron with a length of line from Emil\'s box. The cut piece comes away in your hand with its grey silk still tied on.', again: 'The new line in, the cut piece in your pocket.', options: [leave] },
     fix_no: { text: 'You get the old line off and the new one will not seat. Emil, watching from the shed door, says nothing, which is advice.', again: 'The new line will not seat. Emil, at the shed door.', options: [leave] },
     wreck: { text: 'The Heron on its blocks with the roof stove in and the long nose crumpled, a pre-war airport tug that survived the Burn and did not survive the cloverleaf.', again: 'The Heron, roof stove in, on its blocks.', options: [leave] },
-    yours: { text: 'The Heron, yours, the seat still bolted low the way Bello liked it. You have not moved it.', again: 'The Heron, the seat bolted low.', options: [leave] },
+    yours: { text: 'The Heron, yours, the seat still bolted low the way Bello liked it. You have not moved it.', again: 'The Heron, the seat bolted low.', options: [BUGGY_HOME('heron'), leave] },
   },
 };
 

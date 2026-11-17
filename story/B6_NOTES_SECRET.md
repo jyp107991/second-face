@@ -699,7 +699,7 @@ The default shared files touched by a content slice are the registries: `quests/
   hidden Nine still placed later; taken Nine never placed.
 - **Estimate** 1.25 h.
 
-### B6c — The road home and the muster
+### B6c — The road home and the muster — BUILT 2026-11-17 (deviations under "As built")
 - **Create** `world/a3_letters.ts` (the ten muster letters and `let_ines_refusals`, spread into LETTERS) ·
   `dialogue/a3_road.ts` (the ride home by alliance: the wardens' car scene with Lowe, the guild's first class with Orme, the
   Choir's carts; road encounters `d_re_a3_*`) · `world/a3_roads.ts` (`re_a3_*` encounters in the Sallow and the corridor).
@@ -1235,6 +1235,77 @@ reproduces the map byte for byte; then one condition on Dario's placement).
   `a3_mast_keeper` = wheel (Dario at the station); the Hollow have no slide (suggested: a line in the wheel or knock slide by
   keeper). **Runtime (§9.5):** the white lamp at the head once `a3_mast_how` is set; the crown on its plates when how = t | v;
   KNOCK chalked on the cabinet when keeper = knock.
+
+### B6c (built 2026-11-17, after B6b and B6d)
+**Done, all of the slice:** `dialogue/a3_road.ts` (8 trees: the rides `d_a3_column`, `d_a3_first`, `d_a3_carts`, `d_a3_buggy`;
+the road's people `d_re_a3_wheel`, `d_re_a3_refugees`, `d_re_a3_riders`, `d_re_a3_trader`; plus the hook nodes the shared trees
+spread in) · `world/a3_letters.ts` (15 muster letters for the 11 allies, and `let_ines_refusals`) · `world/a3_roads.ts` (6
+world events, 5 road encounters) · 5 people in `npcs/a3.ts` · `tests/b6c.test.ts` (29). No engine change, no map change.
+`npm run check` green when run (people gate red/stale as before); later in the run a concurrent slice's new
+`dialogue/a3_shale.ts` broke the typecheck, which is not B6c's.
+**Shared touches (small, local):** `a3_conds.ts` (`HOME_OPEN`, `ORME`, `RIDE_COLUMN/FIRST/CARTS/WHEEL/BUGGY`, `AGAINST_GUILD`
+after `ALLIES_AT_CLOSE`; the registry's B6c block) · `quests/a3.ts` (`q_a3_return` only: routes' `requires` are the RIDE_*
+conditions, the journals rewritten, an optional "write to the people who might stand with me" objective on both stages) ·
+the registries (`dialogue/index.ts`, `world/letters.ts`, `world/encounters.ts`, `world/events.ts`) · one hook each in four
+existing trees: `meridian.ts` (`d_md_lowe`: a start entry and node `a3_car`; `d_md_reyes`: the same), `md_docks.ts` (one
+extra option on Femi's Line window `d_dk_line`), `openfield.ts` (`d_of_doria`: a start entry and node `a3_carts`), `md_ring.ts`
+(one option on each buggy's `yours` node) · `tests/b6a.test.ts` (its "no event the morning after" check filters the
+`a3_offer_*` posts, which come that morning by design).
+
+**How it plays (and where it differs from §2.3 19):**
+- **Geography.** On the world map the Sallow is east of Meridian and of Openfield (the Line runs east from Carrick; Odile's
+  "when you go east"). The plan's "west" is read as "home": journals and route labels say east; the stage id `west` is kept.
+- **The offers come by post, the rides from people the player can always find.** World events at the next nine o'clock after
+  the order is read, anywhere, while the road home is open (`HOME_OPEN` = order read ∧ no way home yet ∧ not at Knock): Lowe's
+  (or Reyes's, Lowe dead), Orme's, Doria's. Each says where the ride leaves; nothing leaves without the player. **Who rides:**
+  `ledger` or a wardens' member → the car; `guild` or a tollmen hand → the first class; `choir` or a Choir member → the carts;
+  **`truce` with `ln_owed` → all three, by asking** (Lowe: "Ask, if you want it"); `none` → no side's ride. The carts need
+  Openfield's people still there (not `ln_people` removed | relocated); the first class needs Orme alive; the car Lowe or
+  Reyes.
+- **The wardens' car** (`d_a3_column`, from Lowe's desk or Reyes at the gate): the relocation car itself, sixty numbered
+  benches, CAPACITY 60, the designate on bench thirty-one; Linnet drives it when `kn_linnet_will_run` (text only; B6f reads
+  `a3_route_home` = column with it). Lowe's four topics (why carry you, his grief, the order's missing line, the sixty names:
+  trust +3/+5/+3) and, at Tollhouse 9, his question: "When you're at the door, what will you say?" → `a3_lowe_asked` = down
+  | unsure | on | none (trust +5 for the first two; Tamsin −10 at "carry on"). It decides nothing; **B6f/B6j may read it.** A
+  night by the wheel with Tamsin (+5) balances her −5 for riding in the car. Reyes's ride is shorter (one topic, no question).
+- **The guild's first class** (`d_a3_first`, from Femi's window with Orme's letter): the guild's own coach behind the engine of
+  the Concern's through, out of Carrick at four, the halts' pilots waving it through; uncoupled at Four Ways at dawn, then the
+  guild's road coach down its own toll road, Tollhouse 9's gate up for it. Orme rides home to her stand; her folder is "guild
+  business at the stand" only with `GUILD_IN_PLAY` (**B6g writes the paper; she has told the player it exists**), else the
+  stand's empty book. A Linnet topic when `kn_linnet_choice` = factor.
+- **Openfield's carts** (`d_a3_carts`, from Doria): water barrels and seed for a dry Knock, four days by the old south bed (no
+  gates, no tolls), Mason at the head if home, else Calla if free, else Doria; fewer carts if Openfield burned. The open-sky
+  fire. Arriving sets **`a3_carts_water`** (and news at Knock): **B6f: Knock's water** reads it with Dry Wells' carts.
+- **The buggy** (`d_a3_buggy`, from the Heron or the Mule at the Ring, `dr_buggy` and not `dr_buggy_hurt`): fuel at Ninebridge
+  (20) or siphoned (Mechanics 35; a failure costs four hours and a push), the Tollhouse's bar lifted for the designate.
+- **The Wheel** are a road encounter (`re_a3_wheel`, weight 12, the Flats, the corridor and the Sallow): road-kin and friends
+  (`RIDE_WHEEL` = the Wheel's own need, or called) are carried home across the pan by their own tracks (Sefa trust +5).
+- **Every ride ends at Knock's stand, or lets the player down in Shale** to walk the last of it (the way home is still the
+  ride's). A ride reopened before it arrives (a save mid-road) resumes in the Sallow (`a3_ride` = the ride boarded).
+- **Under their own steam.** **`line` is not written:** the Line ends at Four Ways and the last of it is the toll road either
+  way; on foot, the Line or a caravan reads **`foot`**. World events `a3_home` / `a3_home_road` at Knock (`where: c9_mouth`,
+  hour 0: the first time on Knock's map after the midnight following the order's reading, which every road home is longer
+  than) set `a3_at_knock` and, when no ride was taken, `a3_route_home` = foot. **B6f:** Knock's arrival trigger may still set
+  `a3_at_knock` at once and should play its arrival whether or not `a3_home` has fired (read `a3_route_home` for how).
+- **The muster.** One letter per ally, with alternates by who to ask: the Dogs to Perpetua (Wren's people, `wren_exodus`),
+  Kessler (no coup) or Vasha (her coup, alive); the Choir to Mason (home), Calla (free) or Doria; the Shift to Maren, or Rafe if
+  she was hanged. Each: after the order, with `ALLY_NEEDS[ally]` exactly, until the ally is called, to someone met and alive,
+  once; Ada's not once she has resigned or died. Replies in 3–6 days set `a3_ally_<ally>` (+ knowledge, trust +5) and say
+  where they will be: at Knock's door when the player is (shale, dogs, choir, wheel), the city's night after the steps
+  (stand, gangs, saints), the people brought down after (boats, barges), a reader (seventeen). **B6m:** the Shift's reply
+  promises the powder cases "waiting when you need them, with a man who can wire them": no item is given here, so the charge
+  reads `a3_ally_shift`.
+- **The Archive promise.** `let_ines_refusals` carries a transcription; the player keeps `k_ar_refusals` (D_ARCHIVE and B6h
+  read it). Offered with the copy held, from Act 2 on, until the door is settled or the Archive decided. Sending it sets
+  Ines's memory `player_wrote_refusals` (**B6h's "the PC never wrote" can read its absence**); the reply sets
+  `a3_archive_promise`: "If she said no to the city three times, I would like to know what else she kept."
+- **The road's people** (four planned, plus the Wheel): the column's supply car passing with the Precinct's own water for the
+  wardens (text); Openfield's walkers (Bertil Greer and Keturah Osei, only when the night cost Openfield: burned, evicted,
+  guild, scorched; water, Tolls, the wheel mended (Mechanics 30), or the way to the Wheel; news at Openfield); the guild's
+  riders (only `AGAINST_GUILD`: choir or ledger, not a tollmen member; pay fifty, Speech 45 with four modifiers, or a fight:
+  `a3_riders_fight`, tollmen −10); a Hollow trader (Teodor Brann) with the station's news, who starts `q_a3_mast` as B6d asked.
+  The plan's "the guild's riders let the designate ride the Line" is not wired into the Line's own boards (B5a's); the halts'
+  pilots are in the first class's ride.
 
 ## Defaults taken for the open questions (coordinator, 2026-11-17; the owner may override)
 1. After the ending: epilogue, credits, then the title screen; the named autosave at the point of no return stays

@@ -1,4 +1,5 @@
 import type { LetterDef } from '../../engine/world/letters';
+import { A3_LETTERS } from './a3_letters';
 
 /** Letters the player can write (camp / a rented room in a town with caravan traffic). */
 export const LETTERS: Record<string, LetterDef> = Object.fromEntries(([
@@ -20,4 +21,6 @@ export const LETTERS: Record<string, LetterDef> = Object.fromEntries(([
     effects: [{ memory: { npc: 'npc_c9_01', tag: 'player_wrote_city', valence: 5, strength: 90 } }, { set: 'c9_told_city' }],
     reply: { text: 'I have read your letter four times and burned it, which you will understand one day. The door stays shut. Pell asks whether the hospitals keep records. Bram asks nothing, which worries me more. — I.H.', effects: [{ learn: 'ines_burned_letter' }, { lead: 'l_ines_burned' }] },
   },
+  // Act 3 (B6c): the muster and the copy of MOTHER's replies sent home: a3_letters.ts
+  ...A3_LETTERS,
 ] as LetterDef[]).map((l) => [l.id, l]));

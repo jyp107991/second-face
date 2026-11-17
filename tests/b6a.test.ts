@@ -122,7 +122,8 @@ describe('B6a: the fourth order, read in the pack', () => {
   it('a Nine who joins after the order was read gets its notice at the next seven o\'clock; one who left does not', () => {
     const { g, q } = actThree('truce', { companions: { nine: 'left' } });
     expect(g.world.quests.q_a3_recall).toBeUndefined();
-    expect(waitFor(g, q, 'md_precinct', 7)).toEqual([]);
+    // (B6c: a truce's offers of a ride home come by post the same morning; they are not the recall)
+    expect(waitFor(g, q, 'md_precinct', 7).filter((e) => !/^a3_offer_/.test(e))).toEqual([]);
     g.flags.nine_left = false;
     g.world.party.push(A3C.NINE);
     expect(waitFor(g, q, 'md_precinct', 7)).toEqual(['a3_recall_notice']);

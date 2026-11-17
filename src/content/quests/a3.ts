@@ -1,6 +1,8 @@
 import type { QuestDef } from '../../engine/quest/quest';
 import type { Cond } from '../../engine/world/logic';
-import { ALLY, AT_KNOCK, IN_SALLOW, LN, ORDER_READ, type Ally } from '../world/a3_conds';
+import {
+  ALLIES_AT_KNOCK, ALLY, AT_KNOCK, IN_SALLOW, ORDER_READ, RIDE_BUGGY, RIDE_CARTS, RIDE_COLUMN, RIDE_FIRST, RIDE_WHEEL, type Ally,
+} from '../world/a3_conds';
 
 /**
  * Act 3 (B6): every quest of the act, as skeletons. Each stage's journal is a placeholder line in the player's voice and
@@ -68,27 +70,33 @@ export const q_a3_recall: QuestDef = {
 
 export const q_a3_return: QuestDef = {
   id: 'q_a3_return', title: 'Toll Road Home', act: 'a3', critical: true, start: 'west', xp: 250,
+  // B6c: the rides by side are offered by post and taken from Lowe (or Reyes), Femi's window at Carrick, Openfield's
+  // seed-keeper, and the player's own buggy at the Ring (dialogue/a3_road.ts); the Wheel find their own on the road.
   routes: [
-    { id: 'line', kind: 'barter', label: 'Ride the Line west on a fare or a pass' },
-    { id: 'column', kind: 'talk', label: 'Ride west with the column in the wardens\' car', requires: { any: [LN('ledger'), { member: 'wardens' }] } },
-    { id: 'first', kind: 'barter', label: 'Take the guild\'s first class', requires: { any: [LN('guild'), { member: 'tollmen', rank: 'hand' }] } },
-    { id: 'carts', kind: 'talk', label: 'Go west with Openfield\'s carts', requires: { any: [LN('choir'), { member: 'choir' }] } },
-    { id: 'wheel', kind: 'survival', label: 'Travel with the Wheel', requires: { member: 'wheel' } },
-    { id: 'buggy', kind: 'tech', label: 'Drive home in your own buggy', requires: F('dr_buggy') },
+    { id: 'line', kind: 'barter', label: 'Ride the Line east on a fare or a pass, and walk the toll road down from Four Ways' },
+    { id: 'column', kind: 'talk', label: 'Ride east with the column in the wardens\' car', requires: RIDE_COLUMN },
+    { id: 'first', kind: 'barter', label: 'Take the guild\'s first class on the Concern\'s through', requires: RIDE_FIRST },
+    { id: 'carts', kind: 'talk', label: 'Walk east with Openfield\'s carts by the old south bed', requires: RIDE_CARTS },
+    { id: 'wheel', kind: 'survival', label: 'Travel with the Wheel across the pan', requires: RIDE_WHEEL },
+    { id: 'buggy', kind: 'tech', label: 'Drive home in your own buggy', requires: RIDE_BUGGY },
     { id: 'foot', kind: 'survival', label: 'Walk the toll road home' },
   ],
   stages: {
     west: {
-      journal: 'The city\'s column is camped at Knock by the stand, waiting for me, and the hatch is shut. It is a long way west to the Sallow.',
+      journal: 'The city\'s column is camped at Knock by the stand, waiting for me, and the hatch is shut. It is a long road east to the Sallow, and there is more than one way to travel it. Some people owe me; some would come to Knock if I wrote.',
       objectives: [
         { id: 'sallow', text: 'Get back to the Sallow', done: { any: [IN_SALLOW, AT_KNOCK] } },
+        { id: 'muster', text: 'Write to the people who might stand with me at Knock', done: { any: ALLIES_AT_KNOCK.map(ALLY) }, optional: true },
         { id: 'knock', text: 'Go home to Knock', done: AT_KNOCK },
       ],
       next: [{ if: AT_KNOCK, stage: 'knock' }, { if: IN_SALLOW, stage: 'sallow' }],
     },
     sallow: {
-      journal: 'I am back in the Sallow. Knock is a day\'s walk from Shale.',
-      objectives: [{ id: 'knock', text: 'Go home to Knock', done: AT_KNOCK }],
+      journal: 'I am back in the Sallow, under its white sky. Knock is a day\'s walk up the track from Shale.',
+      objectives: [
+        { id: 'muster', text: 'Write to the people who might stand with me at Knock', done: { any: ALLIES_AT_KNOCK.map(ALLY) }, optional: true },
+        { id: 'knock', text: 'Go home to Knock', done: AT_KNOCK },
+      ],
       next: [{ if: AT_KNOCK, stage: 'knock' }],
     },
     knock: { journal: 'I am home. Knock is dry and the wardens are polite, and the Cistern\'s door has not moved.', onEnter: [{ quest: 'q_a3_cistern', start: true }], end: 'done' },
@@ -136,25 +144,40 @@ export const q_a3_mast: QuestDef = {
 
 // ---------------------------------------------------------------- 19c the last ride (side; keystone 3, Shale)
 
+// (built in B6e: dialogue/a3_shale.ts; the buyout comes due on Shale's road triggers or the first Act 3 word in the town)
 const ADA = (v: string): Cond => F('ks_ada', v);
+const GONE_TO = (v: string): Cond => ({ all: [F('ks_ada'), F('a3_shale', v)] });
 export const q_a3_ride: QuestDef = {
   id: 'q_a3_ride', title: 'Sheriff\'s Last Ride', act: 'a3', start: 'notice', xp: 300,
   routes: [
     { id: 'stays', kind: 'talk', label: 'Talk Ada out of resigning', requires: { skill: 'speech', gte: 50 } },
-    { id: 'paid', kind: 'barter', label: 'Pay out Pike\'s contract, or have Odile talk it down; nothing, if the sheet it rests on was unwound', requires: { any: [{ item: 'tolls', count: 150 }, F('odile_sheet', 'torn')] } },
-    { id: 'sheet', kind: 'knowledge', label: 'Tear up the sheet the buyout rests on at Pike\'s counter, or hold the Tollhouse page over Pike', requires: { any: [F('odile_sheet', 'player'), F('th_page_taken')] } },
-    { id: 'safe', kind: 'stealth', label: 'Take the deed out of Pike\'s safe at night', requires: { skill: 'security', gte: 50 } },
-    { id: 'street', kind: 'fight', label: 'Put the guild\'s men off Shale\'s street with the militia' },
+    { id: 'paid', kind: 'barter', label: 'Pay the town\'s paper with the guild, or have it repriced on a living town (Odile, or Teo\'s figures)', requires: { any: [{ item: 'tolls', count: 300 }, { all: [{ item: 'tolls', count: 150 }, { any: [{ inParty: 'npc_nb_03' }, { all: [F('teo_freed'), { skill: 'barter', gte: 50 }] }] }] }] } },
+    { id: 'void', kind: 'knowledge', label: 'Unwind the sheet the price rests on: already torn, or torn at Pike\'s counter', requires: { any: [F('odile_sheet', 'torn'), F('odile_sheet', 'player'), { all: [F('odile_sheet', 'kept'), { inParty: 'npc_nb_03' }] }, { all: [F('odile_sheet', 'nine'), { inParty: 'npc_md_nine' }] }] } },
+    { id: 'page', kind: 'knowledge', label: 'Lay the Tollhouse page beside Pike\'s ledger, or have Ada walk it across', requires: { any: [{ item: 'k_ledger_page' }, F('ledger_shown_ada')] } },
+    { id: 'safe', kind: 'stealth', label: 'Take the guild\'s copy of the contract out of Pike\'s strongbox at night', requires: { skill: 'security', gte: 50 } },
+    { id: 'street', kind: 'fight', label: 'Put the guild\'s hands off Shale\'s street with the militia: counted off, or fought' },
+    { id: 'signed', kind: 'talk', label: 'Let her sign' },
   ],
   stages: {
     notice: {
-      journal: 'A notice on the sheriff\'s office door in Shale: SHALE — CONTRACT OF PROTECTION — ON THE SHERIFF\'S RESIGNATION. Pike\'s buyout has come due, and Ada means to ride out to his post and sign it.',
-      objectives: [{ id: 'ada', text: 'Decide what happens to Shale\'s sheriff', done: F('ks_ada') }],
-      next: [{ if: ADA('stays'), stage: 'stays' }, { if: ADA('resigns'), stage: 'resigned' }, { if: ADA('dead'), stage: 'dead' }],
+      journal: 'A notice on the sheriff\'s office door in Shale: SHALE — CONTRACT OF PROTECTION — ON THE SHERIFF\'S RESIGNATION. Two of Pike\'s guild hands stand at the door as witnesses, and Ada sits at her desk with the paper and the pen. She has not signed it. She has not said she won\'t. She says she was waiting to hear from me.',
+      objectives: [
+        { id: 'why', text: 'Ask Ada why she would sign', done: { knows: 'a3_buyout_why' }, optional: true },
+        { id: 'terms', text: 'Find out what the paper costs Shale', done: { knows: 'a3_buyout_terms' }, optional: true },
+        { id: 'sheet', text: 'Find out what the price rests on', done: { knows: 'a3_buyout_sheet' }, optional: true, hidden: true },
+        { id: 'broker', text: 'Find out who brokered it', done: { knows: 'a3_mags_hand' }, optional: true, hidden: true },
+        { id: 'ada', text: 'Decide what happens to Shale\'s sheriff', done: F('ks_ada') },
+      ],
+      next: [
+        { if: ADA('stays'), stage: 'stays' }, { if: GONE_TO('dogs'), stage: 'dogs' }, { if: GONE_TO('abandoned'), stage: 'abandoned' },
+        { if: ADA('resigns'), stage: 'resigned' }, { if: ADA('dead'), stage: 'dead' },
+      ],
     },
-    stays: { journal: 'Ada Vey is still Shale\'s sheriff. Pike\'s contract is paper.', end: 'done' },
-    resigned: { journal: 'Ada Vey rode out to Pike\'s post and signed. Shale has a contract of protection instead of a sheriff.', end: 'done' },
-    dead: { journal: 'Ada Vey died in Shale\'s street, when the guild\'s men came to take possession.', end: 'failed' },
+    stays: { journal: 'Ada Vey is still Shale\'s sheriff. Pike\'s notice came down off her door, and the guild\'s hands went back to the post.', end: 'done' },
+    resigned: { journal: 'Ada Vey rode a borrowed grey the forty yards to Pike\'s post and signed, because a sheriff rides out. Shale is under the guild\'s protection, and a guild hand sits at her desk.', end: 'done' },
+    dogs: { journal: 'With Ada Vey gone, the Rust Dogs rode into Shale and took the sheriff\'s office. The water is the tithe now, twice a year, and the guild pays them to call it protection.', end: 'failed' },
+    abandoned: { journal: 'With Ada Vey gone, Shale is going east a cart at a time, because a town with no sheriff and pumps on a clock is a town with a date on it.', end: 'failed' },
+    dead: { journal: 'Ada Vey died in front of her own door when the guild\'s hands were put off Shale\'s street. Issa Lind wears the star, and Shale is nobody\'s but its own.', end: 'failed' },
   },
 };
 

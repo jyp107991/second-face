@@ -1,6 +1,7 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
 import type { Cond, Effect } from '../../engine/world/logic';
 import { QUESTS } from '../quests';
+import { DORIA_CARTS_NODES, DORIA_CARTS_START } from './a3_road';
 
 /**
  * Openfield: the Choir's farms in the glass, every third row dying. The Elder calls it blight; the well knows
@@ -804,7 +805,7 @@ export const d_of_imre: DialogueDef = {
 
 export const d_of_doria: DialogueDef = {
   id: 'd_of_doria', owner: 'npc_of_06',
-  start: [{ if: { flag: 'of_seed_outcome' }, node: 'after' }, { if: { flag: 'doria_met' }, node: 'again' }, { node: 'intro' }],
+  start: [DORIA_CARTS_START, { if: { flag: 'of_seed_outcome' }, node: 'after' }, { if: { flag: 'doria_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
       text: 'The seed-keeper is a thin woman with ink on her fingers and a tally board she holds like a shield. "Doria. Keeper. Counted at dusk, counted at dawn, and every dawn there\'s one fewer." She shows you the board without being asked. "A crate a night. Six nights. No lock broken. I\'ve stopped sleeping, which hasn\'t helped."',
@@ -843,6 +844,8 @@ export const d_of_doria: DialogueDef = {
       { if: { flag: 'ash_gully_outcome', eq: 'told' }, text: '"Fourteen at dusk. Fourteen at dawn." She does not look toward the burial ground. She does not ask after the man who digs there.' },
       { text: '"Fourteen at dusk. Fourteen at dawn." She sleeps now.' },
     ], again: '"Fourteen." She says it like a prayer the Choir doesn\'t have.', options: [bye] },
+    // Act 3 (B6c): the carts for Knock (a3_road.ts)
+    ...DORIA_CARTS_NODES,
   },
 };
 
