@@ -11,6 +11,9 @@ namespace SecondFace.Core.Combat
     {
         public double X, Z;
         public int Ap;
+        /// <summary>The walk's metres there (oil counted twice): within <see cref="ReachMap.ActMetres"/> it is the
+        /// move-and-act band, within <see cref="ReachMap.DashMetres"/> the dash band.</summary>
+        public double Metres;
         /// <summary>Within the move-and-act band (an attack still affordable after the walk); otherwise a dash.</summary>
         public bool Act;
         /// <summary>The best cover there against the enemies who would see it (none, half, full).</summary>
@@ -25,6 +28,32 @@ namespace SecondFace.Core.Combat
         public int ActAp, DashAp;
         public double ActMetres, DashMetres;
         public readonly List<ReachPoint> Points = new();
+        /// <summary>The square grid the points were sampled on (B1's overlay contours it): <see cref="GridN"/> nodes a
+        /// side from (<see cref="GridX0"/>, <see cref="GridZ0"/>) at <see cref="GridStep"/> m, row by row in z; each
+        /// node's walk metres (oil twice), or the straight distance past the dash band when it was not walked, or
+        /// <see cref="double.PositiveInfinity"/> where there is no way.</summary>
+        public double[] Grid = Array.Empty<double>();
+        public double GridX0, GridZ0, GridStep = 1;
+        public int GridN;
+        /// <summary>The metres at a grid node (infinity off the grid).</summary>
+        public double At(int i, int j) => i < 0 || j < 0 || i >= GridN || j >= GridN ? double.PositiveInfinity : Grid[j * GridN + i];
+    }
+
+    /// <summary>The reachable area worked out a few points at a time (<see cref="Battle.BeginReach"/>,
+    /// <see cref="Battle.ContinueReach"/>): a phone asks the NavMesh for a path per point, so the Unity side spreads a
+    /// turn's map over frames; the result is the same as <see cref="Battle.Reachable"/>'s.</summary>
+    public sealed class ReachJob
+    {
+        public ReachMap Map;
+        public bool Done;
+        internal BattleUnit U;
+        internal double UX, UZ;
+        internal bool WithCover;
+        internal int Next;
+        internal List<BattleUnit> Foes;
+        /// <summary>The unit and its place it was begun for (a map for a unit that has moved since is stale).</summary>
+        public BattleUnit Unit => U;
+        public bool StaleFor(BattleUnit u) => u != U || Math.Abs(u.PX - UX) > 1e-6 || Math.Abs(u.PZ - UZ) > 1e-6 || u.C.Ap != Map.DashAp;
     }
 
     /// <summary>A walk before it is made (B2): its AP and band, the path, the shots it would draw (who, where, at what
@@ -191,26 +220,57 @@ namespace SecondFace.Core.Combat
         /// sampling is the same question asked of the field).</summary>
         public ReachMap Reachable(BattleUnit u, double step = 1.0, bool withCover = false)
         {
+            var job = BeginReach(u, step, withCover);
+            ContinueReach(job, int.MaxValue);
+            return job.Map;
+        }
+
+        /// <summary>Starts the reachable area for a unit as it stands (<see cref="ContinueReach"/> fills it). The grid
+        /// reaches one step past the dash band, so the overlay has a node outside every edge to draw the line between.</summary>
+        public ReachJob BeginReach(BattleUnit u, double step = 1.0, bool withCover = false)
+        {
             var m = new ReachMap();
             var atk = CombatRules.AttackAp(u.C);
             var mul = Stances.MoveMul(u.C.Stance);
             m.DashAp = u.C.Ap; m.ActAp = Math.Max(0, u.C.Ap - atk);
             m.DashMetres = m.DashAp * MetresPerAp / mul; m.ActMetres = m.ActAp * MetresPerAp / mul;
+            step = Math.Max(0.25, step);
+            var n = (int)Math.Ceiling(m.DashMetres / step) + 1;
+            m.GridStep = step; m.GridN = 2 * n + 1; m.GridX0 = u.PX - n * step; m.GridZ0 = u.PZ - n * step;
+            m.Grid = new double[m.GridN * m.GridN];
+            return new ReachJob { Map = m, U = u, UX = u.PX, UZ = u.PZ, WithCover = withCover, Foes = EnemiesOf(u).Where(f => !f.Surrendered).ToList() };
+        }
+
+        /// <summary>Works out up to <paramref name="budget"/> more grid nodes of a reachable area (a node beyond the dash
+        /// band by a straight line is not walked: it costs nothing); true when the map is whole.</summary>
+        public bool ContinueReach(ReachJob job, int budget)
+        {
+            if (job.Done) return true;
+            var m = job.Map; var u = job.U;
+            var total = m.GridN * m.GridN;
             var r = m.DashMetres;
-            var n = (int)Math.Ceiling(r / step);
-            var foes = EnemiesOf(u).Where(f => !f.Surrendered).ToList();
-            for (var i = -n; i <= n; i++)
-                for (var j = -n; j <= n; j++)
-                {
-                    double x = u.PX + i * step, z = u.PZ + j * step;
-                    if (Tactics.Dist(x, z, u.PX, u.PZ) > r + 1e-6) continue;
-                    var cost = MoveCost(u, x, z);
-                    if (cost > u.C.Ap) continue;
-                    var p = new ReachPoint { X = x, Z = z, Ap = cost, Act = cost <= m.ActAp };
-                    if (withCover) { var (lvl, exp) = CoverVsAll(u, x, z, foes); p.Cover = lvl; p.Exposed = exp; }
-                    m.Points.Add(p);
-                }
-            return m;
+            var mul = Stances.MoveMul(u.C.Stance);
+            for (; job.Next < total && budget > 0; job.Next++)
+            {
+                var k = job.Next;
+                int i = k % m.GridN, j = k / m.GridN;
+                double x = m.GridX0 + i * m.GridStep, z = m.GridZ0 + j * m.GridStep;
+                var straight = Tactics.Dist(x, z, job.UX, job.UZ);
+                if (straight > r + 1e-6) { m.Grid[k] = straight; continue; }
+                budget--;
+                var d = PathCached(u, x, z);
+                if (double.IsInfinity(d) || double.IsNaN(d)) { m.Grid[k] = double.PositiveInfinity; continue; }
+                var slow = d >= 0.2 && Surfaces.Count > 0 ? Surfaces.SlowMetres(PathFor(u, x, z)) : 0;
+                var metres = d + slow;
+                m.Grid[k] = metres;
+                var cost = d < 0.2 ? 0 : Math.Max(1, (int)Math.Ceiling(metres * mul / MetresPerAp - 1e-6));
+                if (cost > u.C.Ap) continue;
+                var p = new ReachPoint { X = x, Z = z, Ap = cost, Act = cost <= m.ActAp, Metres = metres };
+                if (job.WithCover) { var (lvl, exp) = CoverVsAll(u, x, z, job.Foes); p.Cover = lvl; p.Exposed = exp; }
+                m.Points.Add(p);
+            }
+            job.Done = job.Next >= total;
+            return job.Done;
         }
 
         /// <summary>The best cover at a point against the enemies with guns who would see it, and whether any sees it

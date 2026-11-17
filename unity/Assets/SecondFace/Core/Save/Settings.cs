@@ -29,6 +29,9 @@ namespace SecondFace.Core.Save
         [JsonProperty("invertTurn")] public bool InvertTurn;
         [JsonProperty("difficulty")] public string Difficulty = "normal";
         [JsonProperty("combatSpeed")] public float CombatSpeed = 1f;
+        /// <summary>The other side's turns without their pauses and framing (COMBAT.md B9): their walks out of the
+        /// player's sight are not shown at all, the rest play straight through.</summary>
+        [JsonProperty("combatSkip")] public bool CombatSkip;
         /// <summary>Offer a skip through conversation lines already heard.</summary>
         [JsonProperty("skipSeen")] public bool SkipSeen = true;
         [JsonProperty("tips")] public bool Tips = true;

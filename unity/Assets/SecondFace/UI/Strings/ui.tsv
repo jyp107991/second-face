@@ -599,6 +599,115 @@ verb.stand	Stand up
 verb.take_prisoner	Take prisoner
 verb.shoot_prop	Shoot it
 verb.swap	Switch weapon
+combat.part.head	head
+combat.part.eyes	eyes
+combat.part.torso	body
+combat.part.armL	left arm
+combat.part.armR	right arm
+combat.part.legL	legs
+combat.part.legR	legs
+combat.part.groin	groin
+combat.part.weapon	weapon
+combat.card.chance	{0}% to hit
+combat.card.ap	{0} AP
+combat.card.free	Free
+combat.card.damage	{0}–{1} damage
+combat.card.damage_rounds	{0}–{1} damage ×{2}
+combat.card.crit	Crit {0}% · up to {1}
+combat.card.kill	Kills {0}%
+combat.card.flank_crit	+{0}% crit
+combat.card.capped_high	The odds never go past 95%
+combat.card.capped_low	The odds never fall under 5%
+combat.card.in_the_way	{0} is in the line of fire
+combat.card.answered	{0} will fire first (cover fire)
+combat.why.cannot	Not now
+combat.why.needs_ap	Needs {0} AP
+combat.why.no_sight	No line of sight
+combat.why.out_of_reach	Out of reach
+combat.why.out_of_fight	Out of the fight
+combat.why.no_burst	No burst on this weapon
+combat.why.pit	Not in the pit
+combat.why.broken	The weapon is broken
+combat.why.heavy	Too heavy to use
+combat.why.no_ammo	Out of ammo: reload
+combat.why.needs_gun	Needs a gun
+combat.why.rounds	Not enough rounds loaded
+combat.why.out_of_range	Out of range
+combat.why.too_far_throw	Too far to throw
+combat.why.no_clear_throw	No clear throw
+combat.why.nothing_to_throw	Nothing to throw
+combat.why.no_way	No way there
+combat.why.no_heal	Nothing to patch with
+combat.why.walk_closer	Walk closer first
+combat.move.act	Move {0} AP · then act
+combat.move.dash	Dash {0} AP · no attack after
+combat.move.unseen	Out of their sight
+combat.move.open_to	In the open to {0}
+combat.move.flanks	Flanks {0}
+combat.move.draws	{0} fires on the way ({1}%)
+combat.move.hazard	Through {0}
+combat.move.near_blast	Near something that will blow
+combat.move.tap_again	Tap again to go
+combat.move.cancelled	Walk cancelled.
+combat.ground.fire	fire
+combat.ground.chem	a chem cloud
+combat.ground.shock	live current
+combat.ground.smoke	smoke
+combat.ground.oil	oil
+combat.ground.water	water
+combat.throw.headline	{0} · {1} AP
+combat.throw.caught	Catches {0} of them
+combat.throw.allies	Catches {0} of yours: {1}
+combat.throw.scatter	May land {0} m off
+combat.throw.aim	Tap the ground to aim. Tap again to throw.
+combat.throw.cancel	Throw put away.
+combat.float.miss	Miss
+combat.float.graze	Graze {0}
+combat.float.damage	{0}
+combat.float.crit	{0} Crit!
+combat.float.heal	+{0}
+combat.float.down	Down
+combat.float.yields	Yields
+combat.float.breaks	Breaks and runs
+combat.float.prisoner	Taken
+combat.float.surprised	Caught off guard
+combat.undo.ready	Not seen: can be undone
+combat.undo.seen	Seen: no undo
+combat.undo.shot	Shot at: no undo
+combat.undo.ground	The ground did something: no undo
+combat.undo.dice	No undo
+combat.undo.away	No undo
+combat.undo.done	Walk taken back.
+combat.hold.ends_turn	Ends the turn
+combat.end_turn.ap_left	{0} AP left
+combat.end_turn.confirm	{0} AP left. Press End turn again to end it.
+combat.end.victory	Victory
+combat.end.fled	They ran
+combat.end.truce	A truce
+combat.end.defeat	Defeat
+combat.end.beaten	Beaten
+combat.end.tally_down	{0} down
+combat.end.tally_prisoners	{0} taken prisoner
+combat.end.tally_fled	{0} got away
+combat.end.tally_escaped	{0} slipped away after yielding
+combat.end.tally_ours_down	{0} of yours went down
+combat.end.tally_xp	+{0} XP
+combat.surprise	You catch them unawares.
+combat.intent_throw	Means to throw
+combat.intent_hold	Holding a shot
+combat.stance	Stance
+combat.throw	Throw
+combat.swap	Switch
+combat.undo	Undo
+combat.overwatch	Hold
+combat.focus	{0}
+verb.demand	Demand they yield
+verb.heal_ally	Patch up
+verb.stance	Stance
+verb.undo	Undo
+settings.combat_skip	Their turns
+settings.combat_skip_on	Skip the show
+settings.combat_skip_off	Show everything
 travel.not_yet	Not yet. Knock still needs you.
 travel.on_the_road	On the road to {0}
 create.person	Who you are

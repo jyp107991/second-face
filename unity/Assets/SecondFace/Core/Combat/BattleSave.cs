@@ -10,7 +10,7 @@ namespace SecondFace.Core.Combat
     public sealed class BattleUnitSave
     {
         public string Id;
-        public bool Hostile, Fled, Surrendered, Leader, Prisoner, Escaped, Fleeing, Hidden, Stunned, MinorUsed;
+        public bool Hostile, Fled, Surrendered, Leader, Prisoner, Escaped, Fleeing, Hidden, Stunned, MinorUsed, Surprised;
         public double PX, PZ, Morale, Evasion;
         public int Ap, IdleWatches;
         public string Stance, Archetype, Intent;
@@ -77,7 +77,7 @@ namespace SecondFace.Core.Combat
                 s.Units.Add(new BattleUnitSave
                 {
                     Id = u.C.Id, Hostile = u.Hostile, Fled = u.Fled, Surrendered = u.Surrendered, Leader = u.Leader, Prisoner = u.Prisoner, Escaped = u.Escaped,
-                    Fleeing = u.Fleeing, Hidden = u.Hidden, Stunned = u.C.Stunned, MinorUsed = u.C.MinorUsed, PX = u.PX, PZ = u.PZ, Morale = u.C.Morale,
+                    Fleeing = u.Fleeing, Hidden = u.Hidden, Surprised = u.Surprised, Stunned = u.C.Stunned, MinorUsed = u.C.MinorUsed, PX = u.PX, PZ = u.PZ, Morale = u.C.Morale,
                     Evasion = u.C.Evasion, Ap = u.C.Ap, IdleWatches = u.IdleWatches, Stance = u.C.Stance, Archetype = u.Archetype, Intent = u.Intent?.C.Id,
                     Statuses = u.C.Statuses.Select(x => new StatusEffect { Id = x.Id, Turns = x.Turns, Power = x.Power, From = x.From, Fresh = x.Fresh }).ToList(),
                     Used = u.C.Used.OrderBy(x => x, StringComparer.Ordinal).ToList(),
@@ -98,7 +98,7 @@ namespace SecondFace.Core.Combat
             {
                 if (!byId.TryGetValue(us.Id, out var u)) throw new InvalidDataException($"Saved fight names {us.Id}, who is not in the game");
                 u.Hostile = us.Hostile; u.Fled = us.Fled; u.Surrendered = us.Surrendered; u.Leader = us.Leader; u.Prisoner = us.Prisoner; u.Escaped = us.Escaped;
-                u.Fleeing = us.Fleeing; u.Hidden = us.Hidden; u.C.Stunned = us.Stunned; u.C.MinorUsed = us.MinorUsed; u.Place(us.PX, us.PZ);
+                u.Fleeing = us.Fleeing; u.Hidden = us.Hidden; u.Surprised = us.Surprised; u.C.Stunned = us.Stunned; u.C.MinorUsed = us.MinorUsed; u.Place(us.PX, us.PZ);
                 u.C.Morale = us.Morale; u.C.Evasion = us.Evasion; u.C.Ap = us.Ap; u.IdleWatches = us.IdleWatches; u.C.Stance = us.Stance ?? Stances.Stand; u.Archetype = us.Archetype;
                 u.C.Statuses = us.Statuses?.Select(x => new StatusEffect { Id = x.Id, Turns = x.Turns, Power = x.Power, From = x.From, Fresh = x.Fresh }).ToList() ?? new List<StatusEffect>();
                 u.C.Used = new HashSet<string>(us.Used ?? new List<string>());

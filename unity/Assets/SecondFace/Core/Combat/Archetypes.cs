@@ -64,10 +64,14 @@ namespace SecondFace.Core.Combat
         public double DmgMul = 1;
         public double Noise, Focus = 1, Flank = 1, Throw = 1, ReadThreats = 0.7, Mercy, Caution = 1, Aggression = 1;
         public bool Coordinate;
+        /// <summary>Whose coming target the fight shows over them (COMBAT.md B5): <c>all</c> (every enemy, the story's
+        /// ease), <c>seen</c> (the enemies the player's side sees, and machines, which are predictable) or <c>machines</c>
+        /// (only the predictable ones: the hard game keeps the rest to themselves).</summary>
+        public string Intents = "seen";
 
-        public static readonly CombatDifficulty Story = new() { Id = "story", HitMod = -15, DmgMul = 0.6, Noise = 0.3, Focus = 0.4, Flank = 0.5, Throw = 0.4, ReadThreats = 0.15, Mercy = 0.6, Caution = 0.8, Aggression = 0.9 };
+        public static readonly CombatDifficulty Story = new() { Intents = "all", Id = "story", HitMod = -15, DmgMul = 0.6, Noise = 0.3, Focus = 0.4, Flank = 0.5, Throw = 0.4, ReadThreats = 0.15, Mercy = 0.6, Caution = 0.8, Aggression = 0.9 };
         public static readonly CombatDifficulty Normal = new() { Id = "normal", HitMod = 0, DmgMul = 1, Noise = 0.06, Focus = 1, Flank = 1, Throw = 1, ReadThreats = 0.7 };
-        public static readonly CombatDifficulty Hard = new() { Id = "hard", HitMod = 8, DmgMul = 1.25, Noise = 0, Focus = 1.5, Flank = 1.4, Throw = 1.3, ReadThreats = 1, Caution = 1.1, Aggression = 1.1, Coordinate = true };
+        public static readonly CombatDifficulty Hard = new() { Intents = "machines", Id = "hard", HitMod = 8, DmgMul = 1.25, Noise = 0, Focus = 1.5, Flank = 1.4, Throw = 1.3, ReadThreats = 1, Caution = 1.1, Aggression = 1.1, Coordinate = true };
 
         /// <summary>By the settings' id (story, normal, hard); the numbers are the settings' own
         /// (<see cref="SecondFace.Core.Save.Settings.DifficultyMods"/>).</summary>

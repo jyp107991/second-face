@@ -48,6 +48,9 @@ namespace SecondFace.Core.Combat
         public BattleUnit Intent;
         /// <summary>Overwatch turns in a row that drew nothing (the AI grows tired of waiting).</summary>
         public int IdleWatches;
+        /// <summary>Caught unaware when the fight began (COMBAT.md B11: the player's side came on them from stealth):
+        /// loses its first turn (<see cref="Battle.Surprise"/>).</summary>
+        public bool Surprised;
         public bool Alive => C.Sheet.Hp > 0;
         /// <summary>Still fighting: alive and not gone (fled, surrendered).</summary>
         public bool InFight => Alive && !Fled;
@@ -216,6 +219,7 @@ namespace SecondFace.Core.Combat
                 if (dmg > 0) { _harm = true; Hurt(u, null, dmg); }
                 if (!u.Alive) { u.C.InTurn = false; Killed(u, UnitById(from)); if (CheckEnd()) return null; continue; }
                 u.C.Ap = Math.Max(0, CombatRules.MaxAp(u.C) - Status.ApChange(u.C) + (Leads(u) ? 1 : 0));
+                if (u.Surprised) { u.Surprised = false; Say($"{u.C.Name} is caught off guard."); u.C.InTurn = false; Status.TurnEnd(u.C); continue; }
                 if (u.C.Stunned) { u.C.Stunned = false; Say($"{u.C.Name} is stunned and loses the turn."); u.C.InTurn = false; Status.TurnEnd(u.C); continue; }
                 Current = u;
                 _lastHitTarget = null;
@@ -223,6 +227,17 @@ namespace SecondFace.Core.Combat
                 return u;
             }
             return null;
+        }
+
+        /// <summary>The surprise round (COMBAT.md B11): the player's side came on these unaware (from stealth), so each
+        /// loses its first turn; the player's side acts first. Call after <see cref="Start"/>, before the first turn.</summary>
+        public void Surprise(IEnumerable<BattleUnit> caught)
+        {
+            var any = false;
+            foreach (var u in caught) if (u != null && u.InFight && Units.Contains(u)) { u.Surprised = true; any = true; }
+            if (!any) return;
+            Order = Order.Where(u => !u.Hostile).Concat(Order.Where(u => u.Hostile)).ToList();
+            Say("Caught unawares!");
         }
 
         /// <summary>The player has the Leader perk and stands: companions get +1 AP.</summary>
