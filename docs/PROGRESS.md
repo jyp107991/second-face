@@ -717,6 +717,25 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-17 (evening), gate batch: stride Pace, motion set v5's jogs, the combat merge; the whole cast committed.**
+  Gate: red, 6460 (the states measured before: W3 2, A4 1, C1 1; the fight's states 6456), whole cast on this commit; against the committed 55: A1 25 → 0, W6 11 → 0, C1 8 → 1, A4 4 → 1, W3 3 → 2, F1/F2/F5/K1 1 → 0, W1 0, no measure worse. The fight's states
+  (side/combat's §2.7, merged here, head 33d77dc0) are measured for the first time and keyed apart in the verdict
+  ("<measure> combat:<set>"): aim 1923, strike 1748, aim_pistol 675, ready 510, crouch 342, throw 289, guard 254, reload 227, hit 183, yield 157, carry 144, rise 4 (docs/MOTION_ROOT_CAUSE.md §7, by measure). What went in: (1) `Pace` plays each clip at the rate its own stride on the body needs
+  (`Pace.StrideMen`/`StrideWomen`, measured in the game by `PaceCalibrationTests`: the same to three decimals on every body of a
+  sex); the women's W1 13 was that mismatch. (2) Motion set v5 for the jogs, runs, idles and gestures (open loops, Neck2 at
+  rest: no in-between warning left); men jog on v5's `jog`/`jog_b` (`jog_v1` retired for them), women on `jog_f` (a woman's
+  capture) with `jog_v1` only past its RateMax; `jog_f_b` out. The walks stay set v4's cut: v5's open walks failed W1 on three
+  women and W6 on two men in a pick where v4's passed. (3) cap_Police_Male_03n's sleeve slimmed (`BodySlim`, his files only;
+  least hang 17.5 → 16.7°): it does not fix his W3, whose cause is the arm held out (abduction p50 16-21° against real
+  walkers' 6.7°): the next item for T3. (4) FootPlant's swing clearance kept exactly as committed: removed, W1 went 0 → 14 on
+  a pick, from the clips' own touchdown skim (docs/MOTION_ROOT_CAUSE.md §7, the frames); it goes with motion set v6, which
+  plants each stance foot in the converter (staged, READY). (5) side/combat merged (rules, AI, presentation, the fight's
+  motion and weapons): `CombatAnimatorBuild` run (47 states, 53 clips, 13 weapons), localization built (798 strings), merge
+  fixes: `Fighter.OffHand` null guard, the weapons' material remap by the FBX's own names, the test's sex argument. Tests:
+  CombatMotionTests + CombatBuildTests 15/16 (bat's grip_off 12.8 cm from its sidecar: fixed on side/combat since);
+  CombatMotionPlayTests 2/5 and CombatQolTests 1/3 before the localization build (states left hanging, the off hand off the
+  carbine: fixed on side/combat since). **Next:** the v6 batch with side/combat 28d6d776 (one whole cast for both), the
+  clearance retired, the coordinator's gate items (a)-(d) for the fight's states.
 - **2026-11-17 (late), the motion gate's root causes, and a plan by cause.** Gate: red, 55. The owner asked why the
   gate is still red after 26 rounds. The answer is that the method is wrong, not the tuning. `docs/MOTION_ROOT_CAUSE.md`
   sets out the evidence (3,173 lines of post-animation corrections fighting each other; 21 of A1's 25 on three broad-waisted

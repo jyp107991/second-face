@@ -1,0 +1,77 @@
+{
+ "name": "melee_block_ual",
+ "src": "Quaternius UAL2 Sword_Block",
+ "loop": false,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.932,
+ "fps": 30,
+ "frames": 38,
+ "source": "https://opengameart.org/content/universal-animation-library-2",
+ "license": "CC0 1.0 (Quaternius, Universal Animation Library 2 Standard)",
+ "kind": "A4/A5 parry/block",
+ "weapon": "blade/club",
+ "authoring": "hand-keyed (not captured); repaired offline (tools/unity/motion/combat_repair.py: retime)",
+ "travel_m": [
+  -0.0,
+  -0.0
+ ],
+ "max_hip_offset_m": 0.251,
+ "root_note": "in place",
+ "notes": [
+  "root bone re-zeroed (started 0.08 m off the origin)"
+ ],
+ "measures": {
+  "ground_m": -0.0352,
+  "F1_sole_p98_cm": 2.3,
+  "F2_heel_p98_cm": 0.0,
+  "F4_slide_mean_cms": 1.4,
+  "F4_slide_over10_share": 0.03,
+  "F5_foot_air_share": 0.0,
+  "H1_head_pitch_p2_p98": [
+   -21.6,
+   -15.2
+  ],
+  "H2_head_yaw_on_chest_p98": 35.9,
+  "H3_head_roll_p98": 3.0,
+  "A1_upper_arm_from_down_p98": 83.6,
+  "A2_elbow_bend_p2_p98": [
+   30.5,
+   70.9
+  ],
+  "K1_straighter_knee_p98": 77.8,
+  "hand_to_torso_core_min_cm": 28.8,
+  "elbow_to_torso_core_min_cm": 27.8,
+  "hips_travel_cm": 0.0,
+  "hips_height_range_cm": [
+   64.4,
+   87.2
+  ],
+  "L_hand_peak": {
+   "frame": 4,
+   "mps": 13.29
+  },
+  "R_hand_peak": {
+   "frame": 4,
+   "mps": 11.92
+  }
+ },
+ "gate_doubts": [],
+ "repairs": {
+  "retime": [
+   {
+    "frames": [
+     2,
+     4
+    ],
+    "limb": "Right",
+    "turn_deg": 100.1,
+    "step_max_deg": [
+     73.5,
+     50.1
+    ]
+   }
+  ]
+ },
+ "group": "stopgap_hand_keyed"
+}

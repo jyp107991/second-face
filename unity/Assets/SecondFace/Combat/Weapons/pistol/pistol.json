@@ -1,0 +1,80 @@
+{
+ "name": "pistol",
+ "kind": "semi-automatic pistol; grip bound with tape (the variant kept)",
+ "source": "https://polyhaven.com/a/service_pistol",
+ "license": "CC0 1.0",
+ "author": "Mateusz Sadek (Poly Haven)",
+ "file": "pistol.fbx",
+ "units": "metres",
+ "frame": "Unity: +Z forward (muzzle/tip), +Y up, +X right; origin = grip_main",
+ "triangles": {
+  "body": 2500,
+  "source_body": 8204,
+  "magazine": {
+   "source": 1894,
+   "kept": 300
+  }
+ },
+ "size_m": [
+  0.029,
+  0.129,
+  0.222
+ ],
+ "points_unity": {
+  "grip_main": [
+   -0.0,
+   0.0,
+   -0.0
+  ],
+  "muzzle": [
+   -0.0,
+   0.0665,
+   0.179
+  ],
+  "mag": [
+   -0.0,
+   -0.043,
+   -0.0
+  ]
+ },
+ "materials": {
+  "service_pistol": {
+   "BaseColor": "pistol_BaseColor.jpg",
+   "Normal": "pistol_Normal.png",
+   "Mask": "pistol_Mask.png"
+  }
+ },
+ "texture_size": 512,
+ "notes": [
+  "grip points are palm centres; the hand socket aligns its palm frame to the weapon frame (forward along the barrel/blade, up along the top/spine)",
+  "lore pass done: faded indigo cloth tape on the grip, worn bluing; variant v2: faded madder tape on the grip, worn bluing"
+ ],
+ "variants": {
+  "v1": {
+   "label": "faded indigo cloth tape on the grip, worn bluing",
+   "materials": {
+    "service_pistol": {
+     "BaseColor": "pistol_BaseColor.jpg",
+     "Normal": "pistol_Normal.png",
+     "Mask": "pistol_Mask.png"
+    }
+   }
+  },
+  "v2": {
+   "label": "faded madder tape on the grip, worn bluing",
+   "materials": {
+    "service_pistol": {
+     "BaseColor": "pistol_v2_BaseColor.jpg",
+     "Normal": "pistol_v2_Normal.png",
+     "Mask": "pistol_v2_Mask.png"
+    }
+   }
+  }
+ },
+ "lore": {
+  "pass": "2026-11-17, tools/lore/lore.py (recipes in the weapon frame; bakes by tools/lore/bake_maps.py)",
+  "originals": "raw/weapons_pre_lore/pistol/",
+  "painted_out": "a faint engraved line on the frame",
+  "mask_occlusion": "G now carries the mesh AO and cavities where the staged mask had none"
+ }
+}

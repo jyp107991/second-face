@@ -1,0 +1,71 @@
+{
+ "name": "revolver",
+ "kind": "six-shot revolver, old",
+ "source": "https://opengameart.org/content/old-revolver",
+ "license": "CC0 1.0",
+ "author": "Lucian Pavel (OpenGameArt)",
+ "file": "revolver.fbx",
+ "units": "metres",
+ "frame": "Unity: +Z forward (muzzle/tip), +Y up, +X right; origin = grip_main",
+ "triangles": {
+  "body": 2500,
+  "source_body": 3256
+ },
+ "size_m": [
+  0.038,
+  0.177,
+  0.287
+ ],
+ "points_unity": {
+  "grip_main": [
+   -0.0,
+   0.0,
+   -0.0
+  ],
+  "muzzle": [
+   -0.0,
+   0.0897,
+   0.261
+  ]
+ },
+ "materials": {
+  "Revolver": {
+   "BaseColor": "revolver_BaseColor.jpg",
+   "Normal": "revolver_Normal.png",
+   "Mask": "revolver_Mask.png"
+  }
+ },
+ "texture_size": 512,
+ "notes": [
+  "grip points are palm centres; the hand socket aligns its palm frame to the weapon frame (forward along the barrel/blade, up along the top/spine)",
+  "lore pass done: browned steel, wooden grip bound in hemp cord; variant v2: browned steel, grip wrapped in signal-red tape"
+ ],
+ "variants": {
+  "v1": {
+   "label": "browned steel, wooden grip bound in hemp cord",
+   "materials": {
+    "Revolver": {
+     "BaseColor": "revolver_BaseColor.jpg",
+     "Normal": "revolver_Normal.png",
+     "Mask": "revolver_Mask.png"
+    }
+   }
+  },
+  "v2": {
+   "label": "browned steel, grip wrapped in signal-red tape",
+   "materials": {
+    "Revolver": {
+     "BaseColor": "revolver_v2_BaseColor.jpg",
+     "Normal": "revolver_v2_Normal.png",
+     "Mask": "revolver_v2_Mask.png"
+    }
+   }
+  }
+ },
+ "lore": {
+  "pass": "2026-11-17, tools/lore/lore.py (recipes in the weapon frame; bakes by tools/lore/bake_maps.py)",
+  "originals": "raw/weapons_pre_lore/revolver/",
+  "painted_out": "nothing found (every map checked by eye and by a high-pass of the normal map)",
+  "mask_occlusion": "G now carries the mesh AO and cavities where the staged mask had none"
+ }
+}

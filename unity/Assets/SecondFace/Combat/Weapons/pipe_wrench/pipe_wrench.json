@@ -1,0 +1,71 @@
+{
+ "name": "pipe_wrench",
+ "kind": "pipe wrench (club)",
+ "source": "https://polyhaven.com/a/pipe_wrench",
+ "license": "CC0 1.0",
+ "author": "Will Evarts (Poly Haven)",
+ "file": "pipe_wrench.fbx",
+ "units": "metres",
+ "frame": "Unity: +Z forward (muzzle/tip), +Y up, +X right; origin = grip_main",
+ "triangles": {
+  "body": 1500,
+  "source_body": 10746
+ },
+ "size_m": [
+  0.036,
+  0.084,
+  0.405
+ ],
+ "points_unity": {
+  "grip_main": [
+   -0.0,
+   0.0,
+   -0.0
+  ],
+  "tip": [
+   0.0,
+   -0.0076,
+   0.2747
+  ]
+ },
+ "materials": {
+  "pipe_wrench": {
+   "BaseColor": "pipe_wrench_BaseColor.jpg",
+   "Normal": "pipe_wrench_Normal.png",
+   "Mask": "pipe_wrench_Mask.png"
+  }
+ },
+ "texture_size": 512,
+ "notes": [
+  "grip points are palm centres; the hand socket aligns its palm frame to the weapon frame (forward along the barrel/blade, up along the top/spine)",
+  "lore pass done: chipped red paint, indigo tape on the handle; variant v2: repainted teal, black tape on the handle"
+ ],
+ "variants": {
+  "v1": {
+   "label": "chipped red paint, indigo tape on the handle",
+   "materials": {
+    "pipe_wrench": {
+     "BaseColor": "pipe_wrench_BaseColor.jpg",
+     "Normal": "pipe_wrench_Normal.png",
+     "Mask": "pipe_wrench_Mask.png"
+    }
+   }
+  },
+  "v2": {
+   "label": "repainted teal, black tape on the handle",
+   "materials": {
+    "pipe_wrench": {
+     "BaseColor": "pipe_wrench_v2_BaseColor.jpg",
+     "Normal": "pipe_wrench_v2_Normal.png",
+     "Mask": "pipe_wrench_v2_Mask.png"
+    }
+   }
+  }
+ },
+ "lore": {
+  "pass": "2026-11-17, tools/lore/lore.py (recipes in the weapon frame; bakes by tools/lore/bake_maps.py)",
+  "originals": "raw/weapons_pre_lore/pipe_wrench/",
+  "painted_out": "the embossed maker's letters and size on both sides of the handle",
+  "mask_occlusion": "G now carries the mesh AO and cavities where the staged mask had none"
+ }
+}

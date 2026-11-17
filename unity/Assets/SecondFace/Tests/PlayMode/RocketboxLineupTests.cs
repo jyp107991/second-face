@@ -110,7 +110,7 @@ namespace SecondFace.Tests
                 var d = RbPeople.DyesFor(RbPeople.Of(id), "trades_" + id, role, null);
                 RbDress.Apply(go, d);
                 var a = go.GetComponentInChildren<Animator>();
-                var amb = SecondFace.Game.Play.PeopleService.Animate(a, assets.Locomotion, id); amb.MinGap = amb.MaxGap = 1e6f;
+                var amb = SecondFace.Game.Play.PeopleService.Animate(a, assets.Locomotion, id, RbPeople.Of(id)?.Male ?? true); amb.MinGap = amb.MaxGap = 1e6f;
                 a.cullingMode = AnimatorCullingMode.AlwaysAnimate;
                 var set = go.GetComponentInChildren<RbLayerSet>();
                 Debug.Log($"LayeredTrades: {id} as {role}: {string.Join("+", d.Layers ?? new string[0])}; layer set {(set != null ? $"{set.Layers.Count} layers, bare legs {set.BareLegs}" : "NONE")}");

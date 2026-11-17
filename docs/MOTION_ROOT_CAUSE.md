@@ -1,6 +1,7 @@
 # Why people keep failing the motion gate, and the plan that removes the causes (2026-11-17)
 
-Gate: **red, 55** (A1 25, W6 11, C1 8, A4 4, W3 3, F1/F2/F5/K1 1), verdict of 63a0e244. Binding with
+Gate: **red, 6460** (2026-11-17 20:02, whole cast): the states measured before, **4** (W3 2, A4 1, C1 1; the 55 of 63a0e244
+were A1 25, W6 11, C1 8, A4 4, W3 3, F1/F2/F5/K1 1); the fight's states, measured for the first time, 6456 (§7). Binding with
 `docs/PEOPLE_MOTION.md` (the gate) and CLAUDE.md §2 ("humans look and move like humans"). Written after the owner's demand
 (2026-11-17) to find what keeps going wrong and remove it at the root, without gaming the gate.
 
@@ -107,6 +108,76 @@ frame rates), `/home/user/second-face-staging/motion/README.md` (clip QA, clips 
   11° for a real man in a jacket. cap_Police_Male_03n's sleeve stands 8.8 cm round the bone; baked gear makes two chests
   37-42 cm deep (real p98 ~32). The skeleton fit is right (shoulder joints at real men's and women's p98). Remedy: slim the
   baked sleeves and gear of those bases to a real garment's stand-off, keeping Rocketbox's own textures (T5).
+- **Measured since (2026-11-17, motion set v3): A1 on the broad bases came from the old idles plus the arm stack, not the
+  sleeves.** On a 9-person pick with v3's men's idles (ACCAD Male2 and Male1 standing, knee-solve corrected to K1 ≤ 5°,
+  the head level; the old CMU 77_02 and 82_08 idles stood on knees bent 20-22° with the head 58° down), A1 went 22 → 0 for
+  the same people: Construction_Male_02 10 → 0, cap_Police_Male_03n 7 → 0, cap_Military_Male_03n 4 → 0, cap_PM02m 1 → 0
+  (Male_Adult_05 shares cap_PM02m's mesh). The bind-mesh least hang (14-17°) is a bound, not what the arm rests at. The
+  sleeves' slimming (T5) is held: the tool is ready (`tools/unity/people/body_slim.py`, with `BodySlim.cs` beside it) for
+  one case only, a padded sleeve or slab found at the game camera or by §2.6 of `docs/PEOPLE_MOTION.md`.
+- **Motion sets v2-v4 in the game (2026-11-17).** Imported by sex and gait set (`Pace.MenSets`, `WomenSets`; the men's
+  idles `idle_m`, `idle_m_b`, the women's `idle_f`, `idle_f_c`). Measured on 9-person picks: (1) a gait's natural stride
+  on a body, from its sole contact points at their lowest, played in place (`PaceCalibrationTests`): the women's clips
+  within 2 % of what `Pace` assumes, the men's 4-13 % longer (hidden by FootPlant's pinning; **the next batch's first
+  change**: Pace from each clip's measured stride per body, then FootPlant's pinning retired where it goes unused);
+  (2) W6 caught real joggers' toe-off (3.1-4.5 cm on their own skeletons) and now needs the sole still vertically too;
+  (3) **open:** set v4's re-cut jogs lift a stance foot 4-9 cm, still both ways, once a stride (men's `jog`, `jog_b`;
+  women's `jog_f`, `jog_f_b`) where set v1's cut of CMU 35_17 lifts none: everyone jogs on that cut (`jog_v1`) until the
+  helper's next set (the women's jog is a man's capture until a woman's cut stands in game); (4) **open:** Unity still reports the Neck2
+  in-between error on v4's clips (3-29°), so the retarget loses part of the neck's pose.
+- **Whole cast on motion set v4 (2026-11-17 12:53, not committed: W1 0 → 13 from the stride mismatch).** With the new
+  idles, the gait sets, `jog_v1` for everyone and the limits above: 17 failures against the committed 55. A1 25 → 0,
+  W6 11 → 0, C1 8 → 0, A4 4 → 1, F1 1 → 0, F2 1 → 0, F5 1 → 0, K1 1 → 0, W3 3 → 3 (cap_Police_Male_03n's walks), W1 0 → 13
+  (thirteen women's jogs at 5-6 % of frames over 15 cm/s). The W1 cause, measured: the women jog on a take whose stride on
+  these bodies is about 13 % longer than `Pace` assumes, so it plays about 13 % fast and the planted foot runs back about
+  0.4 m/s at each touchdown before the lock takes it (0.3-0.45 m/s in the traces, once a stride). Next: `Pace` from each
+  clip's measured stride, FootPlant's touchdown lift-and-drop taken out, then the whole cast again.
+- **The stride batch and motion set v5 in the game (2026-11-17, editor owner; picks of 9-14 people).**
+  (1) *Pace from each clip's measured stride* (`Pace.StrideMen`, `StrideWomen`: the clip played in place on a body as the game
+  makes it, its sole contact points' backward speed at their lowest, `PaceCalibrationTests`; the ratio is the same to three
+  decimals on every body of a sex, so one factor per clip and sex is exact). With FootPlant as committed, the 9-person pick's
+  W1 went to 0 for both sexes (Female_Adult_07, a v4 whole-cast failure, among them): the women's W1 13 was the stride
+  mismatch. (2) *FootPlant's touchdown lift-and-drop removed* on top of it: W1 0 → 14 on the same pick (every jogger but one,
+  5-9 % of frames over 15 cm/s, mean 2-3 cm/s): each jog foot reaches the floor still moving 2-3 m/s and slows over about four
+  frames (0.9, 0.33, 0.11 m/s) before the hold takes it. Not committed. The skim is in the clips' stance-foot curves and in
+  their sources: at the clips' 30 fps keys (Blender dump; the slower of ankle and ball, over the ground with the clip's travel)
+  from the key before touchdown, v5 `jog` 1.89, 0.16, 0.19, 0.10 and 2.79, 1.61, 0.60, 0.07; `jog_b` 1.93, 0.50, 0.12 and
+  1.77, 0.47, 0.20, 0.18; `jog_v1` 2.78, 1.62, 0.65, 0.11; `jog_f` and `jog_f_b` creep through the whole stance (medians 0.46
+  and 0.44-0.83 m/s). On the actors' own skeletons at their true rates, CMU 35_17 (120 Hz) runs 0.57-1.11 m/s at contact,
+  0.3-0.45 at +17 ms and 0.1-0.5 to +67 ms (resampled to 30 fps: 2.03, 0.34-0.43, 0.16-0.20, 0.10), CMU 141_02 (60 Hz)
+  0.58-0.95, 0.37-0.52, 0.2-0.7: a joint centre rolling over the heel, and 141's solver creeping. **Decision:** the clearance
+  stays exactly as committed, not extended, and is retired once motion set v6 plants each stance foot's contact point by IK in
+  the converter from the touchdown key on (the offline helper's task); a heuristic that hides a cause is not made permanent.
+  (3) *Motion set v5 imported* (open loops, Neck2 held at rest: Unity reports no in-between warning on any clip). Strides
+  re-measured on v5: `jog` 1.119, `jog_b` 1.046, `jog_f` 1.065, `jog_f_b` 0.702, `run` 0.995, `run_c` 1.019; v5's walks
+  `walk_slow` 0.933 (v4 1.069), `walk` 1.082, `walk_b` 1.092, `walk_d` 1.064, `walk_brisk_b` 1.055, `walk_slow_b` 1.120,
+  `walk_f_b` 0.987. On a 14-person pick every jog passed (women on `jog_f`, a woman's capture; men on v5's `jog`/`jog_b`;
+  W1 and W6 0), but v5's walks regressed where v4's had passed: W1 6-7 % on three of seven women's `walk_f_b`, W6 2.7-3.1 cm on
+  Construction_Male_02 and cap_Military_Male_03n, W3 35.1-38.5 on three men. **Batch:** v5 for everything but the walks,
+  which stay v4's cut with v4's speeds and strides; `jog_v1` retired for men and kept for women only past `jog_f`'s RateMax;
+  `jog_f_b` out (its stride is 0.70 of its speed: a rate of 1.59, P1). v6 has to plant the walks without losing what v4 had.
+  (4) *cap_Police_Male_03n's W3 split* (the trace, both arms pooled): his sagittal swing |p98| 30-31° is within real walkers'
+  13.5-37° (median 27; 11 walking segments of CMU and ACCAD, `tools/qa/calibration/w3_split.py`; the game side from the gate trace, `tools/qa/w3_trace.py`), but his
+  abduction is p50 16-17°, p98 30-31° on v4 (p50 21° on v5's walk) against real walkers' p50 6.7°, p98 7.5-25.8° (median 14):
+  the arm is held out, not swung too far. The approved slim (`tools/unity/people/body_slim.py`, `BodySlim`, his own files
+  only) moved 145 vertices (p50 0.27, max 0.86 cm): his sleeve's radius p90 11.4 → 10.9 cm, elbow 6.3/9.7 → 6.1/9.2 cm
+  (median/p90), the least hang with his sleeve 17.5 → 16.7°: his sleeve is within 0.1 cm of a real arm in a jacket, so the slim
+  barely changes the hang. What holds his arm out is `ArmClearance`'s push against his torso and belt gear while walking
+  (a waist at the elbow of 41.1 cm, real men's p98): **the next item for T3** (the contact-preserving solve: the arm resting on
+  the side with the flesh and cloth giving, T4), not a looser W3.
+- **Whole cast on this batch (2026-11-17 20:02, committed).** Pace from the measured strides, motion set v5 but the walks
+  (set v4's), cap_Police_Male_03n's slim, FootPlant as committed, side/combat merged: the states measured before go **55 → 4**,
+  no measure worse: A1 25 → 0, W6 11 → 0, C1 8 → 1, A4 4 → 1, W3 3 → 2, F1, F2, F5, K1 1 → 0, W1 0. Left: cap_Police_Male_03n's
+  walks (W3 p98 36.0 and 38.0: his arm held out, the T3 item above), Medical_Male_02 looking 135° round (A4 p98 6.2 > 6.0;
+  look45 in the v4 run), Medical_Male_03's wave (C1 max 3.3 > cap 1.5 in one sample of 44, p98 0). **The fight's states, the new
+  baseline** (§2.7 of `docs/PEOPLE_MOTION.md`, keyed "<measure> combat:<set>" in the verdict, all 79 people): 6456: aim 1923
+  (K1, H1, H2, H3, A1 237 each, F1 193, Kb and F4 158, A2 76, C1 67, F3w 63, F2 23), strike 1748 (F1 474, A2 420, A1 237, C1
+  179, Kb, H2, F3w 104 each, WG2 98, K1 25, F2 3), aim_pistol 675 (K1 and H1 237, F4 104, F1 74, F2 23), ready 510 (F1 222,
+  WG2 158, C1 130), crouch 342 (K1, F1, F4, WG2 79 each, Kb 25, C1 1), throw 289, guard 254 (A2 158, F1 96), reload 227, hit
+  183, yield 157, carry 144 (WG2 79, C1 65), rise 4. Their causes and fixes are side/combat's (head 28d6d776: holds by IK per
+  body, models fitted to their nulls, the fight's feet on the ground, the foot lock following the clip, stances stepped,
+  rounds fired on the hold), with the gate's own items (a)-(d): F1 by the lowest sole point in strikes, strike A1/A2 per
+  strike class from its own actor, the guard's A2 against the clip played, the aim's head turn traced with the gaze off.
 - **The clips were wrong in ways the gate could not see.** 21 of the 28 clips fail the new clip QA: `idle` and `stretch`
   played at twice their speed (CMU 141 is 60 fps, not the listed 120; it is subject 106, a woman); six clips from women
   played on men, every gait of unrecorded sex on women; slides and seam pops. 41 sex-matched clips are staged (25 pass).
@@ -123,9 +194,9 @@ frame rates), `/home/user/second-face-staging/motion/README.md` (clip QA, clips 
   stack state by state as before; T4 where contact remains.
 - **Still open (offline helper):** men's idles, stretch, yawn and sit from documented men (ACCAD Male1/Male2 need a
   position-based re-solve); faster women's walks (the staged ones are 0.86-1.08 m/s, so 1.4 m/s would need a playback rate
-  past `RateMax`; **open item, decided:** until a woman's brisk walk is staged (T2b), townsfolk women walk at their own
-  walks' natural pace (`Pace.NaturalWalk`) and a woman player or companion keeps the man's 1.4 m/s on the men's `walk` at a
-  natural rate, a fill clip in the women's set: game speed never depends on sex, and `RateMax` is not raised); idles whose actors stand straight (K1) and hold the head level (the game's `idle` looks 35-42° down: H1);
+  past `RateMax`; **settled by T2b:** the women's walk is ACCAD Female1's B13, 1.15 m/s, which a woman's body plays at
+  about 1.03 for the townsfolk's 1.25 m/s and 1.15 for the player's 1.4: game speed never depends on sex, and `RateMax` is
+  not raised); idles whose actors stand straight (K1) and hold the head level (the game's `idle` looks 35-42° down: H1);
   the staged clips' remaining seams and slides.
 
 ## 8. T3 design: the contact-preserving retarget, baked per body (editor owner, 2026-11-17)

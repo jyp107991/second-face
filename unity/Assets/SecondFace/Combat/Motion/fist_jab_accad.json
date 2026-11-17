@@ -1,0 +1,42 @@
+{
+ "name": "fist_jab_accad",
+ "src": "ACCAD Male2_E1_JabLeft",
+ "loop": false,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.9082,
+ "fps": 30,
+ "frames": 51,
+ "src_fps": 30.0,
+ "sex": "m",
+ "sex_source": "ACCAD names its subjects by sex (Male2)",
+ "set": "m",
+ "licence": "ACCAD Open Motion Project (Ohio State University), CC BY 3.0",
+ "source": "https://accad.osu.edu/research/motion-lab/mocap-system-and-data (Male2_bvh.zip: Male2_E1_JabLeft.bvh)",
+ "kind": "A4 jab (lead left hand)",
+ "weapon": "none",
+ "two_hands": false,
+ "authoring": "captured (optical mocap, no fingers)",
+ "range": [
+  0.5,
+  2.2
+ ],
+ "facing": "mean",
+ "travel_m": [
+  0.045,
+  -0.037
+ ],
+ "root_note": "in place",
+ "closed": false,
+ "cycle": null,
+ "flips_repaired": null,
+ "inbetween": null,
+ "resolved": true,
+ "floor_shift_m": 0.0,
+ "group": "use",
+ "events": {
+  "impact": [
+   18
+  ]
+ }
+}

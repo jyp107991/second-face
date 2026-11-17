@@ -1,0 +1,71 @@
+{
+ "name": "machete",
+ "kind": "machete (blade)",
+ "source": "https://polyhaven.com/a/machete",
+ "license": "CC0 1.0",
+ "author": "Ulan Cabanilla (Poly Haven)",
+ "file": "machete.fbx",
+ "units": "metres",
+ "frame": "Unity: +Z forward (muzzle/tip), +Y up, +X right; origin = grip_main",
+ "triangles": {
+  "body": 1200,
+  "source_body": 3032
+ },
+ "size_m": [
+  0.044,
+  0.061,
+  0.755
+ ],
+ "points_unity": {
+  "grip_main": [
+   -0.0,
+   0.0,
+   -0.0
+  ],
+  "tip": [
+   -0.0,
+   0.0196,
+   0.6848
+  ]
+ },
+ "materials": {
+  "machete": {
+   "BaseColor": "machete_BaseColor.jpg",
+   "Normal": "machete_Normal.png",
+   "Mask": "machete_Mask.png"
+  }
+ },
+ "texture_size": 512,
+ "notes": [
+  "grip points are palm centres; the hand socket aligns its palm frame to the weapon frame (forward along the barrel/blade, up along the top/spine)",
+  "lore pass done: handle wrapped in olive cord, rusted blade with a honed edge; variant v2: handle wrapped in bone rag tied with red cord"
+ ],
+ "variants": {
+  "v1": {
+   "label": "handle wrapped in olive cord, rusted blade with a honed edge",
+   "materials": {
+    "machete": {
+     "BaseColor": "machete_BaseColor.jpg",
+     "Normal": "machete_Normal.png",
+     "Mask": "machete_Mask.png"
+    }
+   }
+  },
+  "v2": {
+   "label": "handle wrapped in bone rag tied with red cord",
+   "materials": {
+    "machete": {
+     "BaseColor": "machete_v2_BaseColor.jpg",
+     "Normal": "machete_v2_Normal.png",
+     "Mask": "machete_v2_Mask.png"
+    }
+   }
+  }
+ },
+ "lore": {
+  "pass": "2026-11-17, tools/lore/lore.py (recipes in the weapon frame; bakes by tools/lore/bake_maps.py)",
+  "originals": "raw/weapons_pre_lore/machete/",
+  "painted_out": "nothing found (every map checked by eye and by a high-pass of the normal map)",
+  "mask_occlusion": "G now carries the mesh AO and cavities where the staged mask had none"
+ }
+}

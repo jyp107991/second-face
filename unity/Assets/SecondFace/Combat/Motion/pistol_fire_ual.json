@@ -1,0 +1,59 @@
+{
+ "name": "pistol_fire_ual",
+ "src": "Quaternius UAL1 Pistol_Shoot",
+ "loop": false,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.932,
+ "fps": 30,
+ "frames": 20,
+ "source": "https://opengameart.org/content/universal-animation-library",
+ "license": "CC0 1.0 (Quaternius, Universal Animation Library 1 Standard)",
+ "kind": "A3 fire single, pistol",
+ "weapon": "pistol",
+ "authoring": "hand-keyed (not captured)",
+ "travel_m": [
+  -0.0,
+  -0.0
+ ],
+ "max_hip_offset_m": 0.0,
+ "root_note": "in place",
+ "notes": [],
+ "measures": {
+  "ground_m": -0.0054,
+  "F1_sole_p98_cm": 0.1,
+  "F2_heel_p98_cm": 0.0,
+  "F4_slide_mean_cms": 0.0,
+  "F4_slide_over10_share": 0.0,
+  "F5_foot_air_share": 0.0,
+  "H1_head_pitch_p2_p98": [
+   -18.3,
+   -13.3
+  ],
+  "H2_head_yaw_on_chest_p98": 37.9,
+  "H3_head_roll_p98": 10.3,
+  "A1_upper_arm_from_down_p98": 79.7,
+  "A2_elbow_bend_p2_p98": [
+   23.3,
+   73.9
+  ],
+  "K1_straighter_knee_p98": 14.1,
+  "hand_to_torso_core_min_cm": 33.8,
+  "elbow_to_torso_core_min_cm": 24.1,
+  "hips_travel_cm": 0.0,
+  "hips_height_range_cm": [
+   87.7,
+   87.7
+  ],
+  "L_hand_peak": {
+   "frame": 2,
+   "mps": 1.56
+  },
+  "R_hand_peak": {
+   "frame": 2,
+   "mps": 1.56
+  }
+ },
+ "gate_doubts": [],
+ "group": "stopgap_hand_keyed"
+}

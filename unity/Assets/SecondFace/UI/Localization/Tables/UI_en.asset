@@ -2572,6 +2572,658 @@ MonoBehaviour:
     m_Localized: '{0} can''t cover the stake.'
     m_Metadata:
       m_Items: []
+  - m_Id: 6961751270998016
+    m_Localized: Skill
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358144
+    m_Localized: Perks and gear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358145
+    m_Localized: Crippled arm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358146
+    m_Localized: Range
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358147
+    m_Localized: Point blank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358148
+    m_Localized: High ground
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358149
+    m_Localized: No low cover from above
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358150
+    m_Localized: Cover
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358151
+    m_Localized: Flanked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358152
+    m_Localized: Target's stance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358153
+    m_Localized: Your stance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358154
+    m_Localized: Smoke
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358155
+    m_Localized: Someone in the way
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358156
+    m_Localized: Their reflexes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358157
+    m_Localized: They are wary
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358158
+    m_Localized: Too heavy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358159
+    m_Localized: Aimed shot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358160
+    m_Localized: Burst
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358161
+    m_Localized: Darkness
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358162
+    m_Localized: Traits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358163
+    m_Localized: Crippled eyes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358164
+    m_Localized: Your condition
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358165
+    m_Localized: Snap reaction
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358166
+    m_Localized: Inspired
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358167
+    m_Localized: Difficulty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358168
+    m_Localized: Bleeding
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358169
+    m_Localized: Burning
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358170
+    m_Localized: Blinded
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358171
+    m_Localized: Pinned down
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358172
+    m_Localized: Choking
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358173
+    m_Localized: Shocked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358174
+    m_Localized: Adrenaline
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358175
+    m_Localized: Stunned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358176
+    m_Localized: Prone
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358177
+    m_Localized: Crouched
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358178
+    m_Localized: Crippled arm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358179
+    m_Localized: Crippled leg
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358180
+    m_Localized: Half blind
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358181
+    m_Localized: In the open
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358182
+    m_Localized: Low cover
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358183
+    m_Localized: Full cover
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358184
+    m_Localized: Flanked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358185
+    m_Localized: Means to go for {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358186
+    m_Localized: '{0} is watching this ground'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358187
+    m_Localized: Overwatch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358188
+    m_Localized: Cover fire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358189
+    m_Localized: Suppress
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358190
+    m_Localized: Throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358191
+    m_Localized: Crouch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358192
+    m_Localized: Drop flat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358193
+    m_Localized: Stand up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358194
+    m_Localized: Take prisoner
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358195
+    m_Localized: Shoot it
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358196
+    m_Localized: Switch weapon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358197
+    m_Localized: head
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358198
+    m_Localized: eyes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358199
+    m_Localized: body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358200
+    m_Localized: left arm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358201
+    m_Localized: right arm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358202
+    m_Localized: legs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358203
+    m_Localized: legs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358204
+    m_Localized: groin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358205
+    m_Localized: weapon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358206
+    m_Localized: '{0}% to hit'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358207
+    m_Localized: '{0} AP'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358208
+    m_Localized: Free
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358209
+    m_Localized: "{0}\u2013{1} damage"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358210
+    m_Localized: "{0}\u2013{1} damage \xD7{2}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358211
+    m_Localized: "Crit {0}% \xB7 up to {1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358212
+    m_Localized: Kills {0}%
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358213
+    m_Localized: +{0}% crit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358214
+    m_Localized: The odds never go past 95%
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358215
+    m_Localized: The odds never fall under 5%
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358216
+    m_Localized: '{0} is in the line of fire'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358217
+    m_Localized: '{0} will fire first (cover fire)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358218
+    m_Localized: Not now
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358219
+    m_Localized: Needs {0} AP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358220
+    m_Localized: No line of sight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358221
+    m_Localized: Out of reach
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358222
+    m_Localized: Out of the fight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358223
+    m_Localized: No burst on this weapon
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358224
+    m_Localized: Not in the pit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358225
+    m_Localized: The weapon is broken
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358226
+    m_Localized: Too heavy to use
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358227
+    m_Localized: 'Out of ammo: reload'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358228
+    m_Localized: Needs a gun
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358229
+    m_Localized: Not enough rounds loaded
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358230
+    m_Localized: Out of range
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358231
+    m_Localized: Too far to throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358232
+    m_Localized: No clear throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358233
+    m_Localized: Nothing to throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358234
+    m_Localized: No way there
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358235
+    m_Localized: Nothing to patch with
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358236
+    m_Localized: Walk closer first
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358237
+    m_Localized: "Move {0} AP \xB7 then act"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358238
+    m_Localized: "Dash {0} AP \xB7 no attack after"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358239
+    m_Localized: Out of their sight
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358240
+    m_Localized: In the open to {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358241
+    m_Localized: Flanks {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358242
+    m_Localized: '{0} fires on the way ({1}%)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358243
+    m_Localized: Through {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358244
+    m_Localized: Near something that will blow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358245
+    m_Localized: Tap again to go
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358246
+    m_Localized: Walk cancelled.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358247
+    m_Localized: fire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358248
+    m_Localized: a chem cloud
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358249
+    m_Localized: live current
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358250
+    m_Localized: smoke
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358251
+    m_Localized: oil
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358252
+    m_Localized: water
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358253
+    m_Localized: "{0} \xB7 {1} AP"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358254
+    m_Localized: Catches {0} of them
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358255
+    m_Localized: 'Catches {0} of yours: {1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358256
+    m_Localized: May land {0} m off
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358257
+    m_Localized: Tap the ground to aim. Tap again to throw.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358258
+    m_Localized: Throw put away.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358259
+    m_Localized: Miss
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358260
+    m_Localized: Graze {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358261
+    m_Localized: '{0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358262
+    m_Localized: '{0} Crit!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358263
+    m_Localized: +{0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358264
+    m_Localized: Down
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358265
+    m_Localized: Yields
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358266
+    m_Localized: Breaks and runs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358267
+    m_Localized: Taken
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358268
+    m_Localized: Caught off guard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358269
+    m_Localized: 'Not seen: can be undone'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358270
+    m_Localized: 'Seen: no undo'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358271
+    m_Localized: 'Shot at: no undo'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358272
+    m_Localized: 'The ground did something: no undo'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358273
+    m_Localized: No undo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358274
+    m_Localized: No undo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358275
+    m_Localized: Walk taken back.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358276
+    m_Localized: Ends the turn
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358277
+    m_Localized: '{0} AP left'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358278
+    m_Localized: '{0} AP left. Press End turn again to end it.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358279
+    m_Localized: Victory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358280
+    m_Localized: They ran
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358281
+    m_Localized: A truce
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358282
+    m_Localized: Defeat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358283
+    m_Localized: Beaten
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358284
+    m_Localized: '{0} down'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358285
+    m_Localized: '{0} taken prisoner'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358286
+    m_Localized: '{0} got away'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358287
+    m_Localized: '{0} slipped away after yielding'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358288
+    m_Localized: '{0} of yours went down'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358289
+    m_Localized: +{0} XP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358290
+    m_Localized: You catch them unawares.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358291
+    m_Localized: Means to throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358292
+    m_Localized: Holding a shot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358293
+    m_Localized: Stance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358294
+    m_Localized: Throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358295
+    m_Localized: Switch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358296
+    m_Localized: Undo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358297
+    m_Localized: Hold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358298
+    m_Localized: '{0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358299
+    m_Localized: Demand they yield
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358300
+    m_Localized: Patch up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358301
+    m_Localized: Stance
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358302
+    m_Localized: Undo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358303
+    m_Localized: Their turns
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358304
+    m_Localized: Skip the show
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6961751300358305
+    m_Localized: Show everything
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

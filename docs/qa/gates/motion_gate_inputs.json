@@ -20,7 +20,17 @@
     "unity/Assets/SecondFace/People/Rocketbox/*/*_layers.bytes",
     "unity/Assets/SecondFace/People/Rocketbox/*/*_skin.bytes",
     "unity/Assets/SecondFace/Editor/Build/BodyCorrectives.cs",
-    "unity/Assets/SecondFace/People/Rocketbox/*/*_flank.bytes"
+    "unity/Assets/SecondFace/People/Rocketbox/*/*_flank.bytes",
+    "unity/Assets/SecondFace/Editor/Build/BodySlim.cs",
+    "unity/Assets/SecondFace/Editor/Build/RocketboxImportPostprocessor.cs",
+    "unity/Assets/SecondFace/People/Rocketbox/*/*_slim.bytes",
+    "unity/Assets/SecondFace/Game/Fighting/*.cs",
+    "unity/Assets/SecondFace/Core/Combat/CombatMotion.cs",
+    "unity/Assets/SecondFace/Editor/Build/CombatAnimatorBuild.cs",
+    "unity/Assets/SecondFace/Editor/Build/CombatImportPostprocessor.cs",
+    "unity/Assets/SecondFace/Combat/Motion/*.fbx",
+    "unity/Assets/SecondFace/Combat/Motion/*.json",
+    "unity/Assets/SecondFace/Combat/CombatArms.mask"
   ],
   "measures": [
     "unity/Assets/SecondFace/Tests/PlayMode/MotionProbe.cs",

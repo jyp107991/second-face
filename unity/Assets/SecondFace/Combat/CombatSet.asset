@@ -1,0 +1,487 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fda4a04fb9695ad04d9a8139cc44df8c, type: 3}
+  m_Name: CombatSet
+  m_EditorClassIdentifier: SecondFace.Game::SecondFace.Game.Fighting.CombatSet
+  Version: 1
+  Controller: {fileID: 9100000, guid: d48b81ce77cb2e95c8b00171183ffc6e, type: 2}
+  Weapons:
+  - Id: bat
+    Prefab: {fileID: -927199367670048503, guid: 7ec626d38348f7aa3fbe308804cd94b5, type: 3}
+    Paint1:
+    - {fileID: 2100000, guid: 5349d07def2c2632bb718d1a35c444fe, type: 2}
+    Paint2:
+    - {fileID: 2100000, guid: befddaed71a6849269b6e176402b38aa, type: 2}
+    HasOff: 1
+    HasMuzzle: 0
+    GripOff: {x: -0.0001, y: 0.0008, z: 0.09}
+    Muzzle: {x: 0, y: 0, z: 0}
+    Tip: {x: -0.0008, y: 0.0007, z: 0.8532}
+    Length: 0.913
+  - Id: bottle
+    Prefab: {fileID: -927199367670048503, guid: 431da9a632c968fd3b8810d966b33437, type: 3}
+    Paint1:
+    - {fileID: 2100000, guid: 6811232a069b7dfa39866f49524552d1, type: 2}
+    - {fileID: 2100000, guid: 8748aaaf3e2951b1e80d2012f92ff4a6, type: 2}
+    Paint2:
+    - {fileID: 2100000, guid: eac13a2c613dfdd87864d13a0657b2ab, type: 2}
+    - {fileID: 2100000, guid: 0ff5e463a7e9f7bde9ca34e8d1bb99ae, type: 2}
+    HasOff: 0
+    HasMuzzle: 0
+    GripOff: {x: 0, y: 0, z: 0}
+    Muzzle: {x: 0, y: 0, z: 0}
+    Tip: {x: 0, y: 0.0005, z: 0.238}
+    Length: 0.322
+  - Id: crowbar
+    Prefab: {fileID: -927199367670048503, guid: fe300c4a952b7af79da85d545ddaa768, type: 3}
+    Paint1:
+    - {fileID: 2100000, guid: 384f27720590e79a89f1fdec6a81c4a2, type: 2}
+    Paint2:
+    - {fileID: 2100000, guid: 9567fe00f9295093fb9fba217c2387f4, type: 2}
+    HasOff: 0
+    HasMuzzle: 0
+    GripOff: {x: 0, y: 0, z: 0}
+    Muzzle: {x: 0, y: 0, z: 0}
+    Tip: {x: 0.0044, y: -0.062, z: 0.4754}
+    Length: 0.555
+  - Id: grenade_stick
+    Prefab: {fileID: -927199367670048503, guid: 727d77f8a5755951673d9745546a0f47, type: 3}
+    Paint1:
+    - {fileID: 2100000, guid: 5490bb1b42504f0ae89da1e3c22db43e, type: 2}
+    Paint2:
+    - {fileID: 2100000, guid: 2684df5e1d50ccd70af6d8d0366c5426, type: 2}
+    HasOff: 0
+    HasMuzzle: 0
+    GripOff: {x: 0, y: 0, z: 0}
+    Muzzle: {x: 0, y: 0, z: 0}
+    Tip: {x: 0, y: -0.0113, z: 0.3194}
+    Length: 0.38
+  - Id: hatchet
+    Prefab: {fileID: -927199367670048503, guid: 7d52ec580e46e5718aacd091e8692ce9, type: 3}
+    Paint1:
+    - {fileID: 2100000, guid: 0e5fbe373313d5abbbdca8930d84aba1, type: 2}
+    Paint2:
+    - {fileID: 2100000, guid: 9bac5ab678fddd151987f4c4fc2bd5af, type: 2}
+    HasOff: 0
+    HasMuzzle: 0
+    GripOff: {x: 0, y: 0, z: 0}
+    Muzzle: {x: 0, y: 0, z: 0}
+    Tip: {x: 0, y: -0.0086, z: 0.2287}
+    Length: 0.288
+  - Id: knife
+    Prefab: {fileID: -927199367670048503, guid: 8f221972ccbbaae71f3a48de300ebe7c, type: 3}
+    Paint1:
+    - {fileID: 2100000, guid: 25a33b4bb0dfbdc2b8eb3c52af5714e0, type: 2}
+    Paint2:
+    - {fileID: 2100000, guid: 77061e56084c0fba68c7b7c6e59092f4, type: 2}
+    HasOff: 0
+    HasMuzzle: 0
+    GripOff: {x: 0, y: 0, z: 0}
+    Muzzle: {x: 0, y: 0, z: 0}
+    Tip: {x: 0, y: 0.002, z: 0.1707}
+    Length: 0.216
+  - Id: machete
+    Prefab: {fileID: -927199367670048503, guid: ed82385fb4990fbcf5bf6efdbf2a4240, type: 3}
+    Paint1:
+    - {fileID: 2100000, guid: 320eba11f8e9feafeb18ac1d8a5ede98, type: 2}
+    Paint2:
+    - {fileID: 2100000, guid: a8ee231ce1e62ad0ba0ea86c3bd9a3e3, type: 2}
+    HasOff: 0
+    HasMuzzle: 0
+    GripOff: {x: 0, y: 0, z: 0}
+    Muzzle: {x: 0, y: 0, z: 0}
+    Tip: {x: 0, y: 0.0196, z: 0.6848}
+    Length: 0.755
+  - Id: pipe_wrench
+    Prefab: {fileID: -927199367670048503, guid: d9f6aea4a9aff8e465d5a84d4635f063, type: 3}
+    Paint1:
+    - {fileID: 2100000, guid: 936fc21ea6c30f448b0558451f4629b0, type: 2}
+    Paint2:
+    - {fileID: 2100000, guid: 17691bc830190e7d3a845a09462aad22, type: 2}
+    HasOff: 0
+    HasMuzzle: 0
+    GripOff: {x: 0, y: 0, z: 0}
+    Muzzle: {x: 0, y: 0, z: 0}
+    Tip: {x: 0, y: -0.0076, z: 0.2747}
+    Length: 0.405
+  - Id: pistol
+    Prefab: {fileID: -927199367670048503, guid: aef06387c5d273f591c750b84f093d79, type: 3}
+    Paint1:
+    - {fileID: 2100000, guid: e8e34f9cc50712c1d9ce7c0761810080, type: 2}
+    Paint2:
+    - {fileID: 2100000, guid: b480df7832b397608945dc4100c783d3, type: 2}
+    HasOff: 0
+    HasMuzzle: 1
+    GripOff: {x: 0, y: 0, z: 0}
+    Muzzle: {x: 0, y: 0.0665, z: 0.179}
+    Tip: {x: 0, y: 0.0665, z: 0.179}
+    Length: 0.222
+  - Id: revolver
+    Prefab: {fileID: -927199367670048503, guid: 519478776ccf4f8873b3e9552a6099d2, type: 3}
+    Paint1:
+    - {fileID: 2100000, guid: 525183cf0fd8e203fadbb99039ec8cda, type: 2}
+    Paint2:
+    - {fileID: 2100000, guid: d9a304a3b2c9a0652b0bfdada34e8f33, type: 2}
+    HasOff: 0
+    HasMuzzle: 1
+    GripOff: {x: 0, y: 0, z: 0}
+    Muzzle: {x: 0, y: 0.0897, z: 0.261}
+    Tip: {x: 0, y: 0.0897, z: 0.261}
+    Length: 0.287
+  - Id: rifle_auto
+    Prefab: {fileID: -927199367670048503, guid: 3d84ddc1293c64777b042987cd977ba5, type: 3}
+    Paint1:
+    - {fileID: 2100000, guid: 21ceaaa6fbcf73d33907470ce9e80522, type: 2}
+    Paint2:
+    - {fileID: 2100000, guid: 6d8ffc4906d958f29b019abaa87a9c57, type: 2}
+    HasOff: 1
+    HasMuzzle: 1
+    GripOff: {x: 0, y: 0.062, z: 0.377}
+    Muzzle: {x: 0, y: 0.1006, z: 0.685}
+    Tip: {x: 0, y: 0.1006, z: 0.685}
+    Length: 0.972
+  - Id: rifle_bolt
+    Prefab: {fileID: -927199367670048503, guid: 98e22780bcab125016e5828685074522, type: 3}
+    Paint1:
+    - {fileID: 2100000, guid: 795f402a194a0156ab57a3b264a68822, type: 2}
+    - {fileID: 2100000, guid: c646bce32de640782ac31e2acf3fcb0d, type: 2}
+    Paint2:
+    - {fileID: 2100000, guid: 66c066bd22bfb21939a85b4187269bc4, type: 2}
+    - {fileID: 2100000, guid: 7605af4a8af450200a2a2558733ebf35, type: 2}
+    HasOff: 1
+    HasMuzzle: 1
+    GripOff: {x: 0, y: 0.021, z: 0.393}
+    Muzzle: {x: 0, y: 0.055, z: 0.929}
+    Tip: {x: 0, y: 0.055, z: 0.929}
+    Length: 1.231
+  - Id: shotgun_sawn
+    Prefab: {fileID: -927199367670048503, guid: 00bd300f0481096e0dc297a2a59b3c7e, type: 3}
+    Paint1:
+    - {fileID: 2100000, guid: 7cf4a5990fff4264a8d3581e8f37e38c, type: 2}
+    Paint2:
+    - {fileID: 2100000, guid: fabdd3d6644c07d90ba5980ff5083edd, type: 2}
+    HasOff: 1
+    HasMuzzle: 1
+    GripOff: {x: 0, y: 0.0092, z: 0.3109}
+    Muzzle: {x: 0, y: 0.051, z: 0.4454}
+    Tip: {x: 0, y: 0.051, z: 0.4454}
+    Length: 0.62
+  Clips:
+  - Name: fist_guard_accad
+    Length: 0.70000005
+    Loop: 1
+    Events: []
+    Times: []
+  - Name: ready_crouch_cmu
+    Length: 3.7000003
+    Loop: 1
+    Events: []
+    Times: []
+  - Name: pistol_idle_ual
+    Length: 1.6333334
+    Loop: 1
+    Events: []
+    Times: []
+  - Name: rifle_idle_ual
+    Length: 1.6000001
+    Loop: 1
+    Events: []
+    Times: []
+  - Name: melee_idle_ual
+    Length: 1.6333334
+    Loop: 1
+    Events: []
+    Times: []
+  - Name: fist_jab_accad
+    Length: 1.6666667
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.36
+  - Name: fist_cross_accad
+    Length: 1.6000001
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.35416666
+  - Name: fist_hook_l_accad
+    Length: 1.6666667
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.36
+  - Name: fist_hook_r_accad
+    Length: 1.6666667
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.4
+  - Name: fist_uppercut_l_accad
+    Length: 1.6666667
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.38
+  - Name: fist_uppercut_r_accad
+    Length: 1.5666667
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.3617021
+  - Name: fist_jab_f_cmu
+    Length: 1.1333334
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.6764706
+  - Name: fist_cross_f_cmu
+    Length: 2.3666668
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.35211268
+  - Name: fist_combo_f_cmu
+    Length: 2.8666668
+    Loop: 0
+    Events:
+    - impact
+    - impact
+    - impact
+    Times:
+    - 0.27906978
+    - 0.53488374
+    - 0.75581396
+  - Name: fist_ready_accad
+    Length: 2.6333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: fist_relax_accad
+    Length: 2.4666667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: block_high_accad
+    Length: 1.8666668
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: block_high_f_cmu
+    Length: 1.5666667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: melee_strike_ual
+    Length: 1.5333334
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.26086956
+  - Name: melee_block_ual
+    Length: 1.2333333
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: club_overhead_cmu
+    Length: 2.1666667
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.61538464
+  - Name: club_overhead_b_cmu
+    Length: 2.1666667
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.5846154
+  - Name: rifle_raise_cmu
+    Length: 2.6666667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: rifle_aim_b_cmu
+    Length: 1.8000001
+    Loop: 1
+    Events: []
+    Times: []
+  - Name: rifle_aim_cmu
+    Length: 1.7
+    Loop: 1
+    Events: []
+    Times: []
+  - Name: rifle_fire_cmu
+    Length: 0.96666664
+    Loop: 0
+    Events:
+    - fire
+    Times:
+    - 0.2413793
+  - Name: rifle_burst_cmu
+    Length: 1.1666667
+    Loop: 0
+    Events:
+    - fire
+    - fire
+    - fire
+    Times:
+    - 0.2
+    - 0.2857143
+    - 0.37142858
+  - Name: rifle_lower_cmu
+    Length: 2.0666668
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: rifle_reload_ual
+    Length: 2.4666667
+    Loop: 0
+    Events:
+    - mag_out
+    - mag_in
+    Times:
+    - 0.3108108
+    - 0.8108108
+  - Name: pistol_reload_ual
+    Length: 1.6666667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: crouch_down_accad
+    Length: 2.5666668
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: crouch_down_f_accad
+    Length: 3.5666668
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: crouch_rifle_ual
+    Length: 2.8666668
+    Loop: 1
+    Events: []
+    Times: []
+  - Name: crouch_idle_ual
+    Length: 2.9
+    Loop: 1
+    Events: []
+    Times: []
+  - Name: crouch_to_run_accad
+    Length: 1.9666669
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: crouch_to_run_f_accad
+    Length: 2.9
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: stagger_cmu
+    Length: 2.5666668
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: stagger_fwd_cmu
+    Length: 2.5000002
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: hit_chest_ual
+    Length: 0.33333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: hit_head_ual
+    Length: 0.43333337
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: dodge_l_accad
+    Length: 2.5666668
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: dodge_r_accad
+    Length: 2.8000002
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: duck_cmu
+    Length: 5.166667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: throw_overhand_ual
+    Length: 1.3333334
+    Loop: 0
+    Events:
+    - release
+    Times:
+    - 0.275
+  - Name: throw_overhand_cmu
+    Length: 2.266667
+    Loop: 0
+    Events:
+    - release
+    Times:
+    - 0.45588234
+  - Name: getup_back_cmu
+    Length: 7.466667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: getup_front_cmu
+    Length: 6.9000006
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: getup_side_cmu
+    Length: 8.5
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: getup_f_cmu
+    Length: 4.566667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: getup_to_crouch_accad
+    Length: 4.566667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: getup_to_crouch_f_accad
+    Length: 4.366667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: surrender_enter_ual
+    Length: 0.7666667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: surrender_idle_ual
+    Length: 2.4333334
+    Loop: 1
+    Events: []
+    Times: []

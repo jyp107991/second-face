@@ -1,0 +1,105 @@
+{
+ "name": "rifle_bolt",
+ "kind": "bolt-action rifle (single shots); the stock already wrapped in rag",
+ "source": "https://polyhaven.com/a/bolt_action_rifle_7_62",
+ "license": "CC0 1.0",
+ "author": "Mateusz Sadek (Poly Haven)",
+ "file": "rifle_bolt.fbx",
+ "units": "metres",
+ "frame": "Unity: +Z forward (muzzle/tip), +Y up, +X right; origin = grip_main",
+ "triangles": {
+  "body": 5000,
+  "source_body": 11490,
+  "scope": {
+   "source": 6786,
+   "kept": 1200
+  }
+ },
+ "size_m": [
+  0.062,
+  0.183,
+  1.231
+ ],
+ "points_unity": {
+  "grip_main": [
+   -0.0,
+   0.0,
+   -0.0
+  ],
+  "grip_off": [
+   -0.0,
+   0.021,
+   0.393
+  ],
+  "muzzle": [
+   -0.0,
+   0.055,
+   0.929
+  ],
+  "butt": [
+   -0.0,
+   -0.042,
+   -0.297
+  ],
+  "mag": [
+   -0.0,
+   -0.017,
+   0.093
+  ]
+ },
+ "materials": {
+  "bolt_action_rifle_7_62_accesories": {
+   "BaseColor": "rifle_bolt_0_BaseColor.jpg",
+   "Normal": "rifle_bolt_0_Normal.png",
+   "Mask": "rifle_bolt_0_Mask.png"
+  },
+  "bolt_action_rifle_7_62": {
+   "BaseColor": "rifle_bolt_1_BaseColor.jpg",
+   "Normal": "rifle_bolt_1_Normal.png",
+   "Mask": "rifle_bolt_1_Mask.png"
+  }
+ },
+ "texture_size": 1024,
+ "notes": [
+  "grip points are palm centres; the hand socket aligns its palm frame to the weapon frame (forward along the barrel/blade, up along the top/spine)",
+  "lore pass done: khaki rag stock bound with hemp cord, dulled shellac wood with a grey spliced fore-end bound in wire, taped scope; variant v2: indigo-dyed rag bound with red cord, dark-stained stock, taped scope"
+ ],
+ "variants": {
+  "v1": {
+   "label": "khaki rag stock bound with hemp cord, dulled shellac wood with a grey spliced fore-end bound in wire, taped scope",
+   "materials": {
+    "bolt_action_rifle_7_62_accesories": {
+     "BaseColor": "rifle_bolt_0_BaseColor.jpg",
+     "Normal": "rifle_bolt_0_Normal.png",
+     "Mask": "rifle_bolt_0_Mask.png"
+    },
+    "bolt_action_rifle_7_62": {
+     "BaseColor": "rifle_bolt_1_BaseColor.jpg",
+     "Normal": "rifle_bolt_1_Normal.png",
+     "Mask": "rifle_bolt_1_Mask.png"
+    }
+   }
+  },
+  "v2": {
+   "label": "indigo-dyed rag bound with red cord, dark-stained stock, taped scope",
+   "materials": {
+    "bolt_action_rifle_7_62_accesories": {
+     "BaseColor": "rifle_bolt_v2_0_BaseColor.jpg",
+     "Normal": "rifle_bolt_v2_0_Normal.png",
+     "Mask": "rifle_bolt_v2_0_Mask.png"
+    },
+    "bolt_action_rifle_7_62": {
+     "BaseColor": "rifle_bolt_v2_1_BaseColor.jpg",
+     "Normal": "rifle_bolt_v2_1_Normal.png",
+     "Mask": "rifle_bolt_v2_1_Mask.png"
+    }
+   }
+  }
+ },
+ "lore": {
+  "pass": "2026-11-17, tools/lore/lore.py (recipes in the weapon frame; bakes by tools/lore/bake_maps.py)",
+  "originals": "raw/weapons_pre_lore/rifle_bolt/",
+  "painted_out": "the stock cartouche and year stamp, receiver and barrel proof marks, rear-sight numbers, scope drum numbers and markings, an ink mark on the rag",
+  "mask_occlusion": "G now carries the mesh AO and cavities where the staged mask had none"
+ }
+}

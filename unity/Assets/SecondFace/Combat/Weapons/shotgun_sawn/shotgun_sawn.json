@@ -1,0 +1,84 @@
+{
+ "name": "shotgun_sawn",
+ "kind": "sawn-off double-barrel shotgun",
+ "source": "https://opengameart.org/content/double-barrel-shotgun",
+ "license": "CC0 1.0",
+ "author": "Jean PFP / rareboygames (OpenGameArt)",
+ "file": "shotgun_sawn.fbx",
+ "units": "metres",
+ "frame": "Unity: +Z forward (muzzle/tip), +Y up, +X right; origin = grip_main",
+ "triangles": {
+  "body": 3500,
+  "source_body": 4220
+ },
+ "size_m": [
+  0.058,
+  0.183,
+  0.62
+ ],
+ "points_unity": {
+  "grip_main": [
+   -0.0,
+   0.0,
+   -0.0
+  ],
+  "grip_off": [
+   -0.0,
+   0.0092,
+   0.3109
+  ],
+  "muzzle": [
+   -0.0,
+   0.051,
+   0.4454
+  ],
+  "butt": [
+   -0.0,
+   -0.0918,
+   -0.1428
+  ]
+ },
+ "materials": {
+  "Wood": {
+   "BaseColor": "shotgun_sawn_BaseColor.jpg",
+   "Normal": "shotgun_sawn_Normal.png",
+   "Mask": "shotgun_sawn_Mask.png"
+  }
+ },
+ "texture_size": 1024,
+ "notes": [
+  "grip points are palm centres; the hand socket aligns its palm frame to the weapon frame (forward along the barrel/blade, up along the top/spine)",
+  "lore pass done: walnut stock, friction tape on the wrist, an ochre rag round the barrels, filed muzzle; variant v2: pale replacement stock, teal tape on the wrist"
+ ],
+ "lore_added_maps": [
+  "Normal (new: wraps, wood grain and pitting; the source had none)"
+ ],
+ "variants": {
+  "v1": {
+   "label": "walnut stock, friction tape on the wrist, an ochre rag round the barrels, filed muzzle",
+   "materials": {
+    "Wood": {
+     "BaseColor": "shotgun_sawn_BaseColor.jpg",
+     "Normal": "shotgun_sawn_Normal.png",
+     "Mask": "shotgun_sawn_Mask.png"
+    }
+   }
+  },
+  "v2": {
+   "label": "pale replacement stock, teal tape on the wrist",
+   "materials": {
+    "Wood": {
+     "BaseColor": "shotgun_sawn_v2_BaseColor.jpg",
+     "Normal": "shotgun_sawn_v2_Normal.png",
+     "Mask": "shotgun_sawn_v2_Mask.png"
+    }
+   }
+  }
+ },
+ "lore": {
+  "pass": "2026-11-17, tools/lore/lore.py (recipes in the weapon frame; bakes by tools/lore/bake_maps.py)",
+  "originals": "raw/weapons_pre_lore/shotgun_sawn/",
+  "painted_out": "nothing found; the base colour was rebuilt from the source (a specular set with a linear diffuse: the staged gun was near black and fully dielectric) and a normal map added",
+  "mask_occlusion": "G now carries the mesh AO and cavities where the staged mask had none"
+ }
+}

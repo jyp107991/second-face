@@ -31,3 +31,4 @@ MonoBehaviour:
   Sack: {fileID: 2100000, guid: 3a8456b370747872eb0b9f109671594a, type: 2}
   Cast: []
   Rocketbox: {fileID: 11400000, guid: 05a8a46f43f8c39a288f32c81b923fd9, type: 2}
+  Combat: {fileID: 11400000, guid: b9c5f0cb48653f22eace9dbe4c241e63, type: 2}

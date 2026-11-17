@@ -19,7 +19,7 @@ namespace SecondFace.EditorTools
     public sealed class MotionImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 7;
+        public override uint GetVersion() => 8;
 
         private bool IsClip => assetPath.StartsWith("Assets/SecondFace/Motion/") && assetPath.EndsWith(".fbx");
 
@@ -72,8 +72,10 @@ namespace SecondFace.EditorTools
                 c.lockRootRotation = false; c.keepOriginalOrientation = false;
                 // a gait's surge and sway (the stride's own changes of speed, left in by cmu2fbx.py) baked into the pose:
                 // as root motion they were thrown away, the body held still while the game moved it at a constant pace,
-                // and every stance foot slid by the difference (W1/W2, 2026-11-06)
-                c.lockRootPositionXZ = gait; c.keepOriginalPositionXZ = false;
+                // and every stance foot slid by the difference (W1/W2, 2026-11-06); an idle's and a gesture's hips sway about
+                // their mean the same way (motion set v2, 2026-11-17: as root motion the sway was dropped and the body stood
+                // still over feet that shifted); only a clip that travels (a fall) keeps its root's way
+                c.lockRootPositionXZ = gait || !root; c.keepOriginalPositionXZ = false;
                 c.lockRootHeightY = !root; c.keepOriginalPositionY = false; c.heightFromFeet = !root;
             }
             imp.clipAnimations = clips;
@@ -86,7 +88,7 @@ namespace SecondFace.EditorTools
             var s = AnimationUtility.GetAnimationClipSettings(clip);
             s.loopTime = loop; s.loopBlend = loop;
             s.loopBlendOrientation = false; s.keepOriginalOrientation = false;
-            s.loopBlendPositionXZ = gait; s.keepOriginalPositionXZ = false;
+            s.loopBlendPositionXZ = gait || !travels; s.keepOriginalPositionXZ = false;
             s.loopBlendPositionY = !travels; s.keepOriginalPositionY = false; s.heightFromFeet = !travels;
             AnimationUtility.SetAnimationClipSettings(clip, s);
         }

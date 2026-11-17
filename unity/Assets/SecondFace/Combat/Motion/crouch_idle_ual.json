@@ -1,0 +1,65 @@
+{
+ "name": "crouch_idle_ual",
+ "src": "Quaternius UAL1 Crouch_Idle_Loop",
+ "loop": true,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.932,
+ "fps": 30,
+ "frames": 88,
+ "source": "https://opengameart.org/content/universal-animation-library",
+ "license": "CC0 1.0 (Quaternius, Universal Animation Library 1 Standard)",
+ "kind": "A6 crouch idle (half cover)",
+ "weapon": "none",
+ "authoring": "hand-keyed (not captured)",
+ "travel_m": [
+  -0.0,
+  -0.0
+ ],
+ "max_hip_offset_m": 0.01,
+ "root_note": "in place",
+ "notes": [
+  "loop: closing frame (a copy of the first) dropped"
+ ],
+ "measures": {
+  "ground_m": -0.0054,
+  "F1_sole_p98_cm": 0.1,
+  "F2_heel_p98_cm": 8.5,
+  "F4_slide_mean_cms": 0.4,
+  "F4_slide_over10_share": 0.0,
+  "F5_foot_air_share": 0.0,
+  "loop_seam_cm": 0.09,
+  "loop_step_p90_cm": 0.33,
+  "H1_head_pitch_p2_p98": [
+   -45.2,
+   -39.0
+  ],
+  "H2_head_yaw_on_chest_p98": 4.4,
+  "H3_head_roll_p98": 2.7,
+  "A1_upper_arm_from_down_p98": 64.5,
+  "A2_elbow_bend_p2_p98": [
+   47.2,
+   74.7
+  ],
+  "K1_straighter_knee_p98": 94.5,
+  "hand_to_torso_core_min_cm": 40.2,
+  "elbow_to_torso_core_min_cm": 32.5,
+  "hips_travel_cm": 0.0,
+  "hips_height_range_cm": [
+   46.9,
+   47.7
+  ],
+  "L_hand_peak": {
+   "frame": 74,
+   "mps": 0.09
+  },
+  "R_hand_peak": {
+   "frame": 75,
+   "mps": 0.11
+  }
+ },
+ "gate_doubts": [
+  "head pitch [-45.2, -39.0] deg (gesture cap -25..+15)"
+ ],
+ "group": "stopgap_hand_keyed"
+}

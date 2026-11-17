@@ -151,9 +151,15 @@ namespace SecondFace.Game.People
         /// depends on when the game started, put the stride's end a frame sooner or later from run to run.</summary>
         private float _clock;
 
+        /// <summary>The arms hold something by intent (a weapon in a fight, the fight's guard, hands up: set by
+        /// Game/Fighting/Fighter.cs while the fight's layers play): neither rested at the side nor swung with the stride,
+        /// only kept out of the body.</summary>
+        [System.NonSerialized] public bool Holding;
+
         /// <summary>Walking or running, or stopping from it in the last 0.8 s, and not gesturing.</summary>
         private bool Striding()
         {
+            if (Holding) return false;
             if (_gestureLayer >= 0 && _animator.GetLayerWeight(_gestureLayer) > 0.05f) return false;
             if (_hasSpeed && _animator.GetFloat(SpeedId) > 0.1f) _movedAt = _clock;
             return _clock - _movedAt < 0.8f;
@@ -162,7 +168,7 @@ namespace SecondFace.Game.People
         /// <summary>Standing still and not gesturing (the arms hang).</summary>
         private bool Resting()
         {
-            if (_animator.runtimeAnimatorController == null) return false;
+            if (Holding || _animator.runtimeAnimatorController == null) return false;
             if (_gestureLayer == -2)
             {
                 _gestureLayer = _animator.GetLayerIndex(Ambient.GestureLayer);

@@ -254,8 +254,10 @@ namespace SecondFace.Game.Play
             if (ticket != _placing || Stage.Camera == null) yield break;   // left meanwhile, or the camera went with the scene
             if (Stage.Clock != null) Stage.Clock.Minutes = Game.Minutes;
             if (Walker != null) Destroy(Walker.gameObject);
-            var body = PlayerBody.Base(PlayerBody.Look(Game.Pc), assets.PlayerF, assets.PlayerM, assets.Rocketbox);
-            Walker = Walker.Create(body != null ? body : assets.Walker, assets.Locomotion, at, yaw);
+            var pcLook = PlayerBody.Look(Game.Pc);
+            var body = PlayerBody.Base(pcLook, assets.PlayerF, assets.PlayerM, assets.Rocketbox);
+            var pcMale = body == null || (pcLook?.Rb != null ? RbPeople.Of(pcLook.Rb)?.Male ?? pcLook.Body == "m" : pcLook?.Body == "m");
+            Walker = Walker.Create(body != null ? body : assets.Walker, assets.Locomotion, at, yaw, pcMale);
             _down = ticket;
             if (body != null) PlayerBody.Apply(Walker.gameObject, Game.Pc);
             if (Nav == null) Nav = gameObject.AddComponent<WorldNav>();
@@ -490,7 +492,8 @@ namespace SecondFace.Game.Play
                 // walker stands on (a place's markers lie at its ground; a room's floor is higher)
                 var seat = at + front * 0.06f;
                 seat.y = Walker.transform.position.y;
-                Walker.Sit("sit", seat, thing.transform.eulerAngles.y + 180f);
+                // (a chair's sit is a woman's capture, CMU 114: a man takes the stool's, CMU 13, until a man's is captured)
+                Walker.Sit(SecondFace.Game.People.Pace.Female(Walker.Animator) ? "sit" : "sit_stool", seat, thing.transform.eulerAngles.y + 180f);
                 yield break;
             }
             if (verb == "take")
