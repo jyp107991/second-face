@@ -278,7 +278,12 @@ namespace SecondFace.Game.Play
             {
                 Combat = gameObject.AddComponent<Combat>();
                 Combat.Walkabout = this;
-                Combat.Ended += outcome => { if (outcome == "defeat") Defeated?.Invoke(); else Settle(); };
+                Combat.Ended += outcome =>
+                {
+                    if (outcome == "defeat") { Defeated?.Invoke(); return; }
+                    Settle();
+                    StartCoroutine(AfterFight());
+                };
                 Combat.Starting += () => Milestone?.Invoke();
             }
             if (Triggers == null) { Triggers = gameObject.AddComponent<Triggers>(); Triggers.Walkabout = this; }
@@ -937,6 +942,19 @@ namespace SecondFace.Game.Play
             }
             panel.Presented += _ => Follow();
             panel.Ended += () => { Follow(); Settle(); };
+        }
+
+        // ---- after a fight -------------------------------------------------------------------------------------------
+
+        /// <summary>A fight is over: once the walkabout is free again (its last line said, the beaten back up, the story
+        /// settled), the triggers under the player are tested at once: what the fight's end made true (its dead, a
+        /// beaten outcome) fires where the player stands, not on their next step.</summary>
+        private IEnumerator AfterFight()
+        {
+            var t0 = Time.unscaledTime;
+            yield return null;
+            while (Busy && Time.unscaledTime - t0 < 10f) yield return null;
+            if (Triggers != null) Triggers.CheckNow();
         }
 
         /// <summary>A talking prop's conversation (a sign, the pumps, a bed): false when it has none to give.</summary>

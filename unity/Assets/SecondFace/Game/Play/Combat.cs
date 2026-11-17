@@ -341,13 +341,14 @@ namespace SecondFace.Game.Play
             _overlay?.Clear();
             _camera?.End();
             if (_pit != null) { yield return FinishBout(g); yield break; }
-            // what the fight did to the world: the dead stay dead, the living keep their wounds
+            // what the fight did to the world: the dead stay dead (under their placement's own id too: the content's `dead`
+            // names a placement, as the web game kept its people), the living keep their wounds
             foreach (var u in _battle.Units)
             {
                 if (u == _player || _companions.Contains(u)) continue;   // (a companion's wounds are on their own sheet)
                 if (!g.Npcs.TryGetValue(u.C.Id, out var save)) g.Npcs[u.C.Id] = save = new NpcSave();
                 save.Hp = u.C.Sheet.Hp;
-                if (!u.Alive) save.Dead = true;
+                if (!u.Alive) FightAftermath.Fell(g, u.C.Id, _people.TryGetValue(u, out var body) && body != null ? body.Id : null);
             }
             // companions who went down get up wounded, never dead
             if (Walkabout.Party != null) Walkabout.Party.AfterFight((int)g.Minutes);
@@ -359,12 +360,13 @@ namespace SecondFace.Game.Play
             // gone, 2026-11-16)
             if (outcome == "defeat")
             {
-                var beaten = _battle.Units.Where(u => u != _player && u.Hostile)
-                    .Select(u => Registry.Npcs.TryGetValue(u.C.Id, out var d) ? d : null).Where(d => d?.Beaten != null).Distinct().ToList();
+                // (Core FightAftermath: each distinct outcome once, however many of them carried it)
+                var beaten = FightAftermath.Beaten(_battle.Units.Where(u => u != _player && u.Hostile)
+                    .Select(u => Registry.Npcs.TryGetValue(u.C.Id, out var d) ? d : null));
                 if (beaten.Count > 0)
                 {
-                    foreach (var d in beaten) Logic.Apply(d.Beaten, g);
-                    var hp = System.Math.Max(1, Sheet.Derived(g.Pc.Sheet).MaxHp / 4);
+                    foreach (var effects in beaten) Logic.Apply(effects, g, Walkabout.Quests);
+                    var hp = FightAftermath.HurtHp(Sheet.Derived(g.Pc.Sheet).MaxHp);
                     g.Pc.Sheet.Hp = hp;
                     if (_player != null) _player.C.Sheet.Hp = hp;
                     outcome = "beaten";

@@ -11,8 +11,9 @@ namespace SecondFace.Game.Play
     /// The maps' area triggers in the open world (P7; the web game's triggers): walking into a trigger's area (a
     /// <see cref="PlaceMarker"/> of kind "trigger", sized in metres, in the place's own frame) while its condition holds
     /// says its line and applies its effects (or, standing inside, as soon as the condition comes to hold); a trigger fires
-    /// once unless the content says otherwise (remembered in the game's flags, so a save keeps it). A trigger's "talk" event opens that person's conversation (the stranger at the
-    /// door, the riders in the square). Checked a few times a second.
+    /// once unless the content says otherwise (remembered in the game's flags, so a save keeps it; Core
+    /// <see cref="FightAftermath.Due"/>). A trigger's "talk" event opens that person's conversation (the stranger at the
+    /// door, the riders in the square). Checked a few times a second, and at once when a fight ends (<see cref="CheckNow"/>).
     /// </summary>
     public sealed class Triggers : MonoBehaviour
     {
@@ -28,8 +29,24 @@ namespace SecondFace.Game.Play
             if (Walkabout == null || Walkabout.Walker == null || Spawner == null || Time.unscaledTime < _next) return;
             _next = Time.unscaledTime + Tick;
             if (Walkabout.Busy) return;   // not while a conversation, a screen or a fight is up
+            Check();
+        }
+
+        /// <summary>Tests the triggers under the walker now, without waiting for the next tick (a fight just ended: what
+        /// its end made true fires where the player stands, not on their next step). False when none fired (or the
+        /// walkabout is busy).</summary>
+        public bool CheckNow()
+        {
+            if (Walkabout == null || Walkabout.Walker == null || Spawner == null || Walkabout.Busy) return false;
+            _next = Time.unscaledTime + Tick;
+            return Check();
+        }
+
+        private bool Check()
+        {
             var g = Walkabout.Game;
             var at = Walkabout.Walker.transform.position;
+            var fired = false;
             foreach (var (placeId, place) in Spawner.Standing())
             {
                 if (place == null) continue;
@@ -46,16 +63,18 @@ namespace SecondFace.Game.Play
                     var def = map.Triggers.Find(t => t.Id == m.Id);
                     if (def == null) continue;
                     var once = def.Once ?? true;
-                    var flag = "trg." + key;
-                    if (once && g.Flags.ContainsKey(flag)) { _inside.Add(key); continue; }
+                    if (once && g.Flags.ContainsKey(FightAftermath.FiredFlag(m.Map, def.Id))) { _inside.Add(key); continue; }
                     // its condition is tested again while the player stays inside: standing at the door when the watch
                     // begins still brings what the watch brings
-                    if (def.If != null && !Logic.Test(def.If, g)) continue;
+                    if (!FightAftermath.Due(m.Map, def, g)) continue;
                     _inside.Add(key);
-                    if (once) g.Flags[flag] = true;
+                    FightAftermath.Mark(m.Map, def, g);
                     Walkabout.Fire(def);
+                    fired = true;
+                    if (Walkabout.Busy) return true;   // (what it opened waits for the rest)
                 }
             }
+            return fired;
         }
     }
 }
