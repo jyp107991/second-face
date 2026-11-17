@@ -1236,6 +1236,13 @@ namespace SecondFace.Core.World
                         foreach (var y in new[] { y0 + 0.3f, y1 - 0.3f }) On(f, at - 0.04f, at + 0.04f, y - 0.04f, y + 0.04f, t / 2 + 0.05f, 0.12f, "steel", _s.Trim);
                     }
                 }
+                // a roofless court's front (the dead mall): its old signboard, lit, across the middle of a street wall
+                if (open && Street(f.At(len / 2, 3f).X, f.At(len / 2, 3f).Z) && len > 10f && H(73, wi) < 0.8f)
+                {
+                    var sy0 = ground + 0.5f; var sy1 = Math.Min(top - 0.2f, sy0 + 1.6f);
+                    On(f, len * 0.28f - 0.1f, len * 0.72f + 0.1f, sy0 - 0.1f, sy1 + 0.1f, t / 2 + 0.06f, 0.12f, "metal", C(0x202224), 0.3f);
+                    Light(f, len * 0.28f, len * 0.72f, sy0, sy1, t / 2 + 0.13f, 0f, Pattern.Sign, Pick(_s.Neon, H(74, wi)));
+                }
                 // neon up the corners, a downpipe at one end
                 if (!rim && street && H(67, wi) < _s.Strip * 0.6f)
                     foreach (var s in new[] { 0.05f, len - 0.05f })
