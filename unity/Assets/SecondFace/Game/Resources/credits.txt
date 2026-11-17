@@ -1,0 +1,140 @@
+# Credits & third-party assets
+
+## Human models — MakeHuman assets (CC0 1.0)
+Base mesh, morph targets, skeleton and skin weights, skin textures, eyes, eyebrows, eyelashes, hair, teeth,
+clothing and facial expressions come from the **MakeHuman 1.2.0** asset set, released under
+**CC0 1.0 Universal** by the MakeHuman team (Data Collection AB, Joel Palmius, Jonas Hauquier; original
+work by Manuel Bastioni and contributors). http://www.makehumancommunity.org
+
+Only the assets are used; they are converted for the web by `tools/mh/build_human.py` into
+`public/assets/human/`. No MakeHuman program code (AGPL) is used or distributed.
+
+## MakeHuman community assets
+Fetched by `tools/mh/fetch_community.sh` from the MakeHuman community asset packs
+(http://www.makehumancommunity.org, files.makehumancommunity.org/asset_packs/).
+
+CC0 1.0 (no attribution required, credited with thanks): skin detail maps by Mindfront (skins02), eyebrows and
+eyelashes by Mindfront, hairstyles from hair01 (culturalibre, toigo, rehmanpolanski, elvs, faydaen, sonntag78),
+beards/moustaches from bodyparts05 (grinsegold "Beard Sigmund", rehmanpolanski "Moustache Viking").
+
+**CC BY 4.0 — attribution required:**
+- "Long scruffy beard" (`elvs_scruffy_beard1`) by **Elvaerwyn**
+- "Full beard" (`grinsegold_full_beard`) by **grinsegold**
+- "Moustache" (`grinsegold_moustache`) by **grinsegold**
+
+These are used modified (refit to the game's body, recoloured, resampled textures).
+License: https://creativecommons.org/licenses/by/4.0/
+
+## Clothing — MakeHuman community asset packs
+Garments from the shirts, pants, skirts, dress, shoes, hats, gloves, glasses, masks, suits and equipment packs,
+fetched by `tools/mh/fetch_community.sh` and refit, recoloured and resampled by `tools/mh/build_human.py`.
+
+CC0 1.0 (credited with thanks): aethelraed, cortu, culturalibre, donitz, elvs, frankyaye, grinsegold, joachip, joepal, jujube, kwnet, learning, matcreator, mindfront, namuhekam, rehmanpolanski, scailman, spamrakuen, thegreatengineer, toigo.
+
+**CC BY 4.0 — attribution required** (author handle as published on the MakeHuman community site; asset ids in brackets):
+- **culturalibre**: `culturalibre_sneakers`, `culturalibre_cl_bowler_hat`, `culturalibre_cl_don_quixote_hat`, `culturalibre_bandana_mask`
+- **drednicolson**: `drednicolson_asymmetric_tunic_and_sash`, `drednicolson_short-tail_camo_tee`
+- **dressupdoc**: `dressupdoc_sandals1`
+- **Elvaerwyn**: `elvs_hooded_sweat_jacket1`, `elvs_male_shirt_tie_tucked1`, `elvs_male_shirt_untucked_bd1`, `elvs_male_boho_top1`, `elvs_lara_tank1`, `elvs_male_muscle_shirt1`, `elvs_male_tankshirt1`, `elvs_ruffle_sleeve_peasant_blouse_1`, `elvs_jeans_bootcut`, `elvs_jeans_straight_leg`, `elvs_male_trouser`, `elvs_slouchy_beanie1`, `elvs_male_flat_cap1`, `elvs_tophat1`, `elvs_charity_veil1`, `elvs_covid_goggles1`, `elvs_ladies_sunglass1`, `elvs_covid_mask`, `elvs_plague_doctor_mask`, `elvs_male_coveralls_1`, `elvs_emt_uniform_pants_male`, `elvs_emt_uniform_pants_female`, `elvs_racing_fire_suit_male1`, `elvs_racing_fire_suit_female1`, `elvs_halter_style_pantsuit1`, `elvs_sporty_tracksuit_hoodie_dress1`
+- **ews**: `ews_striped_shirt`
+- **gredal**: `gredal_gas_mask`
+- **janexx**: `janexx_old_female_sweater`
+- **maciekg**: `maciekg_leather_boots`
+- **madmanny**: `madmanny_tight_leather_boots`
+- **mindfront**: `mindfront_cardigan_long_open_front`, `mindfront_knitted_sweater_01`, `mindfront_knitted_sweater_02`, `mindfront_tank_top_01`, `mindfront_female_trousers_1`, `mindfront_male_trousers_1`, `mindfront_male_trousers_2`, `mindfront_shoes_oxford_male`, `mindfront_shoes_oxford_female`, `mindfront_shoes_biker_boots_male`, `mindfront_shoes_biker_boots_female`, `mindfront_knitted_hat_01`, `mindfront_patrol_cap`, `mindfront_fishing_hat_01`, `mindfront_sherpa_hat`, `mindfront_m_suit_01`, `mindfront_f_ninja`, `mindfront_tactical_vest_male`, `mindfront_tactical_vest_female`
+- **punkduck**: `punkduck_lace_up_blouse`, `punkduck_high_neck_crop_top`, `punkduck_sleeveless_shirt`, `punkduck_v_neck_top`, `punkduck_retro_top`, `punkduck_sleeveless_crop_top`, `punkduck_female_tight_jeans`, `punkduck_male_classic_jeans`, `punkduck_running_shoes_01`, `punkduck_tennis_shoes`, `punkduck_comfortable_sneakers`, `punkduck_winter_boots`, `punkduck_female_half-boots`, `punkduck_riding_boots`, `punkduck_medieval_boots`, `punkduck_sun_visor_sports_visor`, `punkduck_goggles`, `punkduck_sport-sunglasses`, `punkduck_glasses_modern_form`, `punkduck_wetsuit`, `punkduck_diver_suit`, `punkduck_wireless_headset`, `punkduck_stethoscope`
+- **scailman**: `scailman_low-heeled_boots`
+
+Used modified (refit to the game's bodies, re-dyed, weathered, resampled textures). License: https://creativecommons.org/licenses/by/4.0/
+
+## Libraries
+- three.js (MIT)
+
+## The Unity game (redesign, 2026-10-28 on)
+- **Textures**: Poly Haven (https://polyhaven.com), CC0, fetched by `tools/unity/assets.py`; the list with ids is
+  written to `unity/Assets/External/CREDITS.md` at fetch time.
+- **Nature models** (rocks, dead wood, scrub, grass): Poly Haven, CC0, fetched by `tools/unity/models.py` and baked to
+  phone budgets by `tools/unity/models_bake.py` into `unity/Assets/SecondFace/Models/Nature/` (ids in `models.json`).
+- **Bake-off people** (`unity/Assets/SecondFace/People/Bakeoff/`): MakeHuman 1.x base, targets, rig and community
+  skins/hair/brows/lashes as above (CC0). Garment meshes used for their silhouette, re-textured by `bake_cloth`:
+  CC0 — cortu (`cortu_cargo_pants`), toigo (`toigo_fisherman_sweater`, `toigo_wool_pants`, `toigo_ankle_boots_female`),
+  culturalibre (`culturalibre_male_boots`, `culturalibre_hero-heroine_hood_1`), matcreator (`matcreator_mc-skinsuit_2022`),
+  rehmanpolanski (`rehmanpolanski_viking_tunic`), spamrakuen (`spamrakuen_tbm_glasses_frames_01`);
+  CC BY 4.0 — Elvaerwyn (`elvs_male_shirt_untucked_bd1`, `elvs_male_trouser`, `elvs_hooded_sweat_jacket1`), mindfront
+  (`mindfront_tactical_vest_male`, `mindfront_cardigan_long_open_front`), maciekg (`maciekg_leather_boots`),
+  culturalibre (`culturalibre_sneakers`), punkduck (`punkduck_winter_boots`). Used modified (refit, re-baked textures).
+- **People**: the MakeHuman 1.x base mesh, targets, rig and proxies (CC0, makehumancommunity.org) and the MakeHuman
+  community asset packs skins01/02, hair01, eyebrows01, eyelashes01 (CC0; authors named in each pack's files),
+  rebuilt by `tools/unity/people/mh_build.py`. No MakeHuman program code is used.
+- **Motion**: the CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu; free for all uses; "The data used in
+  this project was obtained from mocap.cs.cmu.edu. The database was created with funding from NSF EIA-0196217."),
+  converted by `tools/unity/motion/cmu2fbx.py` (trials listed in that file; with 07_03, 70_10, 104_02, 113_25, 141_02,
+  141_03, 143_30 added and 141_13 re-exported at its true frame rate, motion sets v2-v4, 2026-11-17).
+- **Motion (ACCAD)**: "Open Motion Project by ACCAD/The Ohio State University is licensed under a Creative Commons
+  Attribution 3.0 Unported License." Female1 takes A01 Stand, B02 Walk to Stand, B03 Walk 1, B13 Walk Turn Right 45, D2
+  Wait; Male1 A1 Stand, B3 Walk; Male2 A1 Stand, B3 Walk, C3 Run. Used modified (cut to one stride or a quiet stretch,
+  looped, resampled to 30 fps, Male1/Male2 re-solved onto a T-pose skeleton, retargeted), by
+  `tools/unity/motion/accad2fbx.py`.
+- **Kits**: built from scratch by `tools/unity/kits/*.py` in Blender (GPL program; its output is ours).
+- **Typefaces** (`unity/Assets/SecondFace/UI/Fonts/`, licences beside them): **Barlow** by Jeremy Tribby (The Barlow
+  Project Authors, https://github.com/jpt/barlow) for the interface, and **Literata** by TypeTogether for Google (The
+  Literata Project Authors, https://github.com/googlefonts/literata) for the notebook, both under the SIL Open Font
+  License 1.1, from the google/fonts repository. Literata is used as static instances cut from its variable font
+  with fontTools (12 pt Regular and Italic, 36 pt SemiBold).
+
+## People on the best free pipeline (P4.15, `docs/PEOPLE_RESEARCH.md`)
+
+- **Reom** — base body, morphs and skin textures: mesh by **ComplexAce**, morphs and textures by **Hope**; distributed
+  with CharMorph (https://github.com/Upliner/CharMorph-db), **CC-BY** as declared in its `config.yaml`. Used as the base
+  of every person if the bake-off chooses it; refit, re-textured and reduced by our pipeline.
+- **Antonia Polygon** — female base by **Olaf Delgado-Friedrichs** with phantom3D, MikeJ, DieTrying (morphs), Fenrissa
+  and others (https://sites.google.com/site/antoniapolygon/), **CC-BY 3.0**; a candidate in the bake-off.
+- **Hair Alphas For Days** — hair strand alphas by **OwlishMedia** (https://opengameart.org/content/hair-alphas-for-days),
+  **CC0**; the hair cards' and eyebrows' alphas.
+- **CMU Graphics Lab Motion Capture Database** (http://mocap.cs.cmu.edu) — the captured motion, free for any use;
+  converted by `tools/unity/motion/cmu2fbx.py`.
+
+## Hair grooms (P4.16)
+
+- **HDRP Defender Character Demo** — the hairstyles' strand grooms ("Hair Files": AMD TressFX `.tfx`, the Loose, Blonde,
+  Afro and BuzzCut styles) from **Unity Technologies**, https://github.com/UnityTechnologies/HDRP-Defender-Character-Demo.
+  The demo's character package is offered for educational and non-commercial use with attribution to Unity; the owner's
+  game is for personal, non-commercial use (owner's decision, 2026-10-30). The grooms are not shipped: `tools/unity/people/groom.py`
+  reads them at build time (`SF_GROOMS`) and makes our own hair cards from their courses (the crown braids, the
+  hairline's fine hairs and its measured shape). The demo's textures, meshes and shaders are not used.
+
+
+## Real people for the plausibility gate (pass 10, `docs/PEOPLE_REALISM.md`)
+
+- **ANSUR II** — the 2012 US Army anthropometric survey's public data (6,068 adults; public domain),
+  https://www.openlab.psu.edu/ansur2/. Summary statistics in `tools/unity/people/gate/ansur_stats.json`.
+- **FairFace** — Kärkkäinen, K. and Joo, J. (2021), "FairFace: Face Attribute Dataset for Balanced Race, Gender, and
+  Age", WACV; the dataset under **CC BY 4.0** (HuggingFaceM4/FairFace). Landmark statistics in
+  `tools/unity/people/gate/fairface_stats.json`; its photographs appear in the reference boards
+  (`docs/evidence/unity/p4/realism/`), beside our people, for comparison. **In the game**: every adult's face is drawn
+  from FairFace faces fitted in our sculptor's basis (R3: `tools/unity/people/gate/fairface_shapes.json`,
+  `faces_fit.json`, and Core's `FacesData.cs`, adapted from the dataset; no photograph ships), so the game's credits
+  name FairFace and its licence.
+- **MediaPipe Face Landmarker** (Google, Apache 2.0) measures both.
+- **Ava-256** — Martinez, J. et al. (2024), "Codec Avatar Studio: Paired Human Captures for Complete, Driveable, and
+  Generalizable Avatars", NeurIPS Datasets and Benchmarks (Meta; github.com/facebookresearch/ava-256), under **CC BY-NC
+  4.0**: real people captured in a dome of 80 cameras, each frame a tracked mesh and its photographed texture. Fetched
+  by byte range for review only (`tools/unity/people/ava/`): a few Black people's neutral frames, rendered beside
+  Rocketbox's for the owner (`docs/evidence/unity/p4/research/qa_black_sources_*.jpg`); nothing of it is in the game.
+- **Microsoft Rocketbox Avatar Library** (Microsoft, MIT; github.com/microsoft/Microsoft-Rocketbox): rigged people with
+  photographed faces, under evaluation as the base for the game's people (`unity/Assets/ThirdParty/Rocketbox`, licence
+  beside them; `docs/PEOPLE_RESEARCH.md` §7).
+
+## The fight's motion and weapons (COMBAT.md WP2, 2026-11-17; `Assets/SecondFace/Combat/`)
+- **ACCAD Open Motion Project** — "Open Motion Project by ACCAD/The Ohio State University is licensed under a Creative
+  Commons Attribution 3.0 Unported License." Takes used (modified: cut, looped, resampled to 30 fps, Male2 re-solved onto a
+  T-pose skeleton, retargeted): Male2 A7, A10, B25, C26, C27, D1, D4, E1, E4–E8, E13, E19–E21; Female1 A07, A10, B24, B25,
+  C26, C27.
+- **CMU Graphics Lab Motion Capture Database** (mocap.cs.cmu.edu; free for all uses, not to be resold as data): trials 22_12,
+  76_04, 77_03, 77_09, 79_01, 79_96, 80_03, 91_59, 113_08, 113_13, 113_24, 140_01, 140_03, 140_08, 141_14, 144_13, 144_26.
+- **Quaternius** — Universal Animation Library and Universal Animation Library 2 (Standard), CC0 1.0.
+- **Poly Haven** (CC0): bolt-action rifle 7.62, service pistol and fish knife by Mateusz Sadek; machete by Ulan Cabanilla;
+  hatchet by Ulan Cabanilla and James Ray Cock; crowbar by Alexander Otterbeck; pipe wrench by Will Evarts; baseball bat by
+  Enrique Martín; stick grenade by singaii; wine bottle by Rico Cilliers.
+- **OpenGameArt** (CC0): "AKM" by LonesomeDucky, "Old Revolver" by Lucian Pavel, "Double Barrel Shotgun" by Jean PFP; used
+  modified (reduced, re-oriented, re-textured to the lore).

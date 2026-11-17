@@ -9,18 +9,21 @@ namespace SecondFace.Game.UI
     public sealed class TitleModel
     {
         public SaveMeta Latest;
+        /// <summary>A save the story kept by name (the content's save event; null: none), offered first.</summary>
+        public SaveMeta Named;
         /// <summary>Whether there is any save to load.</summary>
         public bool AnySave;
         /// <summary>What the world is doing while it comes in (null once it is in).</summary>
         public Func<string> Status;
-        public Action Continue, NewGame, Load, Settings;
+        public Action Continue, NewGame, Load, Settings, LoadNamed;
     }
 
     /// <summary>
     /// The title (P5.3j, DESIGN_UNITY §6 "menus and settings are plain"): the name in the book face on a dark band down
     /// the left, the world coming in behind it, and four choices under the thumb: continue (the last save, its person,
-    /// place and day), a new game (character creation), load, settings. While the world is still coming in, a line under
-    /// them says so; a game chosen meanwhile begins when it is in.
+    /// place and day), a new game (character creation), load, settings; a save the story kept by name is offered first,
+    /// under its own name. While the world is still coming in, a line under them says so; a game chosen meanwhile begins
+    /// when it is in.
     /// </summary>
     public sealed class TitleScreen : UIScreen
     {
@@ -34,6 +37,8 @@ namespace SecondFace.Game.UI
         public override bool HidesHud => true;
 
         public Button ContinueButton { get; private set; }
+        /// <summary>The save the story kept by name (null when there is none).</summary>
+        public Button NamedButton { get; private set; }
         public Button NewButton { get; private set; }
         public Button LoadButton { get; private set; }
         public Button SettingsButton { get; private set; }
@@ -57,7 +62,15 @@ namespace SecondFace.Game.UI
             var choices = new VisualElement();
             choices.AddToClassList("sf-start__choices");
             band.Add(choices);
-            if (_m.Latest != null)
+            if (_m.Named != null)
+            {
+                NamedButton = Choice(choices, "title-named", null, () => _m.LoadNamed?.Invoke(), string.IsNullOrEmpty(_m.Named.Title) ? Strings.Get("title.named") : _m.Named.Title);
+                var named = new Label(Describe(_m.Named)) { pickingMode = PickingMode.Ignore };
+                named.AddToClassList("sf-start__choice-sub");
+                NamedButton.Add(named);
+            }
+            // (continue: the newest save, unless it is the kept one offered above)
+            if (_m.Latest != null && (_m.Named == null || _m.Latest.Slot != _m.Named.Slot))
             {
                 ContinueButton = Choice(choices, "title-continue", "title.continue", () => _m.Continue?.Invoke());
                 var sub = new Label(Describe(_m.Latest)) { pickingMode = PickingMode.Ignore };
@@ -74,11 +87,11 @@ namespace SecondFace.Game.UI
             return root;
         }
 
-        private static Button Choice(VisualElement into, string name, string key, Action act)
+        private static Button Choice(VisualElement into, string name, string key, Action act, string text = null)
         {
             var b = new Button(act) { name = name };
             b.AddToClassList("sf-start__choice");
-            var t = new Label(Strings.Get(key)) { pickingMode = PickingMode.Ignore };
+            var t = new Label(text ?? Strings.Get(key)) { pickingMode = PickingMode.Ignore };
             t.AddToClassList("sf-start__choice-text");
             b.Add(t);
             into.Add(b);

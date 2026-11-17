@@ -53,7 +53,10 @@ namespace SecondFace.Core.Save
     public sealed class SaveMeta
     {
         public string Slot;
+        /// <summary>Who is playing (the player's name).</summary>
         public string Label;
+        /// <summary>A named save's own name, as the content gave it (<see cref="NamedSave"/>); null for the others.</summary>
+        public string Title;
         public string LocationId;
         public string LocationName;
         public double Minutes;
@@ -103,7 +106,27 @@ namespace SecondFace.Core.Save
     /// <summary>Save slots on top of a backend; versioning and import/export (port of save/saves.ts).</summary>
     public sealed class SaveManager
     {
-        public static readonly string[] Slots = { "auto", "quick", "slot1", "slot2", "slot3" };
+        /// <summary>The slots the content may name in its <c>save</c> event (<see cref="NamedSave"/>): kept by the game at
+        /// a moment the story chooses, never written by hand, listed first where saves are loaded.</summary>
+        public static readonly string[] Named = { "steps" };
+        public static readonly string[] Slots = { "auto", "quick", "slot1", "slot2", "slot3", "steps" };
+
+        /// <summary>A slot the content names (its save is made by the story, not by hand).</summary>
+        public static bool IsNamed(string slot) => Array.IndexOf(Named, slot) >= 0;
+
+        /// <summary>The order saves are offered to load: the named ones first (the newest first), then the auto slot, the
+        /// quick slot and the three by hand; only slots that hold a save.</summary>
+        public static List<string> LoadOrder(IReadOnlyDictionary<string, SaveMeta> filled)
+        {
+            var order = new List<string>();
+            if (filled == null) return order;
+            var named = new List<SaveMeta>();
+            foreach (var slot in Named) if (filled.TryGetValue(slot, out var m) && m != null) named.Add(m);
+            named.Sort((a, b) => b.Timestamp.CompareTo(a.Timestamp));
+            foreach (var m in named) order.Add(m.Slot);
+            foreach (var slot in Slots) if (!IsNamed(slot) && filled.TryGetValue(slot, out var m) && m != null) order.Add(slot);
+            return order;
+        }
         private readonly ISaveBackend _backend;
         public static readonly JsonSerializerSettings Json = new() { NullValueHandling = NullValueHandling.Ignore, Formatting = Formatting.None };
 
@@ -156,6 +179,26 @@ namespace SecondFace.Core.Save
             if (f?.State == null || f.State.LocationId == null || f.State.Player == null) throw new InvalidDataException("Save file is missing game state");
             if (f.Meta == null) throw new InvalidDataException("Save file is missing metadata");
             return f;
+        }
+    }
+
+    /// <summary>
+    /// The content's <c>save</c> event (<c>{ event: 'save', data: { slot, label } }</c>): a save the story keeps at a moment
+    /// of its choosing, made at once with the game exactly as it stands when the event fires (the effects listed after it
+    /// in the same choice are not in it), in a slot of <see cref="SaveManager.Named"/> under the content's own name.
+    /// </summary>
+    public sealed class NamedSave
+    {
+        public string Slot;
+        public string Label;
+
+        /// <summary>The event's data as a named save (null when it names no slot the game keeps).</summary>
+        public static NamedSave From(Newtonsoft.Json.Linq.JToken data)
+        {
+            var slot = (string)data?["slot"];
+            if (string.IsNullOrEmpty(slot) || !SaveManager.IsNamed(slot)) return null;
+            var label = (string)data["label"];
+            return new NamedSave { Slot = slot, Label = string.IsNullOrWhiteSpace(label) ? slot : label };
         }
     }
 }

@@ -1990,3 +1990,119 @@
     white-space: normal;
 }
 .sf-dust__rules { font-size: var(--fs-18); color: var(--pencil); white-space: normal; margin-top: 6px; flex-shrink: 0; }
+
+/* ---- the closing pages (EpilogueScreen.cs): a band of paper at the right, the still in the world beside it; each page
+   fades in over its still ---- */
+.sf-epilogue { flex-direction: row; justify-content: flex-end; }
+.sf-epilogue__page {
+    width: 42%;
+    min-width: 540px;
+    background-color: rgba(238, 230, 211, 0.94);
+    border-left-width: 3px;
+    border-left-color: var(--paper-edge);
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.6s;
+    transition-timing-function: ease-in-out;
+}
+.sf-epilogue__page--shown { opacity: 1; }
+.sf-epilogue__page > .sf-safe { flex-grow: 1; }
+.sf-epilogue__speaker {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: var(--fs-28);
+    margin: 24px 28px 0 28px;
+    color: var(--ink);
+}
+.sf-epilogue__scroll { flex-grow: 1; flex-shrink: 1; }
+.sf-epilogue__scroll .unity-scroll-view__content-container { padding: 28px 28px 12px 28px; }
+.sf-epilogue__text {
+    -unity-font-definition: url("../Fonts/Literata-Regular.asset");
+    font-size: var(--fs-28);
+    color: var(--ink);
+    white-space: normal;
+    margin-bottom: 18px;
+}
+.sf-epilogue__line {
+    border-left-width: 3px;
+    border-left-color: var(--sage);
+    padding: 2px 0 2px 12px;
+    margin-bottom: 10px;
+}
+.sf-epilogue__line-label {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-20);
+    letter-spacing: 2px;
+    color: var(--sage);
+}
+.sf-epilogue__line-text {
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: var(--fs-24);
+    color: var(--ink-soft);
+    white-space: normal;
+}
+.sf-epilogue__options { flex-direction: row; justify-content: flex-end; flex-wrap: wrap; padding: 8px 20px 20px 20px; }
+.sf-epilogue__option {
+    min-height: var(--touch);
+    min-width: 180px;
+    margin: 0 0 0 10px;
+    padding: 6px 18px;
+    border-width: 0;
+    border-bottom-width: 2px;
+    border-color: var(--paper-edge);
+    border-radius: 0;
+    background-color: rgba(0, 0, 0, 0);
+    justify-content: center;
+}
+.sf-epilogue__option:enabled:hover { background-color: var(--paper-deep); }
+.sf-epilogue__option:enabled:active { background-color: #D8CBAE; }
+.sf-epilogue__option:enabled:focus { border-bottom-color: var(--ochre); }
+.sf-epilogue__option-text {
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: var(--fs-26);
+    color: var(--ink);
+    -unity-text-align: middle-center;
+}
+
+/* ---- the credits (CreditsScreen.cs): the roll climbing over a dark field ---- */
+.sf-credits { background-color: #0E0C09; }
+.sf-credits__field { flex-grow: 1; overflow: hidden; align-items: center; }
+.sf-credits__roll { width: 70%; align-items: center; }
+.sf-credits__name {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: var(--fs-48);
+    letter-spacing: 6px;
+    color: var(--plate-text);
+    margin-bottom: 64px;
+    -unity-text-align: middle-center;
+}
+.sf-credits__heading {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-24);
+    letter-spacing: 3px;
+    color: var(--ochre);
+    margin: 40px 0 14px 0;
+    white-space: normal;
+    -unity-text-align: middle-center;
+}
+.sf-credits__line {
+    font-size: var(--fs-22);
+    color: var(--plate-dim);
+    white-space: normal;
+    margin-bottom: 10px;
+    -unity-text-align: middle-center;
+}
+.sf-credits__last {
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: var(--fs-32);
+    color: var(--plate-text);
+    margin: 96px 0 140px 0;
+    -unity-text-align: middle-center;
+}
+.sf-credits__skip {
+    position: absolute;
+    right: 32px;
+    bottom: 24px;
+    font-size: var(--fs-18);
+    letter-spacing: 1px;
+    color: rgba(185, 174, 156, 0.6);
+}

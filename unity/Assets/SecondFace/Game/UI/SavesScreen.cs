@@ -71,8 +71,11 @@ namespace SecondFace.Game.UI
             _grid.Clear();
             Cards.Clear();
             var filled = _m.Session != null ? _m.Session.List() : new Dictionary<string, SaveMeta>();
-            var slots = _m.Saving ? new List<string> { Session.Quick } : new List<string> { Session.Auto, Session.Quick };
-            slots.AddRange(Session.Manual);
+            // (loading: the saves the story kept by name first, then the auto slot, the quick slot and the three by hand;
+            // saving: the quick slot and the three by hand, never a named one)
+            List<string> slots;
+            if (_m.Saving) { slots = new List<string> { Session.Quick }; slots.AddRange(Session.Manual); }
+            else slots = SaveManager.LoadOrder(filled);
             var shown = 0;
             foreach (var slot in slots)
             {
@@ -102,7 +105,7 @@ namespace SecondFace.Game.UI
             var words = new VisualElement { pickingMode = PickingMode.Ignore };
             words.AddToClassList("sf-saves__words");
             card.Add(words);
-            Text(words, "sf-saves__slot", SlotName(slot).ToUpperInvariant());
+            Text(words, "sf-saves__slot", SlotName(slot, meta).ToUpperInvariant());
             if (meta == null) Text(words, "sf-saves__empty", Strings.Get("saves.empty"));
             else
             {
@@ -125,8 +128,13 @@ namespace SecondFace.Game.UI
         {
             Session.Auto => Strings.Get("saves.auto"),
             Session.Quick => Strings.Get("saves.quick"),
+            _ when SaveManager.IsNamed(slot) => Strings.Get("title.named"),
             _ => Strings.Get("saves.slot", Array.IndexOf(Session.Manual, slot) + 1),
         };
+
+        /// <summary>A slot's name on its card: a save the story kept under the name it gave it.</summary>
+        public static string SlotName(string slot, SaveMeta meta) =>
+            meta != null && SaveManager.IsNamed(slot) && !string.IsNullOrEmpty(meta.Title) ? meta.Title : SlotName(slot);
 
         /// <summary>Time played, in hours and minutes.</summary>
         public static string Played(double seconds)

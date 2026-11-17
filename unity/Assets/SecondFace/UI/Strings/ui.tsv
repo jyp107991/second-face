@@ -11,6 +11,7 @@ title.continue	Continue
 title.new	New game
 title.load	Load
 title.settings	Settings
+title.named	A kept save
 pause.title	Paused
 pause.resume	Back to it
 pause.save	Save
@@ -800,3 +801,5 @@ dust.won_prize	You win: {0}.
 dust.lost_prize	{0} wins: {1}.
 dust.you_short	You need {0} Tolls to sit down.
 dust.they_short	{0} can't cover the stake.
+credits.thanks	Thank you for playing.
+credits.skip	Tap to go back to the title

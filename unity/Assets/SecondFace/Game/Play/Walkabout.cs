@@ -8,6 +8,7 @@ using SecondFace.Core.Inventory;
 using SecondFace.Core.Npc;
 using SecondFace.Core;
 using SecondFace.Core.Quest;
+using SecondFace.Core.Save;
 using SecondFace.Core.Scene;
 using SecondFace.Core.State;
 using SecondFace.Core.World;
@@ -96,7 +97,7 @@ namespace SecondFace.Game.Play
         /// <summary>A conversation, a trade, a table (Dust, the surgeon's), a fight or a move to another place is under way:
         /// the world's own events wait.</summary>
         public bool Busy => (Conversation != null && Conversation.IsOpen) || (Trade != null && Trade.IsOpen) || (Table != null && Table.IsOpen)
-                            || (Combat != null && Combat.Active) || _responding > 0 || (Begun && !Placed);
+                            || (Epilogue != null && Epilogue.IsOpen) || (Combat != null && Combat.Active) || _responding > 0 || (Begun && !Placed);
         private int _responding;
         /// <summary>A table open with someone now: Dust, the surgeon's (null when none).</summary>
         public UIScreen Table { get; private set; }
@@ -196,6 +197,8 @@ namespace SecondFace.Game.Play
             Begun = false;
             _arriving = null;
             _movesAsked = 0;
+            if (Epilogue != null && Epilogue.IsOpen) Epilogue.Close();
+            if (Still != null) Still.End();
             if (Dressing != null) Dressing.Clear();
             _placing++;   // a setting down under way is dropped
             if (Walker != null) Destroy(Walker.gameObject);
@@ -321,6 +324,8 @@ namespace SecondFace.Game.Play
             Dressing.Spawner = Stage.Streamer != null ? Stage.Streamer.PlaceSpawner : null;
             Dressing.Refresh();
             SetDown?.Invoke();
+            // a game saved in its closing pages opens on the page it stood at
+            if (Core.World.Epilogue.Resumes(Game)) StartCoroutine(AfterTalkAndMove(() => OpenTree(Core.World.Epilogue.Tree, "")));
         }
 
         /// <summary>A place is built (it has a prefab to show; the rest stand as bare pads until their kits are made).</summary>
@@ -654,9 +659,10 @@ namespace SecondFace.Game.Play
         /// and logic hosts): camp (a bed of one's own); trade with whoever is being talked to; everyone healed; someone
         /// comes to talk; a move to another map (goto); a fight with whoever has turned (combat) or with the person talked
         /// to (fight; a pit bout with <c>{ pit: { win, lose } }</c>); another conversation (dialogue); a recorded memory
-        /// (reverie: the picture turns cold while it plays); a title card (title). The rest go to <see cref="Asked"/>. What
-        /// opens a screen or moves the player waits for the conversation to close first, and a conversation asked for with a
-        /// move waits for the arrival (arrive, then talk).</summary>
+        /// (reverie: the picture turns cold while it plays); a title card (title); a save the story keeps (save: made at
+        /// once); a closing page's still (slide); the credits (credits). The rest go to <see cref="Asked"/>. What opens a
+        /// screen or moves the player waits for the conversation to close first, and a conversation asked for with a move
+        /// waits for the arrival (arrive, then talk).</summary>
         private void OnEvent(string name, Newtonsoft.Json.Linq.JToken data)
         {
             // the person being talked to: only while their conversation is open (a quest's or a trigger's effect later has
@@ -698,12 +704,29 @@ namespace SecondFace.Game.Play
                 case "dialogue":
                     var tree = (string)data?["tree"];
                     if (string.IsNullOrEmpty(tree)) break;
+                    // the closing pages ask for themselves again to turn a page: on their own screen, in place
+                    if (Core.World.Epilogue.Is(tree) && Epilogue != null && Epilogue.IsOpen) { Epilogue.TurnAsked = true; break; }
                     // arrive, then talk: with a move asked in the same breath, the tree opens where the move sets the player down
                     StartCoroutine(AfterTalkAndMove(() => OpenTree(tree, (string)data["name"] ?? "")));
                     break;
                 case "reverie":
                     var memory = (string)data?["tree"];
                     if (!string.IsNullOrEmpty(memory)) StartCoroutine(AfterTalkAndMove(() => OpenReverie(memory, (string)data["name"])));
+                    break;
+                case "save":
+                    // a save the story keeps under its own name: made now, before the effects listed after it
+                    var named = NamedSave.From(data);
+                    if (named != null) SaveAsked?.Invoke(named);
+                    else Debug.LogWarning($"Walkabout: a save asked for in no slot the game keeps ({data})");
+                    break;
+                case "slide":
+                    // a closing page's still: where it is composed, who is in it, the light
+                    LastSlide = SlideData.From(data);
+                    if (Epilogue != null && Epilogue.IsOpen && LastSlide != null && Still != null) Still.Show(LastSlide);
+                    break;
+                case "credits":
+                    // the closing page's last word: the credits roll, then the title (the named save stays)
+                    StartCoroutine(AfterTalk(RollCredits));
                     break;
                 case "title":
                     ShowTitle((string)data?["text"] ?? "");
@@ -748,6 +771,8 @@ namespace SecondFace.Game.Play
         {
             var ui = UIService.Instance;
             if (ui == null || string.IsNullOrEmpty(tree) || !Registry.Dialogues.TryGetValue(tree, out var def)) return null;
+            // the closing pages have a screen of their own
+            if (Core.World.Epilogue.Is(tree)) { OpenEpilogue(name); return null; }
             ClockToGame();
             var before = Game.Minutes;   // (the first line's own effects may move the clock: followed from before them)
             var runner = new DialogueRunner(def, Game, Quests);
@@ -757,6 +782,55 @@ namespace SecondFace.Game.Play
             TimeFollows(panel, before);
             Conversation = ui.Open(panel);
             return panel;
+        }
+
+        // ---- the closing pages (Core Epilogue) -----------------------------------------------------------------------
+
+        /// <summary>The closing pages' screen while it is open (null before).</summary>
+        public EpilogueScreen Epilogue { get; private set; }
+        /// <summary>The still beside the closing pages (null before the first).</summary>
+        public SlideStill Still { get; private set; }
+        /// <summary>The last still the content asked for (the <c>slide</c> event).</summary>
+        public SlideData LastSlide { get; private set; }
+        /// <summary>The story keeps a save (the content's <c>save</c> event): made at once, the game as it stands.</summary>
+        public event System.Action<NamedSave> SaveAsked;
+        /// <summary>A closing page was turned (the game keeps a save: a load opens on the next page).</summary>
+        public event System.Action PageTurned;
+        /// <summary>The credits are to roll: the game is over (the title follows; the named save stays).</summary>
+        public event System.Action Finished;
+
+        /// <summary>Opens the closing pages on their own screen (the content's epilogue tree, page after page in place, its
+        /// still composed beside each page), or turns to the next page if it is open. Null without the tree or a UI.</summary>
+        public EpilogueScreen OpenEpilogue(string name = null)
+        {
+            var ui = UIService.Instance;
+            if (ui == null || !Registry.Dialogues.TryGetValue(Core.World.Epilogue.Tree, out var def)) return null;
+            if (Epilogue != null && Epilogue.IsOpen) return Epilogue;
+            ClockToGame();
+            Game.Flags[Core.World.Epilogue.OpenFlag] = true;
+            _speaking = null;
+            if (Still == null) { Still = gameObject.AddComponent<SlideStill>(); Still.Walkabout = this; }
+            var screen = new EpilogueScreen(new EpilogueModel
+            {
+                Open = () => new DialogueRunner(def, Game, Quests),
+                Slide = () => LastSlide,
+                Compose = slide => { if (slide != null) Still.Show(slide); },
+                Turned = () => { Quests.Update(); PageTurned?.Invoke(); },
+                Name = id => SpeakerName(id, def, name ?? ""),
+            });
+            screen.Ended += () => { if (Still != null) Still.End(); };
+            Epilogue = ui.Open(screen);
+            return screen;
+        }
+
+        /// <summary>The credits roll: the closing pages close, the game is no longer in its epilogue, and whoever runs the
+        /// game shows the credits and then the title (<see cref="Finished"/>).</summary>
+        private void RollCredits()
+        {
+            Game.Flags.Remove(Core.World.Epilogue.OpenFlag);
+            if (Epilogue != null && Epilogue.IsOpen) Epilogue.Close();
+            if (Still != null) Still.End();
+            Finished?.Invoke();
         }
 
         /// <summary>A speaker's name in a conversation with no face: nobody's for the narrator, the player's own, a person's

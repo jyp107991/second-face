@@ -143,6 +143,14 @@ namespace SecondFace.Game
                 Autosave();
             };
             Walkabout.Asked += (name, _) => { if (name == "map") OpenMap(); };
+            // a save the story keeps (the content's save event): written now, the game exactly as it stands
+            Walkabout.SaveAsked += named =>
+            {
+                if (Save(named.Slot, named.Label) == null) Debug.LogWarning($"Bootstrap: the story's save {named.Slot} was not kept");
+            };
+            // the closing pages: a save at each page turned (a load opens on the page), the credits, then the title
+            Walkabout.PageTurned += () => { _autoAt = Time.unscaledTime; Autosave(); };
+            Walkabout.Finished += () => OpenCredits();
             // a move the content asked for (a lift, a district's transit): the place's name over the world until the walker
             // stands there
             Walkabout.Moving += where =>
@@ -169,10 +177,13 @@ namespace SecondFace.Game
             if (UI == null) return null;
             UI.CloseAll();
             var latest = Session?.Latest();
+            var named = KeptSave();
             Title = UI.Open(new TitleScreen(new TitleModel
             {
                 Latest = latest,
                 AnySave = latest != null,
+                Named = named,
+                LoadNamed = () => { if (named != null) Load(named.Slot); },
                 Status = () => Stage == null || Stage.Raised ? null : (Stage.Status ?? Strings.Get("title.raising")),
                 Continue = () => { if (latest != null) Load(latest.Slot); },
                 NewGame = () => OpenCreation(),
@@ -180,6 +191,29 @@ namespace SecondFace.Game
                 Settings = () => OpenSettings(),
             }));
             return Title;
+        }
+
+        /// <summary>The newest save the story kept by name (null when none): the title offers it first.</summary>
+        private SaveMeta KeptSave()
+        {
+            if (Session == null) return null;
+            var filled = Session.List();
+            foreach (var slot in SaveManager.LoadOrder(filled))
+                if (SaveManager.IsNamed(slot)) return filled[slot];
+            return null;
+        }
+
+        /// <summary>The credits after the closing pages, then the title (the save the story kept stays, offered first).</summary>
+        public CreditsScreen OpenCredits()
+        {
+            if (UI == null) { Walkabout?.End(); return null; }
+            UI.CloseAll();
+            Title = null;
+            return UI.Open(new CreditsScreen(CreditsScreen.Shipped(), () =>
+            {
+                Walkabout?.End();
+                OpenTitle();
+            }));
         }
 
         /// <summary>Character creation; its begin starts a new game with the person made.</summary>
@@ -283,7 +317,8 @@ namespace SecondFace.Game
 
         /// <summary>Saves the game as it stands to a slot, with a picture of the scene (null when there is no game to
         /// save or it could not be written).</summary>
-        public SaveMeta Save(string slot)
+        /// <param name="title">A save the story keeps under its own name (the content's save event): that name.</param>
+        public SaveMeta Save(string slot, string title = null)
         {
             if (Session == null || Walkabout == null || !Walkabout.Begun || Walkabout.Walker == null) return null;
             var g = Walkabout.Snapshot();
@@ -291,7 +326,7 @@ namespace SecondFace.Game
             var meta = new SaveMeta
             {
                 Label = g.Pc?.Sheet?.Name, LocationId = here, LocationName = name, Minutes = g.Minutes, PlaytimeSec = g.PlaytimeSec,
-                Thumb = Session.Thumb(Stage.Camera),
+                Thumb = Session.Thumb(Stage.Camera), Title = title,
             };
             try { return Session.Write(slot, g, meta).Meta; }
             catch (System.Exception e) { Debug.LogWarning($"Bootstrap: the game was not saved to {slot} ({e.Message})"); return null; }
@@ -333,7 +368,7 @@ namespace SecondFace.Game
         public SavesScreen OpenSaves(bool saving)
         {
             if (UI == null || Session == null) return null;
-            return UI.Open(new SavesScreen(new SavesModel { Session = Session, Saving = saving, Save = Save, Load = slot => Load(slot) }));
+            return UI.Open(new SavesScreen(new SavesModel { Session = Session, Saving = saving, Save = slot => Save(slot), Load = slot => Load(slot) }));
         }
 
         public SettingsScreen OpenSettings()
