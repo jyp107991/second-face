@@ -2,6 +2,7 @@ import type { DialogueDef, OptionDef, Text } from '../../engine/dialogue/dialogu
 import type { Cond, Effect } from '../../engine/world/logic';
 import { COMFORT_TALLY_BACK, COMFORT_WORD_NODES, COMFORT_WORD_OPTION, MARWOOD_BACK_NODES, MARWOOD_BACK_OPTION } from './a3_close';
 import { PNR_NODES, PNR_START } from './a3_ready';
+import { VAULT_DOOR_NODES, VAULT_DOOR_START } from './a3_vault';
 
 /**
  * Meridian, the Archive Spire (B3.11): the photograph read from the pack (beat 14, the date), the close and its steps,
@@ -155,7 +156,8 @@ export const d_ar_doors: DialogueDef = {
 };
 
 export const d_ar_vault: DialogueDef = {
-  id: 'd_ar_vault', owner: 'narrator', start: [{ node: 'look' }],
+  // Act 3 (B6q): once the steps are done the door stands open on the stair down to the vault (a3_vault.ts)
+  id: 'd_ar_vault', owner: 'narrator', start: [...VAULT_DOOR_START, { node: 'look' }],
   nodes: {
     look: {
       text: 'A steel door set low in the Spire\'s foot, west of the steps, with no handle on this side: VAULT OF ACCOUNTS — NO ENTRY — NO EXIT. It is warm under your palm, the only warm thing in the close, and through it, far down, something hums at one note and does not stop.',
@@ -164,6 +166,7 @@ export const d_ar_vault: DialogueDef = {
       interject: [{ companion: NINE, text: '"Below us," Nine says, "the city." It does not put its hand on the door. "I have never been sent down. Nobody is sent down. Things are sent down."' }],
       options: [{ text: '(Leave it.)', exit: true }],
     },
+    ...VAULT_DOOR_NODES,
   },
 };
 

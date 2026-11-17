@@ -235,6 +235,8 @@ md_spire = {
     'spawns': [
         {'id': 'start', 'x': 31, 'y': 53, 'facing': 0}, {'id': 'from_precinct', 'x': 31, 'y': 53, 'facing': 0}, {'id': 'from_top', 'x': 58, 'y': 9, 'facing': 2},
         {'id': 'court', 'x': 14, 'y': 22, 'facing': 3}, {'id': 'steps', 'x': 31, 'y': 24, 'facing': 0},
+        # Act 3 (B6q): up the vault's stair, out of the steel door in the Spire's foot (md_vault's exit)
+        {'id': 'from_vault', 'x': 20, 'y': 17, 'facing': 2},
     ],
     'exits': [
         {'x': 30, 'y': H - 1, 'w': 4, 'h': 1, 'to': {'location': 'md_precinct', 'spawn': 'from_spire'}, 'label': 'The lane south, to the Precinct'},

@@ -1,6 +1,9 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
 import { epilogueTree, type SlideSpec } from './a3_epilogue_kit';
+import { SLIDES_CITY } from './a3_epilogue_city';
 import { SLIDES_OPEN } from './a3_epilogue_open';
+import { SLIDES_WILDS } from './a3_epilogue_wilds';
+import { SLIDES_PEOPLE } from './a3_epilogue_people';
 
 /**
  * The epilogue (B6s): one narrator tree, `d_a3_epilogue`, opened by each end's climax (B6r) once `a3_end` is set, built
@@ -11,6 +14,9 @@ import { SLIDES_OPEN } from './a3_epilogue_open';
  */
 export const EP_SPECS: SlideSpec[] = [
   ...SLIDES_OPEN,
+  ...SLIDES_CITY,
+  ...SLIDES_WILDS,
+  ...SLIDES_PEOPLE,
 ];
 
 /** The closing page, after the last slide (or a skip): its one option rolls the credits, then the title. */

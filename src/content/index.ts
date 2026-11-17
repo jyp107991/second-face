@@ -56,6 +56,7 @@ import { md_bridgeward } from './maps/md_bridgeward';
 import { md_crown } from './maps/md_crown';
 import { md_spire } from './maps/md_spire';
 import { md_spire_top } from './maps/md_spire_top';
+import { md_vault } from './maps/md_vault';
 import { md_ring } from './maps/md_ring';
 import { hs_skirts } from './maps/hs_skirts';
 import { hs_six } from './maps/hs_six';
@@ -134,6 +135,7 @@ export const MAPS: Record<string, MapDef> = {
   tm_pit, tm_level, tm_trail, nw_sawtown, nw_dam, nw_gallery, nw_landing, nw_bank,
   an_spindle, an_kelso, an_hall, an_pemberton, an_saddleback, an_glass,
   hc_terrace, hc_clinic, hc_board, hc_works,
+  md_vault,
 };
 
 export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...KNOCK, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...TOLLHOUSE_NPCS, ...SIGNALHILL_NPCS, ...DRYWELLS_NPCS, ...WILDS_NPCS, ...LANDMARK_NPCS, ...ORCHARD_NPCS, ...WHEEL_NPCS, ...NINEBRIDGE_NPCS, ...OPENFIELD_NPCS, ...SUMP_NPCS, ...MERIDIAN_NPCS, ...MARKET_NPCS, ...SINK_NPCS, ...LANTERN_NPCS, ...STACKS_NPCS, ...BRIDGEWARD_NPCS, ...CROWN_NPCS, ...SPIRE_NPCS, ...RING_NPCS, ...SKIRTS_NPCS, ...HALCYON_NPCS, ...CORRIDOR_NPCS, ...SHORE_NPCS, ...DOCKS_NPCS, ...TEETH_NPCS, ...WET_NPCS, ...ASHLANDS_NPCS, ...LONGNIGHT_NPCS, ...BENCH_NPCS, ...A3_NPCS, ...A3_KNOCK_NPCS, ...A3_SLOPE_NPCS, ...A3_CLOSE_NPCS].map((n) => [n.id, n]));

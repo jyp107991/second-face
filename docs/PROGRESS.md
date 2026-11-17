@@ -2207,6 +2207,30 @@ mid-range Android phone; deployed to Pages.
             builder later slices add pages to without engine changes; `dialogue/a3_epilogue.ts`, the assembly) and its first six
             pages are written (`dialogue/a3_epilogue_open.ts`): each page a still in the world and a short text by what the player
             did, shown only for subjects the player met, skippable, ending in the credits. `tests/b6s.test.ts` (15). Next: B6q.
+      - [x] B6t **the epilogue's pages seven to twelve** DONE 2026-11-17 (content; no engine change; no map change; not exported;
+            built alongside B6q and B6v): six more pages, each a still and a short text in several versions by what the player did
+            and the end reached (`dialogue/a3_epilogue_city.ts`: the merchant guild's bridge town, the Choir's farm, the city's
+            court, the under-city, the hill houses and the streets, the city's edges), each shown only if the player met it, with
+            short lines for the people of each place and its word on the player. `tests/b6t.test.ts` (14) and a shared test helper
+            for the epilogue (`tests/epilogue_fixture.ts`). Next: B6u.
+      - [x] B6q **the last room and the last choice** DONE 2026-11-17 (content; no engine change; not exported; built alongside
+            B6t and B6v): a new interior under a city landmark (`tools/maps/gen_md_vault.py`, checked for reachability; one spawn added
+            on the square above), a door on that square that opens on it once the climb is done, and `dialogue/a3_vault.ts` (three
+            conversations, every node with a return line, all seven companions speak): a last conversation where each question is
+            asked once, the cost of each choice told before it is made, and a choice offering exactly the ways the player's road has
+            earned, each asked twice and each refusable; nothing resolves unasked. `tests/b6q.test.ts` (24). Next: B6r.
+      - [x] B6u **the epilogue's pages thirteen to nineteen** DONE 2026-11-17 (content; no engine change; no map change; not
+            exported; built alongside B6r and B6v): seven more pages (`dialogue/a3_epilogue_wilds.ts`: the arcology and the town
+            under it, the railway and its halts, the shore village, the hill mine, the dam and the river, the travelling caravan,
+            the eastern wastes), each a still and a short text in several versions by what the player did and the end reached,
+            shown only if the player met it, with short lines for the people of each place and its word on the player; pages that
+            read an optional earlier slice show its lines only when it was played. The pass also finished B6t (a still's people
+            never depend on the end; two pages made to agree with the first pages). `tests/b6u.test.ts` (12). Next: B6r, B6v, B6w.
+      - [x] B6v **the epilogue's last eight pages** DONE 2026-11-17 (content; no engine change; no map change; not exported;
+            built alongside B6t and B6u): a page for each companion by where their life went, and a closing page
+            (`dialogue/a3_epilogue_people.ts`), each a still and a short text in several versions by what the player did and the
+            end reached, shown only for companions the player met, with short lines for what was between them and their last
+            evening. `tests/b6v.test.ts` (11). Next: B6r, B6w.
 - [ ] B7 **Systemic depth + presentation**: ruins templates, bounty/gig templates, rare encounters, music
       and ambience, title art, menus, credits, settings, tips.
 - [ ] B8 **Balance, performance, deploy**: economy sim pass, difficulty, accessibility, Android perf

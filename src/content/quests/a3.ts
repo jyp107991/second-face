@@ -4,6 +4,8 @@ import {
   ALLIES_AT_KNOCK, ALLY, AT_KNOCK, IN_SALLOW, KNOCK_WATERED, ORDER_READ, RIDE_BUGGY, RIDE_CARTS, RIDE_COLUMN, RIDE_FIRST, RIDE_WHEEL, type Ally,
   ALLY_NEEDS, ASH, ASH_REFUSED, C_BUYER_B4B, CALLA_FREE, IN, LN, NINE, NINE_CONSCIENCE,
 } from '../world/a3_conds';
+// B6q: the gates' keys, for q_a3_spire's routes
+import { B_MEANS, C_BUYER, D_ARCHIVE, D_PEOPLE, D_READER, D_VOICE, E_FILE, E_PREC, E_REG } from '../world/a3_conds';
 
 /**
  * Act 3 (B6): every quest of the act, as skeletons. Each stage's journal is a placeholder line in the player's voice and
@@ -298,11 +300,13 @@ const PNR = F('a3_pnr'), SASH = F('a3_sash'), END = F('a3_end');
 export const q_a3_spire: QuestDef = {
   id: 'q_a3_spire', title: 'Public Steps Reopen', act: 'a3', critical: true, start: 'close', xp: 1000,
   routes: [
+    // the Plan needs nothing but the steps climbed (worn: sign; refused: walk out); the rest need their gate's keys (B6q: the
+    // vault's desk offers exactly the ways held, and the sash decides the worn ones at the steps)
     { id: 'plan', kind: 'talk', label: 'Take the chair, or walk away from it' },
-    { id: 'unwritten', kind: 'fight', label: 'Bring the vault down with what you carry' },
-    { id: 'concern', kind: 'barter', label: 'Sign the city\'s core over on the Concern\'s paper' },
-    { id: 'opensky', kind: 'tech', label: 'Read the record into every radio in the Reach' },
-    { id: 'amendment', kind: 'knowledge', label: 'Amend the law from the chair, on your own rulings' },
+    { id: 'unwritten', kind: 'fight', label: 'Bring the vault down with what you carry', requires: B_MEANS },
+    { id: 'concern', kind: 'barter', label: 'Sign the city\'s core over on the Concern\'s paper', requires: { all: [C_BUYER, { item: 'k_a3_transfer' }] } },
+    { id: 'opensky', kind: 'tech', label: 'Read the record into every radio in the Reach', requires: { all: [D_VOICE, D_READER, D_PEOPLE, D_ARCHIVE] } },
+    { id: 'amendment', kind: 'knowledge', label: 'Amend the law from the chair, on your own rulings', requires: { all: [E_FILE, E_PREC, E_REG] } },
   ],
   stages: {
     close: {
@@ -320,8 +324,12 @@ export const q_a3_spire: QuestDef = {
       next: [{ if: END, stage: 'ended' }, { if: SASH, stage: 'vault' }],
     },
     vault: {
-      journal: 'Under the Spire\'s foot, the Vault of Accounts, and the thing that keeps them.',
-      objectives: [{ id: 'end', text: 'Decide', done: END }],
+      journal: 'Under the Spire\'s foot, down a stair from the steel door: the Vault of Accounts, the racks that keep them humming one note, and the voice that has been speaking to me since Knock, waiting at the far end of the aisle by an oak desk. It will answer anything. It will wait as long as I like. What I do down here is the end of it.',
+      objectives: [
+        // B6q: heard out in the hall (optional), then the choice at the desk
+        { id: 'heard', text: 'Hear the Ledger out', done: F('a3_vault_met'), optional: true },
+        { id: 'end', text: 'Decide', done: END },
+      ],
       next: [{ if: END, stage: 'ended' }],
     },
     ended: { journal: 'It is done, and the Reach will tell it as it stands.', end: 'done' },

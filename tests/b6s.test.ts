@@ -451,7 +451,7 @@ describe('B6s — the epilogue builder; slides 1–6', () => {
   });
 
   it('the `slide` event\'s data is complete: each page\'s place, spot and people resolve to real maps and NPCs (md_vault is B6q\'s to build)', () => {
-    const PENDING_MAPS: Record<string, string[]> = { md_vault: ['core'] }; // B6q builds the Vault of Accounts: remove this once it exists
+    const PENDING_MAPS: Record<string, string[]> = {}; // B6q built the Vault of Accounts (md_vault): every page's place is a real map
     for (const [id, n] of Object.entries(d_a3_epilogue.nodes)) {
       if (id === 'end' || id === 'unended') continue;
       const [slide, variant] = [id.split('_')[0], id.slice(id.indexOf('_') + 1)];
@@ -470,7 +470,7 @@ describe('B6s — the epilogue builder; slides 1–6', () => {
       if (data.light) expect(['dawn', 'day', 'dusk', 'night']).toContain(data.light);
       if (data.weather) expect(['clear', 'haze', 'dust', 'storm', 'rain', 'fog', 'snow']).toContain(data.weather);
     }
-    expect(MAPS.md_vault, 'B6q has built md_vault: drop it from PENDING_MAPS').toBeUndefined();
+    expect(MAPS.md_vault.spots?.core, 'B6q built md_vault, with the core').toBeDefined();
     // played, each page fires exactly one slide event, with its own data, before anything else
     for (const p of play(ended('prepared', 'A1').g).filter((x) => x.node !== 'end')) {
       expect(p.events.filter((e) => e.name === 'slide')).toHaveLength(1);

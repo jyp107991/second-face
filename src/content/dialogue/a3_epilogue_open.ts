@@ -175,7 +175,7 @@ const TWELVE: SlideLine[] = [
     { text: 'Treasurer by the spring. The Plan had rerouted round one face, and did not need to reroute round hers.' },
   ]),
   KS('Ocho', [
-    { if: OCHO_DROWNED, text: 'Drowned in the spring flood, as written. The clinic on the stair closed.' },
+    { if: OCHO_DROWNED, text: 'Drowned in the spring flood, as written. Anju kept the clinic on the stair.' },
     { if: val(M2_SINK, 'lost'), text: 'The flood the city had scheduled for him came anyway, the spring after its pumps stopped, and he drowned on his own stair carrying the last cot up it.' },
     { if: val(M2_SINK, 'held'), text: 'When the Ledger\'s pumps stopped, the Pale pumped the Sink by hand, and he kept the clinic open on the stair.' },
     { if: F('sk_flooded'), text: 'The spring came up the Sink and he lived through it, on the stair, carrying cots.' },

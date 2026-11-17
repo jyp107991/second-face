@@ -126,11 +126,11 @@ function checkText(where: string, t: Text): void {
  * `a3_end`, `a3_sash`, `a3_c9`...) are known on that page. Lines and texts are partially evaluated against them: an entry
  * that can never show there is dropped, the first that always shows becomes the default. The page reads exactly as before
  * (tested against the unspecialised tree); the exported tree is smaller, because a slide's lines repeat on every variant. */
-type Known = Map<string, string | number | boolean>;
+export type Known = Map<string, string | number | boolean>;
 const TRUE: Cond = { all: [] }, FALSE: Cond = { any: [] };
 const isTrue = (c: Cond): boolean => 'all' in c && c.all.length === 0;
 const isFalse = (c: Cond): boolean => 'any' in c && c.any.length === 0;
-function facts(c: Cond | undefined, k: Known): Known {
+export function facts(c: Cond | undefined, k: Known = new Map()): Known {
   if (c && 'all' in c) for (const x of c.all) facts(x, k);
   else if (c && 'flag' in c && c.eq !== undefined && c.gte === undefined && c.lte === undefined && !c.flag.startsWith('ep_')) k.set(c.flag, c.eq);
   return k;

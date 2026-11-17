@@ -764,6 +764,12 @@ export const md_spire: MapDef = {
       x: 31,
       y: 24,
       facing: 0
+    },
+    {
+      id: "from_vault",
+      x: 20,
+      y: 17,
+      facing: 2
     }
   ],
   exits: [

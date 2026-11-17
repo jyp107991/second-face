@@ -866,7 +866,7 @@ The default shared files touched by a content slice are the registries: `quests/
 - **Tests**: wear and refuse; the contest pass and fail; every Ash branch, the self branch only under its conditions.
 - **Estimate** 1 h.
 
-### B6q — The Vault and the choice
+### B6q — The Vault and the choice — BUILT 2026-11-17 (deviations under "As built")
 - **Create** `tools/maps/gen_md_vault.py` → `maps/md_vault.ts` (about 48×32, interior: the stair down from the vault door,
   the couriers' drop and its shaft, the hall of racks (the core) humming one note, the reading desk, spots `core`, `desk`,
   `drop`, `door`; walkability and reachability checked as the other generators do) · `dialogue/a3_vault.ts`
@@ -898,18 +898,18 @@ The default shared files touched by a content slice are the registries: `quests/
   under every M4 value; the `slide` event's data is complete (place, spot and people resolve to real maps and NPCs).
 - **Estimate** 1 h.
 
-### B6t — Slides 7–12: the guild, the Choir, the city
+### B6t — Slides 7–12: the guild, the Choir, the city — BUILT 2026-11-17 (deviations under "As built")
 - **Extend** `dialogue/a3_epilogue.ts` (or `a3_epilogue_city.ts` spread in): `guild`, `choir`, `precinct`, `sink`, `crown`,
   `edges`.
 - **Tests**: M2 every value; B's failing city; E's clauses read; the B5d aliases' defaults.
 - **Estimate** 1 h.
 
-### B6u — Slides 13–19: Halcyon and the wilds
+### B6u — Slides 13–19: Halcyon and the wilds — BUILT 2026-11-17 (deviations under "As built")
 - **Extend** with `skirts` (with the [B4B] lines gated), `line`, `shore`, `teeth`, `wet`, `wheel`, `ashlands` [B5d?].
 - **Tests**: M1, M3 and M5 every value, with and without the B4b flags set; the strike "still out" variant.
 - **Estimate** 1 h.
 
-### B6v — Slides 20–27: the companions and R49
+### B6v — Slides 20–27: the companions and R49 — BUILT 2026-11-17 (deviations under "As built")
 - **Extend** with the seven companion slides (§7 end states and romance ends) and `r49` (`ep_home`, partner, the aged face
   `pc.years: 19`).
 - **Tests**: every companion end state yields its variant; the never-met variants; the partner only when together; R49 by
@@ -2502,6 +2502,279 @@ page** (each "(Next.)" and the skip is an exit asking for `d_a3_epilogue` again)
 conversation close or camera ease-out between pages); a page's passives are its lines, shown under the text with their labels. (2)
 `credits` on the closing page's option, then the title, the `steps` save kept (§9.4, unchanged). (3) The `ep_*` flags are the record a
 later "replay the epilogue" menu can read.
+
+### B6t (built 2026-11-17, alongside B6q and B6v)
+**Done, all of the slice:** `dialogue/a3_epilogue_city.ts` (`SLIDES_CITY`: slides 7–12, 34 pages: guild 6, choir 6, precinct 6, sink 5,
+crown 6, edges 5 variants, with their lines; every page combination 55–115 words, lines ≤ 45) · one spread line in `a3_epilogue.ts` ·
+`tests/b6t.test.ts` (14) · `tests/epilogue_fixture.ts` (B6s's play helpers, shared: `ended`, `play`, `pageOf`, `lengths`, `treeBytes`,
+`unwritten`, the flag-read check). No engine change, no map change, no world event. `npm run check` green (1179 tests in 56 files;
+people gate red as before, "ok").
+**Shared touches (small, local, new lines only):** `a3_conds.ts` (`MET_GUILD`, `MET_CHOIR`, `MET_SINK`, `MET_CROWN`, `MET_EDGES` after
+`MET_DOGS`; the registry's B6t block before "Planned").
+
+**Variant ids** (first match; the last is the default):
+- **guild** (`ninebridge`, the Exchange floor; D on the deck): `concern | worthless | idle | audited | scheduled | rerouted` = C, D, B, E,
+  A1, A2. The Grand Factor's part of each page reads `a3_ash_target` = sarr first ("Brother Ash had been there in the first autumn"), then
+  `SARR_DEAD`, then the end's Sarr, word for word with slide 2's line (C the Concern's Treasurer; D ruined in daylight unless warned by
+  letter, `a3_warned_sarr`; B of nothing; E audited, the fines on eleven lines paid; A1 named in the spring; A2 by the spring). Lines:
+  Fen (by end; `nb_fen_help`), the porters (`nb_strike_outcome`), the paper room (`nb_archive_burned`, not under D, whose page reads it),
+  M9 ninebridge. `odile_price` and `rc_line` are left to Odile's slide (B6v) and the Line's (B6u).
+- **choir** (`openfield`): `open` (D, the plan's `choir_open`) | `burned | company | evicted | scorched | stands` (= `ln_openfield`
+  burned | guild | evicted | scorched | default). B is a sentence on every Openfield page ("the Unwritten came in out of the rows"), as
+  are A1/C/E (the assessors in the second spring, sat down in front of) and A2/D's quiet. Lines: Elder Mason, Petra, Sister Calla,
+  Tobias (`of_blight_outcome`, `of_tobias_dead`), Halcyon's jars (`hc_garden` = openfield, through `B4B.garden`), M9 openfield.
+- **precinct** (`md_spire` / bench; D at `md_precinct` / gate_post): `failing | wall | clauses | contracted | orders | rerouted` = B, D, E,
+  C, A1, A2 (§6.3's `precinct_failing` and `precinct_clauses`). **E's clauses are lines on the `clauses` page only, one per
+  `a3_amend_<id>` chosen, labelled with the clause** (fines, living, keeper, refuse, reserve, passenger, speech). Lines: Captain Lowe (by
+  `a3_lowe`, `LOWE_DEAD`, Reyes), Comfort Asamoah (`ca_squatter`, `a3_register_back`), M9 meridian. No `met`.
+- **sink** (`md_sink`): `modVariants(M2_SINK)`: `lost | held | saved | relieved | flooded`. Lines: Dagny Roos, the Pale.
+- **crown** (`md_crown`; the default at Bridgeward's booth): `ash` (`a3_ash_target` = vane) | `fallen` (`VANE_DEAD`) | `risen` | `broken`
+  (`ks_vane`) | `late` (`VANE_LATE`) | `table`; each but `ash` adds the end's sentence (C the futures up the Line; B the Crown's
+  generators lit, Bridgeward comes up the road; D the best-attended Masque; worn: an invitation and an ornament). Lines: the chain
+  (`bw_turf`, not when `bw_dogs_hold`, which slide 6 tells), the Saints (`bw_static`; B: nothing under the hiss), Old Kibet (`bw_raid`),
+  the reel (`cr_crown_hostile`, by the sash).
+- **edges**: `walked` (CARRIED_WEST ∧ `a3_c9_after` = walked: the year on the quay; the cradle's sixty aboard the Star) | `stood` (`dk_stand`
+  organised ∨ `dk_black` won) | `cleared` (`dk_hulls` cleared | sold) | `burned` (`dr_leven_burned`) | `clover` (the Ring's default; the
+  Ring's end sentence: A1 counted for the first time, B the gate open, D no lines at all). Lines: Nkechi Bello, Leven, the Hulls, the Stand
+  (broken), Mirela Stan.
+
+**Deviations and choices:**
+- **`met`** per slide reads only written flags (above, and in the registry); the Sink's flood alone is not meeting it (it comes on the
+  Spire's verdict wherever the player is). The Precinct has no `met`, like slides 1–4.
+- **A person's `if` never reads the end** (or anything else a selector fixes by equality): the builder specialises every page to its
+  selector, and B6s's test holds the specialised tree's `slide` events equal to the plain build's. So Sister Calla stands in Openfield's
+  still only when free by Act 3's own doing (`CALLA_FREE`); a release the end brings is told in her line. **B6u/B6v: keep people's
+  conditions end-free.**
+- **Defaults for the B5d aliases** are tested with every Long Night flag removed: Openfield `stands`, Mason alive, Calla held (her line
+  by end as slide 2's), Sarr alive.
+
+**Facts the later slides keep:** Sarr per end as above (slides 2 and 7 agree). Under M2 = lost, Ocho drowned on his own clinic's stair
+carrying the last cot up it (slide 2's line and this page agree); if he drowned in the spring of the list (Act 2), Anju had the clinic.
+Held: the Pale worked the three pumps by hand, Dagny calling the stroke, Ocho (or Anju) kept the clinic. Calla, free, went back to Shale's
+tent (slide 2) and walked to Openfield for the harvest; held under B she walked out when the food stopped, to Openfield first. Mason dead:
+a cairn under Openfield's windpump. Vane by Ash: at her own table in the first autumn; House Vane to her cousins, not risen. The sixty who
+walked at Carrick lived in the Boxes (court, stand) or aboard the Benguela Star (cradle) that year; Wes watched the weather off the Basin
+wall. Under C, Fen's debt lots went up the Line on the freight at two. Under E the Court read the chosen clauses at the bench every
+morning of the first season; the PC is in that still a year on (`pc.years` 1), as on slide 2.
+
+**Finished in B6u's pass (2026-11-17; the B6t agent was interrupted after its tests went green):** (1) **No person's `if` reads the
+end.** The Crown's still had placed Mr Quill under C by `a3_end`; he is now told in the page (`CROWN_END`: "the Concern's officer in
+every salon"), not placed, and the Crown's people are the house alone. A shared check, `endReadingPeople()` in `tests/epilogue_fixture.ts`
+(no person's `if` reads `a3_end` or `a3_sash`), runs in b6t and b6u; B6v may use it. (2) **A2's face agrees with slide 1:** the Precinct's
+`rerouted` page fits the empty chair's chambers out for "a young docker from Carrick, about {name}'s age" (slide 1: the lens stopped on
+"a young docker about {name}'s age, who had walked up from Carrick"; B6v's R49 the same). (3) **Slide 2's Ocho line agrees with Act 2 and
+slide 10:** when he drowned in the spring of the list, "Anju kept the clinic on the stair" (the flood's event sets `sk_clinic_anju`; B6s
+had "the clinic on the stair closed", which the Sink's pages and Act 2 both contradict). One line changed in `a3_epilogue_open.ts`.
+
+### B6q (built 2026-11-17, after B6p, alongside B6t and B6v)
+**Done, all of the slice:** `tools/maps/gen_md_vault.py` → `maps/md_vault.ts` (a cell, 48×32: the stair down from the steel door, the drop
+room with the couriers' hopper and the shaft's rungs, the hall of racks in two banks either side of one aisle with the cable trench to the
+trunk and its two couplings, the oak desk on its dais with the teleprinter and the relay key; spots `door`, `drop`, `core`, `desk`; spawns
+`start`/`door`; checked for walkability and for reachability of every spot, prop and exit from every spawn, as gen_hc_halcyon.py checks its
+cells) · `dialogue/a3_vault.ts` (3 trees: `d_a3_ledger`, 36 nodes, the last conversation and the choice; `d_a3_vault_drop`;
+`d_a3_vault_trunk`; plus `VAULT_DOOR_START`/`VAULT_DOOR_NODES`, the steel door's Act 3 entry; about 14,000 words counting every variant;
+every node with a return line; all seven companions speak) · `tests/b6q.test.ts` (24). No engine change, no world event, no new person.
+**Shared touches (small, local):** `md_spire.ts` (an import; `d_ar_vault`'s start entry and node) · `tools/maps/gen_md_spire.py` →
+`maps/md_spire.ts` (confirmed byte-identical first; one spawn, `from_vault`, beside the steel door, where the vault's stair comes up) ·
+`world/sites.ts` (`md_vault`: a cell) · the content index (the map) and the dialogue index · `a3_conds.ts` (a B6q block after `CLAUSES`:
+`VAULT_OPEN`, `DOWN_FIRE`/`DOWN_CHARGE`/`DOWN_COUPLING`, `READ_SELF`/`READ_NINE`/`READ_VERITY`/`READ_SEVENTEEN`, `RESERVE_UNDER_PEN`; the
+registry's B6q block) · `quests/a3.ts` (`q_a3_spire` only: its routes' `requires` are the gates' keys, the Plan's none, so coverage holds;
+the vault's journal; an optional "Hear the Ledger out") · `tests/b6s.test.ts` (its `PENDING_MAPS` hand-off, as it asked: md_vault exists).
+
+**How it plays (and where it differs from §2.2 21c, §4.1 and §8 B6q):**
+- **The name.** The naming bible bans "vault" in display names, so the map is **"Meridian — Archive Spire, Hall of Accounts"**; the steel
+  door's lettering (VAULT OF ACCOUNTS), the prose and the id keep the word, as Act 2 did.
+- **The door.** After the steps (`AT_VAULT`), `d_ar_vault` opens `vault_open`: the door stands open on its stair; "(Go down.)" is a `goto`
+  to `md_vault`/`door` (two minutes); "(Not yet.)" changes nothing. Before the steps it is Act 2's look, unchanged (tested). The stair's top
+  is an exit back to the close (`from_vault`): leaving the vault decides nothing.
+- **The hall.** The first step through the drop room's doorway (trigger `a3_vault_hall`, once, `AT_VAULT` ∧ no end ∧ not met) opens
+  `d_a3_ledger`; the racks (`a3_vault_core`) and the desk reopen it. The Ledger is a voice from everywhere: speaker `npc_ar_voice`, nobody
+  placed. Its first words read the steps: the file contested there (or in Act 2) and the sash taken, the sash put on and off
+  (`a3_steps_off`), declined, by `a3_sash`; the round room's "as you did" only with `ar_verdict` set.
+- **The last conversation**, each topic once (U7): why now by `LN(side)` (`none` in the spirit of `ledger`: the schedule held without the
+  designate, "I did not want it to hold without you"); the reserve as the door left it (every `a3_c9`/`a3_c9_how`/`a3_c9_after`/
+  `a3_buffer_how` value, `STRUCK_AS`, the claim, `ca_reserve`, Tamsin dead, MOTHER dark), with **a refusal**: "Tear the order up yourself" →
+  "I cannot" (the charter does not let it take back what it said; only a court or a chair can) · the ones it could not count (Tamsin by
+  state, "she was in the ration"; Kes, "the hill's to see", unseen once her link is cut or dark) · the first letter (`a3_letter_read`) · the
+  hill it let speak (B6d's `a3_ledger_granted`) · what it is for (air-gapped by afraid founders; watched the Scald; two conclusions; the
+  Plan as rebuilding and as a cold war with the hill; the Sink's spring said plainly; "I was built to be early"; the hill's guilt told as the
+  player heard it, `hc_scald_owned`, or as "a hill in the Teeth") · what it wants (agreement, and smaller: to have been seen) · doing nothing
+  ("Then I wait", and its first preference said aloud). §2.2's "the unforecast (Tamsin, Kes)" is one topic with "And Kes?" after it.
+- **What each way costs** ("Tell me straight"): one forecast per way held, asked once (`a3_cost_<sign|walk|down|sell|read|amend>`), each the
+  plan's §4.2 cost said in the Ledger's voice, with passives for what is true of this game: the open lines on the list that fall due
+  (Ada, Kessler, Kade, Wren's R31, Calla, Sarr, Vane, Maren), the reserve's paper, the Sink (`sk_pumps` seized or not), the hill (opened or
+  burned or not), Unit 9's door, the column, the leash (held or cut), the seat (`TERMS_WORSE`, the Grand Factor's line, the Board's table),
+  the night after reading by `a3_ready` (M7's three bands, with D's forecast death counts) and each readiness act counted, the rulings the
+  chair could amend by (CLAUSES' needs), the Sink's diversion that is not a clause. D's forecast says the one thing it cannot forecast.
+- **The choice offers exactly the ways held (deviation from §4.1's "all five with `showLocked`")**: the coordinator's instruction and
+  default 3. A locked way would name a way the player does not hold, and after the point of no return nothing could be done about it.
+  The desk's options are the gates that hold (tested over seven presets × eight tweaks × both sashes, and key by key): worn → the chair
+  (A1), down (B), the sale (C), the reading (D), the amendment (E); refused → the walk (A2), down, the reading. Each is said as the act:
+  "(Sit down in the chair, and sign what the chair is given to sign.)", "(Leave the chair empty. Walk back up the stair for good, and let it
+  find another face.)", "(Bring it down.)", "(Lay the Concern's paper on the desk, and sign the core over.)", "(Turn the relay key, and read
+  it all out ... in the Magistrate's name / in your own name.)", "(Sit down in the chair, and amend the law it keeps, on your own rulings.)".
+- **Asked twice.** Each way goes to a confirmation (`c_<act>`: the Ledger's last word on it, the companions' own, with their words at the
+  fire and Tamsin's first sign held to them) whose "(No. Not that.)" changes nothing; stepping back from the desk or the hub likewise.
+  Choosing sets `a3_end`, a decision `a3_end`, xp 300; `q_a3_spire` ends on it (B6a's transition).
+- **Added: how it comes down, and who reads.** At B's confirmation the player picks among the means held (`a3_down_how` = fire | charge |
+  coupling; `DOWN_*`, whose union is exactly `B_MEANS`, tested); at D's, among the readers held (`a3_reader` = self | nine | verity |
+  seventeen; `READ_*`, exactly `D_READER`). The plan left the means and the reader to first match; the choice belongs to the player.
+- **The struck reserve is still the chair's first paper.** M4 lists `relocated` before `struck`, so a sealed, struck reserve under A1, C
+  or E without the reserve clause is relocated in the epilogue; the Ledger says so truthfully ("A Magistrate may sign what I may not").
+  `RESERVE_UNDER_PEN` = sealed ∧ ¬stayed on consent; the desk's top sheet and the confirmations read it.
+- **A2's other face**, made concrete from B6p's crowd: the lens turned to the child on her mother's hip on the close; she is six; "I will
+  write to her when she is fourteen" (the first letter's age). **B6r's A2 climax should show her.**
+- **Thresholds for B6r.** Each choice ends on `done_<act>` (narration of the act begun, never its outcome) whose one option `vault.go.<act>`
+  exits; `d_a3_ledger`'s start list (`LEDGER_START`) opens `v_after` once `a3_end` is set. No climax and no epilogue event is emitted here.
+- **Nothing unasked, no time limit:** days in the vault or on the close settle nothing (tested); the stair up is always open before the
+  choice.
+
+**For later slices (what to read).**
+- **B6r (the climaxes):** `a3_end`, `a3_sash`, `a3_down_how`, `a3_reader`; hook each climax on its `vault.go.<act>` option (append the
+  climax's `{ event: 'dialogue', ... }`) or with start entries before `v_after` in `LEDGER_START`. B's fight: the wardens' placements go in
+  gen_md_vault.py's `npcs` (empty now) `if: a3_vault_fight`; the escape by the drop belongs on `d_a3_vault_drop` (its `up` node shows the
+  rungs to the couriers' slot at the Spire's foot; B6b's `a3_drop_heard`); the coupling on `d_a3_vault_trunk` (Bram's passive). D: the
+  keeper from `a3_mast_keeper`/`a3_mast_handle` (c_read shows it), the reader at the desk (`done_read` sits them there). E: `done_amend` hears
+  Three's footsteps on the stair with the register. A1: Nine beside the chair (c_sign says it by stance). C: the officer's or the Grand
+  Factor's copy (`a3_terms_from`). Knowledge `a3_cost_<act>`: the Ledger told the player the price ("as it said").
+- **B6s–B6v:** slide 2's `md_vault`/`core` is real now. M4's relocated-before-struck is what the Ledger told the player; keep it.
+- **Runtime (§9.5):** the place build (the racks' green and amber lamps, the desk's lamp, the hopper, the trunk's red coupling), and the
+  voice from no direction.
+
+### B6u (built 2026-11-17, alongside B6r and B6v; finished by a second agent after the first was interrupted)
+**Done, all of the slice:** `dialogue/a3_epilogue_wilds.ts` (`SLIDES_WILDS`: slides 13–19, 35 pages: skirts 7, line 6, shore 4, teeth 5,
+wet 5, wheel 4, ashlands 4 variants, with their lines; every page combination 55–115 words, lines ≤ 45; about 26 KB of tree a slide) · one
+spread line in `a3_epilogue.ts` · `tests/b6u.test.ts` (12). No engine change, no map change, no world event, no new person.
+**Shared touches (small, local, new lines only):** `a3_conds.ts` (after the B6t block: `MET_SKIRTS`, `MET_LINE`, `MET_SHORE`, `MET_TEETH`,
+`MET_WET`, `MET_WHEEL`, `MET_ASHLANDS`; B5d's further Ashlands outcomes `AN_SEALED`, `AN_KITES_DOWN`, `AN_SORLIE`, `AN_KWESI_DEAD`,
+`AN_BOARD_CHALKED`; B4b's `HC_CLINIC`, `HC_NILS`, `HC_CHAIR_RETIRED`; the registry's B6u block before B6v's) · `tests/epilogue_fixture.ts`
+(`endReadingPeople`, appended).
+
+**Variant ids** (first match; the last is the default):
+- **skirts** (`hs_skirts`: Footgate's `station`; burned at `lodge_maren`; out at the `picket`; reformed on `hc_terrace`/`garden_sit`):
+  `opened | burned | risen | reformed` (= M3, its own order) `| late` (the strike still out and MAREN_LATE: broken on schedule under A1 and
+  E, Maren hanged at Footgate) `| out` (STRIKE_OUT: "still out when the year turned", under A2, B and D; the epilogue never breaks it) `|
+  stands` (the strike as Act 2 settled it: won, revolt, broken). Under C, M3's `risen` wins and its page tells the break on schedule, as
+  slide 2 does. M3 `stands` (no B4b, no burn) falls through to `late | out | stands`, so the page under M3 = stands is the strike's.
+  Lines: Maren Okafor (lives), **the Leash** (M1, every value, `modText`: cut | yours | sold | spread | theirs), the Weighhouse
+  (`hs_parts`), floor nine (`HC_CLINIC`), Nils Haber (`hs_nils`, `HC_NILS`), Linh Hoang (`hc_funicular`), M9 skirts.
+- **line** (`rc_fourways`/`brodsky_platform`; guild at `kask`): `through` (C: the core east in sealed cars, then the through on every
+  path) `| pilot | shared | guild | levy` (= `rc_line` halts | shared | guild | stationmaster) `| timetable`. A sentence by end on the
+  others (B: the clock at Four Ways was the Line's law; A1: the chair's wardens ride it; D: Brodsky heard his own line). Lines: Abe Mutasa
+  (`rc_abe`), Chela Ortega (`rc_chela`), the stock car's twelve (`rc_stock`), Dorcas (`rc_engine`), the east length (`rc_east`,
+  `rc_derailed`, `rc_willem_dead`), M9 fourways. `rc_pilot` is not read: it is set only with `rc_line` = halts.
+- **shore** (`ds_stilts`/`court_sit`; rig at `stage_work`): `guild | rig | sea` (= `ds_claim`) `| unheard`; B and D add a sentence (the
+  tide tables stop coming; the city had written nothing of the Stilts but the tides). Lines: the water (`ds_valve`; the plan's
+  `ds_fish_back` is the valve's own later event, so the valve is read), Hum (`ds_rig`), Mateo Ibarra (`ds_court`), the false light
+  (`ds_light`), M9 hamlet_shore.
+- **teeth** (`tm_pit`/`ragna_board`; fought at `desmond_col`): `exposed | ended | fought | kept` (= `tm_four`) `| free`. Under C a tamed
+  digger (`tm_digger` = tamed or `tm_digger_concern`) turns its lamp up the shaft and answers the Concern; D reads Four's sixty names.
+  Lines: Ragna Holm, the digger, the Nnadis (`tm_family_in`), Tova Lindqvist, M9 number_four.
+- **wet** (`nw_dam`/`hedda_crest`; hidden at `rhiannon_lock`): `truth | hidden | exposed | sunk` (= `nw_dam`) `| waiting` (Assessor
+  Seventeen in the gatehouse, the inspection never begun). **B: no schedule card ever comes** (`NO_CARD`, a sentence on truth, hidden,
+  sunk and waiting; under truth the city's engineers went home mid-grout and Hedda finished the gallery with Sawtown's men); `exposed` is
+  told by end (B: Rhiannon walked back from an unlocked cell and let the Water down by hand; D: Low Landing left before the thaw; else
+  the west gallery let go in April and eleven drowned). `nw_dam_strain` and `nw_river` are not read: `nw_dam` fixes both. Lines: Sawtown
+  (`nw_feud`), the Patience (`nw_run`, `nw_patience`), M9 ashby.
+- **wheel** (`wheel`/`sefa_fire_sit`; hill at `signalhill`/`hill_watch`): `receivers` (D ∧ (the Wheel an ally ∨ it keeps the hill): the
+  Wheel carried the receivers) `| hill` (`a3_mast_keeper` = wheel: Dario keeps Signal Hill, his door that shuts) `| kin` (road-kin) `|
+  turning`. Lines: Sefa, Dario (not when he keeps the hill), M9 wheel.
+- **ashlands** (`an_saddleback`/`view`): `modVariants(M5_HOUNDS)`: `yours | woken | feral | dormant`. `woken`'s page: the Concern's key
+  with its end (the hounds walk beside the freight), the key alone (in the spring), C alone (the command unit cut out of Kelso's rack and
+  taught at Halcyon), or the guild's hounds at Knock alone (`a3_hounds_in`: "Kennel Seven never woke"). `dormant`: sealed by its
+  Lieutenant (`AN_SEALED`), else LT-7 awaiting lawful command; D reads KENNEL 7, DORMANT, four hundred and twelve. The plan's "the
+  Lieutenant (voice)" is the rack's log line in the text; Radu (`npc_an_05`) stands in the dormant and yours stills. Lines: Spindle (the
+  board, Kwesi, Sorlie), the kites (`AN_KITES_DOWN`), M9 spindle.
+
+**Deviations and choices:**
+- **M1 is a line, not a page.** The Skirts' page is M3's (the plan's "M3 × M1 × hs_shift"): a product of the three would be dozens of
+  pages. The Leash is the page's first line after Maren, every value, in M1's order.
+- **The arcology's flags only through a3_conds** (`B4B`, `HC_*`; tested: no `hc_*` literal in the file), the Long Night's and the
+  Ashlands' only through their aliases (`HOUNDS_*`, `AN_*`; tested). Without B4b, M3 reaches only burned | risen | stands and M1 only
+  spread | theirs (tested over every preset × end), and the floor nine, Nils's ward and Linh lines are not shown.
+- **`met`** per slide reads only written flags (the registry lists them); the Ashlands also shows when the hounds woke (M5 `woken`), since
+  that reached the whole Reach wherever the player was. Every fixture preset meets the Skirts and the Ashlands.
+- **No person's `if` reads the end.** The dam's `exposed` still had a warden placed unless B; it is now the empty crest under every end
+  (the keepers taken, the wardens gone home under B), and the text tells the rest. Kes stands in the Skirts' still only if she never
+  joined (B6v's slide tells the rest).
+- **Finishing pass (second agent):** the Nils line read `hc_nils` bare (now `HC_NILS` dead | freed); `opened`'s second sentence
+  rewritten ("their Board's ages read out at its own toast, and what those years had been paid for with"); the Wheel's default page
+  rewritten (the "other people's faces in sacking" sentence read as nonsense; now Sefa's own count, "Nine families, seven wagons, four
+  horses, no address"); B under `truth` (above); the registry block; three test fixes (a regex, a state reused after play had set its
+  `ep_*`, a map id caught by the B5d-literal check).
+
+**Facts the later slides keep:** Kennel Seven is four hundred and twelve hounds; LT-7 is the Lieutenant in Kelso's hall. Under C the core
+went up the funicular in sealed crates in the first month, the through carried it east, and the Concern's freight had first call on the
+Line. Under B no schedule card came up the river and the Line did not notice the city go dark. Dario Oduya keeps Signal Hill when the
+Wheel keeps the mast. Kes never joined is in the Skirts keeping the Window's lenses (slide 26 agrees). The strike, still out, breaks
+only under A1, C and E (MAREN_LATE), as slide 2 tells it.
+
+### B6v (built 2026-11-17, alongside B6t and B6u; finished by a second agent after the first was interrupted)
+**Done, all of the slice:** `dialogue/a3_epilogue_people.ts` (`SLIDES_PEOPLE`: slides 20–27, 75 pages: tamsin 13, wren 11, ilya 8, odile 6,
+ash 6, nine 8, kes 8, r49 15 variants, with their lines; every page combination 62–105 words, every line ≤ 44) · one spread line in
+`a3_epilogue.ts` · `tests/b6v.test.ts` (11). No engine change, no map change, no world event. `npm run check` green (1226 tests in 59
+files; people gate red/stale as before, "ok"). The slice's pages are about 233 KB of the export (cap 320 KB for eight slides); the whole
+tree about 808 KB (cap 1,080 KB).
+**Shared touches (small, local):** `a3_conds.ts` (B6v's block after `MET_ASHLANDS`: `MET_COMPANION`, `CHAIR_TOOK`, `EP_CHAIR`, `EP_STAYED`,
+`EP_TOGETHER_END`, `EP_TOGETHER`; `EP_HOME` beside the mods; the registry's B6v block) · `a3_epilogue_kit.ts` (`facts` and `Known`
+exported, one word each: the builder's own reading of what a selector fixes, reused for R49's people).
+
+**Variant ids** (first match; the last is the default; §7's end states, made exact):
+- **tamsin** (no `met`: she was the voice at the Grille): `door` (`a3_tamsin_dead`) | `taken` (her life still the Cistern's and the
+  reserve gone west: carried out by Nine, walked at Carrick, sold up the guild's road (`a3_c9_how` = sold: the clerk could not find her
+  on the sheet), or received at the Hospice) | `inside` (opened, home, or never out) | `stood` (`TAM_STOOD`: Carrick, followed, or the
+  door held) | `reserve` (`tam_left` = reserve) | `chair` (`CHAIR_TOOK` with her beside the player: the chair's first paper) | `gone`
+  (left, or broken in Act 2 and never won back) | `waited` (out of the hatch, never joined) | `deputy` | `sheriff` | `wheel` | `knock` |
+  `after` (consent, or the outside of her own door).
+- **wren**: `hanged` (Act 2's raid, `wren_rope` = fulfilled, or dead) | `rope_late` (`WREN_ROPE_LATE`: A1 or C only, as slide 2) |
+  `gone_sold` (`wren_left` = sold; `a3_c9_how` = sold tells the door's sale from Act 2's girl) | `gone_concern` (`wren_left` = concern,
+  or C with her on side) | `gone_guild` (guild | longnight) | `gone_girl` (block | away | kept) | `gone_floor` (any other leaving) |
+  `shale` | `bridge` | `road` (`wren_after`) | `scout`.
+- **ilya**: `hunter` (`ilya_left` = spared ∧ (sober ≥ 30 ∨ Kade dead): he found her and walked into the Sallow, or somebody got there
+  first) | `hunted` (spared, under 30: Kade killed him; slide 2 still has Kade alive) | `drunk` (bottle | floor) | `chair` (A1: he goes) |
+  `shale` | `road` | `rest` (`ilya_after`) | `own`.
+- **odile**: `gone` (archive burned, the girl sold, her price broken, or her tab closed) | `exchange` (C) | `auditor` (E) | `shale`
+  (`odile_sheet` = torn) | `kitchen` (any other end: the soup line on the eighth span) | `span`.
+- **ash**: `self` | `unwritten` (`a3_ash` = away; `a3_ash_target` names the same keystone, the same place, as slides 2, 6, 7, 11) | `gone`
+  (struck, his Act 2 or Long Night red line, Vane's cup, C) | `between` (scarred by `a3_ash_scarred`) | `digs` (`ash_gully_outcome` =
+  spoken) | `burial`.
+- **nine**: `struck` | `disposed` (by end: B walks it out into a dark city; E with `keeper` frees it; D a crowd asks for it; else R31) |
+  `withdrawn` (`nine_left` = core, or B with it on side) | `gone` | `reader` (D; by `a3_reader`) | `conscience` | `assessor` (A1/E by
+  stance) | `desk`.
+- **kes**: `dead` | `gone_concern` | `gone` (leash | sold | contract | rafe | betrayed | guild | longnight | floor) | `fits` | `shift` |
+  `road` | `gardens` (`kes_after`) | `slack`.
+- **r49**: `chair` (A1) | `board` (C) | `chosen` (E), on the Spire's steps in the sash; then `broken_<home>` (B), `known_<home>` (D),
+  `elsewhere_<home>` (A2), home = EP_HOME's `knock | shale | road`, and `nowhere` without a suffix (`broken`, `known`, `elsewhere`).
+  `pc.years` 19 on every page. A2's face in the sash is the young docker from Carrick whom slide 1's lens found in the crowd.
+
+**Deviations and choices:**
+- **`met`** = the companion's own first meeting or joining (`MET_COMPANION`, written flags only); Tamsin and R49 have none.
+- **End states read the end too** (`EP_STAYED`): §7's leavings at the vault are B6r's (`wren_left` / `kes_left` = concern, `nine_left` =
+  core, with `leave`), so a climax that writes none still reads right; the test lists the three values as pending B6r.
+- **No person's `if` reads the end or the sash** (the coordinator's rule; B6t's `endReadingPeople()` is in this test too). The
+  companions' stills read only their own flags. **R49 has a page per end** (and per home), and its cast (the partner when together, the
+  ones who stayed near, Nine a step below the chair) is written once through `EP_TOGETHER`/`EP_STAYED`, then **evaluated against each
+  page's own end when the slide is built** (`endFree`: the kit's `facts` of the page's selector, plus the sash that end implies: worn
+  for C and E, whose gates need it; refused on the Plan's pages after the chair, which takes every worn Plan; the last page, which has no
+  selector, is A2 by elimination). What is left reads only the companions' flags and the home, and the plain and specialised builds give
+  the same still (tested node by node). **B6s's own `shale_free` is not so**: Ada's `if` (`NOT(ADA_DEAD)`) reads `ks_ada`, which that
+  page's selector fixes; the players see the same thing, but the two builds differ structurally there (not reached by B6s's test
+  states); left for B6s's owner.
+- **Romances keep their weight** (the coordinator's brief; added): a romance begun (any step, ended included, never a no) gives a
+  "Between them" line on the companion's page whether they stayed (together, apart and still writing, ended, or unfinished: asked on
+  the last night and put off, by `a3_<c>_night`, or never asked), walked (ended, or walked away from unfinished) or died (Tamsin's
+  windpump, Perpetua's place kept at the overpass fire, Kes alone in the channel, Ilya's rifle on Shale's wall). R49 shows the partner
+  only when together (§7); apart, a letter that week; failed, nothing.
+- **The last night as friends** (`a3_<c>_last` = none, B6n/B6o): a line for Tamsin (the Grille's game turned round), Wren (the long
+  version of every road), Ilya (counting), Kes (the gardens), Nine (the drains); Odile's tab (`a3_odile_last`) and her price; Ash's word
+  broken (`a3_ash_word` with the sash worn) and the letter burned (`a3_ash_last` = burned). The words at the fire (`a3_<c>_word`) are
+  named where the end broke them (Tamsin's and Ilya's chair, Wren's and Kes's Concern, Nine's core, Odile's daylight).
+- **Ilya's third ending** is told, not flagged: `ilya_fate` is not written (nothing reads it); the variant id (`hunter` / `hunted`) is the
+  record. Kade's line on slide 2 stays "Alive" under `hunter` (he had her twice and walked away).
+
+**For B6r and the coordinator:** B6q's vault tells A2's cost as a child on her mother's hip whom the lens took ("I will write to her
+when she is fourteen"); slides 1 and 27 (B6s, B6v) have the young docker from Carrick, as the coordinator's brief fixes. B6r's A2 climax
+should show the docker, and the vault's line wants reconciling with it.
 
 ## Defaults taken for the open questions (coordinator, 2026-11-17; the owner may override)
 1. After the ending: epilogue, credits, then the title screen; the named autosave at the point of no return stays

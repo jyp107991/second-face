@@ -84,6 +84,8 @@ export const SITES: Record<string, SiteDef> = {
   md_stacks_roof: { kind: 'cell' },
   md_crown: { kind: 'cell' },
   md_spire_top: { kind: 'cell' },
+  // the Vault of Accounts under the Spire's foot (Act 3, B6q): entered instantly down the stair from the close's steel door
+  md_vault: { kind: 'cell' },
   hs_six: { kind: 'cell' },
   hc_clinic: { kind: 'cell' },
   hc_board: { kind: 'cell' },

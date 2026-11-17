@@ -250,6 +250,22 @@ export const CLAUSES: { id: string; needs: Cond }[] = [
   { id: 'speech', needs: F('prec_sedition') },
 ];
 
+/** B6q: the Vault of Accounts (21c), from the steps until the choice (`a3_end`). The ways offered at the reading desk are exactly
+ * the gates that hold (ENDS, the Plan by the sash: A1 worn, A2 refused); a way not held is neither offered nor named. B's means and
+ * D's reader are chosen there too, each exactly a part of its key: fire (the Unwritten turned, the Choir's night, or Ash travelling
+ * with his orders refused), the charge, or Bram's first coupling (B_MEANS is their union); the player's own reading (an archive
+ * clerk, or Science 65), Nine travelling, Verity, or the Wet's assessor (D_READER is their union). The reserve's paper lies under
+ * the chair's first pen while the door is sealed and the Court has not stayed the order on consent (M4's relocated clause). */
+export const VAULT_OPEN: Cond = ALL(AT_VAULT, NOT(F('a3_end')));
+export const DOWN_FIRE: Cond = ANY(F('a3_unwritten', 'with_you'), LN('choir'), ALL(IN(ASH), ASH_REFUSED));
+export const DOWN_CHARGE: Cond = { item: 'k_a3_charge' };
+export const DOWN_COUPLING: Cond = ALL(F('a3_bram_cut'), { skill: 'mechanics', gte: 50 });
+export const READ_SELF: Cond = ANY({ origin: 'archive_clerk' }, { skill: 'science', gte: 65 });
+export const READ_NINE: Cond = ALL(IN(NINE), ANY(NINE_CONSCIENCE, F('nine_log_given')));
+export const READ_VERITY: Cond = ALL(F('a3_ally_saints'), F('bw_static', 'kept'));
+export const READ_SEVENTEEN: Cond = ALL(F('a3_ally_seventeen'), F('nw_dam', 'truth'));
+export const RESERVE_UNDER_PEN: Cond = ALL(F('a3_c9', 'sealed'), NOT(F('ca_reserve', 'stayed')));
+
 // ---------------------------------------------------------------- §2.3 the muster and §5 the readiness acts
 
 /** The allies called home by letter (B6c writes the letters; each needs its owed flag or local standing). */
@@ -617,6 +633,75 @@ export const MAREN_LATE: Cond = ALL(NOT(F('ks_maren')), NOT({ dead: 'npc_hs_02' 
 const TRIBUTE_FACED: Cond = { quest: 'q_ch1_tribute', stage: ['paid', 'negotiated', 'sabotaged', 'fought'] };
 export const MET_SHALE: Cond = ANY({ quest: 'q_ch1_shale', status: 'done' }, TRIBUTE_FACED, F('a3_buyout'));
 export const MET_DOGS: Cond = ANY(F('rd_kessler_met'), F('rd_vasha_met'), F('rd_wren_met'), F('wren_joined'), { quest: 'q_ch1_map', status: 'done' }, TRIBUTE_FACED);
+/** B6t: slides 7–12's subjects met (dialogue/a3_epilogue_city.ts), read only from what content writes: the place's own first
+ * meetings, its quest done, or an outcome only the player's hand settles there. The Precinct's slide has no condition: every road
+ * to the steps runs through it. (The Sink's flood alone is not meeting it: it comes on the Spire's verdict, wherever the player is.) */
+export const MET_GUILD: Cond = ANY({ quest: 'q_a2_ninebridge', status: 'done' }, F('nb_sarr_met'), F('nb_fen_met'), F('nb_floor_ok'));
+export const MET_CHOIR: Cond = ANY({ quest: 'q_a2_openfield', status: 'done' }, F('of_mason_met'), F('of_blight_told'), F('petra_met'), F('doria_met'));
+export const MET_SINK: Cond = ANY(F('ocho_met'), F('dagny_met'), F('lusk_met'), F('sk_pumps'));
+export const MET_CROWN: Cond = ANY(F('celestine_met'), F('honora_met'), F('verity_met'), F('ks_vane'), F('cr_concern'), F('bw_turf'), F('bw_static'), F('bw_raid'));
+export const MET_EDGES: Cond = ANY(F('dr_slate_met'), F('dr_bello_met'), F('dr_leven'), F('dr_buggy'), F('dk_connie_met'), F('dk_kobby_met'), F('dk_dahl_met'), F('dk_crane'),
+  F('dk_hulls'), F('dk_cradle'), F('dk_stand_owed'), F('dk_prec_passenger'), F('a3_c9_after'));
+/** B6u: slides 13–19's subjects met (dialogue/a3_epilogue_wilds.ts), read the same way. The Ashlands' slide is also shown when the
+ * hounds woke (M5 `woken`: the Concern's end, its key to Kennel Seven, or its hounds at Knock), wherever the player was. */
+export const MET_SKIRTS: Cond = ANY(F('hs_bell_met'), F('hs_maren_met'), F('hs_shift'), F('hs_parts'), B4B.inside);
+export const MET_LINE: Cond = ANY(F('rc_brodsky_met'), F('rc_halina_met'), F('rc_chela_met'), F('rc_kask_met'), F('rc_line'), F('rc_engine'), F('rc_stock'));
+export const MET_SHORE: Cond = ANY(F('ds_oona_met'), F('ds_lua_met'), F('ds_hamid_met'), F('ds_claim'), F('ds_court'), F('ds_light'), F('ds_boats_owed'));
+export const MET_TEETH: Cond = ANY(F('tm_ragna_met'), F('tm_desmond_met'), F('tm_tova_met'), F('tm_four'), F('tm_digger'), F('tm_shift'));
+export const MET_WET: Cond = ANY(F('nw_hedda_met'), F('nw_rhiannon_met'), F('nw_berit_met'), F('nw_magda_met'), F('nw_dam'), F('nw_feud'), F('nw_run'), F('nw_barges_owed'));
+export const MET_WHEEL: Cond = ANY({ knows: 'sefa_met' }, { member: 'wheel' }, ALLY('wheel'), F('a3_mast_keeper', 'wheel'));
+export const MET_ASHLANDS: Cond = ANY(F('hester_met'), F('an_kelso'), F('an_reserve'), F('an_key'), F('an_kites'), F('an_board'), END_IS('concern'), HOUNDS_CONCERN, F('a3_hounds_in'));
+/** B6u: the Ashlands' other outcomes (B5d's flags, read only here): the reserve sealed by its Lieutenant, the kites' beacon cut, the contractor's end at Kelso, the boy
+ * on the kite day, the four chalked on Spindle's board. */
+export const AN_SEALED: Cond = F('an_reserve', 'sealed');
+export const AN_KITES_DOWN: Cond = F('an_kites', 'down');
+export const AN_SORLIE = (v: 'gone' | 'out' | 'dead'): Cond => F('an_sorlie', v);
+export const AN_KWESI_DEAD: Cond = F('an_kwesi_dead');
+export const AN_BOARD_CHALKED: Cond = F('an_board_chalked');
+/** B6u: the arcology slice's further outcomes the Skirts' slide reads (B4b, read only here, as B4B's are): floor nine, Nils on the
+ * ward, the old Chair retired to his bench. */
+export const HC_CLINIC = (v: 'freed' | 'closed' | 'left'): Cond => F('hc_clinic', v);
+export const HC_NILS = (v: 'dead' | 'freed'): Cond => F('hc_nils', v);
+export const HC_CHAIR_RETIRED: Cond = F('hc_chair', 'retired');
+/** B6v: the companions' ends (slides 20–26) and R49 (slide 27; dialogue/a3_epilogue_people.ts), read only from what content writes.
+ * A companion's slide shows once the player met them in person (their own first meeting, or joining); Tamsin's has no condition: she
+ * was the voice at the Grille. `CHAIR_TOOK`: a sealed reserve relocated by the chair's first signed act (M4 relocated with the door
+ * sealed). `EP_CHAIR`: the PC in the sash, in the city (R49's home `city`). `EP_STAYED`: on the player's side at the end and still
+ * beside them after it, less the ones the end itself sends away (§7: Tamsin when the chair takes the reserve, Wren under C or when her
+ * rope comes due, Ilya under A1, Ash under C, Nine under B, Kes under C or dead), whether or not the climax wrote their leaving.
+ * `EP_TOGETHER`: the romance's end is together (§7, by the end reached); R49 shows the partner only then. */
+export const MET_COMPANION: Record<CompanionKey, Cond | undefined> = {
+  tamsin: undefined,
+  wren: ANY(F('rd_wren_met'), F('wren_joined')),
+  ilya: ANY(F('ilya_met'), F('ilya_recruited')),
+  odile: ANY(F('odile_met'), F('odile_joined')),
+  ash: ANY(F('ash_met'), F('ash_joined')),
+  nine: ANY(F('nine_met'), F('nine_joined')),
+  kes: ANY(F('kes_met'), F('kes_joined')),
+};
+export const CHAIR_TOOK: Cond = ALL(F('a3_c9', 'sealed'), SASH_WORN, ANY(END_IS('plan'), END_IS('concern'), ALL(END_IS('amendment'), NOT(F('a3_amend_reserve')))), NOT(F('ca_reserve', 'stayed')));
+export const EP_CHAIR: Cond = EP_HOME.values.find((v) => v.id === 'city')!.if!;
+export const EP_STAYED: Record<CompanionKey, Cond> = {
+  tamsin: ALL(WITH_YOU('tamsin'), NOT(CHAIR_TOOK)),
+  wren: ALL(ON_SIDE('wren'), NOT(END_IS('concern')), NOT(WREN_ROPE_LATE)),
+  ilya: ALL(ON_SIDE('ilya'), NOT(ENDED_A1)),
+  odile: ON_SIDE('odile'),
+  ash: ALL(ON_SIDE('ash'), NOT(END_IS('concern'))),
+  nine: ALL(ON_SIDE('nine'), NOT(END_IS('unwritten'))),
+  kes: ALL(ON_SIDE('kes'), NOT(END_IS('concern')), NOT(F('kes_dead'))),
+};
+/** The romance's end as the end reached allows it (§7), before asking whether the companion stayed: the slides read it where their
+ * own selector already says the companion is beside the player. */
+export const EP_TOGETHER_END: Record<'tamsin' | 'wren' | 'ilya' | 'kes', Cond> = {
+  tamsin: ALL(F('tam_romance', 'together'), ANY(END_IS('unwritten'), END_IS('opensky'), ENDED_A2, ALL(END_IS('amendment'), F('a3_amend_living')))),
+  wren: F('wren_rom', 'committed'),
+  ilya: ALL(F('ilya_rom', 'committed'), NOT(END_IS('concern')), ANY(NOT(END_IS('amendment')), { approval: { companion: ILYA, gte: 50 } })),
+  kes: ALL(F('kes_rom', 'committed'), ANY(NOT(ENDED_A1), { approval: { companion: KES, gte: 60 } })),
+};
+export const EP_TOGETHER: Record<'tamsin' | 'wren' | 'ilya' | 'kes', Cond> = {
+  tamsin: ALL(EP_TOGETHER_END.tamsin, EP_STAYED.tamsin), wren: ALL(EP_TOGETHER_END.wren, EP_STAYED.wren),
+  ilya: ALL(EP_TOGETHER_END.ilya, EP_STAYED.ilya), kes: ALL(EP_TOGETHER_END.kes, EP_STAYED.kes),
+};
 
 /*
  * ---------------------------------------------------------------- the Act 3 flag registry
@@ -1058,6 +1143,122 @@ export const MET_DOGS: Cond = ANY(F('rd_kessler_met'), F('rd_vasha_met'), F('rd_
  *   conditions:              ENDED, ENDED_A1, ENDED_A2, ON_SCHEDULE(...covers), EP_SKY, JONAH_DEAD, ADA_DEAD, ADA_OPEN, ADA_LATE,
  *                            KESSLER_DEAD, KESSLER_LATE, VASHA_DEAD, VASHA_EXECUTIONER, WREN_ROPE_OPEN, WREN_ROPE_LATE (§7: A1 or C),
  *                            CALLA_KEPT, OCHO_DROWNED, VANE_DEAD, VANE_LATE, MAREN_LATE, MET_SHALE, MET_DOGS
+ * B6q (built; dialogue/a3_vault.ts: the Ledger's last conversation and the choice d_a3_ledger (opened by md_vault's trigger
+ *      a3_vault_hall, the racks and the reading desk), d_a3_vault_drop, d_a3_vault_trunk; d_ar_vault's Act 3 entry VAULT_DOOR_*
+ *      (md_spire.ts: the steel door open on the stair once AT_VAULT, goto md_vault/door); map md_vault via tools/maps/gen_md_vault.py
+ *      (cell; spots door | drop | core | desk; spawns start | door; exit up to md_spire's new spawn from_vault); VAULT_OPEN, DOWN_*,
+ *      READ_*, RESERVE_UNDER_PEN after CLAUSES):
+ *   a3_end                   plan | unwritten | concern | opensky | amendment   chosen at the reading desk, asked twice ("(No. Not
+ *                                            that.)" changes nothing); offered exactly when its gate holds (ENDS: plan as A1 with the
+ *                                            sash worn, as A2 with it refused); a way not held is never offered or named. Decision a3_end
+ *   a3_down_how              fire | charge | coupling   (unwritten) how it is brought down: fire = DOWN_FIRE (the Unwritten turned,
+ *                                            the Choir's night, Ash travelling with his orders refused), charge = k_a3_charge,
+ *                                            coupling = a3_bram_cut ∧ Mechanics 50 (Bram's first coupling, under load)
+ *   a3_reader                self | nine | verity | seventeen   (opensky) who reads: READ_SELF (archive clerk ∨ Science 65), READ_NINE
+ *                                            (travelling, conscience or the log given), READ_VERITY (the Saints, or their boy if Verity
+ *                                            is dead), READ_SEVENTEEN
+ *   a3_vault_met             true            the hall entered and the Ledger's first words begun (arrive); knowledge a3_vault_seen
+ *   knowledge: a3_vault_stair (the stair's trigger), a3_ledger_why, a3_ledger_reserve, a3_ledger_refused (asked to tear the order up:
+ *                            it cannot), a3_ledger_unseen, a3_ledger_for, a3_ledger_want, a3_ledger_wait, a3_cost_<sign | walk | down |
+ *                            sell | read | amend> (each way's cost heard, only for ways held), a3_vault_drop_seen, a3_vault_shaft,
+ *                            a3_vault_trunk_seen
+ *   thresholds (B6r):        the choice's last node per act (done_sign | done_walk | done_down | done_sell | done_read | done_amend)
+ *                            exits on "(Go on.)" with option id vault.go.<act>; d_a3_ledger's start (LEDGER_START) opens v_after once
+ *                            a3_end is set: B6r's climaxes go before it, or on those options
+ *   (read)                   AT_VAULT, A1, A2, B, C, D, E and their keys; a3_file, ar_verdict, a3_steps_off (the first words);
+ *                            LN(side) (why now); a3_c9, a3_c9_how, a3_c9_after, a3_buffer_how, ca_reserve, prec_unrecorded,
+ *                            STRUCK_TRAP, a3_tamsin_dead, MOTHER_DARK (the reserve); tam_met, tam_why, kes_met, kes_link (the
+ *                            uncounted); a3_letter_read, knowledge a3_ledger_granted, hc_scald_owned; a3_ready / a3_ready_<act>
+ *                            (the night after reading); CLAUSES' needs; the open keystone lines (ADA_OPEN, WREN_ROPE_OPEN, ...);
+ *                            a3_terms_from, a3_terms_how, TERMS_WORSE, hc_leash; a3_mast_keeper, a3_mast_handle; companions'
+ *                            a3_<c>_word and a3_first_sign (their words at the confirmations)
+ * B6t (built; the epilogue's slides 7–12: dialogue/a3_epilogue_city.ts, SLIDES_CITY spread into EP_SPECS; no map, no world event):
+ *   ep_<slide>               ep_guild concern | worthless | idle | audited | scheduled | rerouted (by the end); ep_choir open | burned |
+ *                            company | evicted | scorched | stands (D, then Openfield as the Long Night left it); ep_precinct failing
+ *                            | wall | clauses | contracted | orders | rerouted (by the end); ep_sink = M2's value (lost | held | saved |
+ *                            relieved | flooded); ep_crown ash | fallen | risen | broken | late | table (House Vane); ep_edges walked
+ *                            | stood | cleared | burned | clover (Carrick, then the Ring). Unset = not shown (not met, or skipped)
+ *   (read, met)              MET_GUILD: q_a2_ninebridge done, nb_sarr_met, nb_fen_met, nb_floor_ok;  MET_CHOIR: q_a2_openfield done,
+ *                            of_mason_met, of_blight_told, petra_met, doria_met;  MET_SINK: ocho_met, dagny_met, lusk_met, sk_pumps
+ *                            (never the flood alone);  MET_CROWN: celestine_met, honora_met, verity_met, ks_vane, cr_concern, bw_turf,
+ *                            bw_static, bw_raid;  MET_EDGES: dr_slate_met, dr_bello_met, dr_leven, dr_buggy, dk_connie_met,
+ *                            dk_kobby_met, dk_dahl_met, dk_crane, dk_hulls, dk_cradle, dk_stand_owed, dk_prec_passenger, a3_c9_after.
+ *                            The Precinct's slide has none
+ *   (read, B6p/B6q/B6r)      a3_end, a3_sash, a3_amend_<clause> (one line per clause chosen, under precinct_clauses), a3_ash_target
+ *                            sarr | vane (the guild's and the Crown's pages say "Brother Ash", as slide 2 does), knowledge
+ *                            a3_warned_sarr (D: she sold first);  a3_lowe, a3_c9 / a3_c9_after / a3_buffer_how (the sixty in Carrick),
+ *                            a3_unwritten / a3_uw_how / a3_uw_fight (Petra), a3_register_back
+ *   facts later slides keep  Sarr per end as slide 2 (C the Concern's Treasurer; B of nothing; D ruined in daylight unless warned; E
+ *                            audited, eleven fines paid; A1 named in the spring; A2 by the spring); under M2 = lost Ocho drowned on his
+ *                            clinic's stair carrying the last cot (Anju had the clinic if he drowned in Act 2); Calla free goes back to
+ *                            Shale's tent and walks to Openfield for the harvest; Mason's cairn under Openfield's windpump; under C the
+ *                            Concern's freight at two carries Fen's lots up the Line
+ * B6u (built; the epilogue's slides 13–19: dialogue/a3_epilogue_wilds.ts, SLIDES_WILDS spread into EP_SPECS; no map, no world event):
+ *   ep_<slide>               ep_skirts opened | burned | risen | reformed | late | out | stands (M3 first, then the strike: late = still
+ *                            out and broken on schedule, out = still out); ep_line through | pilot | shared | guild | levy | timetable
+ *                            (C, then rc_line); ep_shore guild | rig | sea | unheard (ds_claim); ep_teeth exposed | ended | fought | kept
+ *                            | free (tm_four); ep_wet truth | hidden | exposed | sunk | waiting (nw_dam); ep_wheel receivers | hill | kin
+ *                            | turning; ep_ashlands = M5's value (yours | woken | feral | dormant). Unset = not shown (not met, or skipped)
+ *   (read, met)              MET_SKIRTS: hs_bell_met, hs_maren_met, hs_shift, hs_parts, hc_inside (B4B.inside);  MET_LINE: rc_brodsky_met,
+ *                            rc_halina_met, rc_chela_met, rc_kask_met, rc_line, rc_engine, rc_stock;  MET_SHORE: ds_oona_met, ds_lua_met,
+ *                            ds_hamid_met, ds_claim, ds_court, ds_light, ds_boats_owed;  MET_TEETH: tm_ragna_met, tm_desmond_met,
+ *                            tm_tova_met, tm_four, tm_digger, tm_shift;  MET_WET: nw_hedda_met, nw_rhiannon_met, nw_berit_met,
+ *                            nw_magda_met, nw_dam, nw_feud, nw_run, nw_barges_owed;  MET_WHEEL: knows sefa_met, member wheel,
+ *                            a3_ally_wheel, a3_mast_keeper = wheel;  MET_ASHLANDS: hester_met, an_kelso, an_reserve, an_key, an_kites,
+ *                            an_board, or the hounds woke (a3_end = concern, HOUNDS_CONCERN, a3_hounds_in) wherever the player was
+ *   (read, B6d/B6f/B6q/B6r)  a3_end, a3_sash (ENDED_A1), a3_mast_keeper = wheel (Dario keeps the hill; the receivers' switch), a3_ally_wheel
+ *                            (D: the Wheel carried the receivers), a3_hounds_in (M5 woken)
+ *   (read, the arcology)     through B4B and HC_* only: hc_inside, hc_leash (M1), hc_longlived (M3), hc_clinic freed | closed | left
+ *                            (HC_CLINIC: floor nine), hc_nils dead | freed (HC_NILS), hc_chair = retired (HC_CHAIR_RETIRED: the old Chair
+ *                            on his bench), hc_funicular down | stayed | reported (Linh Hoang). Without B4b: M3 only burned | risen |
+ *                            stands, M1 only spread | theirs, and the arcology's lines are not shown
+ *   (read, the Long Night)   through the aliases only: an_reserve (HOUNDS_PLAYER / _CONCERN / _FERAL, AN_SEALED), an_kites = down
+ *                            (AN_KITES_DOWN), an_sorlie out | dead (AN_SORLIE), an_kwesi_dead (AN_KWESI_DEAD), an_board_chalked
+ *                            (AN_BOARD_CHALKED)
+ *   (read, the places)       hs_shift (STRIKE_OUT: unset = still out, never broken by the epilogue under A2, B or D; MAREN_LATE breaks it
+ *                            under A1, C, E as slide 2 does), ks_maren, hs_parts, hs_nils;  rc_line, rc_abe, rc_chela, rc_stock, rc_engine,
+ *                            rc_east, rc_derailed, rc_willem_dead;  ds_claim, ds_barge, ds_post, ds_valve, ds_rig, ds_hamid, ds_lua_gone,
+ *                            ds_court, ds_light;  tm_four, tm_ragna, tm_digger, tm_digger_concern (with C: it answers the Concern),
+ *                            tm_family_in;  nw_dam, nw_mend, nw_keepers, nw_feud, nw_run, nw_patience;  kes_joined (Kes in the Skirts'
+ *                            still only if she never joined);  M9 skirts, fourways, hamlet_shore, number_four, ashby, wheel, spindle
+ *   conditions:              MET_SKIRTS, MET_LINE, MET_SHORE, MET_TEETH, MET_WET, MET_WHEEL, MET_ASHLANDS, AN_SEALED, AN_KITES_DOWN,
+ *                            AN_SORLIE, AN_KWESI_DEAD, AN_BOARD_CHALKED, HC_CLINIC, HC_NILS, HC_CHAIR_RETIRED
+ *   facts later slides keep  Kennel Seven is four hundred and twelve hounds; under C the core goes up the funicular in sealed crates and
+ *                            the through carries it east; under B no schedule card comes up the river and the Line's law is the clock at
+ *                            Four Ways; Kes, never joined, is in the Skirts keeping the Window's lenses (B6v's slide agrees)
+ * B6v (built; the epilogue's slides 20–27: dialogue/a3_epilogue_people.ts, SLIDES_PEOPLE spread into EP_SPECS; no map, no world event):
+ *   ep_<slide>               ep_tamsin door | taken | inside | stood | reserve | chair | gone | waited | deputy | sheriff | wheel | knock
+ *                            | after;  ep_wren hanged | rope_late | gone_sold | gone_concern | gone_guild | gone_girl | gone_floor |
+ *                            shale | bridge | road | scout;  ep_ilya hunter | hunted | drunk | chair | shale | road | rest | own;
+ *                            ep_odile gone | exchange | auditor | shale | kitchen | span;  ep_ash self | unwritten | gone | between |
+ *                            digs | burial;  ep_nine struck | disposed | withdrawn | gone | reader | conscience | assessor | desk;
+ *                            ep_kes dead | gone_concern | gone | fits | shift | road | gardens | slack;  ep_r49 chair | board | chosen |
+ *                            broken_<knock|shale|road> | broken | known_<knock|shale|road> | known | elsewhere_<knock|shale|road> |
+ *                            elsewhere (the end, then EP_HOME's value; nowhere has no suffix). Unset = not shown (not met, or skipped).
+ *                            ep_home is not written: R49's home is EP_HOME's value (modValue), and the r49 variant id carries it
+ *   (read, met)              MET_COMPANION: rd_wren_met | wren_joined, ilya_met | ilya_recruited, odile_met | odile_joined, ash_met |
+ *                            ash_joined, nine_met | nine_joined, kes_met | kes_joined. Tamsin's slide and R49 have none
+ *   (read, B6r: pending)     wren_left / kes_left = concern, nine_left = core (B6s's note: the vault's leavings, with leave). The slides
+ *                            read the end as well (EP_STAYED), so a climax that writes no leaving still reads right
+ *   (read, companions)       tam_romance together | stopped | ended, tam_listed, tam_broken, tam_home, tam_out, tam_left reserve | door
+ *                            (TAM_STOOD, TAM_FOLLOWED, TAM_IN_CARRICK), a3_tam_carried, a3_tamsin_dead, a3_tamsin_word; wren_hanged,
+ *                            wren_rope, wren_left (sold, with a3_c9_how sold for the door's sale | guild | longnight | block | away |
+ *                            kept | floor), wren_after, wren_rom, a3_wren_word; ilya_left spared | bottle | floor, ilya_sober_days ≥ 30,
+ *                            ilya_after, ilya_rom, vasha_fate, a3_ilya_word; odile_gone, odile_left, odile_archive, odile_sold_sable,
+ *                            odile_sheet torn, odile_price sarr, a3_odile_word, a3_odile_last; a3_ash, a3_ash_target, a3_ash_scarred,
+ *                            ash_gone, ash_left, ash_redline, ash_broke, ash_gully_outcome; a3_nine_struck, nine_disposed, a3_recall,
+ *                            nine_gone, nine_left, nine_stance (NINE_CONSCIENCE), NINE_DEED, nine_log_given, a3_nine_last, a3_nine_word;
+ *                            kes_dead, kes_left, kes_fits, kes_after, kes_link, kes_rom, a3_kes_word, hc_leash cut (B4B.leash)
+ *   (read, the fire)         a romance begun (any step, ended included, never no/declined: tam_romance together | open | later |
+ *                            stopped | ended, wren_rom / ilya_rom / kes_rom yes | later | later_<roof|well|dark> | <roof|well|dark> |
+ *                            committed | ended) gives a line on a companion's page whether they stayed, walked or died; unfinished
+ *                            with a3_<c>_night (asked on the last night and put off) or without; a3_<c>_last = none (the last night
+ *                            as friends: tamsin, wren, ilya, kes, nine); a3_ash_word with a3_sash worn (his word broken),
+ *                            a3_ash_last = burned (the letter burned at the fire)
+ *   (people)                 no person's `if` reads a3_end or a3_sash: R49 has a page per end (and home), and its partner and the ones
+ *                            who stayed (EP_TOGETHER, EP_STAYED) are evaluated against that page's end and the sash it implies when
+ *                            the slide is built (C and E worn; the Plan after the chair refused)
+ *   conditions:              MET_COMPANION, CHAIR_TOOK, EP_CHAIR, EP_STAYED, EP_TOGETHER_END, EP_TOGETHER
  * Planned (the slice named sets it; values as the plan fixes them):
  *   a3_recall                declined | stayed | handed | court | bought | hidden | fought | taken          B6b
  *   nine_disposed            true                                                                        B6b
