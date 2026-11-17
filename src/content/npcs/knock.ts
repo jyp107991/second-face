@@ -83,7 +83,8 @@ export const KNOCK: NpcDef[] = [
   // day two: the outriders
   {
     id: 'npc_kn_out_lead', name: 'Outrider Brannick Hale', look: { seed: 1241, frame: 'broad', age: 44, ancestry: 'north_european' }, role: 'guard', level: 5, team: 'tollmen', faction: 'tollmen', settlement: 'cistern9', courage: 65, leader: true,
-    dialogue: 'd_kn_outriders', hostileIf: { all: [{ flag: 'kn_out_fight' }, { not: { flag: 'kn_out_beaten' } }] }, beaten: [{ set: 'kn_out_beaten' }], equip: ['w_revolver38', 'r_duster'], inventory: [['a_38', 18], ['c_bandage', 1]], skills: { firearms: 50, speech: 45 }, tolls: 25, schedule: [],
+    // hostile in the opening's fight, or in Act 3 once drawn on at Knock (B6g: until the map's after-trigger settles a3_hale)
+    dialogue: 'd_kn_outriders', hostileIf: { any: [{ all: [{ flag: 'kn_out_fight' }, { not: { flag: 'kn_out_beaten' } }] }, { all: [{ flag: 'a3_hale_fight' }, { not: { flag: 'a3_hale' } }] }] }, beaten: [{ set: 'kn_out_beaten' }], equip: ['w_revolver38', 'r_duster'], inventory: [['a_38', 18], ['c_bandage', 1]], skills: { firearms: 50, speech: 45 }, tolls: 25, schedule: [],
   },
   {
     id: 'npc_kn_out_a', name: 'Outrider Josse', look: { seed: 1242, frame: 'broad', age: 31, ancestry: 'caribbean' }, role: 'guard', level: 3, team: 'tollmen', faction: 'tollmen', settlement: 'cistern9', courage: 50,

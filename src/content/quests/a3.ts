@@ -240,8 +240,12 @@ export const q_a3_unwritten: QuestDef = {
   ],
   stages: {
     chalk: {
-      journal: 'Chalk on the Cistern\'s apron at dawn: an open eye struck through. The Unwritten are at Knock by night, and they mean to burn what the Cistern keeps.',
-      objectives: [{ id: 'end', text: 'Decide what the Unwritten do at Knock', done: F('a3_unwritten') }],
+      journal: 'Chalk on the Cistern\'s apron in the mornings: an open eye struck through. The Unwritten are at Knock by night, at the dark west end of the apron, and they mean to burn what the Cistern keeps. They will not do it, they say, unless I am on the slope to see it.',
+      objectives: [
+        { id: 'aim', text: 'Hear what the Unwritten came to Knock to do', done: { knows: 'a3_uw_aim' }, optional: true },
+        { id: 'turn', text: 'Find out what the grate in the rock is to the Cistern', done: { knows: 'a3_uw_turn' }, optional: true },
+        { id: 'end', text: 'Decide what the Unwritten do at Knock', done: F('a3_unwritten') },
+      ],
       next: [{ if: UW('with_you'), stage: 'with_you' }, { if: UW('gone'), stage: 'gone' }, { if: UW('stopped'), stage: 'stopped' }, { if: UW('burning'), stage: 'burning' }],
     },
     with_you: { journal: 'The Unwritten will not burn the Cistern\'s count. They are coming east with me, to the city.', end: 'done' },

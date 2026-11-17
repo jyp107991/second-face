@@ -1776,6 +1776,11 @@ export const openfield: MapDef = {
                 }
               ]
             }
+          },
+          {
+            not: {
+              dead: "npc_of_02"
+            }
           }
         ]
       }

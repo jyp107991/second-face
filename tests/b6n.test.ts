@@ -75,7 +75,7 @@ describe('B6n: the fire at the foot of the steps', () => {
   });
 
   it('everyone still with the player has a place at it, travelling or gathered; nobody gone, left, broken or hunting is there', () => {
-    expect(sits(fire('prepared'))).toEqual(['(Sit by Tamsin.)', '(Sit by Wren.)', '(Sit by Ilya.)', '(Sit by Kes.)']);
+    expect(sits(fire('prepared'))).toEqual(['(Sit by Tamsin.)', '(Sit by Wren.)', '(Sit by Ilya.)', '(Sit by Kes.)', '(Sit by Odile.)', '(Sit by Ash.)', '(Sit by Nine.)']);
     // the worst Act 2: Tamsin alone of these four (Ilya left, the others never met)
     expect(sits(fire('hostile'))).toEqual(['(Sit by Tamsin.)']);
     const nobody = fire('prepared', { companions: 'nobody' });
@@ -89,7 +89,7 @@ describe('B6n: the fire at the foot of the steps', () => {
     expect(sits(broken)).not.toContain('(Sit by Tamsin.)');
     // Ilya hunting Kade alone, Kes gone back to the Shift for good, Wren hanged
     const away = fire('prepared', { flags: { ilya_left: 'spared', kes_left: 'rafe', wren_hanged: true, wren_left: 'hanged' } });
-    expect(sits(away)).toEqual(['(Sit by Tamsin.)']);
+    expect(sits(away)).toEqual(['(Sit by Tamsin.)', '(Sit by Odile.)', '(Sit by Ash.)', '(Sit by Nine.)']);
   });
 });
 
@@ -476,8 +476,12 @@ describe('B6n: Wren and Kes leave after a guild night they were not at', () => {
     expect(at(r)).toBe('kes_guild');
     r.choose(r.view()!.options[0].id);
     r.choose(r.view()!.options[0].id);
+    // a guild night is a night against Openfield too: Ash, gathered at the close without a word, goes next (B6o)
+    expect(at(r)).toBe('ash_ln');
+    r.choose(r.view()!.options[0].id);
+    r.choose(r.view()!.options[0].id);
     expect(at(r)).toBe('hub');
-    expect(sits(a)).toEqual(['(Sit by Tamsin.)', '(Sit by Ilya.)']);
+    expect(sits(a)).toEqual(['(Sit by Tamsin.)', '(Sit by Ilya.)', '(Sit by Odile.)', '(Sit by Nine.)']);
     // at the close, her own tree says it the close's way too
     const b = fire('guild');
     expect(view('d_rd_wren', b.g, b.q).text).toContain('I\'ll not walk up those steps');
@@ -499,7 +503,7 @@ describe('B6n: the fire keeps U7, consent and the romance rules', () => {
     expect(sits(a)).toContain('(Sit by Tamsin.)');
     sit(a, 'Tamsin', ['We\'re still the Grille', '(Listen till she runs out.)']);
     expect(sits(a)).not.toContain('(Sit by Tamsin.)');
-    expect(sits(a)).toEqual(['(Sit by Wren.)', '(Sit by Ilya.)', '(Sit by Kes.)']);
+    expect(sits(a)).toEqual(['(Sit by Wren.)', '(Sit by Ilya.)', '(Sit by Kes.)', '(Sit by Odile.)', '(Sit by Ash.)', '(Sit by Nine.)']);
   });
 
   it('every companion has a word at the fire: the four as speakers, the other three across it', () => {

@@ -126,7 +126,7 @@ OF_IS = lambda *v: {'any': [{'flag': 'ln_openfield', 'eq': x} for x in v]}
 # after an eviction that took the Choir's people away (relocated on schedule, or removed as property), their houses are empty
 CHOIR_STAYS = {'not': {'any': [{'flag': 'ln_people', 'eq': 'removed'}, {'flag': 'ln_people', 'eq': 'relocated'}]}}
 MASON_HERE = {'all': [{'not': LN_ON}, {'not': {'any': [{'flag': 'ks_mason', 'eq': 'dead'}, {'flag': 'ks_mason', 'eq': 'exiled'}]}}, {'not': OF_IS('evicted', 'guild')}]}
-PETRA_HERE = {'all': [{'not': LN_ON}, {'not': {'flag': 'ln_petra_taken'}}, {'not': OF_IS('evicted', 'guild')}]}
+PETRA_HERE = {'all': [{'not': LN_ON}, {'not': {'flag': 'ln_petra_taken'}}, {'not': OF_IS('evicted', 'guild')}, {'not': {'dead': 'npc_of_02'}}]}  # B6g: not once killed at Knock
 CAR_CARRICK = {'all': [{'flag': 'rc_line', 'eq': 'guild'}, {'not': {'flag': 'rc_pilot'}}, {'not': {'flag': 'rc_box_nospare'}}]}
 LN_ARRIVE = {'all': [{'flag': 'ln_called'}, {'not': {'flag': 'ln_calla_taken'}}, {'not': {'flag': 'ln_done'}}]}
 CAME = lambda f: {'all': [LN_ON, {'flag': f}]}

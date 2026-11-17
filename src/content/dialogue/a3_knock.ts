@@ -5,6 +5,7 @@ import {
   LINNET_SHALE, LOWE, LOWE_DEAD, NINE, ODILE, REYES, TAMSIN, WREN,
 } from '../world/a3_conds';
 import { d_kn_grille } from './knock';
+import { GRILLE_BURNED, GRILLE_BURNED_NODES } from './a3_forces';
 
 /**
  * Knock under the column (B6f, Act 3 beat 20a): the home hamlet with the hatch shut and the city's column camped on the toll
@@ -1077,11 +1078,13 @@ const A3_GRILLE_NODES: Record<string, NodeDef> = {
 export const d_a3_grille: DialogueDef = {
   id: 'd_a3_grille', owner: d_kn_grille.owner,
   start: [
+    // B6g: MOTHER's panel burned by the Unwritten: the Grille is dark from then on
+    { if: GRILLE_BURNED, node: 'a3_burned' },
     { if: ALL(LOCKDOWN, NOT({ knows: 'a3_mother_named' })), node: 'a3_lock' },
     { if: LOCKDOWN, node: 'a3_hub' },
     ...d_kn_grille.start,
   ],
-  nodes: { ...d_kn_grille.nodes, ...A3_GRILLE_NODES },
+  nodes: { ...d_kn_grille.nodes, ...A3_GRILLE_NODES, ...GRILLE_BURNED_NODES },
 };
 
 export const A3_KNOCK_DIALOGUES: DialogueDef[] = [d_a3_home, d_a3_maud, d_a3_linnet, d_a3_dace, d_a3_corin, d_a3_lowe, d_a3_warden, d_a3_kn_r1, d_a3_kn_r2, d_a3_kn_r3, d_a3_kn_r4, d_a3_grille];

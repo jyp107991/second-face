@@ -4,6 +4,7 @@ import {
   A3_OPEN, ALLY, ASH, ASH_REFUSED, B_MEANS, C_BUYER, D_ARCHIVE, D_PEOPLE, D_READER, D_VOICE, E_FILE, E_PREC, E_REG, ILYA, IN, KES,
   KES_NUMBED, LN, LN_DONE, NINE, ODILE, TAMSIN, WITH_YOU, WREN,
 } from '../world/a3_conds';
+import { lastNightsII } from './a3_fire_ii';
 
 /**
  * Last nights I (B6n): the fire at the Spire's close, the night before the steps. A works barrel at the foot of the steps
@@ -20,8 +21,8 @@ import {
  * the shared `romance_partner` (a committed romance elsewhere closes the others kindly), Ilya only sober. Nothing is a
  * reward for a gift.
  * Sets `a3_<c>_last` = together | apart | none (the romance committed at the last night / ended there / friends) and
- * `a3_<c>_night` (the last night's beat was had, deferrals included). Odile, Ash and Nine's scenes are B6o's (they join the
- * hub's options; the three speak here through interjections).
+ * `a3_<c>_night` (the last night's beat was had, deferrals included). Odile, Ash and Nine's scenes are B6o's, written in
+ * a3_fire_ii.ts and built into this tree with this file's helpers (`lastNightsII`); the three also speak here across the fire.
  *
  * Also here: Wren's and Kes's leaving after a guild night they were not at (B5d makes them leave at its dawn only when they
  * stood there): at the first fire or meeting after it, in their own trees (`WREN_GUILD_*`, `KES_GUILD_*`, spread into
@@ -45,9 +46,9 @@ const GUILD_NIGHT: Cond = ALL(LN_DONE, LN('guild'));
 
 // ---------------------------------------------------------------- the companions' states at the fire
 
-type Key = 'tamsin' | 'wren' | 'ilya' | 'kes';
-const ID: Record<Key, string> = { tamsin: TAMSIN, wren: WREN, ilya: ILYA, kes: KES };
-const SHORT: Record<Key, string> = { tamsin: 'tam', wren: 'wren', ilya: 'ilya', kes: 'kes' };
+type Key = 'tamsin' | 'wren' | 'ilya' | 'kes' | 'odile' | 'ash' | 'nine';
+const ID: Record<Key, string> = { tamsin: TAMSIN, wren: WREN, ilya: ILYA, kes: KES, odile: ODILE, ash: ASH, nine: NINE };
+const SHORT: Record<Key, string> = { tamsin: 'tam', wren: 'wren', ilya: 'ilya', kes: 'kes', odile: 'odile', ash: 'ash', nine: 'nine' };
 const LAST = (c: Key, v: 'together' | 'apart' | 'none'): Effect[] => [{ set: `a3_${c}_last`, value: v }, { set: `a3_${c}_night` }];
 const NIGHT_HAD = (c: Key): Effect[] => [{ set: `a3_${c}_night` }];
 const OPEN_N = (c: Key): Cond => NOT(F(`a3_${c}_night`));
@@ -55,7 +56,7 @@ const FREE = (c: Key): Cond => ANY(NOT(F('romance_partner')), F('romance_partner
 const LOW = (c: Key): Cond => ({ approval: { companion: ID[c], lte: 30 } });
 const ROM = (flag: string, vals: string[]): Cond => ANY(...vals.map((v) => F(flag, v)));
 /** Each romance "on" (U8: the states a step can follow from). */
-export const ROM_ON: Record<Key, Cond> = {
+export const ROM_ON: Record<'tamsin' | 'wren' | 'ilya' | 'kes', Cond> = {
   tamsin: ROM('tam_romance', ['open', 'together']),
   wren: ROM('wren_rom', ['yes', 'later_roof', 'roof', 'committed']),
   ilya: ROM('ilya_rom', ['yes', 'later_well', 'well', 'committed']),
@@ -676,8 +677,9 @@ const KES_NODES: Record<string, NodeDef> = {
 
 const HERE = (c: Key): Cond => WITH_YOU(c);
 const NOBODY: Cond = NOT(ANY(...(['tamsin', 'wren', 'ilya', 'odile', 'ash', 'nine', 'kes'] as const).map((c) => WITH_YOU(c))));
-/** Who is at the fire, and the way to each one's scene (a failed romance and a list come first, as in their own trees).
- * B6o adds Odile's, Ash's and Nine's here. */
+/** B6o: Odile's, Ash's and Nine's scenes (a3_fire_ii.ts), and Ash's and Odile's leavings after a Long Night they missed. */
+const II = lastNightsII({ waysNodes, bySrc });
+/** Who is at the fire, and the way to each one's scene (a failed romance and a list come first, as in their own trees). */
 const SIT: OptionDef[] = [
   { id: 'a3f.hub.tam.list.r', text: '(Sit by Tamsin.)', if: ALL(HERE('tamsin'), TAM_LIST, TAM_ROM), next: 'tam_list_r' },
   { id: 'a3f.hub.tam.list', text: '(Sit by Tamsin.)', if: ALL(HERE('tamsin'), TAM_LIST, NOT(TAM_ROM)), next: 'tam_list' },
@@ -689,6 +691,7 @@ const SIT: OptionDef[] = [
       { id: `a3f.hub.${c}`, text: `(Sit by ${name}.)`, if: ALL(HERE(c), NOT(ALL(ROM_ON[c], LOW(c))), LEFT(c)), next: c },
     ];
   }),
+  ...II.sit,
 ];
 
 export const d_a3_fire: DialogueDef = {
@@ -699,6 +702,7 @@ export const d_a3_fire: DialogueDef = {
     // the ones who will not go up the steps beside a guild night say so before anything else
     { if: WREN_GUILD_FIRE, node: 'wren_guild' },
     { if: KES_GUILD_FIRE, node: 'kes_guild' },
+    ...II.start,
     { if: DAY, node: 'day' },
     { node: 'hub' },
   ],
@@ -748,14 +752,16 @@ export const d_a3_fire: DialogueDef = {
       again: 'The gap at the fire, closed.',
       options: [
         { text: '(Stay at the fire.)', if: KES_GUILD_FIRE, next: 'kes_guild' },
-        { text: '(Stay at the fire.)', if: ALL(NOT(KES_GUILD_FIRE), DAY), next: 'day' },
-        { text: '(Stay at the fire.)', if: ALL(NOT(KES_GUILD_FIRE), NOT(DAY)), next: 'hub' },
+        ...II.after(NOT(KES_GUILD_FIRE)),
+        { text: '(Stay at the fire.)', if: ALL(NOT(KES_GUILD_FIRE), II.settled, DAY), next: 'day' },
+        { text: '(Stay at the fire.)', if: ALL(NOT(KES_GUILD_FIRE), II.settled, NOT(DAY)), next: 'hub' },
       ],
     },
     ...TAM_NODES,
     ...WREN_NODES,
     ...ILYA_NODES,
     ...KES_NODES,
+    ...II.nodes,
   },
 };
 

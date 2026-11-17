@@ -170,6 +170,16 @@ export const RECALL_OPEN: Cond = ALL(F('a3_recall_due'), NOT(F('a3_recall')), ON
 export const WITH_YOU = (c: CompanionKey): Cond => (c === 'tamsin' ? ALL(ON_SIDE(c), NOT(F('tam_broken'))) : ON_SIDE(c));
 /** Kes numbed by the Concern at Knock, mid-siege (§7; B6j sets `a3_kes_numbed`). Read by her last night at the fire. */
 export const KES_NUMBED: Cond = F('a3_kes_numbed');
+/** B6o: the Long Night's red lines for the ones who were not at it (B5d makes Ash and Odile leave at its dawn only when they
+ * stood there; B6o makes the rest leave at the first word after it, or at the fire). Ash's: the night stood against Openfield
+ * (the guild's side or the city's). Odile's: her price, Imelda Sarr walking out alive, broken however Sarr died. */
+export const ASH_LN_CROSSED: Cond = ALL(LN_DONE, ANY(LN('guild'), LN('ledger')));
+export const ODILE_PRICE_BROKEN: Cond = ALL(F('odile_price', 'sarr'), SARR_DEAD);
+/** The knife on the lane at the Long Night stopped: Sarr alive because somebody stood in its way (Odile's price, kept in the open). */
+export const SARR_SPARED: Cond = F('ln_sarr', 'lives');
+/** Ash's orders falling on himself on the steps (§7, B6p): low approval and the player's "make it clean" (U8 S3), unless the
+ * player took the sentence back at the fire (`a3_ash_clean_back`; U8's `ash_stance` is never rewritten). Said at the fire. */
+export const ASH_SELF_RISK: Cond = ALL(F('ash_stance', 'clean'), { approval: { companion: ASH, lte: 19 } }, NOT(F('a3_ash_clean_back')));
 
 // ---------------------------------------------------------------- §4.1 the gates of the five endings
 
@@ -302,6 +312,13 @@ export const KNOCK_WATERED: Cond = ANY(...KNOCK_WATER.values.filter((v) => v.if)
 export const COLUMN_HERE: Cond = ALL(A3_OPEN, NOT(F('a3_c9')));
 export const ORME_HERE: Cond = ALL(NOT({ dead: ORME }), NOT({ dead: 'npc_kn_factor_a3' }));
 export const HALE_HERE: Cond = ALL(HALE_ALIVE, NOT({ dead: 'npc_kn_out_lead_a3' }), NOT(F('a3_hale', 'gone')), NOT(F('a3_hale', 'dead')));
+/** B6g: what the Long Night left between the player and the Unwritten (B5d's flags, read only here): Petra caught by the guild's
+ * riders when the player shouted (her face held to their lamps, sold to the city), Petra talked out of her knife, the knife
+ * told to go ahead, and Ash gone west with the Unwritten after carrying it. */
+export const PETRA_TAKEN: Cond = F('ln_petra_taken');
+export const PETRA_DOWN: Cond = F('ln_petra_down');
+export const PETRA_KNIFE: Cond = F('ln_knife_blessed');
+export const ASH_WITH_UNWRITTEN: Cond = F('ash_unwritten');
 
 /** The readiness hub's eight acts at the close (`d_a3_ready`, B6m): each adds 1 to `a3_ready`, once (`a3_ready_<id>`). */
 export const READY_ACTS: { id: string; needs: Cond }[] = [
@@ -523,6 +540,53 @@ export const EP_SLIDES = ['steps', 'ledger', 'cistern', 'knock', 'shale', 'dogs'
  *                            a3_third_word ("home"), a3_grief_told; npc_kn_linnet a3_trusted / a3_stood_down; npc_c9_01
  *                            a3_told_refusals (the Archive promise told at the Grille, not by letter)
  *   a3_archive_promise       true            also at the Grille in lockdown (the replies' copy held, told to Ines)
+ * B6o (built; dialogue/a3_fire_ii.ts, built into d_a3_fire by lastNightsII(): Odile's, Ash's and Nine's last nights at the fire;
+ *      Ash and Tamsin at Knock's first camp, spread into ch1_cistern.ts and openfield.ts; the Long Night's red lines for Ash and
+ *      Odile when they were not at it, spread into openfield.ts and ninebridge.ts):
+ *   a3_odile_last            settled | open  her tab read out at the fire: paid at the bottom, or left open at the player's asking
+ *   a3_ash_last              burned | none   burned: the letter burned at the fire tonight (ash_orders written refused); none: the
+ *                                            last night as friends had with the letter where it stood (or never between them)
+ *   a3_nine_last             log | none      log: "when it matters" kept (the log it held back, given or read at the fire); none:
+ *                                            the drains, the last night as friends
+ *   a3_odile_night / a3_ash_night / a3_nine_night  true   the last night's beat was had
+ *   a3_odile_word            true            the player's word that Sarr answers for the riders in daylight (D or E fits it)
+ *   a3_ash_word              true            the player's word not to wear the sash (said to Ash: B6p can read it against a3_sash)
+ *   a3_nine_word             true            the player's word not to destroy the core (Nine's line: B6r can read it at the door)
+ *   a3_ash_heard             people | water | unsure   undecided orders: what the player said they would sign first (B6p reads
+ *                                            it with what the hand does; it decides nothing at the fire)
+ *   a3_ash_clean_back        true            "make it clean" (U8 ash_stance = clean) taken back at the fire; ASH_SELF_RISK reads it
+ *   a3_ash_tam               true            Ash and Tamsin's quarrel at Knock's first camp had (once)
+ *   U8 flags written         ash_orders refused | warned | undecided | other (asked again, burned, or taken back at the fire;
+ *                            first asked there if never answered), ash_orders_known + ash_orders_how told (told at the fire,
+ *                            approval 35+), nine_log_given (+ knowledge nine_log_copy; the log held back, given when it mattered:
+ *                            D_READER and the readiness act read it), ash_gone + ash_redline longnight, odile_gone + odile_left price
+ *   (read)                   ASH_LN_CROSSED, ODILE_PRICE_BROKEN, SARR_SPARED, ASH_SELF_RISK (B6p: the self branch), NINE_KEEPER_SELF
+ * B6g (built; dialogue/a3_forces.ts written whole over B6f's holding scenes: the Unwritten (d_a3_petra, Petra's or Juniper's
+ *      nodes; d_a3_thaddeus, d_a3_rhoda), Orme's paper, Hale, the handlers, d_a3_burning; world event a3_burning; map c9_mouth):
+ *   a3_unwritten             with_you | gone | stopped | burning   with_you: turned to the city's book under the Spire, coming
+ *                                            east (B6l places them at the close); gone: talked home; stopped: lamp and oil taken
+ *                                            in the dark, or the three drawn on and down; burning: let go down the grate
+ *   a3_uw_how                core | home | lamp | fought | let   how a3_unwritten was settled (fought: the map's a3_uw_after)
+ *   a3_uw_fight              petra | juniper   drawn on (who led): their hostileIf and placements until a3_unwritten is set
+ *   a3_uw_watched            true            the lamp and oil tried for and caught: the sneak is not offered again
+ *   a3_uw_rhoda              true            Rhoda pushed the oil away from her (lowers the talk and the sneak)
+ *   a3_mother / a3_archive   burned          world event a3_burning (the next two o'clock with the player at Knock after
+ *                                            a3_unwritten = burning): MOTHER's panel and the Archive burned; the residents on the
+ *                                            hand pump and the emergency stores; the Grille dark (d_a3_grille's first entry)
+ *   a3_guild                 paper_held | refused   Orme's paper taken (item k_a3_intake, in the pack; given back → refused) or
+ *                                            refused (or torn: a3_guild_torn true, final). Only with GUILD_IN_PLAY
+ *   a3_hale                  answered | gone | dead   Maud's judgement (answered: he rebuilds the post-house with Dace, has put
+ *                                            down the guild's sash and walks nobody up the road; gone: rode north alone), or
+ *                                            drawn on (a3_hale_fight true until the map's a3_hale_after sets dead)
+ *   kn_owes_orme             false           Act 1's debt to Orme squared by carrying her paper
+ *   knowledge: a3_uw_met, a3_uw_aim, a3_uw_shaft (the grate is the way down), a3_uw_rule (they act only with the player on the
+ *                            slope), a3_uw_turn (the grate is the Cistern's air: a fire opens the door for the city), a3_uw_chalk,
+ *                            a3_petra_father, a3_petra_night, a3_thad_met/a3_thad_supply, a3_rhoda_met/a3_rhoda_press,
+ *                            a3_intake_terms / a3_intake_sign / a3_intake_held / a3_orme_stake, a3_hale_met / a3_hale_job /
+ *                            a3_weighhouse (B6j: what "sold" costs, said by the man who walks them) / a3_hale_due / a3_hale_door /
+ *                            a3_hale_boards, a3_handlers_met / a3_hounds_for / a3_hounds_whose;  memories npc_kn_maud
+ *                            a3_judged_hale, npc_kn_factor a3_paper_refused / a3_paper_torn / a3_told_weighhouse, npc_c9_02
+ *                            a3_told_burning
  * Planned (the slice named sets it; values as the plan fixes them):
  *   a3_recall                declined | stayed | handed | court | bought | hidden | fought | taken          B6b
  *   nine_disposed            true                                                                        B6b

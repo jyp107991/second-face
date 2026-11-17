@@ -36,7 +36,19 @@ DACE_FREE = {'any': [{'flag': 'a3_dace', 'eq': 'square'}, {'flag': 'a3_dace', 'e
 ORME_HERE = {'all': [{'not': {'dead': 'npc_kn_factor'}}, {'not': {'dead': 'npc_kn_factor_a3'}}]}
 HALE_HERE = {'all': [{'not': {'dead': 'npc_kn_out_lead'}}, {'not': {'dead': 'npc_kn_out_lead_a3'}}, {'not': {'flag': 'a3_hale', 'eq': 'gone'}}, {'not': {'flag': 'a3_hale', 'eq': 'dead'}}]}
 PETRA_DEAD = {'dead': 'npc_of_02'}
-UNWRITTEN_HERE = {'all': [A3, {'hour': {'from': 21, 'to': 4}}, {'not': {'flag': 'a3_unwritten'}}]}
+# B6g (mirrors src/content/dialogue/a3_forces.ts): the Unwritten by night while they wait for the designate's answer (or have
+# it and are not yet down the grate), not once the reserve is out of the door; at any hour once drawn on, until the
+# after-trigger settles it. Hale drawn on, likewise.
+UW_NIGHT = {'all': [A3, {'hour': {'from': 21, 'to': 4}}]}
+UW_WAITING = {'all': [{'any': [{'not': {'flag': 'a3_unwritten'}}, {'all': [{'flag': 'a3_unwritten', 'eq': 'burning'}, {'not': {'event': 'a3_burning'}}]}]},
+                      {'not': {'any': [{'flag': 'a3_c9', 'eq': 'opened'}, {'flag': 'a3_c9', 'eq': 'relocated'}]}}]}
+UW_FIGHTING = {'all': [{'flag': 'a3_uw_fight'}, {'not': {'flag': 'a3_unwritten'}}]}
+UNWRITTEN_HERE = {'any': [{'all': [UW_NIGHT, UW_WAITING]}, UW_FIGHTING]}
+UW_DOWN = {'all': [{'any': [{'all': [{'flag': 'a3_uw_fight', 'eq': 'petra'}, {'dead': 'npc_of_02'}]}, {'all': [{'flag': 'a3_uw_fight', 'eq': 'juniper'}, {'dead': 'npc_a3_u1'}]}]},
+                   {'dead': 'npc_a3_u2'}, {'dead': 'npc_a3_u3'}]}
+HALE_FIGHTING = {'all': [{'flag': 'a3_hale_fight'}, {'not': {'flag': 'a3_hale'}}]}
+HALE_DOWN = {'dead': 'npc_kn_out_lead_a3'}
+HALE_ANSWERED = {'flag': 'a3_hale', 'eq': 'answered'}
 
 
 def ts(obj):
@@ -203,12 +215,15 @@ A3_NPCS = [
     {'def': 'npc_a3_g6', 'x': 34, 'y': 40, 'facing': 0, 'schedule': sched((6, 22, 'ward_apron', 'work'), (22, 6, 'camp_tent_a', 'sleep')), 'if': COLUMN_HERE},
     # the guild's party when the guild is in play: Hale if he lives, the handlers when it brought hounds (the hounds are the
     # runtime's stand-ins until a live hound exists)
-    {'def': 'npc_kn_out_lead', 'id': 'npc_kn_out_lead_a3', 'x': 42, 'y': 2, 'facing': 2, 'dialogue': 'd_a3_hale', 'schedule': [], 'if': {'all': [A3, GUILD_IN, HALE_HERE]}},
+    {'def': 'npc_kn_out_lead', 'id': 'npc_kn_out_lead_a3', 'x': 42, 'y': 2, 'facing': 2, 'dialogue': 'd_a3_hale', 'schedule': [], 'if': {'all': [A3, GUILD_IN, HALE_HERE, {'not': HALE_ANSWERED}]}},
+    # (B6g) Hale answered for the post-house on Maud's word: at its new frame with a hammer, out of the guild's green
+    {'def': 'npc_kn_out_lead', 'id': 'npc_kn_out_lead_boards', 'x': 18, 'y': 18, 'facing': 2, 'dialogue': 'd_a3_hale', 'schedule': [], 'if': {'all': [A3, HALE_HERE, HALE_ANSWERED]}},
     {'def': 'npc_a3_g11', 'x': 45, 'y': 2, 'facing': 2, 'schedule': [], 'if': {'all': [A3, HOUNDS_IN]}},
     {'def': 'npc_a3_g12', 'x': 47, 'y': 3, 'facing': 3, 'schedule': [], 'if': {'all': [A3, HOUNDS_IN]}},
-    # the Unwritten by night: Petra, or the first of them if she is dead, and two more (B6g: what they came for)
+    # the Unwritten by night: Petra, or the first of them if she is dead (not one who steps in when Petra falls in a fight), and
+    # two more (B6g: what they came for)
     {'def': 'npc_of_02', 'x': 19, 'y': 39, 'facing': 1, 'dialogue': 'd_a3_petra', 'schedule': [], 'if': {'all': [UNWRITTEN_HERE, {'not': PETRA_DEAD}]}},
-    {'def': 'npc_a3_u1', 'x': 19, 'y': 39, 'facing': 1, 'schedule': [], 'if': {'all': [UNWRITTEN_HERE, PETRA_DEAD]}},
+    {'def': 'npc_a3_u1', 'x': 19, 'y': 39, 'facing': 1, 'schedule': [], 'if': {'all': [UNWRITTEN_HERE, PETRA_DEAD, {'not': {'flag': 'a3_uw_fight', 'eq': 'petra'}}]}},
     {'def': 'npc_a3_u2', 'x': 18, 'y': 41, 'facing': 1, 'schedule': [], 'if': UNWRITTEN_HERE},
     {'def': 'npc_a3_u3', 'x': 20, 'y': 42, 'facing': 1, 'schedule': [], 'if': UNWRITTEN_HERE},
 ]
@@ -225,6 +240,20 @@ A3_TRIGGERS = [
     {'id': 'a3_camp', 'x': 13, 'y': 1, 'w': 11, 'h': 12, 'if': COLUMN_HERE,
      'text': 'The column\'s camp: grey tents in a row, pegged square to the wind; a table under a canvas fly with a lamp on it and the order under a stone; water barrels stencilled PRECINCT SUPPLY under a tarp, more than four wardens could drink in a month. Nobody is cleaning a rifle. That is the first thing you notice, and the thing you keep noticing.',
      'effects': [{'learn': 'a3_column_seen'}]},
+    # B6g: the Unwritten's chalk on the apron by day while they wait; and the ends of the two fights at Knock (anywhere on the
+    # map once the ones drawn on are down)
+    {'id': 'a3_chalk', 'x': 18, 'y': 37, 'w': 21, 'h': 4, 'if': {'all': [A3, {'hour': {'from': 5, 'to': 21}}, UW_WAITING, {'not': {'flag': 'a3_unwritten'}}]},
+     'text': 'Chalk on the apron\'s concrete by the door, big enough to read from the lane: an open eye, struck through with one hard line. Somebody has tried to scuff it out with a boot and given up. The Choir paints an open eye on its barrels and its doors. The line through it is the Unwritten\'s, and it is not a blessing.',
+     'effects': [{'learn': 'a3_uw_chalk'}, {'quest': 'q_a3_unwritten', 'start': True}]},
+    {'id': 'a3_uw_after', 'x': 1, 'y': 1, 'w': 54, 'h': 44, 'once': False, 'if': {'all': [UW_FIGHTING, UW_DOWN]},
+     'text': 'They are down, all three, at the dark end of the apron by the grate, with the oil cans where they left them. Up the lane the doors are open and nobody is coming out of them. In the morning somebody carries them up the road under canvas, and Maud scrubs the apron where they lay, and nobody chalks anything on it again.',
+     'effects': [{'set': 'a3_unwritten', 'value': 'stopped'}, {'set': 'a3_uw_how', 'value': 'fought'}, {'xp': 100},
+                 {'news': {'tag': 'a3_uw_fought', 'text': 'the designate killed three of the Choir\'s grey people on Knock\'s apron, who had come in the night to burn the Cistern', 'valence': 5, 'size': 6, 'at': 'cistern9'}},
+                 {'decision': {'id': 'a3_unwritten', 'text': 'At Knock I fought the Unwritten on the apron in the dark, and none of them went down the grate.'}}]},
+    {'id': 'a3_hale_after', 'x': 1, 'y': 1, 'w': 54, 'h': 44, 'once': False, 'if': {'all': [HALE_FIGHTING, HALE_DOWN]},
+     'text': 'Brannick Hale lies on the guild\'s ground east of the stand, his hat on the saddle where he put it. The handlers have their leads wrapped twice round their fists and have not moved. Orme comes out from behind her counter and looks, and goes back in. Down the lane Knock is at its doors, and nobody says anything at all.',
+     'effects': [{'set': 'a3_hale', 'value': 'dead'}, {'rep': {'faction': 'tollmen', 'respect': -5, 'fear': 5}}, {'xp': 60},
+                 {'decision': {'id': 'a3_hale', 'text': 'At Knock I killed Brannick Hale, the outrider who burned the post-house, on the guild\'s own ground.'}}]},
 ]
 
 knock = {
@@ -349,6 +378,10 @@ knock['talk']['grille'] = {'dialogue': 'd_a3_grille', 'name': 'The Grille'}
 for sid, sp in A3_SPOTS.items():
     assert rows[sp['y']][sp['x']] in '.,rsc', f'spot {sid} at {sp} on {rows[sp["y"]][sp["x"]]!r}'
     assert (sp['x'], sp['y']) not in _taken, f'spot {sid} at {sp} on a prop'
+# B6g: Hale at the post-house's new frame stands on open ground
+for p_ in A3_NPCS:
+    if p_.get('id') == 'npc_kn_out_lead_boards':
+        assert rows[p_['y']][p_['x']] in '.,rsc' and (p_['x'], p_['y']) not in _taken, f'Hale at the boards on {rows[p_["y"]][p_["x"]]!r}'
 
 HEADER ="import type { MapDef } from '../../engine/data/types';\n\n// Generated by tools/maps/gen_knock.py — edit the generator, then re-run it.\n"
 with open(os.path.join(ROOT, 'src', 'content', 'maps', 'c9_mouth.ts'), 'w') as f:

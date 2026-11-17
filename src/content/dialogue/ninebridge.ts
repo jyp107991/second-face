@@ -1,6 +1,7 @@
 import type { DialogueDef, NodeDef } from '../../engine/dialogue/dialogue';
 import type { Cond, Effect } from '../../engine/world/logic';
 import { QUESTS } from '../quests';
+import { ODILE_PRICE_NODES, ODILE_PRICE_START } from './a3_fire_ii';
 
 /**
  * Ninebridge: the guild's Exchange on the broken bridge. The toll at the sandbags, the porters sitting down
@@ -368,6 +369,7 @@ export const d_nb_odile: DialogueDef = {
   start: [
     { if: { all: [OD_IN, OD_FLOOR, { flag: 'odile_won_back' }] }, node: 'floor_final' },
     { if: { all: [OD_IN, OD_FLOOR] }, node: 'floor' },
+    ...ODILE_PRICE_START,
     { if: { all: [OD_IN, { flag: 'at_camp' }] }, node: 'camp' },
     { if: OD_IN, node: 'party' },
     { if: { flag: 'odile_gone' }, node: 'gone' },
@@ -712,6 +714,7 @@ export const d_nb_odile: DialogueDef = {
     left_back: { text: '"Imelda has paid that for years." She watches Lazlo strike it out. "You\'ve just bought my debt off the Grand Factor, my dear. That\'s either a kindness or a very good trade." She stands. "Two names a night. Let\'s go."', again: '"Let\'s go," she says, already standing.', options: [{ text: '(Go.)', exit: true }] },
     left_no: { text: '"That\'s money." She doesn\'t touch it. "I\'ve never been short of people paying for me. Come back when it isn\'t only money."', again: '"Only money," she says again, and turns the glass.', options: [{ text: 'Another time.', exit: true }] },
     gone: { text: '"No, my dear." She does not look up from the glass. "Some trades don\'t unwind."', again: 'She does not look up from the glass.', options: [{ text: '(Leave her.)', exit: true }] },
+    ...ODILE_PRICE_NODES,
   },
 };
 

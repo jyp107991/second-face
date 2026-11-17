@@ -1,5 +1,6 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
 import type { Cond } from '../../engine/world/logic';
+import { KNOCK_CAMP_NODES, KNOCK_CAMP_START } from './a3_fire_ii';
 
 /** Chapter One — Cistern 9. */
 
@@ -247,6 +248,7 @@ export const d_c9_tamsin: DialogueDef = {
     { if: { all: [IN, TAM_AT(undefined, -20)] }, node: 'walks' },
     { if: { all: [LISTED, TAM_ROMANCE] }, node: 'listed_r' },
     { if: LISTED, node: 'listed' },
+    KNOCK_CAMP_START,
     { if: { all: [IN, { flag: 'at_camp' }] }, node: 'camp' },
     { if: IN, node: 'party' },
     { if: { flag: 'tam_broken' }, node: 'broken' },
@@ -662,6 +664,8 @@ export const d_c9_tamsin: DialogueDef = {
       text: [{ if: { inParty: 'npc_c9_03' }, text: 'Well? The door isn\'t going to open itself. Well — Bram might.' }, { text: 'Write, {name}. I mean it.' }],
       options: [{ text: 'Right.', exit: true }],
     },
+    // Act 3: Ash and Tamsin at Knock's first camp (a3_fire_ii.ts)
+    ...KNOCK_CAMP_NODES,
   },
 };
 

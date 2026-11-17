@@ -2348,6 +2348,58 @@ export const c9_mouth: MapDef = {
                 }
               }
             ]
+          },
+          {
+            not: {
+              flag: "a3_hale",
+              eq: "answered"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_kn_out_lead",
+      id: "npc_kn_out_lead_boards",
+      x: 18,
+      y: 18,
+      facing: 2,
+      dialogue: "d_a3_hale",
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            all: [
+              {
+                not: {
+                  dead: "npc_kn_out_lead"
+                }
+              },
+              {
+                not: {
+                  dead: "npc_kn_out_lead_a3"
+                }
+              },
+              {
+                not: {
+                  flag: "a3_hale",
+                  eq: "gone"
+                }
+              },
+              {
+                not: {
+                  flag: "a3_hale",
+                  eq: "dead"
+                }
+              }
+            ]
+          },
+          {
+            flag: "a3_hale",
+            eq: "answered"
           }
         ]
       }
@@ -2396,20 +2448,75 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            all: [
+            any: [
               {
-                flag: "a3_open"
+                all: [
+                  {
+                    all: [
+                      {
+                        flag: "a3_open"
+                      },
+                      {
+                        hour: {
+                          from: 21,
+                          to: 4
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            not: {
+                              flag: "a3_unwritten"
+                            }
+                          },
+                          {
+                            all: [
+                              {
+                                flag: "a3_unwritten",
+                                eq: "burning"
+                              },
+                              {
+                                not: {
+                                  event: "a3_burning"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        not: {
+                          any: [
+                            {
+                              flag: "a3_c9",
+                              eq: "opened"
+                            },
+                            {
+                              flag: "a3_c9",
+                              eq: "relocated"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
               },
               {
-                hour: {
-                  from: 21,
-                  to: 4
-                }
-              },
-              {
-                not: {
-                  flag: "a3_unwritten"
-                }
+                all: [
+                  {
+                    flag: "a3_uw_fight"
+                  },
+                  {
+                    not: {
+                      flag: "a3_unwritten"
+                    }
+                  }
+                ]
               }
             ]
           },
@@ -2430,25 +2537,86 @@ export const c9_mouth: MapDef = {
       if: {
         all: [
           {
-            all: [
+            any: [
               {
-                flag: "a3_open"
+                all: [
+                  {
+                    all: [
+                      {
+                        flag: "a3_open"
+                      },
+                      {
+                        hour: {
+                          from: 21,
+                          to: 4
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        any: [
+                          {
+                            not: {
+                              flag: "a3_unwritten"
+                            }
+                          },
+                          {
+                            all: [
+                              {
+                                flag: "a3_unwritten",
+                                eq: "burning"
+                              },
+                              {
+                                not: {
+                                  event: "a3_burning"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        not: {
+                          any: [
+                            {
+                              flag: "a3_c9",
+                              eq: "opened"
+                            },
+                            {
+                              flag: "a3_c9",
+                              eq: "relocated"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
               },
               {
-                hour: {
-                  from: 21,
-                  to: 4
-                }
-              },
-              {
-                not: {
-                  flag: "a3_unwritten"
-                }
+                all: [
+                  {
+                    flag: "a3_uw_fight"
+                  },
+                  {
+                    not: {
+                      flag: "a3_unwritten"
+                    }
+                  }
+                ]
               }
             ]
           },
           {
             dead: "npc_of_02"
+          },
+          {
+            not: {
+              flag: "a3_uw_fight",
+              eq: "petra"
+            }
           }
         ]
       }
@@ -2460,20 +2628,75 @@ export const c9_mouth: MapDef = {
       facing: 1,
       schedule: [],
       if: {
-        all: [
+        any: [
           {
-            flag: "a3_open"
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    hour: {
+                      from: 21,
+                      to: 4
+                    }
+                  }
+                ]
+              },
+              {
+                all: [
+                  {
+                    any: [
+                      {
+                        not: {
+                          flag: "a3_unwritten"
+                        }
+                      },
+                      {
+                        all: [
+                          {
+                            flag: "a3_unwritten",
+                            eq: "burning"
+                          },
+                          {
+                            not: {
+                              event: "a3_burning"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    not: {
+                      any: [
+                        {
+                          flag: "a3_c9",
+                          eq: "opened"
+                        },
+                        {
+                          flag: "a3_c9",
+                          eq: "relocated"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
-            hour: {
-              from: 21,
-              to: 4
-            }
-          },
-          {
-            not: {
-              flag: "a3_unwritten"
-            }
+            all: [
+              {
+                flag: "a3_uw_fight"
+              },
+              {
+                not: {
+                  flag: "a3_unwritten"
+                }
+              }
+            ]
           }
         ]
       }
@@ -2485,20 +2708,75 @@ export const c9_mouth: MapDef = {
       facing: 1,
       schedule: [],
       if: {
-        all: [
+        any: [
           {
-            flag: "a3_open"
+            all: [
+              {
+                all: [
+                  {
+                    flag: "a3_open"
+                  },
+                  {
+                    hour: {
+                      from: 21,
+                      to: 4
+                    }
+                  }
+                ]
+              },
+              {
+                all: [
+                  {
+                    any: [
+                      {
+                        not: {
+                          flag: "a3_unwritten"
+                        }
+                      },
+                      {
+                        all: [
+                          {
+                            flag: "a3_unwritten",
+                            eq: "burning"
+                          },
+                          {
+                            not: {
+                              event: "a3_burning"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    not: {
+                      any: [
+                        {
+                          flag: "a3_c9",
+                          eq: "opened"
+                        },
+                        {
+                          flag: "a3_c9",
+                          eq: "relocated"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
-            hour: {
-              from: 21,
-              to: 4
-            }
-          },
-          {
-            not: {
-              flag: "a3_unwritten"
-            }
+            all: [
+              {
+                flag: "a3_uw_fight"
+              },
+              {
+                not: {
+                  flag: "a3_unwritten"
+                }
+              }
+            ]
           }
         ]
       }
@@ -2824,6 +3102,220 @@ export const c9_mouth: MapDef = {
       effects: [
         {
           learn: "a3_column_seen"
+        }
+      ]
+    },
+    {
+      id: "a3_chalk",
+      x: 18,
+      y: 37,
+      w: 21,
+      h: 4,
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            hour: {
+              from: 5,
+              to: 21
+            }
+          },
+          {
+            all: [
+              {
+                any: [
+                  {
+                    not: {
+                      flag: "a3_unwritten"
+                    }
+                  },
+                  {
+                    all: [
+                      {
+                        flag: "a3_unwritten",
+                        eq: "burning"
+                      },
+                      {
+                        not: {
+                          event: "a3_burning"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                not: {
+                  any: [
+                    {
+                      flag: "a3_c9",
+                      eq: "opened"
+                    },
+                    {
+                      flag: "a3_c9",
+                      eq: "relocated"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            not: {
+              flag: "a3_unwritten"
+            }
+          }
+        ]
+      },
+      text: "Chalk on the apron's concrete by the door, big enough to read from the lane: an open eye, struck through with one hard line. Somebody has tried to scuff it out with a boot and given up. The Choir paints an open eye on its barrels and its doors. The line through it is the Unwritten's, and it is not a blessing.",
+      effects: [
+        {
+          learn: "a3_uw_chalk"
+        },
+        {
+          quest: "q_a3_unwritten",
+          start: true
+        }
+      ]
+    },
+    {
+      id: "a3_uw_after",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 44,
+      once: false,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_uw_fight"
+              },
+              {
+                not: {
+                  flag: "a3_unwritten"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                any: [
+                  {
+                    all: [
+                      {
+                        flag: "a3_uw_fight",
+                        eq: "petra"
+                      },
+                      {
+                        dead: "npc_of_02"
+                      }
+                    ]
+                  },
+                  {
+                    all: [
+                      {
+                        flag: "a3_uw_fight",
+                        eq: "juniper"
+                      },
+                      {
+                        dead: "npc_a3_u1"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                dead: "npc_a3_u2"
+              },
+              {
+                dead: "npc_a3_u3"
+              }
+            ]
+          }
+        ]
+      },
+      text: "They are down, all three, at the dark end of the apron by the grate, with the oil cans where they left them. Up the lane the doors are open and nobody is coming out of them. In the morning somebody carries them up the road under canvas, and Maud scrubs the apron where they lay, and nobody chalks anything on it again.",
+      effects: [
+        {
+          set: "a3_unwritten",
+          value: "stopped"
+        },
+        {
+          set: "a3_uw_how",
+          value: "fought"
+        },
+        {
+          xp: 100
+        },
+        {
+          news: {
+            tag: "a3_uw_fought",
+            text: "the designate killed three of the Choir's grey people on Knock's apron, who had come in the night to burn the Cistern",
+            valence: 5,
+            size: 6,
+            at: "cistern9"
+          }
+        },
+        {
+          decision: {
+            id: "a3_unwritten",
+            text: "At Knock I fought the Unwritten on the apron in the dark, and none of them went down the grate."
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_hale_after",
+      x: 1,
+      y: 1,
+      w: 54,
+      h: 44,
+      once: false,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_hale_fight"
+              },
+              {
+                not: {
+                  flag: "a3_hale"
+                }
+              }
+            ]
+          },
+          {
+            dead: "npc_kn_out_lead_a3"
+          }
+        ]
+      },
+      text: "Brannick Hale lies on the guild's ground east of the stand, his hat on the saddle where he put it. The handlers have their leads wrapped twice round their fists and have not moved. Orme comes out from behind her counter and looks, and goes back in. Down the lane Knock is at its doors, and nobody says anything at all.",
+      effects: [
+        {
+          set: "a3_hale",
+          value: "dead"
+        },
+        {
+          rep: {
+            faction: "tollmen",
+            respect: -5,
+            fear: 5
+          }
+        },
+        {
+          xp: 60
+        },
+        {
+          decision: {
+            id: "a3_hale",
+            text: "At Knock I killed Brannick Hale, the outrider who burned the post-house, on the guild's own ground."
+          }
         }
       ]
     }

@@ -13,11 +13,12 @@ import type { NpcDef } from '../../engine/npc/defs';
  *   stand-in until a live hound exists); here they are in the handlers' mouths.
  * - Three of the Unwritten (`npc_a3_u1..u3`), at Knock by night with Petra Mason, or led by the first of them if Petra is
  *   dead: the Choir's undyed homespun gone grey on the road, hoods down, faces bare to the lamp (they keep no likeness by
- *   refusing lenses and portraits, never by masking). B6g writes what they came to do and gives them their trees.
+ *   refusing lenses and portraits, never by masking). What they came to do, and their trees, are B6g's (`dialogue/a3_forces.ts`).
  */
 const COLUMN = { team: 'wardens', faction: 'wardens', settlement: 'meridian', role: 'guard' as const, courage: 70, hostileIf: { any: [{ flag: 'a3_door_fight' }, { flag: 'md_fight' }] } };
-const HANDLERS = { team: 'tollmen', faction: 'tollmen', settlement: 'ninebridge', role: 'guard' as const, courage: 55 };
-const UNWRITTEN = { team: 'unwritten', faction: 'choir', settlement: 'openfield', role: 'pilgrim' as const, courage: 80 };
+const HANDLERS = { team: 'tollmen', faction: 'tollmen', settlement: 'ninebridge', role: 'guard' as const, courage: 55, dialogue: 'd_a3_handlers' };
+/** B6g: hostile only once drawn on at the apron (`a3_uw_fight`), until the map's after-trigger settles it (`a3_unwritten`). */
+const UNWRITTEN = { team: 'unwritten', faction: 'choir', settlement: 'openfield', role: 'pilgrim' as const, courage: 80, hostileIf: { all: [{ flag: 'a3_uw_fight' }, { not: { flag: 'a3_unwritten' } }] } };
 
 export const A3_KNOCK_NPCS: NpcDef[] = [
   // the column
@@ -66,12 +67,12 @@ export const A3_KNOCK_NPCS: NpcDef[] = [
   {
     // the blade: quiet, and quick, and sure
     id: 'npc_a3_u2', name: 'Thaddeus Wolde', look: { seed: 9398, frame: 'broad', age: 31, ancestry: 'east_african', over: { hair: { style: 'paint_shaved', color: 0x120e0b }, facialHair: 'stubble', weathering: 0.6 } }, ...UNWRITTEN,
-    level: 7, attrs: { reflex: 8, brawn: 6 }, skills: { melee: 55, stealth: 50 }, equip: ['w_machete'], tolls: 2,
+    level: 7, dialogue: 'd_a3_thaddeus', attrs: { reflex: 8, brawn: 6 }, skills: { melee: 55, stealth: 50 }, equip: ['w_machete'], tolls: 2,
     barks: ['Not tonight.', 'Your face is on a card. Mine isn\'t.'],
   },
   {
     id: 'npc_a3_u3', name: 'Rhoda Kalder', look: { seed: 9399, frame: 'narrow', age: 27, ancestry: 'mediterranean', over: { hair: { style: 'elvs_unkempt_french_braid', color: 0x2a1c12 }, weathering: 0.6 } }, ...UNWRITTEN,
-    level: 5, attrs: { reflex: 7, senses: 7 }, skills: { stealth: 50, survival: 45 }, equip: ['w_shiv'], inventory: [['j_cloth', 2], ['j_fuel', 1]], tolls: 3,
+    level: 5, dialogue: 'd_a3_rhoda', attrs: { reflex: 7, senses: 7 }, skills: { stealth: 50, survival: 45 }, equip: ['w_shiv'], inventory: [['j_cloth', 2], ['j_fuel', 1]], tolls: 3,
     barks: ['Lamp oil weighs more than you\'d think.', 'Ninety years of counting. Somebody has to stop.'],
   },
 ];

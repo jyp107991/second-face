@@ -45,6 +45,17 @@ export const A3_EVENTS: Record<string, WorldEventDef> = {
       { learn: 'a3_verity_band' },
     ],
   },
+  /** 20b (B6g): the Unwritten told they may burn the count go down the Cistern's air grate the next time the clock passes two
+   * with the player at Knock (their rule: only with the designate on the slope). MOTHER's panel and the Archive burn. */
+  a3_burning: {
+    id: 'a3_burning', at: { hour: 2, where: 'c9_mouth' }, armedIf: { all: [F('a3_unwritten', 'burning'), { at: 'c9_mouth' }] },
+    effects: [
+      { set: 'a3_mother', value: 'burned' }, { set: 'a3_archive', value: 'burned' },
+      { news: { tag: 'a3_burning', text: 'the Cistern\'s caretaker burned in the night, by the Choir\'s grey people, with the designate on the slope', valence: -15, size: 8, at: 'cistern9' } },
+      { decision: { id: 'a3_burning', text: 'The Unwritten went down the grate at Knock and burned MOTHER\'s panel and the Cistern\'s Archive, with me on the slope.' } },
+      { event: 'dialogue', data: { tree: 'd_a3_burning', name: 'Knock' } },
+    ],
+  },
   /** 21a: once the Cistern's door is settled, the Ledger's card comes at the next seven o'clock, wherever the player is: the
    * close, and the tracker of what the player holds. */
   a3_summons: {
