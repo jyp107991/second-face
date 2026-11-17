@@ -152,6 +152,9 @@ namespace SecondFace.Game.Fighting
             if (a == null || !a.isHuman || set == null || !HasLayers(a)) return null;
             var f = a.GetComponent<Fighter>();
             if (f == null) f = a.gameObject.AddComponent<Fighter>();
+            // (a new fight's view takes the body: the last fight's hand-back, still waiting on a get-up or a relax, stops here,
+            // or it would let go of the new fight's stance when it finished)
+            f.StopHandBack();
             f.Set = set; f.Female = female; f.Body = body != null ? body : a.transform; f.Who = who;
             f.Bind();
             return f;
@@ -539,6 +542,7 @@ namespace SecondFace.Game.Fighting
         private void Update()
         {
             if (!Ready || _a == null || !_a.enabled) return;
+            if (_sheatheDue) { _sheatheDue = false; if (_fullWant < 0.5f) Sheathe(); }
             var dt = Time.deltaTime;
             _fullW = Mathf.MoveTowards(_fullW, _fullWant, _fullRate * dt);
             _armsW = Mathf.MoveTowards(_armsW, _armsWant, _armsRate * dt);
@@ -946,7 +950,36 @@ namespace SecondFace.Game.Fighting
             Release(fade);
             ClearAim();
             if (_hasSneak && _a != null) _a.SetBool(SneakId, false);
-            StartCoroutine(SheatheLater(fade * 0.5f));
+            if (isActiveAndEnabled) _sheathing = StartCoroutine(SheatheLater(fade * 0.5f));
+            else Sheathe();
+        }
+
+        private Coroutine _handBack, _sheathing;
+        private bool _handingBack, _sheatheDue;
+
+        /// <summary>A fight's hand-back of this body (its view's end: the get-up waited for, the guard relaxed, the weapon put
+        /// away, the layers let go), run on the body itself: a body destroyed while it runs takes it with it, a later fight's
+        /// view taking the body stops it (<see cref="Ensure"/>), and a body put away (inactive) is let go at once
+        /// (<see cref="OnDisable"/>), so the fight's layers are never left on a body that leaves the fight.</summary>
+        public void HandBack(IEnumerator steps)
+        {
+            StopHandBack();
+            if (!isActiveAndEnabled) { End(0f); return; }
+            _handingBack = true;
+            _handBack = StartCoroutine(HandingBack(steps));
+        }
+
+        private IEnumerator HandingBack(IEnumerator steps)
+        {
+            yield return steps;
+            _handingBack = false;
+        }
+
+        private void StopHandBack()
+        {
+            _handingBack = false; _sheatheDue = false;
+            if (_handBack != null) { StopCoroutine(_handBack); _handBack = null; }
+            if (_sheathing != null) { StopCoroutine(_sheathing); _sheathing = null; }
         }
 
         private IEnumerator SheatheLater(float after)
@@ -958,6 +991,9 @@ namespace SecondFace.Game.Fighting
 
         private void OnDisable()
         {
+            // (put away during its hand-back, which stops with it: the layers let go at once, the weapon put away in the first
+            // frame it is back; the hierarchy cannot be changed while it is being deactivated)
+            if (_handingBack) { StopHandBack(); Release(0.05f); ClearAim(); _sheatheDue = true; }
             if (_pausedPlant && _plant != null) { _plant.enabled = _plantWasOn; _pausedPlant = false; }
             if (_pausedAmbient && _ambient != null) { _ambient.enabled = _ambientWasOn; _pausedAmbient = false; }
             if (_clear != null) _clear.Holding = false;

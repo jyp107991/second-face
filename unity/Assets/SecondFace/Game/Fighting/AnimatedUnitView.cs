@@ -329,8 +329,10 @@ namespace SecondFace.Game.Fighting
 
         public void OnRise()
         {
-            if (Body == null || !_down || _rising) return;
-            _host.StartCoroutine(Rise());
+            if (Body == null || !_down || _rising || Fighter == null || !Fighter.isActiveAndEnabled) return;
+            // (on the body, as the hand-back: a get-up waits up to 14 s and then takes the weapon up; on the fight's host it
+            // would do so on a body destroyed meanwhile)
+            Fighter.StartCoroutine(Rise());
         }
 
         /// <summary>Back up from the ground: the ragdoll hands the body back, the captured get-up for the side it lies on is
@@ -487,18 +489,22 @@ namespace SecondFace.Game.Fighting
             if (_ended) return;
             _ended = true;
             if (_tick != null && _host != null) _host.StopCoroutine(_tick);
-            if (_host != null && _host.isActiveAndEnabled) _host.StartCoroutine(End());
+            // (the hand-back runs on the body itself (Fighter.HandBack), not on the fight's host: it ends with the body, and a
+            // later fight's view on the same body stops it. Run by the host it outlived the body: a yielded fighter's end
+            // picked its weapon up on a Fighter destroyed meanwhile, MissingReferenceException at Fighter.Make, 2026-11-17)
+            if (Fighter != null) Fighter.HandBack(End());
         }
 
         /// <summary>Out of the fight: once up off the ground, the guard relaxed (a man's captured relax), the weapon back in
-        /// its holster or sling, the body to the people's own motion. The dead stay where they fell.</summary>
+        /// its holster or sling, the body to the people's own motion, at once (hands held up come down as the fight's layer
+        /// lets go: a hold of yield_hold for 1.5 s after the end kept the layer at full weight past the end and let the
+        /// body go only then, 2026-11-17). The dead stay where they fell.</summary>
         private IEnumerator End()
         {
             var w = 0f;
             while (_rising && w < 15f) { w += Time.deltaTime; yield return null; }
             if (Unit != null && !Unit.Alive) yield break;
             if (_down) yield break;
-            if (_yielded && Body != null) { Fighter.Play("yield_hold"); yield return Wait(1.5f); }
             if (!Fighter.Female && Fighter.Arms == Arms.Unarmed && _stance == "stand" && !_yielded)
             {
                 Fighter.Play("unarmed_relax");
