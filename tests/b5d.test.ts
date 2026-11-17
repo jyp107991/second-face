@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONCLUSIONS, DIALOGUES, FAMILIES, MAPS, NPCS, QUESTS, ROAD_ENCOUNTERS, SETTLEMENTS, WORLD_EVENTS, WORLD_MAP } from '../src/content';
+import { CALLA_FREE, CALLA_HELD } from '../src/content/world/a3_conds';
 import { SITES } from '../src/content/world/sites';
 import { newGameState } from '../src/engine/core/state';
 import { DialogueRunner } from '../src/engine/dialogue/dialogue';
@@ -8,6 +9,7 @@ import { runWorldEvents, tryConclude } from '../src/engine/world/frontier';
 import { apply, test as cond } from '../src/engine/world/logic';
 import { eligibleEncounters } from '../src/engine/world/roads';
 import { planTrip } from '../src/engine/world/travel';
+import { regenerate } from './map_gen';
 
 /**
  * B5d — the Ashlands and the Long Night: Spindle, Kelso and its hall, Pemberton and Saddleback as places; What Sleeps at Kelso
@@ -588,5 +590,44 @@ describe('the order\'s first name, on the Line', () => {
     skills(b.g, { speech: 50 });
     talk('d_ln_escort', b.g, b.q, ['She has a right to be heard']);
     expect(b.g.flags.ln_calla_how).toBe('heard');
+  });
+
+  it('Sister Calla stands in one place at a time: the mission, the car, Openfield once freed on the Line, nowhere while the city holds her, home once free', () => {
+    const where = (g: G) => Object.entries(MAPS).flatMap(([m, d]) => (d.npcs ?? []).filter((n) => n.def === 'npc_sh_05' && cond(n.if, g)).map((n) => `${m}/${n.id ?? n.def}`));
+    // before the night: the Choir's mission in Shale
+    expect(where(at('shale').g)).toEqual(['shale/npc_sh_05']);
+    // taken on the eve: on the car at the halt, not home; carried west at dawn and held by the city: nowhere
+    const t = eve({ rc_line: 'halts', dk_stand_owed: true });
+    expect(t.g.flags.ln_car).toBe('west_halt');
+    expect(where(t.g)).toEqual(['rc_halt_w/ln_calla_wh']);
+    skills(t.g, { speech: 80 });
+    talk('d_ln_table', t.g, t.q, ['(Send to the lane', '(Make the truce']);
+    night(t.g, t.q, ['(The night comes.)', '(Keep the night.)', '(Dawn.)', '(See what the night left.)', '(Go on.)', '(Go on.)', '(It is over.)']);
+    expect(t.g.flags).toMatchObject({ ln_calla: 'taken', ks_calla: 'imprisoned', ln_done: true });
+    expect(cond(CALLA_HELD, t.g)).toBe(true);
+    expect(where(t.g)).toEqual([]);
+    // released at the Court (B6l writes ks_calla = free): home again, and only there
+    t.g.flags.ks_calla = 'free';
+    expect(cond(CALLA_FREE, t.g)).toBe(true);
+    expect(where(t.g)).toEqual(['shale/npc_sh_05']);
+    // the night over with nothing written of her: held, by the safe default
+    const d = at('shale');
+    d.g.flags.ln_done = true;
+    expect(cond(CALLA_HELD, d.g)).toBe(true);
+    expect(where(d.g)).toEqual([]);
+    // through to Carrick on the guild's Line: on the quay, not home
+    expect(where(eve({ rc_line: 'guild' }).g)).toEqual(['md_docks/ln_calla_dk']);
+    // freed at the halt: at Openfield, where she stays; home if the night leaves Openfield the guild's or the city's
+    const f = eve({ rc_pilot: true, rc_line: 'halts' });
+    f.g.locationId = 'rc_halt_w';
+    talk('d_ln_car', f.g, f.q, ['(No pilotman will take the car on.']);
+    expect(cond(CALLA_FREE, f.g)).toBe(true);
+    expect(where(f.g)).toEqual(['openfield/ln_calla_of']);
+    for (const v of ['stands', 'scorched', 'burned', 'guild', 'evicted']) {
+      Object.assign(f.g.flags, { ln_done: true, ln_openfield: v });
+      expect(where(f.g), v).toEqual(v === 'guild' || v === 'evicted' ? ['shale/npc_sh_05'] : ['openfield/ln_calla_of']);
+    }
+    // the mission's placement is the generator's
+    for (const m of regenerate('gen_shale.py')) expect(m.generated, m.map).toBe(m.committed);
   });
 });

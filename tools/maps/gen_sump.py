@@ -85,7 +85,7 @@ props = [
 ]
 
 sump = {
-    'id': 'sump', 'name': 'The Sump', 'seed': 41, 'settlement': 'sump',
+    'id': 'sump', 'name': 'Sump', 'seed': 41, 'settlement': 'sump',
     'layout': rows,
     'legend': {
         'g': {'floor': 'rubble'}, ',': {'floor': 'dirt'}, 'r': {'floor': 'rubble'}, 'm': {'floor': 'metal'}, 'w': {'floor': 'wood'}, 'c': {'floor': 'concrete'},
@@ -112,7 +112,7 @@ sump = {
     ],
     'talk': {
         'sp_tunnel_sign': {'dialogue': 'd_sp_tunnel_sign', 'name': 'A sign at the mouth'},
-        'sp_sign': {'dialogue': 'd_sp_sign', 'name': 'The Sump'},
+        'sp_sign': {'dialogue': 'd_sp_sign', 'name': 'Sump'},
         'sp_warden': {'dialogue': 'd_sp_warden', 'name': 'A dead machine'},
         'sp_pump': {'dialogue': 'd_sp_pump', 'name': 'The basin pump'},
         'sp_runner_ledger': {'dialogue': 'd_sp_ledger', 'name': 'The runner\'s ledger'},

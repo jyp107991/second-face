@@ -53,7 +53,7 @@ props = [
 ]
 
 saltpan = {
-    'id': 'saltpan', 'name': 'The Salt-pan Wreck', 'seed': 52,
+    'id': 'saltpan', 'name': 'Salt-pan Wreck', 'seed': 52,
     'layout': rows,
     'legend': {
         '.': {'floor': 'sand'}, 'c': {'floor': 'rubble'}, 'k': {'floor': 'dirt'},

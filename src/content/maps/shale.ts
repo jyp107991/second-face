@@ -1409,7 +1409,78 @@ export const shale: MapDef = {
       def: "npc_sh_05",
       x: 13,
       y: 35,
-      facing: 2
+      facing: 2,
+      if: {
+        all: [
+          {
+            any: [
+              {
+                not: {
+                  any: [
+                    {
+                      flag: "ln_calla_taken"
+                    },
+                    {
+                      flag: "ln_calla"
+                    },
+                    {
+                      flag: "ks_calla"
+                    },
+                    {
+                      flag: "ln_done"
+                    }
+                  ]
+                }
+              },
+              {
+                all: [
+                  {
+                    not: {
+                      dead: "npc_sh_05"
+                    }
+                  },
+                  {
+                    any: [
+                      {
+                        flag: "ks_calla",
+                        eq: "free"
+                      },
+                      {
+                        flag: "ln_calla",
+                        eq: "freed"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            not: {
+              all: [
+                {
+                  flag: "ln_calla",
+                  eq: "freed"
+                },
+                {
+                  not: {
+                    any: [
+                      {
+                        flag: "ln_openfield",
+                        eq: "evicted"
+                      },
+                      {
+                        flag: "ln_openfield",
+                        eq: "guild"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
     },
     {
       def: "npc_sh_08",

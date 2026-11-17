@@ -92,6 +92,15 @@ HANDS_DOWN = {'all': [{'dead': 'npc_a3_g7'}, {'dead': 'npc_a3_g8'}]}
 A3_ARRIVE = 'Shale again. The pumps, the saloon, the flag that was a sheet once; and two guild hands at the sheriff\'s door, standing the way people stand who are paid by the day, and a new paper nailed over the old ones.'
 A3_DUE = [{'set': 'a3_buyout'}, {'quest': 'q_a3_ride', 'start': True}]
 
+# Sister Calla in the mission (B5d, keystone 7): taken on the eve of the Long Night (ln_calla_taken: on the warden car west, then
+# held by the city: ln_calla = taken, ks_calla = imprisoned, or the night over with nothing set, CALLA_HELD's default), she is
+# not here until she is free (CALLA_FREE, mirrored from src/content/world/a3_conds.ts); freed on the Line she stays at Openfield
+# (gen_openfield.py ln_calla_of) unless the night left it the city's or the guild's. tests/b5d.test.ts checks one place each.
+CALLA_TAKEN = {'any': [{'flag': 'ln_calla_taken'}, {'flag': 'ln_calla'}, {'flag': 'ks_calla'}, {'flag': 'ln_done'}]}
+CALLA_FREE = {'all': [{'not': {'dead': 'npc_sh_05'}}, {'any': [{'flag': 'ks_calla', 'eq': 'free'}, {'flag': 'ln_calla', 'eq': 'freed'}]}]}
+CALLA_AT_OPENFIELD = {'all': [{'flag': 'ln_calla', 'eq': 'freed'}, {'not': {'any': [{'flag': 'ln_openfield', 'eq': 'evicted'}, {'flag': 'ln_openfield', 'eq': 'guild'}]}}]}
+CALLA_HOME = {'all': [{'any': [{'not': CALLA_TAKEN}, CALLA_FREE]}, {'not': CALLA_AT_OPENFIELD}]}
+
 props = [
     # wells plaza
     {'kind': 'pump', 'x': 31, 'y': 19, 'id': 'pump_a'}, {'kind': 'pump', 'x': 33, 'y': 19, 'id': 'pump_b'}, {'kind': 'tank', 'x': 35, 'y': 20},
@@ -216,7 +225,7 @@ shale = {
     'npcs': [
         {'def': 'npc_sh_01', 'x': 45, 'y': 16, 'facing': 2, 'if': NOT_A3}, {'def': 'npc_sh_02', 'x': 43, 'y': 18, 'facing': 1, 'if': {'all': [{'not': {'flag': 'jonah_dead'}}, NOT_A3]}}, {'def': 'npc_sh_11', 'x': 40, 'y': 7, 'facing': 2, 'if': NOT_A3},
         {'def': 'npc_sh_03', 'x': 12, 'y': 14, 'facing': 2, 'if': NOT_A3}, {'def': 'npc_sh_10', 'x': 14, 'y': 14, 'facing': 2}, {'def': 'npc_sh_06', 'x': 6, 'y': 23, 'facing': 1},
-        {'def': 'npc_sh_04', 'x': 46, 'y': 33, 'facing': 0, 'if': NOT_A3}, {'def': 'npc_sh_05', 'x': 13, 'y': 35, 'facing': 2}, {'def': 'npc_sh_08', 'x': 57, 'y': 17, 'facing': 2},
+        {'def': 'npc_sh_04', 'x': 46, 'y': 33, 'facing': 0, 'if': NOT_A3}, {'def': 'npc_sh_05', 'x': 13, 'y': 35, 'facing': 2, 'if': CALLA_HOME}, {'def': 'npc_sh_08', 'x': 57, 'y': 17, 'facing': 2},
         {'def': 'npc_sh_09', 'x': 26, 'y': 9, 'facing': 2}, {'def': 'npc_sh_12', 'x': 30, 'y': 20, 'facing': 1}, {'def': 'npc_sh_13', 'x': 57, 'y': 34, 'facing': 0},
         # the Choir tent's cots (q_a1_tents): they stay on them until seen to; the girl is gone if reported
         {'def': 'npc_sh_20', 'x': 11, 'y': 36, 'facing': 2}, {'def': 'npc_sh_21', 'x': 14, 'y': 36, 'facing': 2, 'if': {'not': {'knows': 'pip_reported'}}}, {'def': 'npc_sh_22', 'x': 12, 'y': 38, 'facing': 2},

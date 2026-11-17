@@ -12,6 +12,7 @@ import { skill } from '../src/engine/stats/sheet';
 import type { SkillId } from '../src/engine/stats/rules';
 import { apply, test as cond, type Cond, type LogicHost } from '../src/engine/world/logic';
 import { actThree, has, saveAndLoad, talk, waitFor, type A3, type G, type Over, type Preset } from './a3_fixture';
+import { regenerate } from './map_gen';
 
 /**
  * B6l — the close: who came. After the Cistern's door and the Ledger's card, the Spire's close gathers whoever the player's road
@@ -234,6 +235,38 @@ describe('B6l: who came to the close, each by the flags that decide it', () => {
     go(talk('d_a3_nine_walkin', b.g, b.q), b, ['We\'re going. Come on.']);
     expect(b.g.world.party).toContain(NINE);
     expect(here(b.g)).not.toContain('npc_md_nine');
+  });
+
+  it('a hidden Nine stands in one place in every state: its hiding place until the card, walking in at the close until fetched, at the fire after', () => {
+    const nines = (g: G) => Object.entries(MAPS).flatMap(([m, d]) => (d.npcs ?? []).filter((n) => n.def === NINE && cond(n.if, g)).map((n) => `${m}/${n.id ?? n.def}`));
+    const HIDE = { clover: 'md_ring/npc_md_nine_clover', hulls: 'md_docks/npc_md_nine_hulls' } as const;
+    for (const hid of ['clover', 'hulls'] as const) {
+      const states: [string, Over, Flags, boolean, string[]][] = [
+        ['hidden, before the card', {}, {}, false, [HIDE[hid]]],
+        ['hidden, at the close', {}, {}, true, ['md_spire/npc_md_nine_walkin']],
+        ['fetched before the card (waiting with the company)', {}, { a3_nine_fetched: true }, false, []],
+        ['fetched, at the close', {}, { a3_nine_fetched: true }, true, ['md_spire/npc_md_nine']],
+        ['in the party', { companions: { nine: 'party' } }, {}, true, []],
+        ['struck at the door', {}, { a3_nine_struck: true }, true, []],
+        ['up the steps (the close is over for everyone)', {}, { a3_pnr: true }, true, []],
+      ];
+      for (const [what, over, flags, card, want] of states) {
+        const a = close('truce', { companions: { nine: 'waiting' }, ...over }, { a3_recall: 'hidden', a3_nine_hid: hid, ...flags }, card);
+        expect(nines(a.g), `${hid}: ${what}`).toEqual(want);
+        // the hiding place and the close never both hold, by the shared conditions
+        if (cond(AT_CLOSE, a.g)) expect(nines(a.g), `${hid}: ${what}`).not.toContain(HIDE[hid]);
+        if (cond(AT_CLOSE, a.g) && cond(NINE_WALKIN, a.g) && !cond({ inParty: NINE }, a.g) && !flags.a3_nine_struck) expect(nines(a.g), `${hid}: ${what}`).toEqual(['md_spire/npc_md_nine_walkin']);
+      }
+      // played: the card comes, Nine steps out of hiding and walks in; told to wait, it is at the fire, and nowhere else
+      const a = close('truce', { companions: { nine: 'waiting' } }, { a3_recall: 'hidden', a3_nine_hid: hid }, false);
+      expect(nines(a.g)).toEqual([HIDE[hid]]);
+      a.g.flags.a3_summoned = true;
+      expect(nines(a.g)).toEqual(['md_spire/npc_md_nine_walkin']);
+      go(talk('d_a3_nine_walkin', a.g, a.q), a, ['Wait here by the fire.']);
+      expect(nines(a.g)).toEqual(['md_spire/npc_md_nine']);
+    }
+    // the bench's placement is the generator's
+    for (const m of regenerate('gen_md_ring.py')) expect(m.generated, m.map).toBe(m.committed);
   });
 
   it('the first time on the close after the card, the trigger shows who came, by what is true', () => {

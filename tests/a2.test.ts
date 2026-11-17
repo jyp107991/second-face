@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { DIALOGUES, QUESTS } from '../src/content';
+import { DIALOGUES, MAPS, NPCS, QUESTS } from '../src/content';
 import { newGameState } from '../src/engine/core/state';
 import { DialogueRunner } from '../src/engine/dialogue/dialogue';
 import { addItem, countItem, equip, makeItem } from '../src/engine/inventory/inventory';
 import { QuestEngine } from '../src/engine/quest/quest';
 import { test as cond } from '../src/engine/world/logic';
+import { regenerate } from './map_gen';
 
 /** Play a conversation by choosing options whose text starts with the given prefixes, in order. */
 function talk(id: string, g: ReturnType<typeof newGameState>, q: QuestEngine, picks: string[]): DialogueRunner {
@@ -1005,6 +1006,15 @@ describe('The Stacks: the flat and the roof', () => {
     talk('d_st_hester', g, q, ['(Pay. 150 Tolls)', 'That\'s all.']);
     expect(g.flags.st_flat).toBe('paid');
     expect(g.pc.inventory.tolls).toBe(50);
+  });
+
+  it('the Stacks\' three maps are their generator\'s, byte for byte, and the street\'s barks name the committee by its own name', () => {
+    const maps = regenerate('gen_md_stacks.py');
+    expect(maps.map((m) => m.map)).toEqual(['md_stacks', 'md_stacks_9', 'md_stacks_roof']);
+    for (const m of maps) expect(m.generated, m.map).toBe(m.committed);
+    const barks = ['md_stacks', 'md_stacks_9'].flatMap((id) => (MAPS[id].extras ?? []).flatMap((e) => e.barks ?? []));
+    const chair = NPCS.npc_st_01.name.split(' ')[0];
+    expect(barks.filter((b) => /committee/i.test(b) && b.includes(chair))).toHaveLength(2);
   });
 });
 

@@ -1136,6 +1136,11 @@ export const md_ring: MapDef = {
                 }
               ]
             }
+          },
+          {
+            not: {
+              flag: "a3_summoned"
+            }
           }
         ]
       }

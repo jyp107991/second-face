@@ -73,7 +73,7 @@ props = [
 ]
 
 windpumps = {
-    'id': 'windpumps', 'name': 'The Windpump Graveyard', 'seed': 51,
+    'id': 'windpumps', 'name': 'Windpump Graveyard', 'seed': 51,
     'layout': rows,
     'legend': {
         '.': {'floor': 'sand'}, ',': {'floor': 'dirt'}, 's': {'floor': 'rubble'}, 'c': {'floor': 'concrete'}, 'm': {'floor': 'metal'},
