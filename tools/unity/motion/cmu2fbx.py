@@ -8,27 +8,48 @@ trial is read (ASF skeleton, AMC frames), gaits are cut to one stride by the leg
 the bones renamed to Mecanim names, and exported as FBX with the animation baked at 30 fps. Unity imports each as a
 Humanoid clip that retargets to every person. Walks play in place (the steady travel removed, the stride's own surge
 and sway kept in the pose); falls keep root motion.
+
+Each clip's json names its source person as the database records them (`sex`: m, f, or u for not recorded; CMU records
+sex only in a subject's title), the set it is for (`set`: m, f or both; LocomotionBuild picks by the person's sex) and the
+frame rate the trial was read at (`src_fps`, docs/qa/motion_calibration.md). Women's captures from ACCAD (BVH) are made by
+the sibling accad2fbx.py, which reuses this file's cutting and export.
 """
 import bpy, math, os, sys
 from mathutils import Quaternion, Vector, Euler, Matrix
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'kits'))
 import kitlib as K
 
-args = sys.argv[sys.argv.index('--') + 1:]
-CMU, OUT = args[0], args[1]
-ONLY = set(args[2].split(',')) if len(args) > 2 else None
+CMU = OUT = ONLY = None
 REL = 'Assets/SecondFace/Motion'
 UNIT = 0.0254 / 0.45
 SRC_FPS, OUT_FPS = 120, 30
+# the frame rate CMU lists for each subject captured at another than 120 fps (the database's index, "framerate"): read at
+# 120, subject 77's standing idle played at twice its speed in the game (2026-11-17); set per clip below
+RATES = {'77': 60}
+# listed at 120 but captured at 60: their own jumps fit gravity at 56-61 fps (141/106: jumps 04-06; 143: 05-06) and their runs
+# read at 120 would be 335-354 steps a minute (clip_qa.py, docs/qa/motion_calibration.md); 106 ("Female General Subject") is
+# byte for byte 141
+RATES.update({'141': 60, '106': 60, '143': 60})
+# the source person's sex as CMU records it (only in a subject's title): 104 "neutral Male walk"; 106/141 "Female General
+# Subject"; 111/114 a woman pregnant, 113 the same woman after. Others: not recorded (u)
+SEX = {'104': 'm', '106': 'f', '141': 'f', '111': 'f', '113': 'f', '114': 'f'}
 
 CLIPS = [
-    {'name': 'walk', 'src': '07_01', 'loop': 'gait'}, {'name': 'walk_b', 'src': '08_01', 'loop': 'gait'}, {'name': 'walk_slow', 'src': '07_04', 'loop': 'gait'},
-    {'name': 'walk_brisk', 'src': '07_12', 'loop': 'gait'}, {'name': 'jog', 'src': '35_17', 'loop': 'gait'}, {'name': 'jog_b', 'src': '16_35', 'loop': 'gait'},
-    {'name': 'run', 'src': '09_01', 'loop': 'gait'}, {'name': 'carry', 'src': '70_01', 'loop': 'gait'}, {'name': 'sneak', 'src': '136_09', 'loop': 'gait'},
-    {'name': 'idle', 'src': '77_02', 'loop': 'seam', 'range': (0.5, 7.3), 'seam': 1.2}, {'name': 'idle_b', 'src': '82_08', 'loop': 'seam', 'range': (0.5, 6), 'seam': 1.2},
-    {'name': 'idle_c', 'src': '111_28', 'loop': 'seam', 'range': (2, 10), 'seam': 1.2}, {'name': 'idle_d', 'src': '113_21', 'loop': 'seam', 'range': (2, 10), 'seam': 1.2},
-    {'name': 'stretch', 'src': '141_13', 'loop': False, 'range': (0, 3)}, {'name': 'yawn', 'src': '111_32', 'loop': False, 'range': (0, 6.2)},
-    {'name': 'yawn_b', 'src': '113_23', 'loop': False, 'range': (0, 8.4)}, {'name': 'sit', 'src': '114_05', 'loop': 'seam', 'range': (4, 14), 'seam': 1.2},
+    # men's set (the old names): captures whose subjects' sex CMU does not record, and CMU 104 ("neutral Male walk")
+    {'name': 'walk', 'src': '07_01', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_b', 'src': '08_01', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_slow', 'src': '07_04', 'loop': 'gait', 'set': 'm'},
+    {'name': 'walk_brisk', 'src': '07_12', 'loop': 'gait', 'set': 'm'}, {'name': 'jog', 'src': '35_17', 'loop': 'gait', 'set': 'm'}, {'name': 'jog_b', 'src': '16_35', 'loop': 'gait', 'set': 'm'},
+    {'name': 'run', 'src': '09_01', 'loop': 'gait', 'set': 'm'}, {'name': 'carry', 'src': '70_01', 'loop': 'gait', 'set': 'both'}, {'name': 'sneak', 'src': '136_09', 'loop': 'gait', 'set': 'both'},
+    {'name': 'walk_c', 'src': '104_02', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_slow_b', 'src': '104_35', 'loop': 'gait', 'set': 'm'},
+    {'name': 'jog_c', 'src': '104_01', 'loop': 'gait', 'set': 'm'}, {'name': 'run_b', 'src': '104_37', 'loop': 'gait', 'set': 'm'},
+    # the standing idle at its real speed (77 at 60 fps: the same frames as before, now 11.2 s, not 5.6)
+    {'name': 'idle', 'src': '77_02', 'loop': 'seam', 'range': (1.0, 14.6), 'seam': 2.4, 'set': 'm'}, {'name': 'idle_b', 'src': '82_08', 'loop': 'seam', 'range': (0.5, 6), 'seam': 1.2, 'set': 'm'},
+    # women's captures (CMU 111/113/114: one woman, pregnant and after; 141 = 106 "Female General Subject", 60 fps): women only
+    {'name': 'idle_c', 'src': '111_28', 'loop': 'seam', 'range': (2, 10), 'seam': 1.2, 'set': 'f'}, {'name': 'idle_d', 'src': '113_21', 'loop': 'seam', 'range': (2, 10), 'seam': 1.2, 'set': 'f'},
+    {'name': 'idle_f_b', 'src': '113_21', 'loop': 'seam', 'range': (5.4, 11.4), 'seam': 1.2, 'set': 'f'},
+    {'name': 'walk_f_c', 'src': '113_25', 'loop': 'gait', 'set': 'f'}, {'name': 'jog_f', 'src': '141_02', 'loop': 'gait', 'set': 'f'}, {'name': 'jog_f_b', 'src': '141_03', 'loop': 'gait', 'set': 'f'},
+    {'name': 'stretch', 'src': '141_13', 'loop': False, 'range': (0, 6), 'set': 'f'}, {'name': 'yawn', 'src': '111_32', 'loop': False, 'range': (0, 6.2), 'set': 'f'},
+    {'name': 'yawn_b', 'src': '113_23', 'loop': False, 'range': (0, 8.4), 'set': 'f'}, {'name': 'sit', 'src': '114_05', 'loop': 'seam', 'range': (4, 14), 'seam': 1.2, 'set': 'f'},
+    # everyone (sex not recorded; gestures and work): to be split by sex when captures of both are found
     {'name': 'sit_stool', 'src': '13_04', 'loop': 'seam', 'range': (3, 9), 'seam': 1.0}, {'name': 'sit_ground', 'src': '82_05', 'loop': 'seam', 'range': (4, 14), 'seam': 1.2},
     {'name': 'talk', 'src': '18_08', 'loop': 'seam', 'range': (2, 14), 'seam': 1.0}, {'name': 'talk_b', 'src': '19_08', 'loop': 'seam', 'range': (2, 14), 'seam': 1.0},
     {'name': 'argue', 'src': '18_10', 'loop': 'seam', 'range': (2, 12), 'seam': 1.0}, {'name': 'drink', 'src': '13_09', 'loop': False, 'range': (0, 8)},
@@ -336,14 +357,28 @@ def export_clip(d, bones, rows, speed, hip):
                              bake_anim_force_startend_keying=True, bake_anim_step=1.0, bake_anim_simplify_factor=0.0, path_mode='STRIP')
     K.write_model_meta(path, f'{REL}/{d["name"]}.fbx')
     with open(os.path.join(OUT, d['name'] + '.json'), 'w') as f:
-        import json; json.dump({'name': d['name'], 'src': 'CMU ' + d['src'], 'loop': bool(d.get('loop')), 'speed': round(speed, 3), 'root': bool(d.get('root')), 'hip': round(hip, 4), 'fps': OUT_FPS, 'frames': len(rows)}, f)
+        import json
+        subj = d['src'].split('_')[0]
+        json.dump({'name': d['name'], 'src': d.get('src_label', 'CMU ' + d['src']), 'loop': bool(d.get('loop')), 'speed': round(speed, 3), 'root': bool(d.get('root')), 'hip': round(hip, 4),
+                   'fps': OUT_FPS, 'frames': len(rows), 'src_fps': d.get('src_fps', SRC_FPS), 'sex': d.get('sex', SEX.get(subj, 'u')), 'set': d.get('set', 'both'),
+                   'licence': d.get('licence', 'CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses')}, f)
     print(f'clip {d["name"]}: {len(rows)} frames, speed {speed:.2f} m/s')
 
-os.makedirs(OUT, exist_ok=True); K.write_folder_meta(OUT, REL)
-for d in CLIPS:
-    if ONLY and d['name'] not in ONLY: continue
-    subj = d['src'].split('_')[0]
-    if not os.path.exists(os.path.join(CMU, subj, d['src'] + '.amc')): print('  skip', d['name'], '(no amc)'); continue
-    bones, rows, speed, hip = build_clip(d)
-    export_clip(d, bones, rows, speed, hip)
-print('motion: done')
+def main():
+    global CMU, OUT, ONLY, SRC_FPS
+    args = sys.argv[sys.argv.index('--') + 1:]
+    CMU, OUT = args[0], args[1]
+    ONLY = set(args[2].split(',')) if len(args) > 2 else None
+    os.makedirs(OUT, exist_ok=True); K.write_folder_meta(OUT, REL)
+    for d in CLIPS:
+        if ONLY and d['name'] not in ONLY: continue
+        subj = d['src'].split('_')[0]
+        if not os.path.exists(os.path.join(CMU, subj, d['src'] + '.amc')): print('  skip', d['name'], '(no amc)'); continue
+        SRC_FPS = RATES.get(subj, 120)
+        bones, rows, speed, hip = build_clip(d)
+        export_clip(d, bones, rows, speed, hip)
+    print('motion: done')
+
+
+if __name__ == '__main__':
+    main()
