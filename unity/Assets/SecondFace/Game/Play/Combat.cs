@@ -472,7 +472,8 @@ namespace SecondFace.Game.Play
         private void LateUpdate()
         {
             if (_camera != null && Active) _camera.Tick();
-            if (_hud == null || _battle == null || !_battle.Active || _hud.Root.parent == null) return;
+            // (on through the fight's last seconds too: the last numbers rise, the end is read)
+            if (_hud == null || _battle == null || _hud.Root.parent == null) return;
             _cam = Walkabout != null && Walkabout.Stage != null ? Walkabout.Stage.Camera : UnityEngine.Camera.main;
             if (_cam == null || UIService.Instance == null) return;
             if (_marksDirty) { _marksDirty = false; Marks(); }

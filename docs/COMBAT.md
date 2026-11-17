@@ -7,7 +7,8 @@
 > and, where it shows a person, the motion gate (`docs/PEOPLE_MOTION.md`) passing in that state.
 
 WP1 (rules and AI in Core) delivered 2026-11-17 on `side/combat`: C1–C7, C9, C10, D1–D6 below, with the APIs the
-presentation package needs (end of this file). Status at 2026-11-17 before it (audit of `Core/Combat/*`, `Game/Play/Combat.cs`, `Game/UI/CombatHud.cs`, `Motion/`): the rules
+presentation package needs (end of this file). WP3 (presentation and QoL: A9, B1–B11) delivered 2026-11-17 on the same
+branch, compile-checked and Core-tested here; its PlayMode tests and captures wait for the editor (section "WP3 delivered"). Status at 2026-11-17 before it (audit of `Core/Combat/*`, `Game/Play/Combat.cs`, `Game/UI/CombatHud.cs`, `Motion/`): the rules
 have AP by metres, initiative, line of sight, half/full cover, called shots (aim head/legs), bursts, reload,
 morale and surrender, a utility AI that scores cover and concealment, and pit bouts; the HUD shows the turn order,
 health over heads, AP, the log and odds/cost on targets. The presentation is a placeholder: an attack is a turn to
@@ -24,7 +25,7 @@ face and a tracer line, a hit plays a wave gesture, no weapon is held, and the c
 | A6 | Cover: step into half cover (crouch) and full cover (lean), peek to fire, back | XCOM | none |
 | A7 | Throw (grenade, bottle, lamp) with an arc | DOS2, XCOM | none |
 | A8 | Fall (ragdoll, exists), rise from down (exists for companions), death pose held; surrender (hands up), flee | all | partial |
-| A9 | Camera: smooth follow of the acting unit, frame attacker and target for shots, never a cut; speed settings; skip | BG3 | partial |
+| A9 | Camera: smooth follow of the acting unit, frame attacker and target for shots, never a cut; speed settings; skip | BG3 | **done (game, WP3; to verify in the editor)**: `CombatCamera` drives the game's own `OrbitRig` (new eased `FocusOn`/`ClearFocus`/`EaseDistance`, critically damped, never a cut, pitch untouched): follows the one acting, frames shooter and target (out as far as both need, never in closer than the player had it), eases back; eases ÷ combat speed; skip: the other side's not framed; a portrait tap looks at that fighter |
 Sources: CC0/free humanoid mocap sets retargeted through the existing Mecanim pipeline (candidates: Quaternius
 Universal Animation Library (CC0), CMU mocap's fighting takes; no account-gated sources); weapons from CC0 model
 packs re-textured to the lore (salvaged, taped). Each new state is added to the motion gate's states.
@@ -32,17 +33,17 @@ packs re-textured to the lore (salvaged, taped). Each new state is added to the 
 ## B. Tactical QoL (nothing hidden, quick to play)
 | # | Item | Benchmark | Status |
 |---|---|---|---|
-| B1 | Reachable area on the ground: move-and-act zone and dash zone, by AP | XCOM, BG3 | missing; Core API ready (`Battle.Reachable`) |
-| B2 | Path preview with AP cost and the end tile's cover/flank status before committing | XCOM, W3 | task #168 (partial); Core API ready (`Battle.PlanMove`) |
-| B3 | Hit chance with its reasons (range, cover, height, flanking, aim, stance, status) | XCOM, W3 | odds only; Core API ready (`Battle.Preview(att, def, ShotOptions)`) |
-| B4 | Cover shown: shield icons (half/full) at the cursor/finger and on units; flanked units marked | XCOM | missing |
-| B5 | Threats shown: enemies who can see/overwatch a tile, AoE footprints, an enemy's intended target | XCOM 2, BG3 | missing; Core API ready (`ThreatsAt`, `Watches`, `PlanThrow`, `PredictIntent`) |
-| B6 | Turn order with portraits, health, status icons; tap a portrait to focus | BG3 | text order |
-| B7 | Floating damage numbers, miss/graze/crit, status applied, morale break | all | log only |
-| B8 | End-turn confirm when AP remain; undo of a move not yet seen by anyone; quick-save before the fight (exists) | BG3 | partial |
-| B9 | AI turns fast: speed setting (exists), skip animations option, simultaneous moves for out-of-sight foes | BG3 | partial |
-| B10 | Touch first: tap to preview, tap again to commit; radial for actions; gamepad parity | — | partial |
-| B11 | Combat start from stealth (surprise round), and ending by talk/surrender/flight | BG3, DOS2 | partial |
+| B1 | Reachable area on the ground: move-and-act zone and dash zone, by AP | XCOM, BG3 | **done (WP3)**: `Battle.BeginReach`/`ContinueReach` (the same map as `Reachable`, a few NavMesh paths a frame within 4 ms) with each node's metres; Core `ReachBands` (marching squares, chained loops) → `CombatOverlay`: soft tints (cool act, amber dash, a metre's feather) and crisp soft-edged lines where each band ends, on the ground; tests `CombatViewTests`, `CombatQolTests` |
+| B2 | Path preview with AP cost and the end tile's cover/flank status before committing | XCOM, W3 | **done (WP3)**: tap previews (`PlanMove` + `ThreatsAt` → Core `MoveCard`), tap again within 1.2 m (or a double tap) goes; path coloured by band (white-blue, amber, red past the AP), end ringed, held shots it draws marked where they fire, first hazard ringed; a card at the end (AP and band, cover vs those who would see it, flanks, shots, watchers); AP pips light what it spends; marks over enemies as from the end point |
+| B3 | Hit chance with its reasons (range, cover, height, flanking, aim, stance, status) | XCOM, W3 | **done (WP3)**: Core `ShotCard` from `Preview` (every reason in the UI's words with signed points, notes in words, the clamp said, damage range ×rounds, crit and its top, kill %, cover/flanked, ally in the line of fire, cover fire that answers, why not); the HUD's card beside the radial follows the verb pointed at or focused |
+| B4 | Cover shown: shield icons (half/full) at the cursor/finger and on units; flanked units marked | XCOM | **done (WP3)**: shields (half/full) where each cover piece stands at the previewed point; over each fighter on the other side of the one acting their cover against them (from the previewed point while previewing), a cracked shield when flanked |
+| B5 | Threats shown: enemies who can see/overwatch a tile, AoE footprints, an enemy's intended target | XCOM 2, BG3 | **done (WP3)**: an eye over each enemy who would see the previewed point; held shots on the ground (cones, all-round rings) and an eye-in-sight mark; throws aimed on the ground (footprint by kind, scatter ring, arc; `ThrowCard`; ours caught flagged with a warning); surfaces (fire, oil, smoke, chem, water, current) drawn; intents worked out one enemy a frame by `PredictIntent`, shown by difficulty (new `CombatDifficulty.Intents`: story all, normal seen + machines, hard machines only; `Intents.Shown`) |
+| B6 | Turn order with portraits, health, status icons; tap a portrait to focus | BG3 | **done (WP3)**: Core `TurnOrder` (from the one acting, a divider where the round turns, no allocation once grown) → portraits (`People.Portraits`, one drawn a frame, initials until then), health, up to four status icons; a tap looks at them |
+| B7 | Floating damage numbers, miss/graze/crit, status applied, morale break | all | **done (WP3)**: Core `Floats` (per hit as each round lands: miss, graze (≤ 2 after armour, presentational), damage, crit, cripples; then a before/after picture: statuses, falls, heals, a breaking nerve, a surrender, a prisoner taken) → pooled rising labels, stacked per head |
+| B8 | End-turn confirm when AP remain; undo of a move not yet seen by anyone; quick-save before the fight (exists) | BG3 | **done (WP3)**: end turn with AP left lights and asks for a second press (4 s); Core `BeginMove`/`EndMove`/`CanUndo`/`Undo` (snapshot + restore; blocked when seen by anyone of the other side at any 0.75 m of the walk, hidden ambushers included, shot at, the ground acted, dice rolled, or anything done since); the body put back; the turn stays open at 0 AP while an undo is possible |
+| B9 | AI turns fast: speed setting (exists), skip animations option, simultaneous moves for out-of-sight foes | BG3 | **done (WP3)**: Core `CombatPace` (every beat ÷ speed; new setting `combatSkip` "Their turns: skip the show": their pauses ≤ 0.05 s, no framing, walks still walked); a walk of theirs unseen at both ends is made at once and the body catches up while the next acts |
+| B10 | Touch first: tap to preview, tap again to commit; radial for actions; gamepad parity | — | **done (WP3)**: two-step ground taps (walks, throws); radial on fighters (Core `CombatActions.OnTarget`: attack, aimed, burst, suppress, demand; take prisoner; cover fire and patch up on ours); cluster of 8 at 100 units (stance, throw, switch, patch up; undo, reload, hold, end turn; `CombatActions.For` with notes); pad: left stick cursor, south act, d-pad cycle/undo, east cancel, west end turn, north to the cluster; keys ] [ X Z Enter |
+| B11 | Combat start from stealth (surprise round), and ending by talk/surrender/flight | BG3, DOS2 | **done (WP3)**: a fight begun while sneaking catches the unaware (awareness under noticed) off guard: Core `Battle.Surprise` (they lose their first turn; the player's side first; saved), a banner and floats; the end in words (Core `FightSummary`: victory, they ran, truce, defeat, beaten; down, prisoners, fled, slipped away, ours down, XP); yields and breaks float; the demand to yield on the radial. Talk to end a fight stays the content's (dialogue) |
 
 ## C. Strategic depth (rules, Core, tested)
 | # | Item | Benchmark | Status |
@@ -128,3 +129,43 @@ in, animals charge and never use tools, machines never break; fights end (≤ 1 
 - A thrown weapon with an area goes to `Throw` at the target's feet (scatter by skill) rather than the old splash.
 - In a battle the distance for the hit chance is metres (Euclidean), not the rounded tiles (`CombatRules` alone keeps
   the tiles); Round now advances when a new round's first unit acts.
+
+
+## WP3 delivered: presentation and QoL (A9, B1–B11), 2026-11-17
+Pure parts in Core (EditMode `CombatViewTests`, 15 tests): `CombatView.cs` (`Words` = the UI table's lookup; `ShotCard`,
+`MoveCard`, `ThrowCard`, `TurnOrder`/`TurnSlot`, `ReachBands`/`BandLines` (marching squares over the reach grid, loops
+chained by grid edge), `Floats`/`FightPicture`, `CombatPace`, `Intents`, `CombatActions` (cluster, stances, holds, verbs on
+a fighter), `FightSummary`), `BattleUndo.cs` (`MoveUndo`, `BeginMove`, `EndMove`, `SeenOnTheWay`, `CanUndo`, `Undo`),
+`BattleQueries` (`ReachJob`, `BeginReach`, `ContinueReach`, `ReachPoint.Metres`, `ReachMap.Grid`), `Battle.Surprise` and
+`BattleUnit.Surprised` (saved), `CombatDifficulty.Intents`, `Settings.CombatSkip`.
+The game (`Game/Play`): `Combat.cs` (lifecycle, HUD feed, NavField), `CombatTurn.cs` (the player's turn: previews, commits,
+radial, cluster, throws, undo, end-turn confirm, intents, the reach job, the pad), `CombatStage.cs` (AI turns at the pace,
+unseen walks at once, every action played through the views, floats, camera), `CombatOverlay.cs` + `Resources/
+CombatGround.shader` (`SecondFace/Combat Ground`: unlit, vertex alpha, fog, pulled toward the camera like the roads; in
+Resources so the player has it; Sprites/Default if not supported), `CombatCamera.cs`, `CombatPresenter.cs`; `OrbitRig`
+(eased focus), `PadInput` (`Fight` hook; Next/Prev/Cancel/Undo/EndTurn), `UI/CombatHud.cs` (rewritten), `RadialMenu`
+(label/icon per verb, `Focused`, `Gone`), `Icons` (`Set`; 30 new drawings: holds, throw, stances, swap, undo, cuffs, shout,
+shields, flank, sight, warning, statuses), `SettingsScreen` (skip), `Bootstrap` (`Combat.Pace`), `Theme.uss`, `ui.tsv`.
+
+**The hooks for the animation package (WP2)**: `IUnitView` (one per fighter; `Combat.MakeView` replaces the placeholder):
+`OnMove(goal, path, wait)` + `Moving`, `OnAim(at)`, `OnFire(at, hit, round)`, `OnStrike(at, hit)`, `OnHit(from, zone,
+kind)` (zone = the hit's part; kind graze/hit/crit), `OnFall(from)`, `OnRise()`, `OnStance(stance)`, `OnThrow(arc)`,
+`OnReload()`, `OnHold(mode)`, `OnYield()`, `Place(at, facing)` (undo), each at `Pace` (speed, skip, `Theirs`).
+`PlaceholderUnitView` keeps today's behaviour (jog by the agent, turn to face, tracer and flash via `CombatFx`, the ambient
+flinch, the ragdoll and its blend back); stances, reloads, holds and yields have no motion yet.
+
+**PlayMode** `CombatQolTests` (3 tests, boot to Shale, a fight started by the content's event, compile-checked against
+Game.Check.dll; not yet run): the bands, the order with faces, a preview with its card and AP lit, shields where cover
+stands, a held shot drawn and marked, an eye on the previewed point, an intent, a walk nobody saw undone (body and AP back);
+a throw's footprint aimed and put away, the radial and the shot card with its reasons, an attack's float, the camera framing
+it and easing back within the overhead pitch; end turn asked again, skip's turn unframed and quick.
+
+**To look at first in the editor (captures at the game camera, a fight in Shale's square)**: the reach overlay (tints and
+lines readable at pitch 50° and 35°, no z-fighting, the shader not pink); a walk preview by a wall (path colours, shields,
+the end card's place); the shot card beside the radial (fits 1280×720 with 10 reasons); the turn order's portraits; floats
+on a burst; the cluster's two rows (the plate above them; nothing over the party strip); a shot framed by the camera on a
+long diagonal (both in frame, eased, no cut); a throw's footprint and arc. Then the three PlayMode tests and the frame time
+of `ContinueReach` (4 ms budget) and `PredictIntent` (one a frame) on the phone.
+
+**Left for later**: talk as a way to end a fight (the content's), the player's own flight to an exit, shooting props (no
+props are listed by the places yet), the tactical top-down toggle (DESIGN_UNITY §2), dashed or animated path lines.
