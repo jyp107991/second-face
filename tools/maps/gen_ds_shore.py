@@ -144,11 +144,11 @@ building(g, 31, 20, 36, 24, 'C', 'n', [(31, 22), (34, 24)]); fill(g, 34, 25, 35,
 for (x0, x1, door) in [(4, 10, 7), (12, 18, 15), (20, 25, 22)]:
     building(g, x0, 32, x1, 37, 'L', 'f', [(door, 32)]); g[31][door] = 'b'
 fill(g, 27, 31, 27, 37, 'b')
-# Low Row's stilt houses north of the grate, and Moana's at the end
+# Low Row's stilt houses north of the grate, and Mele's at the end
 for (x0, x1, door) in [(44, 49, 46), (51, 56, 53), (58, 63, 60), (65, 70, 67)]:
     building(g, x0, 22, x1, 27, 'S', 'f', [(door, 27)]); g[28][door] = 'b'
-# south of the grate: the loft to rent, Coker's house
-building(g, 52, 33, 56, 37, 'L', 'f', [(54, 33)]); fill(g, 54, 31, 54, 32, 'b')
+# south of the grate: the cabin to rent (a trawler's hull turned keel-up on the stilts), Coker's house
+building(g, 52, 33, 56, 37, 'U', 'f', [(54, 33)]); fill(g, 54, 31, 54, 32, 'b')
 building(g, 60, 33, 66, 38, 'S', 'f', [(63, 33)]); fill(g, 63, 31, 63, 32, 'b')
 # Coker's dive stage off the south walk
 fill(g, 60, 44, 60, 44, 'b'); fill(g, 54, 45, 66, 50, 'g')
@@ -205,9 +205,9 @@ spots = {
     'hassan': {'x': 47, 'y': 7}, 'smoke_work': {'x': 49, 'y': 6}, 'smoke_sit': {'x': 45, 'y': 7},
     'oona': {'x': 16, 'y': 22}, 'court_sit': {'x': 19, 'y': 21}, 'court_sit_b': {'x': 23, 'y': 23}, 'court_pair_a': {'x': 25, 'y': 21}, 'court_pair_b': {'x': 25, 'y': 22}, 'court_lua': {'x': 20, 'y': 22},
     'thorne': {'x': 34, 'y': 22}, 'post_door': {'x': 34, 'y': 27},
-    'lua': {'x': 7, 'y': 34}, 'lua_bed': {'x': 6, 'y': 36}, 'paz': {'x': 15, 'y': 34}, 'paz_bed': {'x': 14, 'y': 36}, 'nuno': {'x': 16, 'y': 35}, 'nuno_bed': {'x': 16, 'y': 36},
+    'lua': {'x': 7, 'y': 34}, 'lua_bed': {'x': 6, 'y': 36}, 'paz': {'x': 15, 'y': 34}, 'paz_bed': {'x': 14, 'y': 36}, 'rui': {'x': 16, 'y': 35}, 'rui_bed': {'x': 16, 'y': 36},
     'curlew': {'x': 27, 'y': 34}, 'netstore': {'x': 22, 'y': 34},
-    'moana': {'x': 61, 'y': 24}, 'moana_bed': {'x': 60, 'y': 25},
+    'mele': {'x': 61, 'y': 24}, 'mele_bed': {'x': 60, 'y': 25},
     'yewande': {'x': 59, 'y': 47}, 'yewande_bed': {'x': 62, 'y': 36}, 'amara': {'x': 63, 'y': 47}, 'amara_bed': {'x': 62, 'y': 37}, 'ade': {'x': 57, 'y': 48},
     'stage_work': {'x': 61, 'y': 46}, 'stage_sit': {'x': 64, 'y': 49},
     'ebb': {'x': 39, 'y': 53}, 'ebb_sit': {'x': 37, 'y': 54}, 'ebb_pair_a': {'x': 41, 'y': 54}, 'ebb_pair_b': {'x': 42, 'y': 54},
@@ -227,7 +227,7 @@ npcs = [
     {'def': MATEO, 'x': 61, 'y': 11, 'facing': 2, 'schedule': [], 'if': ALL(F('ds_mateo_here'), NOT(F('ds_court')))},
     {'def': MATEO, 'id': 'npc_ds_05_curlew', 'x': 27, 'y': 34, 'facing': 1, 'schedule': [], 'if': ANY(F('ds_court', 'living'), F('ds_court', 'sold'))},
     {'def': 'npc_ds_06', 'x': 15, 'y': 34, 'facing': 2},
-    {'def': 'npc_ds_07', 'x': 16, 'y': 35, 'facing': 2, 'if': NOT(F('ds_nuno', 'put_off'))},
+    {'def': 'npc_ds_07', 'x': 16, 'y': 35, 'facing': 2, 'if': NOT(F('ds_rui', 'put_off'))},
     {'def': 'npc_ds_08', 'x': 66, 'y': 11, 'facing': 2},
     {'def': 'npc_ds_09', 'x': 47, 'y': 7, 'facing': 2},
     {'def': 'npc_ds_14', 'x': 63, 'y': 47, 'facing': 2, 'if': NOT(ANY(F('ds_coker_dead'), F('ds_coker_off')))},
@@ -249,7 +249,7 @@ spawns = [
 TALK = {
     'ds_tides': ('d_ds_tides', 'The tide table'), 'ds_tideboat': ('d_ds_tideboat', 'The tide boat'), 'ds_nets': ('d_ds_nets', 'Hands wanted'),
     'ds_book': ('d_ds_book', 'The Book of Water'), 'ds_notice': ('d_ds_notice', 'The tide post\'s notice'), 'ds_kai': ('d_ds_kai', 'A small cot'),
-    'ds_curlew': ('d_ds_curlew', 'The Curlew'), 'ds_loft': ('d_ds_loft', 'A loft to let'), 'ds_loft_bed': ('d_ds_loft', 'The loft'),
+    'ds_curlew': ('d_ds_curlew', 'The Curlew'), 'ds_loft': ('d_ds_loft', 'A cabin to let'), 'ds_loft_bed': ('d_ds_loft', 'The cabin'),
     'ds_dive_stage': ('d_ds_dive', 'The dive ladder'), 'ds_sow': ('d_ds_dive', 'The Sow'), 'ds_ebb': ('d_ds_ebb', 'The Ebb Steps'),
     'ds_jesty': ('d_ds_jesty', 'The parapet'), 'ds_wreck': ('d_ds_wreck', 'The salt barge'), 'ds_seawall': ('d_ds_seawall', 'The sea wall'),
 }
@@ -264,6 +264,7 @@ ds_stilts = {
         'H': {'wall': 'metal', 'floor': 'metal', 'wallHeight': 3.4, 'roof': 'none'},
         'C': {'wall': 'metal', 'floor': 'metal', 'wallHeight': 2.6, 'roof': 'flat'},
         'L': {'wall': 'wood', 'floor': 'wood', 'wallHeight': 3.0, 'roof': 'pitched'},
+        'U': {'wall': 'wood', 'floor': 'wood', 'wallHeight': 2.6, 'roof': 'pitched'},
         'S': {'wall': 'scrap', 'floor': 'wood', 'wallHeight': 2.6, 'roof': 'tin'},
         'J': {'wall': 'concrete', 'floor': 'concrete', 'wallHeight': 1.0},
     },
@@ -283,7 +284,7 @@ ds_stilts = {
     'containers': {
         'ds_post_box': {'name': 'Tide Post Box', 'items': [['k_ds_tally', 1]], 'tolls': 90, 'lock': 45},
         'ds_coker_store': {'name': 'Coker\'s Store', 'items': [['k_ds_salt', 1], ['j_cloth', 3]], 'lock': 30},
-        'ds_loft_locker': {'name': 'Loft Locker', 'items': [], 'yoursIf': {'flag': 'ds_loft_rented'}},
+        'ds_loft_locker': {'name': 'Cabin Locker', 'items': [], 'yoursIf': {'flag': 'ds_loft_rented'}},
     },
     'spots': spots,
     'npcs': npcs,
@@ -307,7 +308,7 @@ ds_stilts = {
         {'count': 4, 'roles': ['fisher', 'settler', 'trader'], 'life': 'hard', 'area': {'x': 11, 'y': 19, 'w': 19, 'h': 7}, 'spots': ['court_sit', 'court_sit_b', 'court_pair_a', 'court_pair_b'], 'hours': {'from': 17, 'to': 24}, 'talk': 'd_ds_x_fisher',
          'barks': ['Oona\'s got the Book open. Somebody\'s in trouble.', 'Page nine. Always page nine with her.', 'The guild pays the anchorage. The widows eat. Don\'t say it louder.']},
         {'count': 3, 'roles': ['fisher', 'trader'], 'life': 'hard', 'area': {'x': 58, 'y': 9, 'w': 13, 'h': 4}, 'spots': ['landing_b', 'landing_lean', 'landing_pair_a', 'landing_pair_b'], 'hours': {'from': 5, 'to': 20}, 'talk': 'd_ds_x_fisher',
-         'barks': ['Tide boat\'s at six, if Moana\'s sober. She\'s always sober.', 'Salt up from the city again. Dearer.', 'Rigs folk in on the launch. Smell them before you see them.']},
+         'barks': ['Tide boat\'s at six, if Mele\'s sober. She\'s always sober.', 'Salt up from the city again. Dearer.', 'Rigs folk in on the launch. Smell them before you see them.']},
     ],
     'ambience': {'indoor': False, 'fogColor': 'hex:0x9aa8b2', 'fogDensity': 0.015, 'dust': 0.04, 'grade': 0.25, 'mood': 'haze', 'sound': 'birds'},
 }

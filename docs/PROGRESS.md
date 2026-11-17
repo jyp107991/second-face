@@ -1853,7 +1853,27 @@ mid-range Android phone; deployed to Pages.
             Items `items/story_b5.ts` (11); 18 leads + 7 conclusions; 5 world events that wait for the player; activities:
             handcar sprints, a rented berth (safehouse), three merchants. Companions' interjections throughout (all seven).
             `tests/b5a.test.ts` (39). No engine change.
-      - [ ] B5b **the Drowned Shore** (planned: Gull Stilts, the Rigs, Meridian's Docks as the Line's far end; ids `ds_*`).
+      - [x] B5b **the Drowned Shore** DONE 2026-11-17 (content; the Unity place build and the on-device playtest are P10
+            work; `npm run export` has not been run for it): `tools/maps/gen_ds_shore.py` (walkability and reachability
+            checked) → `maps/ds_stilts.ts` (80×60, Gull Stilts: a stilt village over a drowned town, boardwalks for streets,
+            a grounded ferry where the village's court sits, a trading post on a pontoon, net lofts, a smokehouse, a dive
+            stage, old steps where the dead go out on the ebb, a drowned hotel's roof, the sea wall east), `ds_rigs.ts`
+            (64×48, the Rigs: a working platform, a dead one carrying the shore's light, a third with only its legs),
+            `ds_rig_leg.ts` (40×30, a flooded leg; a cell), `ds_terminal.ts` (48×36, Blackcap, a drowned tank: the new hidden
+            landmark `lm_shore_01`) and `ds_wade.ts` (40×26, a dike road across the delta for encounters; a cell).
+            `hamlet_shore` and `rigs` bound to their maps; settlements `hamlet_shore` (stilt village) and `rigs`; three open
+            sites, two cells; a route along the sea wall. Transport: the tide boat (`net_tide`: Meridian, Gull Stilts, the
+            Rigs; fast travel on the field map), boat rides in the village to the Rigs and Blackcap, the platform's launch,
+            the sea wall walkable at low water, a borrowed skiff. Cast `npcs/ds_shore.ts` (ids `npc_ds_*`: 19 named, 3
+            minor; three families). Dialogue `dialogue/ds_stilts.ts`, `ds_rigs.ts` (50 trees, 246 nodes, every node with a
+            return line; 39 companion interjections across all seven). Quests `quests/b5b_shore.ts`: the shore's line
+            `q_ds_sheen` (seven routes; six ends, three without violence), side lines `q_ds_court` (four ends) and
+            `q_ds_light` (four ends), each with hook, investigation, turn, choice and a visible outcome, and the dives
+            `q_ds_dives`. Activities: salvage dives in three bands (slack water only; three finds each, then a thin base
+            yield; your own diving gear lowers the cost and the DC), fishing at dawn, a cabin to rent (safehouse), five
+            merchants. Items `items/ds_shore.ts` (9); 16 leads + 4 conclusions; 5 world events that wait for the player;
+            6 road and water encounters (4 passing, 2 on the dike map). Reads `prec_unrecorded` and `rc_line`. Meridian's
+            Docks (the Line's far end) are not built: still planned. `tests/b5b.test.ts` (41). No engine change.
       - [ ] B5c **the Teeth mines and the Northern Wet** (planned: Number Four Pit, Sawtown, Ashby Dam, Low Landing, the
             barges; ids `tm_*`, `nw_*`).
       - [ ] B5d **the Ashlands and the Long Night** (planned: the Ashlands' sites and beat 17, the act's alliance; ids
@@ -1876,7 +1896,7 @@ mid-range Android phone; deployed to Pages.
 | Act 1 wilds | 5/5 | 15/15 | 17/17 | 2/2 | playable; ten road encounters, discoveries on foot, hunting and traps, the windpumps, the wreck, the orchard |
 | Meridian | 12/14 | 121/125 | 206/210 | 29/30 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward, the Crown, the Archive Spire (the close and landing ninety-one), the Court of Accounts and the Dead Ring written; the Loop joins six stops (one outside the Wall), stairs the Sink, the chain Bridgeward, the invitation car the Crown, a lane the Spire close, the gate road the Ring. Loose ends: the far bank (NO BRIDGE) is Act 2 part 2 / B5; Unity sites for the Spire close and the Ring (P10 place build); vehicle travel reading the buggy flag (P12); the Spire beat's end now opens beat 16 (B4a) |
 | Halcyon/Skirts | 2/6 | 22/40 | 40/55 | 6/12 | the Skirts written (B4a): the town under the arcology and a gallery under its pit; the Line's last stop; beat 16 opened; the seventh companion joins here. The arcology itself is B4b |
-| Act 2 wilds | 9/18 | 64/110 | 123/200 | 14/24 | Ninebridge, Openfield, the Sump and Cistern 4 playable; the Rail Corridor written (B5a): Four Ways, both halts, Yard Nine and Kettle Cut, the Line ridden from every stop, the rail bandits' line and four side lines. B5b–d planned (counts approximate) |
+| Act 2 wilds | 14/18 | 86/110 | 173/200 | 18/24 | Ninebridge, Openfield, the Sump and Cistern 4 playable; the Rail Corridor written (B5a): Four Ways, both halts, Yard Nine and Kettle Cut, the Line ridden from every stop, the rail bandits' line and four side lines; the Drowned Shore written (B5b): Gull Stilts, the Rigs, Blackcap and the dike road, the tide boat, the shore's line, two side lines and the dives in three bands. Meridian's Docks, B5c–d planned (counts approximate) |
 | Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |
 | Companions | — | 7/7 | 0/7 arcs | 0/7 | Tamsin, Wren, Ilya, Odile, Ash, Nine can join; Kes joins in the Skirts (B4a, with her arc and quest); arcs later |
 | Factions joinable | — | — | — | 0/9 | design pending |

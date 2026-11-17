@@ -113,24 +113,24 @@ export const q_ds_court: QuestDef = {
       next: [{ if: F('ds_mateo_met'), stage: 'book' }, ...COURT_ENDS],
     },
     book: {
-      journal: 'Mateo wants his boat and his wife, if she wants him. The Book says what the water takes is the water\'s, and a boat found on the water is the finder\'s. Nuno Sousa found the Curlew and married Paz; they have a baby. The court will hear Mateo if he stands up and asks.',
+      journal: 'Mateo wants his boat and his wife, if she wants him. The Book says what the water takes is the water\'s, and a boat found on the water is the finder\'s. Rui Sousa found the Curlew and married Paz; they have a baby. The court will hear Mateo if he stands up and asks.',
       objectives: [
         { id: 'where', text: 'Find out where Mateo has been for two years', done: { knows: 'ds_mateo_where' } },
         { id: 'paz', text: 'Talk to Paz', done: F('ds_paz_met') },
-        { id: 'nuno', text: 'Talk to Nuno Sousa', done: F('ds_nuno_met') },
+        { id: 'rui', text: 'Talk to Rui Sousa', done: F('ds_rui_met') },
         { id: 'court', text: 'Have Oona call the court for him', done: F('ds_court'), optional: true },
       ],
-      next: [{ if: { any: [{ knows: 'ds_tally_press' }, F('ds_nuno_confessed'), { concluded: 'c_ds_sold' }] }, stage: 'turn' }, ...COURT_ENDS],
+      next: [{ if: { any: [{ knows: 'ds_tally_press' }, F('ds_rui_confessed'), { concluded: 'c_ds_sold' }] }, stage: 'turn' }, ...COURT_ENDS],
     },
     turn: {
-      journal: 'Mateo never went in the water. The guild\'s press took him off the Gut at night for three hundred Tolls owed at the tide post and sold him to its own barges, and set the Curlew adrift with his coat aboard so the shore would write him drowned. Nuno Sousa told them where he slept. The Curlew was his fee. Paz does not know.',
+      journal: 'Mateo never went in the water. The guild\'s press took him off the Gut at night for three hundred Tolls owed at the tide post and sold him to its own barges, and set the Curlew adrift with his coat aboard so the shore would write him drowned. Rui Sousa told them where he slept. The Curlew was his fee. Paz does not know.',
       objectives: [{ id: 'court', text: 'Settle it: at the court, or outside it', done: F('ds_court') }],
       next: COURT_ENDS,
     },
     living: { journal: 'The Stilt Court wrote a new page: what the water gives back is not the water\'s. The Curlew is Mateo\'s again, and Paz was asked, for once, and answered for herself.', end: 'done' },
-    sold: { journal: 'The court heard that Nuno Sousa sold his neighbour to the press for a boat, and put him off the stilts. Paz lives alone with the baby. Mateo moors the Curlew under her loft and waits.', end: 'done' },
+    sold: { journal: 'The court heard that Rui Sousa sold his neighbour to the press for a boat, and put him off the stilts. Paz lives alone with the baby. Mateo moors the Curlew under her loft and waits.', end: 'done' },
     written: { journal: 'The court kept page twelve: Mateo Ibarra is still the water\'s. He went out to the Rigs, where they take anyone who can carry, and from Hum\'s flare stack you can see the Curlew if you know where to look.', end: 'done' },
-    quiet: { journal: 'I paid for a skiff and Mateo Ibarra rowed up the delta again, and left Paz be. She will never know what Nuno did, unless somebody tells her. Nobody on the Stilts is going to.', end: 'done' },
+    quiet: { journal: 'I paid for a skiff and Mateo Ibarra rowed up the delta again, and left Paz be. She will never know what Rui did, unless somebody tells her. Nobody on the Stilts is going to.', end: 'done' },
   },
 };
 
@@ -181,9 +181,10 @@ export const q_ds_dives: QuestDef = {
       journal: 'Ellery gives what she has once, and then less. The high street is eight fathoms down, past the roofs; Hum\'s crew dive the legs of Stump, out at the Rigs, sixty feet and more, for the boards and controllers the platform\'s builders left in the dark.',
       objectives: [
         { id: 'street', text: 'Dive the high street', done: F('ds_dived_street') },
-        { id: 'legs', text: 'Dive Stump\'s legs at the Rigs', done: F('ds_dived_legs') },
+        { id: 'legs', text: 'Dive Stump\'s legs at the Rigs', done: F('ds_dived_legs'), optional: true },
       ],
-      next: [{ if: { all: [F('ds_dived_street'), F('ds_dived_legs')] }, stage: 'done' }],
+      // Hum's legs are the crew's to give; with the crew gone from Hum, nobody dives them, and the street is enough
+      next: [{ if: { all: [F('ds_dived_street'), { any: [F('ds_dived_legs'), F('ds_hamid', 'left'), F('ds_hamid', 'dead')] }] }, stage: 'done' }],
     },
     done: { journal: 'I have dived all three: the roofs, the high street and Hum\'s legs. They still give, a little, at every slack.', end: 'done' },
   },

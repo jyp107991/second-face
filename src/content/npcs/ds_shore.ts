@@ -12,8 +12,8 @@ const RG = { team: 'neutral', settlement: 'rigs' } as const;
 const sleep = (spot: string, from = 21, to = 5) => ({ from, to, spot, activity: 'sleep' as const });
 /** The guild's barge crew at Blackcap: they turn on whoever comes at the barge. */
 const barge = { team: 'tollmen', settlement: 'hamlet_shore', faction: 'tollmen', hostileIf: { flag: 'ds_barge_fight' }, courage: 55 };
-/** Hum's crew turn on the Stilts' men (and whoever leads them) if the court takes Hum and Hamid will not go. */
-const crew = { team: 'rig_crew', settlement: 'rigs', hostileIf: { flag: 'ds_rig_fight' }, courage: 75 };
+/** Hum's crew turn on the Stilts' men (and whoever leads them) if the court takes Hum and Hamid will not go; with him dead, the rest give it up. */
+const crew = { team: 'rig_crew', settlement: 'rigs', hostileIf: { all: [{ flag: 'ds_rig_fight' }, { not: { flag: 'ds_hamid', eq: 'dead' } }] }, courage: 75 };
 
 export const SHORE_NPCS: NpcDef[] = [
   // ---------------------------------------------------------------- Gull Stilts
@@ -57,25 +57,25 @@ export const SHORE_NPCS: NpcDef[] = [
     id: 'npc_ds_06', name: 'Paz Ibarra', look: { seed: 5206, frame: 'narrow', age: 36, ancestry: 'latin_american', over: { hair: { style: 'ponytail01', color: 0x1c1612 }, weathering: 0.5 } }, role: 'fisher',
     level: 2, ...DS, courage: 45, dialogue: 'd_ds_paz', attrs: { wits: 7, grit: 7 }, skills: { survival: 35, barter: 30 }, tolls: 6,
     schedule: [{ from: 6, to: 20, spot: 'paz', activity: 'work' }, sleep('paz_bed', 20, 6)],
-    barks: ['The baby\'s asleep. Talk quiet or go.', 'I said the words at the Ebb Steps over a coat.', 'Nuno found the Curlew. Nuno found me, after.'],
+    barks: ['The baby\'s asleep. Talk quiet or go.', 'I said the words at the Ebb Steps over a coat.', 'Rui found the Curlew. Rui found me, after.'],
   },
   {
     // the finder: fishes the Curlew
-    id: 'npc_ds_07', name: 'Nuno Sousa', look: { seed: 5207, frame: 'broad', age: 42, ancestry: 'mediterranean', over: { hair: { style: 'cut_crop', color: 0x2a2018 }, facialHair: 'stubble_heavy', weathering: 0.6 } }, role: 'fisher',
-    level: 3, ...DS, courage: 40, dialogue: 'd_ds_nuno', attrs: { brawn: 7, grit: 6 }, skills: { survival: 45, barter: 30 }, tolls: 25,
-    schedule: [{ from: 5, to: 19, spot: 'curlew', activity: 'work' }, { from: 19, to: 22, spot: 'nuno', activity: 'idle' }, sleep('nuno_bed', 22, 5)],
+    id: 'npc_ds_07', name: 'Rui Sousa', look: { seed: 5207, frame: 'broad', age: 42, ancestry: 'mediterranean', over: { hair: { style: 'cut_crop', color: 0x2a2018 }, facialHair: 'stubble_heavy', weathering: 0.6 } }, role: 'fisher',
+    level: 3, ...DS, courage: 40, dialogue: 'd_ds_rui', attrs: { brawn: 7, grit: 6 }, skills: { survival: 45, barter: 30 }, tolls: 25,
+    schedule: [{ from: 5, to: 19, spot: 'curlew', activity: 'work' }, { from: 19, to: 22, spot: 'rui', activity: 'idle' }, sleep('rui_bed', 22, 5)],
     barks: ['Found her adrift. Found is found. Page twelve.', 'Good boat, the Curlew. Pulls left.', 'I don\'t talk about before.'],
   },
   {
     // the tide boat: Meridian, the Stilts, the Rigs; Blackcap on the way
-    id: 'npc_ds_08', name: 'Moana Tui', look: { seed: 5208, frame: 'narrow', age: 52, ancestry: 'southeast_asian', over: { hair: { style: 'elvs_unkempt_french_braid', color: 0x1a1612 }, weathering: 0.7 } }, role: 'fisher',
-    level: 4, ...DS, courage: 55, dialogue: 'd_ds_moana', attrs: { senses: 8, grit: 6 }, skills: { survival: 55, barter: 35 }, tolls: 30,
-    schedule: [{ from: 6, to: 20, spot: 'landing', activity: 'work' }, sleep('moana_bed', 20, 6)],
+    id: 'npc_ds_08', name: 'Mele Tui', look: { seed: 5208, frame: 'narrow', age: 52, ancestry: 'southeast_asian', over: { hair: { style: 'elvs_unkempt_french_braid', color: 0x1a1612 }, weathering: 0.7 } }, role: 'fisher',
+    level: 4, ...DS, courage: 55, dialogue: 'd_ds_mele', attrs: { senses: 8, grit: 6 }, skills: { survival: 55, barter: 35 }, tolls: 30,
+    schedule: [{ from: 6, to: 20, spot: 'landing', activity: 'work' }, sleep('mele_bed', 20, 6)],
     barks: ['Tide boat at six. The Rigs, Blackcap, the city.', 'Water keeps every track. You have to know how it writes.', 'Mind your hands on the gunwale.'],
   },
   {
     // the smokehouse: fish, water, twine; hands at dawn; the loft over the net store
-    id: 'npc_ds_09', name: 'Hassan Idrissi', look: { seed: 5209, frame: 'broad', age: 60, ancestry: 'mediterranean', over: { hair: { style: 'none', color: 0x9a948c }, facialHair: 'full_beard', weathering: 0.6 } }, role: 'trader',
+    id: 'npc_ds_09', name: 'Hassan Benali', look: { seed: 5209, frame: 'broad', age: 60, ancestry: 'mediterranean', over: { hair: { style: 'none', color: 0x9a948c }, facialHair: 'full_beard', weathering: 0.6 } }, role: 'trader',
     level: 3, ...DS, courage: 40, dialogue: 'd_ds_hassan', attrs: { wits: 7, presence: 6 }, skills: { barter: 50, survival: 40 }, tolls: 60,
     merchant: { buys: ['consumable', 'junk'], cash: 120, restockDays: 3, markup: 1.2, stock: [['c_smoked_fish', 8], ['c_water', 4], ['j_cloth', 4], ['c_dirtywater', 6]] },
     schedule: [{ from: 5, to: 20, spot: 'hassan', activity: 'trade' }, { from: 20, to: 5, activity: 'away' }],

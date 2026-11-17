@@ -17,7 +17,7 @@ export const DS_LEADS: LeadDef[] = [
   { id: 'l_ds_two_tankers', label: 'Two for one', text: 'The tide post\'s day-book: two loads a month off Blackcap entered to the Line\'s fuel book, one tanker a month paid to Hum, and a column headed SHRINKAGE.' },
   { id: 'l_ds_tide_table', label: 'Never wrong yet', text: 'The tide table at Gull Stilts\' Landing is printed by the Precinct, two low waters a day to the minute. Someone has pencilled under it: NEVER WRONG YET.' },
   { id: 'l_ds_brand', label: 'N-B 4471', text: 'Mateo Ibarra\'s wrist carries a Ninebridge block brand, N-B 4471, two years healed. He was sold, not drowned.' },
-  { id: 'l_ds_curlew_adrift', label: 'Oars shipped', text: 'Moana Tui found the Curlew adrift off the Jesty with her oars shipped and lashed and Mateo\'s coat folded in the bow. A drowning man does neither.' },
+  { id: 'l_ds_curlew_adrift', label: 'Oars shipped', text: 'Mele Tui found the Curlew adrift off the Jesty with her oars shipped and lashed and Mateo\'s coat folded in the bow. A drowning man does neither.' },
   { id: 'l_ds_finders_fee', label: 'Finder\'s fee', text: 'The guild\'s collections: IBARRA, M. — TAKEN AT THE GUT, NIGHT — GIVEN BY J. SOUSA — FINDER\'S FEE: HIS BOAT. VESSEL SET ADRIFT, COAT ABOARD.' },
   { id: 'l_ds_wrecks', label: 'Five barges', text: 'The Book of Water: five guild barges wrecked on the Jesty since the fish went black, and none in the eleven years before while Lean\'s light burned.' },
   { id: 'l_ds_lamp_cut', label: 'Lean\'s lamp', text: 'Lean\'s light has been dark on five foggy nights since the thaw: its gas line cut clean with a knife each time, and spliced each morning.' },
@@ -28,7 +28,7 @@ export const DS_LEADS: LeadDef[] = [
 export const DS_CONCLUSIONS: ConclusionDef[] = [
   { id: 'c_ds_kai', from: ['l_ds_kai', 'l_ds_joint'], text: 'Kai Tanoa did not drown of the sea. He drowned freeing his net from a leaking joint on the Rigs\' old export line, in water the oil had blacked so he could not see his hand.', effects: [{ learn: 'ds_kai_line' }] },
   { id: 'c_ds_guild_line', from: ['l_ds_seal', 'l_ds_barge', 'l_ds_pressure'], text: 'The guild opened Hum\'s old line to its tank at Blackcap and loads Hum\'s oil at night for its own account; the line leaks the difference under Gull Stilts, and Hum\'s keeper thinks his platform is dying.', effects: [{ learn: 'ds_guild_line' }] },
-  { id: 'c_ds_sold', from: ['l_ds_curlew_adrift', 'l_ds_finders_fee'], text: 'Mateo Ibarra never went in the water. The guild\'s press took him on Nuno Sousa\'s word and paid Nuno with his boat, and set the Curlew adrift so the Book would write him drowned.', effects: [{ learn: 'ds_nuno_sold' }] },
+  { id: 'c_ds_sold', from: ['l_ds_curlew_adrift', 'l_ds_finders_fee'], text: 'Mateo Ibarra never went in the water. The guild\'s press took him on Rui Sousa\'s word and paid Rui with his boat, and set the Curlew adrift so the Book would write him drowned.', effects: [{ learn: 'ds_rui_sold' }] },
   { id: 'c_ds_false_light', from: ['l_ds_wrecks', 'l_ds_lamp_cut', 'l_ds_soot'], text: 'Somebody on the shore cuts Lean\'s gas line in fog and hangs a false light on the Jesty, and the guild\'s barges steer onto the roof for it. Only guild barges, and only since the fish died.', effects: [{ learn: 'ds_wreckers' }] },
 ];
 

@@ -206,7 +206,7 @@ export const d_ds_board: DialogueDef = {
     },
     log: { text: 'A ledger in two hands, father and daughter, a line a day: EXPORT PRESS. — and a number. Steady for years. Then from the thaw, falling every week, a point here, a point there, eleven in all. Beside the latest entry, in the father\'s hand: TIRED. Beside it, in the daughter\'s: DRINKING.', again: 'The log: eleven points since the thaw.', effects: [{ learn: 'ds_pressure' }, { lead: 'l_ds_pressure' }], options: [{ text: '(Back to the board.)', next: 'board' }] },
     printer: { text: 'Behind a side cover, a printer older than anyone\'s grandmother still feeding a strip of paper an inch at a time. You run it back. EXPORT VALVE — MANUAL — OPEN. Ninety-four days ago, at night. Not the controller: somebody\'s hands, down there, on the wheel.', again: 'MANUAL — OPEN. Ninety-four days.', options: [{ text: '(Back to the board.)', next: 'board' }] },
-    printer_fail: { text: 'There must be a log somewhere; boards like this kept one. You do not find it.', options: [{ text: '(Back to the board.)', next: 'board' }] },
+    printer_fail: { text: 'There must be a log somewhere; boards like this kept one. You do not find it.', again: 'Somewhere in the board, a log you cannot find.', options: [{ text: '(Back to the board.)', next: 'board' }] },
   },
 };
 
@@ -304,10 +304,13 @@ export const d_ds_leg_gauge: DialogueDef = {
 };
 
 export const d_ds_valve: DialogueDef = {
-  id: 'd_ds_valve', owner: 'narrator', start: [{ if: F('ds_valve'), node: 'done' }, { node: 'valve' }],
+  id: 'd_ds_valve', owner: 'narrator', start: [{ if: ANY(F('ds_valve', 'shut'), F('ds_valve', 'sleeved')), node: 'done' }, { node: 'valve' }],
   nodes: {
     valve: {
-      text: 'The export valve: a manifold rising out of the floor of the leg in the waist-deep black water, and a wheel on it as wide as your arms, its spindle bright where it has been turned. Round the wheel\'s rim, through a hole drilled for it, a twist of wire and a lead seal, new and dull: TOLLMEN — LINE ACCOUNT. The guild seals what it means to bill.',
+      text: [
+        { if: F('ds_valve', 'open'), text: 'The export valve, and its wheel turned open again, all the way, its spindle bright. Through the rim a second twist of wire, newer than the first you cut: TOLLMEN — LINE ACCOUNT. The guild\'s diver came back.' },
+        { text: 'The export valve: a manifold rising out of the floor of the leg in the waist-deep black water, and a wheel on it as wide as your arms, its spindle bright where it has been turned. Round the wheel\'s rim, through a hole drilled for it, a twist of wire and a lead seal, new and dull: TOLLMEN — LINE ACCOUNT. The guild seals what it means to bill.' },
+      ],
       again: 'The wheel, and the guild\'s seal on it.',
       effects: [{ set: 'ds_valve_seen' }, { learn: 'ds_guild_seal' }, { lead: 'l_ds_seal' }, { learn: 'ds_line_open' }],
       interject: [
@@ -324,14 +327,13 @@ export const d_ds_valve: DialogueDef = {
     },
     sealed: { text: 'Your knife through the wire, and the seal comes away in your glove: a disc of lead the size of a coin, the guild\'s neat letters pressed into it. You put it somewhere dry.', again: 'The seal is in your pack.', options: [{ text: '(Back to the wheel.)', next: 'valve' }] },
     shut: { text: 'You get your shoulder under the rim and turn it. It fights you for the first quarter, and then the gear catches, and you turn it until you cannot turn it any more. Somewhere in the steel round you something changes note. The needle on the pump room\'s gauge lies down against its pin. Out under the Stilts, a long way off, the old line stops breathing.', options: [{ text: '(Leave the chamber.)', exit: true }] },
-    stuck: { text: 'You get your shoulder under the rim and heave, and the wheel does not move, and your feet go out from under you in the black water. You come up spitting oil. The wheel has not moved a hair.', options: [{ text: '(Back to the wheel.)', next: 'valve' }] },
+    stuck: { text: 'You get your shoulder under the rim and heave, and the wheel does not move, and your feet go out from under you in the black water. You come up spitting oil. The wheel has not moved a hair.', again: 'The wheel, unmoved.', options: [{ text: '(Back to the wheel.)', next: 'valve' }] },
     sleeved: { text: 'It takes an hour in the black water by lamp, bolt by bolt, gasket by gasket, the pitch tin warm in your hand from the leg\'s own heat. When the last bolt is home, the riser stops weeping. The needle on the pump room\'s gauge comes up, a little, and stays up. The line runs clean to Blackcap now: whoever holds that tank holds Hum\'s oil, without a drop under the Stilts.', options: [{ text: '(Leave the chamber.)', exit: true }] },
-    sleeve_fail: { text: 'Under the black water the sleeve\'s halves will not meet, and a bolt goes out of your fingers into the dark and is gone. You come up for air and look at what is left. Not this time.', options: [{ text: '(Back to the wheel.)', next: 'valve' }] },
+    sleeve_fail: { text: 'Under the black water the sleeve\'s halves will not meet, and a bolt goes out of your fingers into the dark and is gone. You come up for air and look at what is left. Not this time.', again: 'The sleeve\'s halves, and a bolt short.', options: [{ text: '(Back to the wheel.)', next: 'valve' }] },
     done: {
       text: [
         { if: F('ds_valve', 'shut'), text: 'The export wheel, turned shut, the water round it going slowly clear.' },
-        { if: F('ds_valve', 'sleeved'), text: 'The export riser with Leila\'s sleeve bolted round it, tight and dry, and the line beyond it running clean.' },
-        { text: 'The export wheel, turned open again, a fresh guild seal through its rim.' },
+        { text: 'The export riser with Leila\'s sleeve bolted round it, tight and dry, and the line beyond it running clean.' },
       ],
       options: [leave],
     },
@@ -464,7 +466,7 @@ export const d_ds_wall_end: DialogueDef = {
 
 export const d_ds_skiff: DialogueDef = {
   id: 'd_ds_skiff', owner: 'narrator', start: [{ node: 's' }],
-  nodes: { s: { text: 'A skiff tied at the jetty with a pair of oars in her and a painted board nailed to her thwart: BORROW HER, BRING HER BACK — M. TUI.', again: 'Moana\'s skiff.', options: [{ id: 'skiff.row', text: '(Row back to Gull Stilts.)', effects: [{ event: 'goto', data: { location: 'ds_stilts', spawn: 'jetty', minutes: 45 } }], exit: true, repeat: true }, leave] } },
+  nodes: { s: { text: 'A skiff tied at the jetty with a pair of oars in her and a painted board nailed to her thwart: BORROW HER, BRING HER BACK — M. TUI.', again: 'Mele\'s skiff.', options: [{ id: 'skiff.row', text: '(Row back to Gull Stilts.)', effects: [{ event: 'goto', data: { location: 'ds_stilts', spawn: 'jetty', minutes: 45 } }], exit: true, repeat: true }, leave] } },
 };
 
 export const d_ds_x_crew: DialogueDef = {

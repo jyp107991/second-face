@@ -40,11 +40,11 @@ export const ds_stilts: MapDef = {
     "WWWWgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggWWW",
     "WWWWWWWbWWWWWWWbWWWWWWbWWWWbWWWWWWWWWWbbbWWWWWWWWWWWWWbWWWWWWWWbWWWWWWWWgWWWWWWW",
     "WWWWLLLfLLLWLLLfLLLWLLfLLLWbWWWWWWWWWWbbbWWWWWWWWWWWWWbWWWWWWWWbWWWWWWWWgWWWWWWW",
-    "WWWWLfffffLWLfffffLWLffffLWbWWWWWWWWWWbbbWWWWWWWWWWWLLfLLWWWSSSfSSSWWWcccccccccc",
-    "WWWWLfffffLWLfffffLWLffffLWbWWWWWWWWWWbbbWWWWWWWWWWWLfffLWWWSfffffSWWWcccccccccc",
-    "WWWWLfffffLWLfffffLWLffffLWbWWWWWWWWWWbbbWWWWWWWWWWWLfffLWWWSfffffSWWWWWWWWWWWWW",
-    "WWWWLfffffLWLfffffLWLffffLWbWWWWWWWWWWbbbWWWWWWWWWWWLfffLWWWSfffffSWWWWWWWWWWWWW",
-    "WWWWLLLLLLLWLLLLLLLWLLLLLLWbWWWWWWWWWWbbbWWWWWWWWWWWLLLLLWWWSfffffSWWWWWWWWWWWWW",
+    "WWWWLfffffLWLfffffLWLffffLWbWWWWWWWWWWbbbWWWWWWWWWWWUUfUUWWWSSSfSSSWWWcccccccccc",
+    "WWWWLfffffLWLfffffLWLffffLWbWWWWWWWWWWbbbWWWWWWWWWWWUfffUWWWSfffffSWWWcccccccccc",
+    "WWWWLfffffLWLfffffLWLffffLWbWWWWWWWWWWbbbWWWWWWWWWWWUfffUWWWSfffffSWWWWWWWWWWWWW",
+    "WWWWLfffffLWLfffffLWLffffLWbWWWWWWWWWWbbbWWWWWWWWWWWUfffUWWWSfffffSWWWWWWWWWWWWW",
+    "WWWWLLLLLLLWLLLLLLLWLLLLLLWbWWWWWWWWWWbbbWWWWWWWWWWWUUUUUWWWSfffffSWWWWWWWWWWWWW",
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWbbbWWWWWWWWWWWWWWWWWWWSSSSSSSWWWWWWWWWWWWW",
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWbbbWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWbbbWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -128,6 +128,12 @@ export const ds_stilts: MapDef = {
       wall: "wood",
       floor: "wood",
       wallHeight: 3.0,
+      roof: "pitched"
+    },
+    U: {
+      wall: "wood",
+      floor: "wood",
+      wallHeight: 2.6,
       roof: "pitched"
     },
     S: {
@@ -838,11 +844,11 @@ export const ds_stilts: MapDef = {
     },
     ds_loft: {
       dialogue: "d_ds_loft",
-      name: "A loft to let"
+      name: "A cabin to let"
     },
     ds_loft_bed: {
       dialogue: "d_ds_loft",
-      name: "The loft"
+      name: "The cabin"
     },
     ds_dive_stage: {
       dialogue: "d_ds_dive",
@@ -896,7 +902,7 @@ export const ds_stilts: MapDef = {
       lock: 30
     },
     ds_loft_locker: {
-      name: "Loft Locker",
+      name: "Cabin Locker",
       items: [],
       yoursIf: {
         flag: "ds_loft_rented"
@@ -984,11 +990,11 @@ export const ds_stilts: MapDef = {
       x: 14,
       y: 36
     },
-    nuno: {
+    rui: {
       x: 16,
       y: 35
     },
-    nuno_bed: {
+    rui_bed: {
       x: 16,
       y: 36
     },
@@ -1000,11 +1006,11 @@ export const ds_stilts: MapDef = {
       x: 22,
       y: 34
     },
-    moana: {
+    mele: {
       x: 61,
       y: 24
     },
-    moana_bed: {
+    mele_bed: {
       x: 60,
       y: 25
     },
@@ -1231,7 +1237,7 @@ export const ds_stilts: MapDef = {
       facing: 2,
       if: {
         not: {
-          flag: "ds_nuno",
+          flag: "ds_rui",
           eq: "put_off"
         }
       }
@@ -1610,7 +1616,7 @@ export const ds_stilts: MapDef = {
       },
       talk: "d_ds_x_fisher",
       barks: [
-        "Tide boat's at six, if Moana's sober. She's always sober.",
+        "Tide boat's at six, if Mele's sober. She's always sober.",
         "Salt up from the city again. Dearer.",
         "Rigs folk in on the launch. Smell them before you see them."
       ]

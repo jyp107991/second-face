@@ -39,7 +39,7 @@ come up. Lua Tanoa, his mother, a net-maker, calls the Stilt Court against the R
 a life, or a boat for a life*. Oona Brack, who keeps the Book, will hear it "when somebody stands up with what the water
 knows". The hearing waits for the player (no date).
 *Investigation:* the sheen to Blackcap (a fresh hose on the tank's rim, the guild's mark; the black water round it); the
-night barge that loads there with no lamps (Moana, Sun-hee, the eelers); Kai's net, still on the bottom, caught on the old
+night barge that loads there with no lamps (Mele, Sun-hee, the eelers); Kai's net, still on the bottom, caught on the old
 line's weeping joint under the Gut (a roofs dive; `k_ds_net`, `l_ds_joint` → with `l_ds_kai` → `c_ds_kai`: the oil killed
 him, not the sea); Hum's board (EXPORT — OPEN; the pressure falling for three months; Hamid Farouk thinks Hum is dying);
 down Hum's north leg to the export valve (`ds_rig_leg`).
@@ -80,20 +80,20 @@ Stilts' men) on Hum; the guild's seal on the Book's page or on the valve.
 *Hook:* the first nine o'clock the player is in Gull Stilts after meeting Oona, a gaunt man walks in on the Meridian road
 whom the Book wrote drowned two years ago: **Mateo Ibarra**. His boat, the *Curlew*, was found adrift at dawn with his coat
 aboard; by page twelve (*what the water takes is the water's; a boat found on the water is the finder's*) it went to its
-finder, **Nuno Sousa**, who married Mateo's wife **Paz** a year later; they have a baby. Mateo wants his boat and his wife.
+finder, **Rui Sousa**, who married Mateo's wife **Paz** a year later; they have a baby. Mateo wants his boat and his wife.
 *Investigation:* the brand on his wrist (N-B 4471: a Ninebridge block lot; Senses/Medicine reads it, or he shows it); the
-*Curlew*'s oars (Moana: they were found shipped and lashed — a drowning man does not ship his oars, `l_ds_curlew_adrift`);
+*Curlew*'s oars (Mele: they were found shipped and lashed — a drowning man does not ship his oars, `l_ds_curlew_adrift`);
 the tide post's tally (the same box as the main line): IBARRA, M. — TAKEN AT THE GUT, NIGHT — ON WORD OF J. SOUSA —
-FINDER'S FEE: HIS BOAT (`l_ds_finders_fee` → `c_ds_sold`); Nuno himself (Speech 55, or the tally in his hands).
+FINDER'S FEE: HIS BOAT (`l_ds_finders_fee` → `c_ds_sold`); Rui himself (Speech 55, or the tally in his hands).
 *Turn:* Mateo did not fall in; he was taken by the guild's debt-press for three hundred Tolls of salt and twine owed at the
-post, on Nuno's word, and Nuno's fee was the boat. The drowning was the press's staging. Paz never knew.
+post, on Rui's word, and Rui's fee was the boat. The drowning was the press's staging. Paz never knew.
 *Choice* (`ds_court`, at the Greta): **written** (the Book as written: Mateo is the water's; Mateo goes out to Hum's crew, or
 away) · **living** (Speech 50: the brand −10, the oars −5, the tally −10, Nine's word on a record that yields to the living
 −5: a new page, *what the water gives back is not the water's*, `ds_prec_living`; the *Curlew* is Mateo's; Paz is asked,
-and chooses by what she knows: with Nuno and the baby if she does not know, alone with the baby if she does) · **sold**
-(the tally or Nuno's word read out: the Book's oldest sentence for a man who sells a neighbour to the press, *put off the
-stilts*: Nuno rows out of Gull Stilts for good, `ds_nuno` = put_off; the *Curlew* is Mateo's; Paz stays alone with the
-baby, and Mateo moors the *Curlew* under her loft and waits) · **quiet** (outside the court: the player buys Mateo Moana's old
+and chooses by what she knows: with Rui and the baby if she does not know, alone with the baby if she does) · **sold**
+(the tally or Rui's word read out: the Book's oldest sentence for a man who sells a neighbour to the press, *put off the
+stilts*: Rui rows out of Gull Stilts for good, `ds_rui` = put_off; the *Curlew* is Mateo's; Paz stays alone with the
+baby, and Mateo moors the *Curlew* under her loft and waits) · **quiet** (outside the court: the player buys Mateo Mele's old
 skiff, 80, and he goes up the delta; Paz never knows). Placements read the flags; Oona's later lines read the new page.
 
 ## Side quest — `q_ds_light` "False Light"
@@ -124,10 +124,10 @@ coins (25); street → the pharmacy (a board, two bandages) · the hardware shop
 fridge (two holdfast, 20); legs → three boards and a cell · a pump controller (`j_controller`, worth a rifle) · two boards,
 two cells and 40. A failed check is a dive that comes up early with nothing. Kai's net is a roofs find while the main line
 is open. Ade charges more (10/12/14) and has no third band without the bag. Fishing at the smokehouse at dawn
-(Hassan Idrissi): one fish that tastes of the rig while the sheen lasts, three and a wage once the fish are back.
+(Hassan Benali): one fish that tastes of the rig while the sheen lasts, three and a wage once the fish are back.
 
 ## Transport
-The tide boat (Moana Tui): a world network `net_tide` (Meridian – Gull Stilts – the Rigs, daily from six) and, in the
+The tide boat (Mele Tui): a world network `net_tide` (Meridian – Gull Stilts – the Rigs, daily from six) and, in the
 village, rides to the Rigs (4) and Blackcap (2, once known). The crew's launch from Hum back to the Gut. Blackcap is also
 reached on foot along the old sea wall at low water (03–07, 15–19), and a skiff at its jetty rows back. Hum's north leg is
 entered down its moonpool hatch (Survival 40, or the bag). Routes: Gull Stilts – Blackcap (marsh, 8 km). The road between
@@ -149,9 +149,9 @@ npc_ds_02, net-maker; want: someone made to answer for Kai; fear: that he died f
 "her"; want: the Stilts fed; fear: her girl's lungs; will not: let a child dive since Kai) · **Amara Coker** (14, npc_ds_14) ·
 **Factor Cyprian Thorne** (51, npc_ds_04, the tide post; courteous, exact; want: the Line's fuel book met and his factorship
 confirmed; fear: being sent back to a gate; will not: raise his voice or touch anything himself) · **Mateo Ibarra** (39,
-npc_ds_05) · **Paz Ibarra** (36, npc_ds_06) · **Nuno Sousa** (42, npc_ds_07; not a monster, a man who wanted a boat and a
-woman and paid for both with somebody else) · **Moana Tui** (52, npc_ds_08, the tide boat; reads water like Wren reads
-roads) · **Hassan Idrissi** (60, npc_ds_09, the smokehouse: fish, salt, rope; the loft over it to rent) · **Ade Bankole**
+npc_ds_05) · **Paz Ibarra** (36, npc_ds_06) · **Rui Sousa** (42, npc_ds_07; not a monster, a man who wanted a boat and a
+woman and paid for both with somebody else) · **Mele Tui** (52, npc_ds_08, the tide boat; reads water like Wren reads
+roads) · **Hassan Benali** (60, npc_ds_09, the smokehouse: fish, salt, rope; a cabin under an upturned trawler's hull over his net store to rent: the safehouse) · **Ade Bankole**
 (19, npc_ds_15, Yewande's apprentice). The Rigs: **Hamid Farouk** (56, npc_ds_10, Hum's keeper; his father kept the turbine
 before him; want: forty people alive on a steel island; fear: the turbine stopping, because Hum only starts black once;
 will not: leave Hum) · **Leila Farouk** (24, npc_ds_11, his daughter, the engineer; wants Meridian, stays if Hum has a
@@ -163,7 +163,7 @@ two press-men (npc_ds_w_press_a/b).
 ## Companions (interjections; approval for reasons the player sees)
 Tamsin (the sea, first sight: "It's the sky lying down"; Paz "nobody asked her"; −20 Ewan framed, −10 Coker exposed, +5
 Paz asked, −10 Thorne's money) · Wren (water keeps no tracks; the press and the block are her red line country: +10 the
-pressed boy freed, −5 walked past, +5 Nuno exposed, −10 Thorne's money, −15 Ewan framed) · Ilya (wind and fog; counts
+pressed boy freed, −5 walked past, +5 Rui exposed, −10 Thorne's money, −15 Ewan framed) · Ilya (wind and fog; counts
 stilts; reads the barge's watch for a rifle; −10 Ewan framed) · Odile (the post's prices; LINE ACCOUNT is the Line's fuel
 book; two for one is "a spread Cyprian always liked"; reads the tally; +3 the price brokered, −10 Ewan framed) · Ash (the
 sea burial; Lua; graves that don't hold still; −20 Ewan framed, −10 Coker exposed, +5 the court for Coker) · Nine (drainage:
@@ -174,7 +174,7 @@ board; the controller chip's worth; −15 Ewan framed, −10 Coker exposed).
 ## Flags later parts read (the Long Night, B5d; Act 3 logistics)
 `ds_claim` (guild | rig | sea) · `ds_valve` (shut | sleeved | open) · `ds_rig` (crew | shared | guild | stilts) · `ds_post`
 (gone | stays) · `ds_thorne` (fled; unset otherwise) · `ds_thorne_paid` · `ds_barge` (pyre | burned | kept) · `ds_hamid`
-(left | dead) · **`ds_boats_owed`** (the Stilt Court owes the player its boats: set by a guild ruling, a living or sold page,
+(left | dead) · **`ds_boats_owed`** (the Stilt Court owes the player its boats: set by a guild ruling, the Rig ruling, a living or sold page,
 or the false light brought to the court — the Long Night's water logistics read it) · `ds_court` (written | living | sold |
 quiet) · `ds_prec_living` · `ds_light` (exposed | court | stopped | framed) · `ds_coker_dead` · `ds_ewan_dead` · `ds_fish_back`
 · `ds_press_boy`. Who gets Hum's fuel in the Long Night: `guild` → the Tollmen–Concern side has it; `crew`/`shared`/`stilts` →
@@ -186,3 +186,27 @@ unanswered as she wanted; the Rig is a lie that feeds the Stilts; the sea is mon
 Hum's surplus has nowhere to go; sleeved: a tank of fuel the shore must now defend) · Mateo (the law as written, the living,
 the truth that wrecks a marriage and a baby's father, or quiet that leaves a woman deceived and safe) · the false light
 (the guild's justice, the court's, silence, or an innocent).
+
+
+## As built (2026-11-17) — changes from the plan above, and what is open
+- **Names** fixed against the cast as it stood at the end of the build: the finder is **Rui Sousa** (B5a has a Joaquin and a
+  Nuno), the smokehouse keeper **Hassan Benali** (Meridian has Idris Lowe). Flags follow (`ds_rui`, `ds_rui_confessed`).
+- **The court** is Oona's own tree (`d_ds_oona`: nodes `s_*` for Lua's claim, `m_*` for Mateo, `light*` for the false light),
+  called from her hub at the turn of the tide (`until 18`). A failed argument on Lua's claim adjourns (`ds_adjourned`) and the
+  court sits again; it never dismisses on a failed check. A barge already burned at Blackcap is written down as Kai's boat
+  (`ds_claim_how` = burned, no price, no pyre); with the factor fled, the guild's bench is empty and there is no price to
+  broker. A `guild` ruling also gives the player Hum's leave for Stump's dives (`ds_rig_leave`).
+- **Hum's crew** stop fighting once Hamid is dead (their `hostileIf` reads `ds_hamid` ≠ dead); the quest's `taking` stage
+  resolves on `ds_hamid` = left or on his death (`ruled_rig_blood` sets `ds_hamid` = dead, `ds_rig` = stilts).
+- **Reads from other slices (built):** the Mateo hearing reads the Court of Accounts' `prec_unrecorded` (yields −10 on the
+  living argument, property +5; Oona has heard of the city's ruling by the tide boat); Thorne's offer reads `rc_line` (= guild:
+  the guild holds the Line end to end, and the Line runs on Hum's oil). The safehouse is a cabin under an upturned hull.
+- **Not built here (still planned in the story plan's B5b entry): Meridian's Docks** across the river (the Line's far end,
+  the far-bank answer on the Loop's boards, `ds_docks`), and the reads that belong to them (`bw_dogs_hold`, `dr_leven`,
+  `rc_stock`'s news west). The Docks are a Meridian district; they want their own small slice (Meridian's boards and the Line's
+  `meridian` arrival are shared files). The tide boat's network already lands at `meridian`; when the Docks exist, its
+  Meridian end should be the Docks' water stairs.
+- **Unity:** no runtime change was needed (dives, fishing, rides and the court are dialogue; boats use the `wagon` prop as
+  Lantern Row's boat does; deep water is `water` + `blocks`). The place build for `ds_stilts`, `ds_rigs`, `ds_terminal` (open
+  sites at their locations, drawn with open water to the edges, `rim: keep`) and the cells `ds_rig_leg`, `ds_wade` is P10 work;
+  `npm run export` has not been run for this slice.
