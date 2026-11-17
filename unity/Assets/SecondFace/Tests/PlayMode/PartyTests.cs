@@ -257,7 +257,12 @@ namespace SecondFace.Tests
             walk.Settle();
             yield return Wait(1f);
             Assert.That(Party.StateOf(g, Companion), Is.EqualTo(CompanionState.Waiting));
-            Assert.That(walk.Party.ModeOf(Companion), Is.EqualTo(PartyFollowers.Mode.Waiting), "waiting where they stood");
+            {
+                var body = walk.Party.Of(Companion);
+                var rag = body != null && body.Animator != null ? body.Animator.GetComponent<Ragdoll>() : null;
+                Assert.That(walk.Party.ModeOf(Companion), Is.EqualTo(PartyFollowers.Mode.Waiting),
+                    $"waiting where they stood (held {body?.Held}, fallen {rag?.Fallen}, blending {rag?.Blending}, content places them {Party.PlacedByContent(g, Companion)}, in party {g.World.Party.Contains(Companion)})");
+            }
             var left = follower.transform.position;
             var spot = Party.Spot(g, Companion);
             Assert.That(spot != null && spot.HasPoint, Is.True, "their spot is in the game");

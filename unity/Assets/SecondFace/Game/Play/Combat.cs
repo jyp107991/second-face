@@ -37,7 +37,10 @@ namespace SecondFace.Game.Play
         public float Reach = 30f;
         /// <summary>How far an ally whose condition holds joins from (a rifle on the rise above the square).</summary>
         public float AllyReach = 80f;
-        public bool Active => _battle != null && _battle.Active;
+        /// <remarks>On until the fight is wholly over (its dead written, the beaten back up): the battle itself stops a frame
+        /// before that, and a hostility check in that frame started a second fight with the dead still standing on paper
+        /// (they came back at the health they had, and the old fight's end then cleared the new one, 2026-11-17).</remarks>
+        public bool Active => _battle != null;
         /// <summary>The fight ended: victory, fled, defeat or truce.</summary>
         public event System.Action<string> Ended;
         /// <summary>A fight is about to start (the game saves).</summary>

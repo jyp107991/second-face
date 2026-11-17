@@ -2243,6 +2243,335 @@ MonoBehaviour:
     m_Localized: They
     m_Metadata:
       m_Items: []
+  - m_Id: 6732710240698368
+    m_Localized: You
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669888
+    m_Localized: A memory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669889
+    m_Localized: The pit is yours.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669890
+    m_Localized: You wake on the pit floor.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669891
+    m_Localized: The bout is called off.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669892
+    m_Localized: Your body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669893
+    m_Localized: On the table
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669894
+    m_Localized: You have {0} Tolls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669895
+    m_Localized: "Medicine {0} \xB7 your Grit {1} \xB7 Drift {2}, {3}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669896
+    m_Localized: steady
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669897
+    m_Localized: cool
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669898
+    m_Localized: cold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669899
+    m_Localized: drifting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669900
+    m_Localized: Eyes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669901
+    m_Localized: Neural
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669902
+    m_Localized: Left arm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669903
+    m_Localized: Right arm
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669904
+    m_Localized: Legs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669905
+    m_Localized: Spine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669906
+    m_Localized: Skin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669907
+    m_Localized: Organs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669908
+    m_Localized: old
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669909
+    m_Localized: dark
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669910
+    m_Localized: Concern-made
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864192
+    m_Localized: nothing fitted
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864193
+    m_Localized: "{0} \xB7 {1}%"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864194
+    m_Localized: '{0} due'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864195
+    m_Localized: '{0} in {1} d'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864196
+    m_Localized: not working
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864197
+    m_Localized: "Repair \xB7 {0} T"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864198
+    m_Localized: "Take out \xB7 {0} T"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864199
+    m_Localized: theirs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864200
+    m_Localized: yours
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864201
+    m_Localized: replaces {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864202
+    m_Localized: needs {0} every {1} d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864203
+    m_Localized: Drift +{0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864204
+    m_Localized: "{0} h on the table \xB7 risk {1}% \xB7 fee {2} T"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864205
+    m_Localized: "{0} h on the table \xB7 risk {1}% \xB7 piece {2} T \xB7 fee {3}
+      T"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864206
+    m_Localized: '{0} T'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864207
+    m_Localized: Fit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864208
+    m_Localized: Nothing on the table. Bring a boxed piece, or ask what they have.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864209
+    m_Localized: The body may refuse a piece (the fee spent, the piece kept) or take
+      it badly (it goes in at 60%). Grit helps; a better surgeon helps more.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864210
+    m_Localized: Done
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864211
+    m_Localized: '{0} hours under the lamp. The {1} is in and it is yours.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864212
+    m_Localized: '{0} hours, and a bad half hour in the middle of them. The {1} is
+      in, but it did not go in clean: it will need seeing to.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864213
+    m_Localized: '{0} works for {1} hours and the body will not have it. The {2}
+      comes out again. The fee is spent.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864214
+    m_Localized: The {0} comes out and goes in a box.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864215
+    m_Localized: That is {0} Tolls, and you have {1}.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864216
+    m_Localized: '{0} Tolls for that, and you have {1}.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864217
+    m_Localized: '{0} Tolls to take it out, and you have {1}.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864218
+    m_Localized: '{0} seen to: {1} Tolls.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864219
+    m_Localized: '{0} out and boxed: {1} Tolls.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864220
+    m_Localized: Nothing there.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864221
+    m_Localized: '{0}: fitted.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864222
+    m_Localized: '{0}: fitted, with a complication.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864223
+    m_Localized: '{0}: rejected.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864224
+    m_Localized: Dust
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864225
+    m_Localized: "First past {0} \xB7 {1} Tolls in the pot"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864226
+    m_Localized: "First past {0} \xB7 for {1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864227
+    m_Localized: You
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864228
+    m_Localized: "Your run \xB7 {0}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864229
+    m_Localized: "{0}'s run \xB7 {1}"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864230
+    m_Localized: '{0} wins'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864231
+    m_Localized: Roll
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864232
+    m_Localized: Bank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864233
+    m_Localized: Bank {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864234
+    m_Localized: Leave the table
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864235
+    m_Localized: 'Throw as often as you dare: a 1 loses the run and the turn. Bank
+      to keep it. First past {0} at the end of a round takes the pot.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864236
+    m_Localized: '{0} puts {1} Tolls in the dust. So do you.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864237
+    m_Localized: '{0} names the stakes: {1}.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864238
+    m_Localized: '{0} throws a 1: dusted, {1} lost.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864239
+    m_Localized: '{0} banks {1} ({2}).'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864240
+    m_Localized: Level at {0}. Another round.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864241
+    m_Localized: '{0} takes the pot: {1} Tolls.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864242
+    m_Localized: '{0} takes it: {1}.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864243
+    m_Localized: You win {0} Tolls.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864244
+    m_Localized: '{0} takes the pot.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864245
+    m_Localized: 'You win: {0}.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864246
+    m_Localized: '{0} wins: {1}.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864247
+    m_Localized: You need {0} Tolls to sit down.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864248
+    m_Localized: '{0} can''t cover the stake.'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
