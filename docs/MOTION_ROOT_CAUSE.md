@@ -275,10 +275,11 @@ frame rates), `/home/user/second-face-staging/motion/README.md` (clip QA, clips 
   retarget's) with the hand 3.9 cm inside the hip's skin (look135 4.0; the right 2.8), and the clearance turns it out to
   20.0-22.6° (+1.1 at the shoulder, +1.9 for the remainder); the committed reference held the arms 1.6° further out and hid
   that depth. That is the T4 item (the hand resting on the thigh with the flesh and cloth giving 0.3-1 cm, not a 4 cm push),
-  per body with its depth, not a looser A1. (2) **FootPlant's moving ground rule is a flat-foot proxy**: it sets the hips by
-  the stride's lowest *ankle* over a flat sole's height, so a foot that comes down pitched differently (the T-pose
-  reference's) leaves the sole itself 0.6-1.5 cm in the ground at its stance; the rule is re-derived on the soles' own
-  points (the BodySkin heel/ball the gate measures), next. (3) The canonical arms (the converters' `t_pose_key` keying the
+  per body with its depth, not a looser A1. (2) **The jogs' sink is not FootPlant's moving envelope**: it sets the hips by the
+  stride's lowest *ankle* over a flat sole's height; set instead by the soles' own lowest points (the heel, back, ball and
+  tip the gate measures), the same pick read W6 16 → 20 (the p2 sink unchanged at −1.5…−3.0 cm on the jogs and sneaks, and
+  the men's jogs spiking to 5.3-6.2 cm, over the cap of 4), so that change was taken back; the stance sole's sink comes from
+  another part of the foot plant (the hold or the lift of the bearing foot), traced next frame by frame. (3) The canonical arms (the converters' `t_pose_key` keying the
   arms exactly level, so Unity's levelling moves 0°, and the same on the bodies' avatars) are a rigour item, held: (b)
   matches (a) within 0.7° without it.
 

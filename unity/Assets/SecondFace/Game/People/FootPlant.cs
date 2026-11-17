@@ -334,13 +334,8 @@ namespace SecondFace.Game.People
             var eR = _footR.position.y - gR - ankleR;
             var e = Mathf.Min(eL, eR);
             // moving, by the stride's lowest (the lower envelope over the last strides: a running foot lands on its ball with
-            // the ankle high, and the body is not to be pulled down to it), of the soles themselves (their heel, back, ball and
-            // tip points, the body's own where BodySkin has them): by the ankle over a flat sole's height, a foot that bears the
-            // weight pitched otherwise than at rest, as each clip's own T-pose reference retargets the jogs, stood with its
-            // sole 0.6-1.5 cm in the ground at the stance (W6 p2 to −3.3 on a pick, 2026-11-17)
-            var sL = SoleOver(_footL, _toeL, _heelL, _backL, _ballL, _tipL, gL);
-            var sR = SoleOver(_footR, _toeR, _heelR, _backR, _ballR, _tipR, gR);
-            _low = Mathf.Min(Mathf.Min(sL, sR), _low + 0.08f * dt);
+            // the ankle high, and the body is not to be pulled down to it)
+            _low = Mathf.Min(e, _low + 0.08f * dt);
             // standing, low enough that both feet reach the ground (the higher foot's need: on the lower one's alone the
             // other floated up to 3 cm, F1); moving, by the stride's lowest
             // slowing from a jog, both feet off the ground (the jog's flight still in the blend at a walk's pace): the lower
