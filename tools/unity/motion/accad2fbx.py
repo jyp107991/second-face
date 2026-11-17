@@ -464,6 +464,7 @@ def export(d, joints, order, rows, speed, hip, out_dir, src_fps):
                    'closed': bool(d.get('loop')) and not (d.get('_open') if d.get('loop') == 'gait' and not d.get('mirror') else C.OPEN),
                    'flips_repaired': d.get('_flips') or None, 'inbetween': d.get('_inbetween') or None,
                    'speed_root': round(d['_speed_root'], 3) if d.get('_speed_root') else None, 'plant': PL.summary(d.get('_plant'))}, f)
+    C.verify_inbetweens(path)
     print(f'clip {d["name"]}: {len(rows)} frames, speed {speed:.2f} m/s')
 
 

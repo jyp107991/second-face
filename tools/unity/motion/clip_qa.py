@@ -13,6 +13,10 @@ Checks, per clip (the converter's FBX + json) and per source trial (CMU ASF/AMC,
   inbetween each in-between bone (between two Humanoid bones: Neck2, the wrists' twist bones, the hip joints) holds its rest
             rotation (the converter's record) in the bind and every frame (fails above 0.5°); the bind-vs-mean-take angle is
             reported only
+  configuration  Unity's own in-between rule: each in-between bone in every frame against the avatar configuration the clip
+            is imported with (the staged .meta's, or with --project the project's .meta: its stored humanDescription.skeleton;
+            none stored, Unity builds it from the file's first frame); fails above 0.5° (Unity's "Rig Error: Avatar Rig
+            Configuration mis-match"; reproduces Unity's figures to 1e-4°)
   stance    gaits: the planted foot as the editor measured it in game (2026-11-17): the loop as Loop Pose plays it, its travel
             added, each stance from the key before touchdown to toe-off, key by key, the ground speed of the slower of the
             ankle and the ball and of the contact point (the lower sole point); fails where the slowest of the three moves
@@ -21,7 +25,8 @@ Checks, per clip (the converter's FBX + json) and per source trial (CMU ASF/AMC,
     # 1. dump the clips' joints (Blender, the converter's output)
     blender -b --factory-startup --python tools/unity/motion/clip_qa.py -- dump <out_dir> <clip.fbx> [...]
     # 2. the gate (numpy)
-    python3 -I tools/unity/motion/clip_qa.py qa <dump_dir> <clip json dir> <out.json> [--sources <cmu dir> <accad dir> <listing tsv>]
+    python3 -I tools/unity/motion/clip_qa.py qa <dump_dir> <clip json dir> <out.json> [--cmu <dirs>] [--accad <dir>]
+        [--project <the Unity project's Motion folder>: judge the configuration against the .meta files there]
     # 3. two sets' stance measures side by side (each a qa output)
     python3 -I tools/unity/motion/clip_qa.py compare <qa_a.json> <qa_b.json> [<out.json>]
 """
@@ -214,7 +219,7 @@ HUMAN = {'Hips', 'Spine', 'Chest', 'UpperChest', 'Neck', 'Head', 'Jaw', 'LeftEye
     s + f + p for s in ('Left', 'Right') for f in ('Thumb', 'Index', 'Middle', 'Ring', 'Little') for p in ('Proximal', 'Intermediate', 'Distal')}
 
 
-def inbetween_errors(path):
+def inbetween_errors(path, human=None):
     """Unity's in-between check, read from the FBX: for each in-between bone (a node between two Humanoid bones, which the
     avatar holds at its bind rotation), the angle between its bind rotation (the Model's default Lcl Rotation, with any
     Pre/PostRotation: the pose Unity builds the avatar from) and the take's mean rotation (the chordal mean of its curve),
@@ -236,17 +241,18 @@ def inbetween_errors(path):
         if c[1][0] == 'OO' and c[1][1] in names and c[1][2] in names: parent[names[c[1][1]]] = names[c[1][2]]
     kids = {}
     for ch, pa in parent.items(): kids.setdefault(pa, []).append(ch)
+    H = human or HUMAN
     def has_human_below(n):
-        return any(k in HUMAN or has_human_below(k) for k in kids.get(n, []))
+        return any(k in H or has_human_below(k) for k in kids.get(n, []))
     def has_human_above(n):
         while n in parent:
             n = parent[n]
-            if n in HUMAN: return True
+            if n in H: return True
         return False
     curves = fbx_rotation_curves(path)
     out = {}
     for nm, P in props.items():
-        if nm in HUMAN or not has_human_above(nm) or not has_human_below(nm): continue
+        if nm in H or not has_human_above(nm) or not has_human_below(nm): continue
         pre = _euler_R(P.get('PreRotation', [0, 0, 0]))[0]; post = _euler_R(P.get('PostRotation', [0, 0, 0]))[0]
         bind = pre @ _euler_R(P.get('Lcl Rotation', [0, 0, 0]))[0] @ post.T
         take = np.einsum('ij,njk,kl->nil', pre, _euler_R(curves[nm]), post.T) if nm in curves else bind[None]
@@ -277,6 +283,88 @@ def inbetween_rest(path, meta):
                       [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)]])
         Rs = np.concatenate([_euler_R(bind.get(nm, [0, 0, 0])), _euler_R(curves[nm]) if nm in curves else np.zeros((0, 3, 3))])
         out[nm] = float(np.degrees(np.arccos(np.clip((np.einsum('ij,nij->n', R, Rs) - 1) / 2, -1, 1))).max())
+    return out
+
+
+def _quat_unity(R):
+    """FBX local rotations (N, 3, 3) -> quaternions (N, 4: x y z w) on Unity's axes as its importer stores them for these
+    files (Blender's export, forward -Z, up Y: the z axis mirrored, (x, y, z, w) -> (-x, -y, z, w)). Checked against the
+    configurations Unity stored for the CMU clips: the hip joints, which no take turns, agree to 0.00°."""
+    np = _np()
+    R = R if R.ndim == 3 else R[None]
+    t = np.einsum('nii->n', R)
+    q = np.zeros((len(R), 4))
+    for i, m in enumerate(R):
+        if t[i] > 0:
+            s = math.sqrt(t[i] + 1.0) * 2; q[i] = [(m[2, 1] - m[1, 2]) / s, (m[0, 2] - m[2, 0]) / s, (m[1, 0] - m[0, 1]) / s, 0.25 * s]
+        elif m[0, 0] > m[1, 1] and m[0, 0] > m[2, 2]:
+            s = math.sqrt(1.0 + m[0, 0] - m[1, 1] - m[2, 2]) * 2; q[i] = [0.25 * s, (m[0, 1] + m[1, 0]) / s, (m[0, 2] + m[2, 0]) / s, (m[2, 1] - m[1, 2]) / s]
+        elif m[1, 1] > m[2, 2]:
+            s = math.sqrt(1.0 + m[1, 1] - m[0, 0] - m[2, 2]) * 2; q[i] = [(m[0, 1] + m[1, 0]) / s, 0.25 * s, (m[1, 2] + m[2, 1]) / s, (m[0, 2] - m[2, 0]) / s]
+        else:
+            s = math.sqrt(1.0 + m[2, 2] - m[0, 0] - m[1, 1]) * 2; q[i] = [(m[0, 2] + m[2, 0]) / s, (m[1, 2] + m[2, 1]) / s, 0.25 * s, (m[1, 0] - m[0, 1]) / s]
+    return q * np.array([-1.0, -1.0, 1.0, 1.0])
+
+
+def meta_configuration(meta_path):
+    """The avatar configuration a ModelImporter .meta stores (humanDescription.skeleton): {transform: local rotation, x y z w
+    on Unity's axes}; {} when the meta stores none (`skeleton: []`, as the converters write it), and Unity builds the
+    configuration from the file itself on import. Once Unity has built one it writes it into the .meta and keeps it on every
+    later import of a changed file (Avatar setup 'Create From This Model' re-uses a stored description): the project's
+    clips imported every set since against the configuration of their first import (2026-10-29 for the old names)."""
+    return meta_avatar(meta_path)[1]
+
+
+def meta_avatar(meta_path):
+    """(human, skeleton) stored in a ModelImporter .meta: the transforms mapped to Humanoid bones (humanDescription.human's
+    boneName: the CMU clips' stored mappings make the wrist twist bone the Hand), and meta_configuration's skeleton. Both
+    empty when the meta stores none."""
+    import re
+    if not meta_path or not os.path.exists(meta_path): return set(), {}
+    txt = open(meta_path).read()
+    human = set(re.findall(r'- boneName: (\S+)\n\s+humanName: ', txt.split('\n    skeleton:', 1)[0])) if '\n    human:' in txt else set()
+    if '\n    skeleton:' not in txt: return human, {}
+    part = txt.split('\n    skeleton:', 1)[1].split('\n    skeletonHasParents', 1)[0]
+    ents = re.findall(r'- name: (\S+)\n\s+parentName: ?(\S*)\n\s+position: \{[^}]*\}\n\s+rotation: \{x: (\S+), y: (\S+), z: (\S+), w: (\S+)\}', part)
+    return human, {e[0]: [float(v) for v in e[2:6]] for e in ents}
+
+
+def inbetween_configuration(path, meta_path):
+    """Unity's own in-between rule, computed as Unity computes it ("Rig Error: Avatar Rig Configuration mis-match. Inbetween
+    bone rotation in configuration does not match rotation in animation file: 'Neck2' : rotation error = N deg"): for each
+    in-between bone, the largest angle over the take's frames between its local rotation in the file and its rotation in the
+    avatar configuration the clip is imported against. That configuration is the one stored in the .meta it is imported with
+    (humanDescription.skeleton); a meta that stores none makes Unity build it from the file as imported, the take's first
+    frame (the stored configurations match their takes' first frames: talk's spine and legs within 0.05°, run_c's chest,
+    neck and head within 0.03°), so a bone held in every frame reads 0. Measured on motion set v6 imported over the project's
+    metas: Unity's twelve figures reproduced to 1e-4° (jog 14.2743, jog_f 39.7747, walk_f_c 45.2163, ...; 2026-11-17).
+    The in-between bones are the stored mapping's (Unity's), or the Mecanim names' when none is stored.
+    {bone: (deg or None when the stored configuration lacks the bone, 'stored' | 'file')}."""
+    np = _np()
+    human, conf = meta_avatar(meta_path)
+    # the in-between bones by the meta's stored mapping (Unity's), else by the Mecanim names (a fresh mapping; Unity's own
+    # auto-mapping made the CMU clips' wrist twist bone the Hand every time it ran, so it may judge fewer bones than this)
+    names = list(inbetween_errors(path, human or None).keys())
+    if not names: return {}
+    curves = fbx_rotation_curves(path)
+    objs, _ = _fbx_tree(path); bind = {}
+    for n in objs:
+        if n[0] != 'Model': continue
+        nm = n[1][1].split('\x00')[0]
+        for k in n[2]:
+            if k[0] == 'Properties70':
+                for p in k[2]:
+                    if p[0] == 'P' and p[1][0] == 'Lcl Rotation': bind[nm] = [float(v) for v in p[1][4:7]]
+    out = {}
+    for nm in names:
+        q = _quat_unity(_euler_R(curves[nm]) if nm in curves else _euler_R(bind.get(nm, [0, 0, 0])))
+        if conf:
+            if nm not in conf: out[nm] = (None, 'stored'); continue
+            ref, src = np.array(conf[nm]), 'stored'
+        else:
+            ref, src = q[0], 'file'
+        ref = ref / np.linalg.norm(ref)
+        out[nm] = (float(np.degrees(2 * np.arccos(np.clip(np.abs(q @ ref), 0, 1))).max()), src)
     return out
 
 
@@ -477,9 +565,11 @@ def combat_checks(m, meta, r, fails, source):
         r['stance'] = {'error': str(e)[:80]}
 
 
-def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False):
+def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False, project=None):
     """combat: the combat set's checks besides (every clip's planted feet, each one-shot's travel against its root flag, a
-    two-handed grip's hands at a near-constant distance, the clip's set against its source's sex, the stance measures)."""
+    two-handed grip's hands at a near-constant distance, the clip's set against its source's sex, the stance measures).
+    project: a folder of the .meta files the clips will be imported over (the Unity project's Assets/SecondFace/Motion); the
+    in-between configuration is then judged against the configuration each of those stores, not the staged meta's."""
     np = _np()
     sys.path.insert(0, os.path.join(HERE, '..', '..', 'qa', 'calibration'))
     import measures as M
@@ -561,6 +651,19 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False):
             for k, v in sorted(rest.items()):
                 if v is None: fails.append(f'in-between: {k} has no recorded rest rotation (re-export: cmu2fbx.py records it)')
                 elif v > 0.5: fails.append(f'in-between: {k} leaves its rest rotation by up to {v:.1f}° (bind or a frame)')
+            # Unity's own rule (motion v6.1, 2026-11-17): the take's in-between bones against the avatar configuration the clip
+            # is imported with, read from that .meta (humanDescription.skeleton; none stored: Unity builds it from the file).
+            # v6 passed inbetween_rest (the files hold Neck2 at its rest, 0.00°) yet Unity reported a Neck2 Rig Error on 12
+            # gaits: they were imported over the project's metas, whose stored configurations date from each clip's first
+            # import (2026-10-29 for the old names). The figures below reproduce Unity's to 1e-4°.
+            cmeta = os.path.join(project, name + '.fbx.meta') if project else fbx + '.meta'
+            cfg = inbetween_configuration(fbx, cmeta)
+            r['checks']['inbetween_config_deg'] = {k: round(v[0], 4) if v[0] is not None else None for k, v in sorted(cfg.items())}
+            r['checks']['inbetween_config_from'] = {k: (f'stored in {cmeta}' if v[1] == 'stored' else f'built from the file ({os.path.basename(cmeta)} stores none)') for k, v in sorted(cfg.items())}
+            for k, (v, frm) in sorted(cfg.items()):
+                where = 'the configuration stored in ' + os.path.relpath(cmeta) if frm == 'stored' else 'the configuration Unity builds from the file'
+                if v is None: fails.append(f'configuration: {k} is missing from {where}')
+                elif v > 0.5: fails.append(f"configuration: {k} is {v:.1f}° from {where} (Unity's Rig Error; import the staged .meta, which stores none)")
             ib = inbetween_errors(fbx)
             r['checks']['inbetween_deg'] = {k: {'mean': round(v[0], 2), 'max': round(v[1], 2)} for k, v in sorted(ib.items())}
             # (the bind-vs-mean-take angle is reported, not judged: it read 0 on v4, which Unity rejected, 2026-11-17)
@@ -665,7 +768,7 @@ if __name__ == '__main__':
     elif a[0] == 'qa':
         cmu = a[a.index('--cmu') + 1].split(',') if '--cmu' in a else []
         accad = a[a.index('--accad') + 1].split(',') if '--accad' in a else None
-        rows = qa_clips(a[1], a[2], cmu, accad, combat='--combat' in a)
+        rows = qa_clips(a[1], a[2], cmu, accad, combat='--combat' in a, project=a[a.index('--project') + 1] if '--project' in a else None)
         json.dump(rows, open(a[3], 'w'), indent=1)
         for r in rows:
             print(f"{r['clip']:11s} {'PASS' if r['pass'] else 'FAIL'} {r['src']:12s} {r['sex']:14s} " + ('; '.join(r['fail']) if r['fail'] else ''))

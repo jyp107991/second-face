@@ -665,7 +665,25 @@ def export_clip(d, bones, rows, speed, hip):
                    'speed_root': round(d['_speed_root'], 3) if d.get('_speed_root') else None, 'plant': PL.summary(d.get('_plant')),
                    'sex_source': d.get('sex_source'), 'stature_est_m': d.get('stature_est_m'),
                    'range': list(d['range']) if d.get('range') else None}, f)
+    verify_inbetweens(path)
     print(f'clip {d["name"]}: {len(rows)} frames, speed {speed:.2f} m/s')
+
+
+def verify_inbetweens(path, limit=0.5):
+    """Neck convention D checked on the FBX and .meta as written, the last step of every clip (motion v6.1, 2026-11-17):
+    each in-between bone (Neck2, the wrists' twist bones, the hip joints) (1) at the rest rotation the converter recorded for
+    it, in the bind and every frame of the file's own curves (clip_qa.inbetween_rest), and (2) at the rotation of the avatar
+    configuration Unity imports the clip against, in every frame (clip_qa.inbetween_configuration: Unity's own rule, read from
+    the written .meta, which stores no configuration, so Unity builds it from the file), each within `limit` deg; the export
+    stops otherwise. (v6's Neck2 Rig Error came from neither: the project's metas stored an older configuration.)"""
+    import json
+    import clip_qa as Q
+    meta = json.load(open(os.path.splitext(path)[0] + '.json'))
+    bad = {k: v for k, v in Q.inbetween_rest(path, meta).items() if v is None or v > limit}
+    if bad: raise SystemExit(f'{os.path.basename(path)}: in-between bones off their recorded rest in the written FBX: {bad}')
+    bad = {k: v for k, (v, _) in Q.inbetween_configuration(path, path + '.meta').items() if v is None or v > limit}
+    if bad: raise SystemExit(f'{os.path.basename(path)}: in-between bones off the avatar configuration of the written .meta: {bad}')
+    return True
 
 def main():
     global CMU, OUT, ONLY, SRC_FPS, CLIPS, REFINE, SEAM
