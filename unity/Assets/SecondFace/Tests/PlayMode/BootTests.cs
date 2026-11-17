@@ -508,7 +508,8 @@ namespace SecondFace.Tests
             var g = walk.Game;
             var map = SecondFace.Core.Content.Registry.Maps["shale"];
             var things = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None);
-            var fires = things.Where(t => t.Verbs.Contains("camp")).ToList();
+            // Shale's own (the places built since stand near enough to load their fires too)
+            var fires = things.Where(t => t.Verbs.Contains("camp") && t.GetComponent<SecondFace.Game.World.PlaceMarker>()?.Map == "shale").ToList();
             Assert.That(fires.Count, Is.EqualTo(4), "Shale's four fires");
             var at = walk.Walker.transform.position;
             var fire = fires.OrderBy(f => Vector3.Distance(f.transform.position, at)).First();
@@ -627,7 +628,8 @@ namespace SecondFace.Tests
             Bootstrap boot = null;
             yield return Boot(b => boot = b);
             var walk = boot.Walkabout;
-            var seats = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None).Where(t => t.Verbs.Contains("sit")).ToList();
+            var seats = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None)
+                .Where(t => t.Verbs.Contains("sit") && t.GetComponent<SecondFace.Game.World.PlaceMarker>()?.Map == "shale").ToList();   // (Shale's own)
             Assert.That(seats.Count, Is.EqualTo(11), "Shale's chairs");
             var at = walk.Walker.transform.position;
             var chair = seats.OrderBy(c => Vector3.Distance(c.transform.position, at)).First();
