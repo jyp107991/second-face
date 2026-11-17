@@ -8,7 +8,7 @@ namespace SecondFace.Game.UI
     /// <summary>
     /// The settings (P5.3j, DESIGN_UNITY §5.8): one page on the desk, in three parts: the words (four sizes, high
     /// contrast), the camera (how far a drag turns it, which way) and play (difficulty, which touches enemy aim and damage
-    /// only, and combat speed, both read by the fights; skipping lines already heard; autosaves; the one-time tips' switch
+    /// only, and combat speed and whether the other side's turns skip their show, read by the fights; skipping lines already heard; autosaves; the one-time tips' switch
     /// comes with the tips). Every choice takes at once and is kept (the
     /// owner of <see cref="Settings"/> applies them: a bigger size re-sets every word on screen, this page too).
     /// </summary>
@@ -79,6 +79,7 @@ namespace SecondFace.Game.UI
             Chips("settings.difficulty", Settings.Difficulties, s.Difficulty, v => Strings.Get("settings.difficulty_" + v), v => _change(x => x.Difficulty = v), "difficulty");
             Note(Strings.Get("settings.difficulty_note"));
             Chips("settings.combat_speed", Settings.CombatSpeeds, s.CombatSpeed, v => v.ToString("0.#", CultureInfo.InvariantCulture) + "×", v => _change(x => x.CombatSpeed = v), "combat");
+            Toggle("settings.combat_skip", s.CombatSkip, v => _change(x => x.CombatSkip = v), "combat-skip", "settings.combat_skip_on", "settings.combat_skip_off");
             Toggle("settings.skip_seen", s.SkipSeen, v => _change(x => x.SkipSeen = v), "skip");
             Toggle("settings.autosave", s.Autosave, v => _change(x => x.Autosave = v), "autosave");
         }

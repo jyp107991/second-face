@@ -53,7 +53,8 @@ namespace SecondFace.Core.Combat
         internal List<BattleUnit> Foes;
         /// <summary>The unit and its place it was begun for (a map for a unit that has moved since is stale).</summary>
         public BattleUnit Unit => U;
-        public bool StaleFor(BattleUnit u) => u != U || Math.Abs(u.PX - UX) > 1e-6 || Math.Abs(u.PZ - UZ) > 1e-6 || u.C.Ap != Map.DashAp;
+        public bool StaleFor(BattleUnit u) => u != U || Math.Abs(u.PX - UX) > 1e-6 || Math.Abs(u.PZ - UZ) > 1e-6 || u.C.Ap != Map.DashAp
+                                              || Math.Abs(Map.DashMetres - u.C.Ap * Battle.MetresPerAp / Stances.MoveMul(u.C.Stance)) > 1e-6;
     }
 
     /// <summary>A walk before it is made (B2): its AP and band, the path, the shots it would draw (who, where, at what
