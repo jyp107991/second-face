@@ -1,5 +1,6 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
 import type { Cond, Effect } from '../../engine/world/logic';
+import { DOCKS_ANSWER, DOCKS_ASK } from './md_docks';
 
 /**
  * The Stacks: Block Seven's lobby, floor nine and the roof. The committee and its flat; the tank, the beds and the
@@ -37,9 +38,12 @@ export const d_st_loop: DialogueDef = {
         { id: 'stloop.lantern', text: 'Lantern Row. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_lantern', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { id: 'stloop.bridgeward', text: 'Bridgeward. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_bridgeward', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { id: 'stloop.clover', text: 'Clover, outside the Wall. (4 Tolls)', if: { item: 'tolls', count: 4 }, effects: [{ take: 'tolls', count: 4 }, { event: 'goto', data: { location: 'md_ring', spawn: 'loop', minutes: 30 } }], exit: true, repeat: true },
+        DOCKS_ASK('stloop.docks'),
         { text: '(Leave it.)', exit: true },
       ],
     },
+    // the far bank's answer (B5b, Carrick)
+    docks: DOCKS_ANSWER,
   },
 };
 

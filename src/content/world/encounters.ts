@@ -1,4 +1,6 @@
 import type { RoadEncounterDef } from '../../engine/world/roads';
+import { DS_ENCOUNTERS } from './ds_shore';
+import { B5C_ENCOUNTERS } from './b5c_wilds';
 
 /**
  * Road encounters, by region. A leg of a trip rolls its risk; on a hit one of these that fits the place, the hour and
@@ -66,4 +68,47 @@ export const ROAD_ENCOUNTERS: Record<string, RoadEncounterDef> = Object.fromEntr
     id: 're_caravan', regions: ['sallow'], terrain: ['road', 'track'], weight: 3, once: true, map: 'wild_track', dialogue: 'd_re_caravan',
     npcs: [{ def: 'npc_w_carter', spot: 'ahead', facing: 2 }, { def: 'npc_w_carter_guard', spot: 'ahead2', facing: 3 }],
   },
+  // --- The Rail Corridor (B5a): the Line's roads, and the people on them
+  {
+    id: 're_rc_holdup', regions: ['rail_corridor'], hours: { from: 21, to: 5 }, weight: 6, once: true, map: 'wild_track', dialogue: 'd_re_rc_holdup',
+    if: { all: [{ not: { flag: 'rc_bandits' } }, { not: { flag: 'rc_watch_gone' } }] },
+    npcs: [{ def: 'npc_rc_02', id: 'npc_rc_02_road', spot: 'ahead', facing: 3 }, { def: 'npc_rc_03', id: 'npc_rc_03_road', spot: 'ahead2', facing: 3 }, { def: 'npc_rc_g3', spot: 'side', facing: 3 }],
+  },
+  {
+    id: 're_rc_wreck', regions: ['rail_corridor'], weight: 3, once: true, if: { not: { flag: 'rc_bandits' } },
+    text: 'In the ditch beside the Line, a sealed car on its side with the Concern\'s closed eye on its door, the door open and the seal\'s wire cut clean. Straw, and the square ghosts of crates in the dust. Nothing else in it. Nothing else touched.',
+    effects: [{ lead: 'l_rc_sealed' }, { learn: 'rc_wreck_seen' }, { xp: 10 }],
+  },
+  {
+    id: 're_rc_gang', regions: ['rail_corridor'], hours: { from: 6, to: 18 }, weight: 3, once: true, map: 'wild_track', dialogue: 'd_re_rc_gang',
+    npcs: [{ def: 'npc_rc_w1', spot: 'ahead', facing: 2 }, { def: 'npc_rc_w2', spot: 'ahead2', facing: 2 }],
+  },
+  {
+    id: 're_rc_rods', regions: ['rail_corridor'], weight: 2, once: true, map: 'wild_rough', dialogue: 'd_re_rc_rods',
+    npcs: [{ def: 'npc_rc_w3', spot: 'fire', facing: 3 }],
+  },
+  {
+    id: 're_rc_signal', regions: ['rail_corridor'], hours: { from: 19, to: 5 }, weight: 2, once: true,
+    text: 'Where an old branch leaves the Line and runs off into the grass with no rails on it, a signal still stands on its post, and still shows green, all night, for a train that has not come for ninety years. Somebody has hung a tin cup on its ladder. You leave it there.',
+    effects: [{ learn: 'rc_signal_seen' }, { xp: 15 }],
+  },
+  {
+    id: 're_rc_drovers', regions: ['rail_corridor'], hours: { from: 7, to: 17 }, weight: 2,
+    text: 'Drovers on the Line\'s verge with forty goats and two dogs, walking the grass between the rails and the road because nobody else wants it. They give you a strip of dried meat for a hand turning the herd off the track ahead of the seven o\'clock.',
+    effects: [{ give: 'c_jerky', count: 1 }, { time: 30 }],
+  },
+  {
+    id: 're_rc_grassfire', regions: ['rail_corridor'], hours: { from: 11, to: 18 }, weight: 2,
+    text: 'A grass fire along the Line where an engine\'s sparks have caught the verge, a long low wall of smoke walking with the wind. You go round it the long way, with your sleeve over your mouth.',
+    effects: [{ time: 60 }],
+  },
+  {
+    id: 're_rc_riders', regions: ['rail_corridor'], terrain: ['road', 'track'], weight: 4, map: 'wild_track', dialogue: 'd_re_patrol',
+    if: { flag: 'rc_line', eq: 'guild' },
+    npcs: [{ def: 'npc_w_outrider_a', spot: 'ahead', facing: 3 }, { def: 'npc_w_outrider_b', spot: 'ahead2', facing: 3 }],
+  },
+  // --- the Drowned Shore (B5b): ds_shore.ts
+  ...DS_ENCOUNTERS,
+  // --- the Teeth mines and the Northern Wet (B5c): b5c_wilds.ts
+  ...B5C_ENCOUNTERS,
 ] as RoadEncounterDef[]).map((e) => [e.id, e]));

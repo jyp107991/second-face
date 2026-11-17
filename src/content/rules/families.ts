@@ -16,4 +16,18 @@ export const FAMILIES: Record<string, string[]> = {
   Lorne: ['npc_lr_09', 'npc_cr_06'],
   Vane: ['npc_cr_01', 'npc_cr_10'],
   'Ashby-Crane': ['npc_cr_02', 'npc_cr_04'],
+  // West Halt's watch captain and her brother (B5a)
+  Ortega: ['npc_rc_02', 'npc_rc_12'],
+  // the Drowned Shore (B5b): the dive master and her daughter; a man and his wife; Hum's keeper and his daughter
+  Coker: ['npc_ds_03', 'npc_ds_14'],
+  Ibarra: ['npc_ds_05', 'npc_ds_06'],
+  Farouk: ['npc_ds_10', 'npc_ds_11'],
+  // Carrick, Meridian's docks (B5b): the Hulls' speaker and his granddaughter
+  Ofori: ['npc_dk_07', 'npc_dk_08'],
+  // the Teeth mines and the Northern Wet (B5c): a mother and her son; the dam's keeper and her granddaughter; the Ridge's
+  // foreman and his daughter; the Bottoms' foreman and his daughter
+  Nnadi: ['npc_tm_06', 'npc_tm_07'],
+  Wexford: ['npc_nw_01', 'npc_nw_02'],
+  Brandvold: ['npc_nw_06', 'npc_nw_07'],
+  Huaman: ['npc_nw_09', 'npc_nw_10'],
 };

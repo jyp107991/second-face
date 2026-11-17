@@ -756,6 +756,206 @@ gardens' seed and fruit for the Skirts or Openfield), *Funicular Pass* (the car'
 `q_a2_halcyon`'s `inside` end with its stages; read `hs_marked`, `hs_gate_shut`, `hs_car_down`, `hs_parts`, `hs_nils`,
 `hs_lisle_favour`, `hs_leash_sold`, `kes_link`, `kes_lineage`, `kes_backdoor`, `k_hc_invitation`, `hs_bell_met`.
 
+## Build notes — B5: the Act 2 wilds and the Long Night (2026-11-17; B5a built, B5b–d planned)
+B5 is the country between the two cities and beat 17 (`q_a2_longnight`), in four parts so each ends playable: **B5a the Rail
+Corridor** (built, below), **B5b the Drowned Shore** (and Meridian's Docks, the Line's far end), **B5c the Teeth mines and
+the Northern Wet**, **B5d the Ashlands and the Long Night** (the act's alliance, keystone 8, Act 2's close). The Glass Flats
+were built in B3.1–B3.3. Id prefixes: corridor `rc_*` (maps `rc_*`, NPCs `npc_rc_NN`, flags `rc_*`), shore `ds_*`, mines
+`tm_*`, wet `nw_*`, ashlands `an_*`, the Long Night `ln_*`.
+
+### B5a — the Rail Corridor (built)
+Content: `tools/maps/gen_rc_corridor.py` → `maps/rc_fourways.ts` (80×60, the Junction), `maps/rc_halt_e.ts`, `maps/rc_halt_w.ts`
+(48×36 each), `maps/rc_yard.ts` (64×44, the depot), `maps/rc_kettle.ts` (48×28, a cutting, hidden landmark `lm_rc_kettle`);
+`npcs/rc_corridor.ts`; `dialogue/rc_line.ts` (the Line as transport, the corridor's road encounters), `dialogue/rc_fourways.ts`
+(Four Ways and Kettle Cut), `dialogue/rc_halts.ts` (West Halt, East Halt, the stock car, the east length), `dialogue/rc_yard.ts`
+(Yard Nine, the dead engine); `quests/b5_corridor.ts`; items `items/story_b5.ts`; leads in `world/leads.ts`; events in
+`world/events.ts`; encounters in `world/encounters.ts`; settlements `fourways`, `west_halt`, `east_halt`, `yard_nine`.
+Tests `tests/b5a.test.ts`.
+
+**Found history.** Before the Burn the Line was the freight and commuter railway from the coast to the chip works in the
+Teeth. **Four Ways** is the old interchange where four lines met (east to the Teeth, west to the coast, the south branch to
+the Sallow's salt works, a north spur to the yard); the south branch's rails were pulled up for the Line's repair in the
+Reknitting and the road to Tollhouse 9 runs on its bed. **Yard Nine** was the ninth marshalling yard on the route: the
+depot, the engine shed, the still that makes the engines' alcohol from Openfield's spoiled grain. **East Halt** and **West
+Halt** are what the timetable calls them; the people who live there keep their "length" of track (sleepers, bolts,
+culverts) and sell water to the engines. **Kettle Cut** is a cutting through red clay between Yard Nine and West Halt,
+named for the boiler a pre-war engine left in the ditch there. Two engines: **Sixty** (runs) and **Dorcas** (dead on her pit).
+The guild (Tollmen) sells the tickets and runs the trains; Four Ways' signal box releases every section's token by wire; the
+stationmaster holds the timetable, and in Four Ways the timetable is the law (on the track out of timetable: shot; theft
+from the Line: put off at the next halt in what you stand in; murder: the rope; the clock is right).
+
+**The corridor's wrong.** Two years ago the guild signed **through-running** with the Concern: the Concern's sealed freight
+runs Two-Twelve to Meridian on green, stopping nowhere, with first call on Sixty's paths. The guild pays the halts
+**length money per stop**, so a train that does not stop pays nothing: the halts are starving, their lengths going to rust,
+East Halt down from forty-five people to fourteen. Both halts owe the guild for their water towers' repairs.
+
+**The Line as transport.** `net_line` is unchanged (Meridian, West Halt, Yard Nine, Four Ways, East Halt, Two-Twelve; 25 a
+leg; 07:00). At every stop a ticket point (Four Ways' guild window, the halts' request flags, the yard office, the Skirts'
+board) is a service tree built by `lineBoard()`: a fare to each stop (25 a leg), the ride narrated (the first ride, Kettle
+seen from the car, which puts the cut on the map), the wait for the seven o'clock and the hours of the legs passed, and the
+map (`event: map`, the engine's own planner and Board). **Ways on without a fare:** the Line pass `k_rc_pass` (from the
+guild's bounty, from the stationmaster, from Yard Nine once Dorcas runs), a guild hand's `toll_exempt`, the footplate with
+Willem Visser from Yard Nine (Mechanics 35 or a rifle and Firearms 35: a pair of eyes at the cuttings), the rods (Ferris
+Doyle teaches hopping the through-freight on Yard Nine's curve at night: Stealth 40 or Reflex 7; caught = 20 Tolls or put
+off and walk), and West Halt's handcar (Eamon Fahy, once West Halt trusts you; outside the timetable, so never into Four
+Ways). With `rc_kettle_levy` (the guild's levy after the silence) every fare is 30.
+
+**The cast** (frame narrow for women, broad for men): **Casimir Brodsky** (58, Four Ways' stationmaster, the bible's
+"Quill" renamed for the one-name rule; born at West Halt,
+his mother kept its length; a decent tyrant: two hangings in nine years and every halt fed; checks his watch against the
+clock; never says sorry, says "the timetable regrets") · **Severin Kask** (50, the guild's factor at Four Ways; negotiated
+through-running; courteous, ruthless; needs Brodsky's signals and the Concern's goodwill) · **Halina Wrona** (63, the
+signalwoman; has kept the token instruments alive forty years; writes only what happens: "the register does not lie, so
+I do not write lies in it") · **Yetunde Ajayi** (29, the guild's ticket clerk) · **Nuno Batista** (51, the old refreshment
+room, "Batista's", and the berths in the sleeper cars on the dead siding) · **Chela Ortega** (36, West Halt's watch
+captain; the hold-ups are hers; "nobody hurt" is her rule) · **Abe Mutasa** (19, of West Halt's watch; shot the guild's
+guard Hamish Gorse at Kettle when the guard fired on the stock car; has been sick since) · **Socorro Quispe** (52, West
+Halt's keeper; Chela's mother's sister) · **Eamon Fahy** (39, West Halt's line-keeper and pilotman; the handcar) · **Yaw
+Boateng** (33) and **Joaquin Ortega** (17, Chela's brother) among the twelve in West Halt's tower · **Imani Wekesa** (45,
+East Halt's keeper) · **Gerrit Haas** (67, East Halt's old line-keeper, walks the length every morning) · **Kofi Mensah**
+(13, sells Concern tins at East Halt) · **Ida Szalai** (55, Yard Nine's foreman fitter; Dorcas's keeper) · **Willem Visser**
+(48, the guild's driver; drives the through and hates it: "we used to stop for water and gossip") · **Jide Olatunji** (40,
+the still) · **Anders Whitlock** (looks forty; the Concern's field engineer at Yard Nine) · **Ferris Doyle** (47, rides the
+rods; saw the handcar at Kettle). Kin: Ortega (Chela, Joaquin).
+
+**Kettle Cut — `q_rc_kettle` (the rail bandits; Witcher standard; ≥3 routes, three without violence).** *Hook:* the guild's
+REWARD on Four Ways' platform (200 and a Line pass for the band stopping freight at Kettle Cut; a guild guard killed there),
+Kask himself, the hold-up met on the road (`re_rc_holdup`), or Kettle seen from the car. *Investigation:* the cut
+(`rc_kettle`: the stripped sealed car, its seals cut with a guild key; a stock car's hasp sawn from outside and inside it
+scratched names and a child's shoe (`l_rc_stockcar`); handcar flange marks in the rust on the rails and hobnail boots coming
+from the west (`l_rc_handcar`, Survival 35 or Senses 6); the watch's blind on the bank with a brass tag WH 4 (`k_rc_tag`,
+`l_rc_tag`); the guard's position on the coach roof with five spent .308 cases and one 9 mm on the bank (`k_rc_casings`:
+the guard fired first)); Four Ways' signal box (the register: the West Halt–Yard Nine section released OCCUPATION —
+PERMANENT WAY at night on every hold-up night, under C.B.: `l_rc_token`; Halina lets anyone read it who asks, and gives a fair
+copy `k_rc_register` to someone who asks straight); Kask (only the Concern's sealed cars are ever taken, never the coach;
+manifests go by wire to Four Ways' box and nowhere else: `l_rc_manifest`); West Halt's watch board, peg WH 4 empty
+(`l_rc_tagboard`); the halts' stalls selling Concern tins cheap (`l_rc_tins`); the halts' keepers on length money
+(`l_rc_length`); Ferris at Yard Nine (the handcar's green lamp; the guard fired first). Conclusions: `c_rc_watch` (token +
+handcar) or `c_rc_watch_tag` (tag + tagboard) → `rc_watch_known`; `c_rc_why` (tins + length) → `rc_why_known`; the
+hold-up's faces (`rc_held_up`) also let the player name Chela to her face. *Turn:* the band is **West Halt's own watch**,
+on the stationmaster's token and his manifests — Brodsky's own halt — taking the Concern's sealed freight that
+through-running runs past the starving halts, and sharing it down the Line; and the night the guard died was not for freight:
+the guild had put Joaquin Ortega, sold for West Halt's water-tower debt, in a stock car of twelve debtors bound for the
+Weighhouse's intake, and Chela stopped it to get her brother off (the twelve hide in West Halt's tower: `q_rc_stock`).
+*Choice* (`rc_bandits`):
+- **ambush** (F): Kask's bounty taken, lie in wait at Kettle on a night the watch rides (the scene waits for the player at
+  the cut between midnight and four once the bounty is taken) and fight them: Chela and Abe dead or beaten; 200 and the pass;
+  `rc_line` = guild.
+- **exposed** (T/K): the proof to Kask: his riders take West Halt's watch at the next dawn the player is at Four Ways
+  (`rc_riders`): Abe hanged at Kettle for the guard, Chela put off the Line, Brodsky kept in his box under Kask's eye; 200 and
+  the pass; `rc_line` = guild.
+- **pilot** (X; no violence): Halina's rule book (pre-guild) says that when the token instrument fails, every section is
+  worked by pilot: each train stops at each halt for a pilotman from that halt, and the guild pays the pilot. The instrument
+  set to fail at night (Science 50; Halina's help with the register's truth and Speech 45; Kes; Nine knows the clause) →
+  every train stops at both halts, the halts are paid, Brodsky stands the watch down ("the timetable has stopped them for
+  me"); no bounty; `rc_line` = halts; `rc_pilot`.
+- **deal** (T; no violence): Kask and Brodsky at one table (Speech 55; −10 the halts will stop keeping their lengths
+  (`rc_east_known`), −5 the watch known, −5 the length money, −5 his own sheet `k_rc_through` on the desk, −10 Odile
+  there, +10 the stock car sold): the
+  guild restores request stops and length money at both halts, the hold-ups end, the guild is never told whose watch; the
+  pass from Brodsky; `rc_line` = shared.
+- **paid** (B): Brodsky pays 120 and a pass for silence; the hold-ups go on; the guild puts a levy on the Line
+  (`rc_kettle_levy`: fares 30 a leg); `rc_line` = stationmaster (the Long Night: the guild's riders come for the Line).
+**Abe** (`rc_abe`): dead (ambush), hanged (exposed; or Brodsky's law: murder hangs — after pilot/deal/paid he sentences
+Abe, `rc_abe_sentenced`, and hangs him at the next dawn the player is at Four Ways, `rc_abe_rope`, unless the player has
+settled it), exiled (argued: the guard fired first — Speech 45, −15 the casings, −10 Ferris's word, −5 Chela pleads, −5 Ilya
+reads the cases), guild (handed to Kask for 100), fled (Four Ways' watch-house cell picked at night, Security 45; Brodsky remembers whose
+hand). **Chela** (`rc_chela`): dead, off (put off the Line), or stays.
+*Visible outcomes:* the poster (paid / torn), West Halt's watch board (pegs empty or full), the gibbet at Kettle (Abe), the
+halts' platforms busy (pilot/deal) or shut (ambush/exposed), the register's last line, Brodsky's office.
+
+**Stock Car — `q_rc_stock`.** *Hook:* West Halt's water tower padlocked with the ladder drawn up, a cough inside, the halt
+buying more bread than it eats; a child's chalk train with faces in the windows on the tower's foot. *Investigation:* Socorro
+deflects; Eamon carries bread up at night; the tower by Socorro's leave (trust), Speech 40, or by night (Stealth 40). Inside:
+twelve on Concern intake paper off the Ninebridge block, INTAKE — WEIGHHOUSE — TWO-TWELVE (`k_rc_paper`); Yaw Boateng speaks
+for them; Joaquin. *Turn:* Joaquin was sold for West Halt's tower debt and Chela stopped the car for him; intake is the
+Weighhouse (known from B4a's Spare Parts: `c_hs_parts`, `hs_parts`), and the Concern's man at Yard Nine pays 15 a head to
+recover them. *Choice* (`rc_stock`): **openfield** (walked south by the track at night to the Choir, Survival 35 or Eamon
+leads; Ash +10) · **bought** (their residuals at Whitlock's desk, 15 each = 180; Odile talks it to 90; they go where they
+like and four stay as West Halt's line-keepers) · **forged** (discharges, Science 45; the Road Clerk's hand −10; Kes) ·
+**sold** (Whitlock's 15 a head: the Concern's men take them at the next dawn the player is at West Halt, `rc_stock_taken`;
+Chela's hatred; the companions' worst). Joaquin (`rc_joaquin`) = free (any but sold) | taken.
+
+**Yard Nine's Dead Engine — `q_rc_engine`.** *Hook:* Dorcas cold on her pit a season; Ida's slate DORCAS — DEAD —
+CONTROLLER; with one engine the through has every path. *Investigation:* the controller (Mechanics 40 or Science 45): not
+burned, asleep, a Concern board with the closed-eye mark and a lamp blinking a pattern, waiting for a code
+(`l_rc_asleep`); Whitlock's offer (`k_rc_offer`: a new board free under a twenty-year through-running exclusive: the
+Concern's freight every path; "the old board has reached the end of its service"); Willem: it died the night after Ida sent
+the Concern's first letter back (`l_rc_timing`). `c_rc_leashed` (asleep + timing): the board was switched off from far
+away. Kes sees it at once (the same channel as her neck). *Turn:* the Concern's machines carry the chrome's backdoor; the
+yard said no and its engine died. *Choice* (`rc_engine`): **contract** (Ida signs if the player urges it: Dorcas runs on a
+new leashed board; `rc_concern_paths`) · **dark** (woken without the channel: Kes, or grid chrome and Science 55;
+`rc_concern_marked`, Whitlock recalled) · **spare** (Halina's spare instrument board, pre-Scald, no channel: Speech 45 or
+after the pilot route; Dorcas runs; Four Ways' box has no spare, `rc_box_nospare`: B5d's Long Night can fail a section) ·
+open (Ida names the Ashlands' dead machines as the other source of an old board: B5d may finish it). Dorcas running: Ida's pass;
+the seven o'clock no longer waits on the through's path (timetable unchanged in `net_line`).
+
+**Bolts on the East Length — `q_rc_east` (East Halt).** *Hook:* Gerrit: bolts backed off two joints on the east length, a rail's
+width from coming apart under a train. *Investigation:* the joint (Mechanics 30: loosened with a long spanner, from the
+inside); the halt's spanner with fresh oil and bright threads in the shed (`l_rc_spanner`); Kofi saw the keeper on the line
+at night (Speech 30); Imani's accounts (the length money gone, the tower debt, forty-five to
+fourteen: `l_rc_length`). *Turn:* the keeper is loosening the joints to throw the Concern's through at East Halt: a wreck
+the guild must stop to clear, and a cargo the halt can strip — and the through's crew (Willem) would die. *Choice*
+(`rc_east`): **stopped** (talked down, Speech 45; −15 the halts paid again (pilot/deal), −5 Gerrit, −5 Kofi, −5 Willem met;
+or **stood_down** of her own accord once the halts are paid again) · **fixed** (the bolts tightened at night yourself,
+Mechanics 35, and nothing said) · **told** (to Kask or Brodsky: she is put off the Line) · **helped** (the through goes over at
+the next two o'clock the player is at East Halt, `rc_derail`: Willem dies unless warned; the halt strips the cars; the guild
+stops there for a season; `rc_derailed`; Concern −). Visible: the wreck in the cutting east of the platform, the halt's
+houses lit or shut.
+
+**Road encounters (the corridor family, `re_rc_*`):** the watch's hold-up at a cutting at night (once; faces seen:
+`rc_held_up`) · a stripped car in the ditch · the track gang re-laying a rail (length money) · a rod rider with a broken
+ankle (Medicine; how to hop the freight) · a signal at a dead junction still showing green · drovers on the verge · a grass
+fire from an engine's sparks · the guild's riders on the Line road once the guild holds it (`rc_line` = guild).
+
+**Activities:** handcar sprints on Four Ways' old south branch (dusk, 5 to enter, 30 to the winner: Brawn, then Reflex at the
+points), Batista's berths (a safehouse, 25), Batista's (food and drink), Jide's still (fuel, drink), Ida's shop (parts,
+repair kits), the ticket windows and the other ways on.
+
+**Hard choices:** the band (the guild's law and a dead guard against the halts' bread); Abe (the timetable's law against a
+boy who shot back); the twelve (their freedom against the Concern's money, and Chela's brother); Dorcas (a second engine on
+the Concern's leash, a dark board and a marked yard, or the Junction's last spare); the east length (a wreck that feeds a
+halt and kills a crew).
+
+**Companions:** Wren (routes and the cuttings; the stock car is the block that took the girl: +10 freed, −30 sold; the watch
+"not raiders: raiders don't sweep the brass"); Odile (wrote the first through-running sheet in her trading days: talks
+Kask down at the deal, the twelve's paper to 90; +5 the deal, −5 the levy); Nine (the token instrument and the pilot clause,
+the register's honesty; +5 pilot, −5 paid); Tamsin (her first train; the twelve; −20 sold, +5 Joaquin freed); Ash (Abe is
+himself at nineteen; the twelve to Openfield +10; Abe hanged −10); Ilya (the cut's angles; reads the guard's cases; the
+ambush's rifle; respects Chela); Kes (Dorcas's board is her neck: the dark route; −10 the contract).
+
+**Flags later parts read:** `rc_bandits`, `rc_line` (guild | halts | shared | stationmaster), `rc_pilot`, `rc_kettle_levy`,
+`rc_abe`, `rc_chela`, `rc_stock`, `rc_joaquin`, `rc_engine`, `rc_concern_paths`, `rc_concern_marked`, `rc_box_nospare`,
+`rc_east`, `rc_derailed`, `rc_willem_dead`, `rc_imani`, `rc_halts` (paid | starving | fed), `rc_hw_trust`, the item `k_rc_pass`.
+
+### B5b — the Drowned Shore (built: the shore and, as `md_docks`, Carrick, Meridian's Docks; as built in `story/B5b_NOTES_SECRET.md`)
+Gull Stilts (`hamlet_shore`), the Rigs (`rigs`), and **Meridian's Docks** across the river (NO BRIDGE: the Line's terminus
+is the Docks; the ferry and the stilt boats are how the far bank is reached; B5b gives the `meridian` stop's Line arrivals
+the Docks map, `ds_docks`, and Meridian's Loop board its far-bank answer). Lines: *The Rigs* (a salvage dive into a rig that
+still pumps: dive gear, air, the rig's own caretaker), *Stilt Court* (boat law: a court of hulls, a drowned man's boat, a
+precedent that reads `prec_unrecorded`), fishing and dives as activities, a safehouse on a hull. Reads `rc_line`,
+`rc_stock` (= openfield sends the twelve's news west), `bw_dogs_hold` (the Crown's road to the Docks blocked at its near end),
+`dr_leven` (the road's steel). Calla (keystone 7) passes through the Docks under warden escort only in B5d.
+
+### B5c — the Teeth mines and the Northern Wet (built 2026-11-17: the full notes, lines, cast and the flags B5d reads are in
+`story/B5c_NOTES_SECRET.md`; the plan as it stood is kept below)
+Number Four Pit (`mine_teeth`: a free pit the Concern does not own, worked by people who left the Skirts; the Shift's
+reach; hunting and trapping in the Teeth), Sawtown (`timber`), Ashby Dam (`dam`), Low Landing (`riverdock`), the barges
+(`net_barge`). Lines: *The Dam* (the Wet's water against Meridian's: the Ledger's pumps and the Sink's spring read
+`sk_pumps`), a timber camp's feud, a barge run. Yard Nine's north track (depot–timber) carries timber when Dorcas runs
+(`rc_engine`). Reads `hs_shift`, `ks_maren`, `hs_gate_shut`.
+
+### B5d — the Ashlands and the Long Night (planned)
+The Ashlands (`lm_ash_01` and new sites: a dead base, a kite field, the hound reserve seen from a ridge; remnant machines;
+*A Kite Day*; a pre-Scald board that finishes `q_rc_engine`'s open route). **Beat 17 `q_a2_longnight`** (critical): Choir
+against the Tollmen over Openfield's stores; the Ledger's eviction order (reads `prec_unrecorded`); the Concern backs the
+Tollmen; the exclusive alliance (Choir / Tollmen–Concern / Ledger / a truce, Speech 75 + two favours); keystone 8 (Mason)
+resolves; keystone 7 (Calla) is arrested as the eviction's first act and carried west on the Line in a warden car — who
+holds the Line (`rc_line`) decides who can stop or speed it, and the halts' pilots (`rc_pilot`) can hold it at West Halt;
+`rc_box_nospare` lets a section fail on the night. Reads: `rc_*` above, `bw_dogs_hold`, `dr_leven`, `vasha_fate`,
+`hs_shift`, `ks_maren`, `hs_marked`, `hc_offer` (B4b), `sk_pumps`, `ar_verdict`. *The Wheel's Rite* (the Wheel) goes here
+or to B7. Act 2 closes when the Long Night's alliance is decided.
+
 ## 18. The opening, v4 (owner's note 2026-10-29: no shelter-dweller first steps) — supersedes §4 beat 1 and §8
 Built on the common denominators in `docs/OPENINGS.md`. The player character (PC) is **not** from inside Cistern 9.
 

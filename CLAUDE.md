@@ -187,6 +187,15 @@ The owner wants to play unspoiled.
   the overhead game camera (the rig's pitch, 35-62°); a conversation eases the camera closer over the two people and
   frames them beside the page, and never drops to eye level or cuts to over-the-shoulder shots. Only photo mode,
   character creation and portraits use other views.
+- **Combat to the standard of the leading turn-based RPGs** (owner, 2026-11-17, binding: "combat ai and animations must
+  be smooth and in line with leading turn based rpgs in playability/qol/strategic requirements"): the fight plays,
+  reads and thinks like BG3, DOS2, XCOM 2 and Wasteland 3 at their best: smooth captured animation for every combat
+  action (move, take cover, aim, fire, melee, throw, reload, hit, fall, rise) with weapons in hands; the tactical QoL
+  those games set (reachable area, path and AP cost, hit chance with its reasons, cover shown, threats shown, quick
+  turns, a clear turn order, nothing hidden); real strategic depth (cover, flanking, height, stances, overwatch,
+  throwables and surfaces, called shots, status effects, morale); an AI that uses all of it by type and never plays
+  stupid. The checklist, its tests and the status are `docs/COMBAT.md`; combat's people pass the motion gate like
+  everyone else.
 - **A new origin** (owner, 2026-10-29, binding): the player is NOT a shelter-dweller who ventures out for the first
   time (too derivative of Fallout, to the point of an IP breach). The opening gives the player character a life of
   their own and the people in it, so the player cares about them as much as about the hero, and it builds the world,

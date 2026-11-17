@@ -8,8 +8,12 @@ import { STORY_CH1 } from './story_ch1';
 import { STORY_A1 } from './story_a1';
 import { STORY_A2 } from './story_a2';
 import { STORY_B4 } from './story_b4';
+import { STORY_B5 } from './story_b5';
+import { DS_ITEMS } from './ds_shore';
+import { DK_ITEMS } from './md_docks';
+import { B5C_ITEMS } from './b5c_wilds';
 import { CHROME_ITEMS } from './chrome';
 
 export const ITEMS: Record<string, ItemDef> = Object.fromEntries(
-  [...WEAPONS, ...AMMO, ...ARMOR, ...CONSUMABLES, ...MISC, ...STORY_CH1, ...STORY_A1, ...STORY_A2, ...STORY_B4, ...CHROME_ITEMS].map((d) => [d.id, d]),
+  [...WEAPONS, ...AMMO, ...ARMOR, ...CONSUMABLES, ...MISC, ...STORY_CH1, ...STORY_A1, ...STORY_A2, ...STORY_B4, ...STORY_B5, ...DS_ITEMS, ...DK_ITEMS, ...B5C_ITEMS, ...CHROME_ITEMS].map((d) => [d.id, d]),
 );

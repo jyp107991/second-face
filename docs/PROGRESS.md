@@ -717,6 +717,58 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-17, B5a and B5b in; the Unity runtime's gaps found and being filled on `side/core`.** Gate: red, 89. The
+  editor is held by the A1 work (flank correctives re-baked at the real resting angle; WIP on `wip/gate-batch`, committed
+  only after a whole-cast run with no measure worse than 89). Meanwhile Unity-side code is written and compile-checked in a
+  sparse side worktree (`git worktree add`; `/home/user/sf-core`, branch `side/core`; `unity/Library` symlinked read-only;
+  `dotnet build core/Game.Check.csproj`, `dotnet test core/SecondFace.Core.Tests`) so the running editor is never touched.
+  Content (main): B5a the Rail Corridor (921366ba) and B5b the Drowned Shore (7b9a6884); two companions who leave for good
+  are found at home again (8c101604). On `side/core`, not yet run in the editor: (1) crowd names never take a named
+  person's first name (`Extras.CastNames`; eight clashes found); (2) **party followers** (`Game/Play/PartyFollowers.cs`):
+  companions who join were never shown in Unity at all — now they follow on the NavMesh with the townsfolk's locomotion at
+  the gate's speeds, wait where dismissed (`CompanionSave.WaitingAt`, saved), leave for good, fight as allies, show in the
+  HUD (`Tests/PlayMode/PartyTests.cs`); (3) in progress: the **content events** the Unity game ignored (`goto` 71 uses,
+  `combat` 41, `dust` 10, `reverie` 9, `title` 8, `surgery` 8, `fight` 7, `dialogue` 2; only camp, barter, heal, talk and
+  map were handled). CI run 425 (25a97b61): APK built; PlayMode 6 of 82 failed — three BootTests in Shale with "not close
+  enough to the NavMesh" (walker on the mesh after 27 s; c2947ca4's pad wait may fix them: read run 426), the quick motion
+  gate, KnockTests' fight (line 167) and the shelter's path (PathPartial, PlacePlayTests line 225).
+  **Next, when the editor is free (in order):** merge `side/core` into main; EditMode suite; PlayMode PartyTests and the
+  content-events test (check first: followers' Speed above 1 in batch mode, no visible jumps, the raid fight starts, a
+  waiting companion is back after a load, a ragdoll's stand-up re-enables the agent); add `Game/Play/PartyFollowers.cs`
+  and `Game/Play/Townsfolk.cs` to the gate's inputs (they decide how people move) with a "following" state in the gate,
+  then a whole-cast run; `npm run export` (B3.11 to B5 are not exported yet; `places.json` still names "the Junction" and
+  "the Depot" where the content has Four Ways and Yard Nine); PlaceBuilder for the new places (Meridian's districts need a
+  city kit); Ninebridge's empty tiles (`V`, a gap in the bridge deck) read as flat ground: lower the pad there and put water
+  below; its concrete roads read as flat grey slabs; the arrival view frames bare ground; CI's six failures above.
+- **2026-11-17, gate 89 → 55: A1's remainder was two false readings, not too little room.** Gate: red, 55 (A1 25, A4 4,
+  C1 8, W6 11, W3 3, F1/F2/F5/K1 1), committed with its verdict (full44). The diagnosis's plan (bake the flank correctives at
+  the arms' real 17°) was tried and taken back: the sweep widened to 17° added almost nothing (the 3-10° poses already
+  over-dented those points), and re-centring the correctives on each arm's own rest (the least angle at which the elbow
+  overlaps the waist by no more than 2-3 cm) left the real-contact men 0.4-1.2 cm deeper at 17°. Two new tools showed why:
+  `tools/qa/patches/push_why.py` (after `push_diag.py`: the three body points that judged each side's first push) and
+  `Editor/FlankProbe.cs` (`Run`: each arm posed as the game rests it over the idles, depth by the game's own `BodySkin.Depth`
+  at 6-17° with and without the correctives; `Moves`: torso points a corrective moves out from the spine).
+  (1) **False contacts.** All of Police_Male_06's frames past 20° (947 of 947) and most of cap_Military_Male_03n's were
+  judged by points facing front, up or down (the chest's front, the armpit's floor, a rig's lower edge), 4-6 cm away and read
+  3-4 cm "inside" within the skin's 4 cm across, while his arm at 17° cleared the side on bare skin. The corrective's smoothing
+  and seam welding had moved those up-facing points **out**, 1.6-1.9 cm toward the arm. Fix (`BodyCorrectives.OutMax`): a
+  torso point is moved at most 1 cm out from the spine's line (the outward part of a larger move taken off); 7 bodies re-baked
+  (Police_Male_06/07, rel_MA19k, Male_Adult_03/06, cap_Fire_Male_07n, cap_Military_Male_03n). Tried and taken back: the moves
+  turned in toward the spine, and every small outward part taken off too (both deepened the dents: two men's resting arms
+  0.3 cm into their sides, C1 +2 on a pick).
+  (2) **Clothes on both sides.** The real contacts (cap_Police_Male_03n's forearm by the elbow, Construction_Male_02's and
+  Business_Male_06's lower upper arm) cleared on bare skin at 17° within 0.3 cm and were held 1-2 cm off through a shirt:
+  every skin point stands out by its layers, the sleeve too, but at rest only the body's side was given. Fix
+  (`ArmClearance.SleeveGive` 0.5): the arm's own sleeve gives by the same share, in the elbow's gap and the push (C1 is skin
+  on skin).
+  Picks reproduce the whole cast's counts for the same people. **Whole cast 89 → 55, no measure worse** (A1 50 → 25:
+  Police_Male_06 17 → 0, cap_Police_Male_03n 11 → 7, cap_Police_Male_01n and cap_Security_Male_01n 2 → 0; A4 13 → 4:
+  Police_Male_06 5 → 0, cap_DM01s 7 → 3; C1 8, W6 11, W3 3, F1/F2/F5/K1 1 unchanged).
+  **Next:** A1 25: Construction_Male_02 10 (his bare lower upper arm 1-1.5 cm on the waist at the 17° cap, the idles leaning
+  the torso 3° toward that arm), cap_Police_Male_03n 7 (forearm by the elbow, still 1 cm after the sleeve's give),
+  cap_Military_Male_03n 4 (false contacts on the rig's lower edge, normals facing down: the skin's depth test, not the
+  corrective: a resting arm's contact might need one judge facing the side), Business_Male_06 2, cap_PM02m 1, Male_Adult_05 1;
+  A4 4 (cap_DM01s 3, Male_Adult_02 1); W6 11 (the women's jog); C1 8; W3 3 (cap_Police_Male_03n's walk).
 - **2026-11-16 (late), A1's remainder diagnosed.** Gate: red, 89. A pick of the six worst (Police_Male_06,
   cap_Police_Male_03n, Construction_Male_02, cap_Military_Male_03n, Business_Male_06, cap_DM01s) with the push's body
   point traced (`tools/qa/patches/push_diag.py` adds `pbH/pbOff/pbD/pbPart` to the gate trace; apply it, run a pick with
@@ -1828,9 +1880,101 @@ mid-range Android phone; deployed to Pages.
             conversations not written). The writing of its first conversation file was stopped by the model's safety
             system on 2026-11-17 and not regenerated; how the rest is written is open (see the story plan's B4 notes).
             Main keeps B4a's `inside` stub for the beat.
-- [ ] B5 **Act 2 wilds**: Glass Flats (Ninebridge, Openfield, the Sump, Cistern 4), Rail Corridor (the
+- [~] B5 **Act 2 wilds**: Glass Flats (Ninebridge, Openfield, the Sump, Cistern 4), Rail Corridor (the
       Line, Junction, halts, rail bandits), Drowned Shore (stilt villages, Rigs, salvage dives), Teeth
       mines, Northern Wet (barges, Dam, timber), Ashlands (remnant machines); Long Night alliance. ~12 h.
+      Built in four parts (the Glass Flats were B3.1–B3.3); the plan for all four is in the story plan's "Build notes — B5".
+      - [x] B5a **the Rail Corridor** DONE 2026-11-17 (content; the Unity place build and the on-device playtest are P10
+            work; `npm run export` has not been run for it): `tools/maps/gen_rc_corridor.py` (walkability and reachability
+            checked) → `maps/rc_fourways.ts` (80×60, Four Ways, the Junction: the station under its clock, the ticket hall,
+            the signal box, the platforms, a market, sleeper-car berths on a dead siding, a handcar course, the road south to
+            Tollhouse 9), `rc_halt_w.ts` and `rc_halt_e.ts` (48×36 each), `rc_yard.ts` (64×44, Yard Nine, the depot), and
+            `rc_kettle.ts` (48×28, a cutting, the new hidden landmark `lm_rc_kettle` with tracks to West Halt and Yard Nine).
+            The four corridor locations bound to their maps; settlements `fourways`, `yard_nine`, `west_halt`, `east_halt`
+            (rail halts; gossip rides the Line both ways to Tollhouse 9, Openfield, Meridian and the Skirts); five open sites.
+            Cast `npcs/rc_corridor.ts` (ids `npc_rc_*`: 20 named, 4 guards and watch, 2 track gangers; one family). **The
+            Line as transport** (`net_line` unchanged): a ticket point at every stop built by one function (`lineBoard()`:
+            25 a leg, the wait for the seven o'clock and the legs' hours, the ride narrated, the stop's map, the field map
+            through the engine's own planner), and the Skirts' board opens its own; other ways on: a Line pass, a guild hand's
+            exemption, the footplate at Yard Nine, hopping the night freight on Yard Nine's curve, West Halt's handcar.
+            Dialogue `rc_line.ts`, `rc_fourways.ts`, `rc_halts.ts`, `rc_yard.ts` (59 trees, 253 nodes, every node with a
+            return line). Quests `quests/b5_corridor.ts`: the rail bandits' line `q_rc_kettle` (five ends: fight, knowledge,
+            tech, talk, barter; three without violence) and the follow-on `q_rc_abe` (four ends), and three side lines
+            `q_rc_stock` (four ends), `q_rc_engine` (three ends), `q_rc_east` (five ends), each with hook, investigation, turn,
+            choice and a visible outcome. Rail bandits as an encounter family on the corridor's roads (8 road encounters).
+            Items `items/story_b5.ts` (11); 18 leads + 7 conclusions; 5 world events that wait for the player; activities:
+            handcar sprints, a rented berth (safehouse), three merchants. Companions' interjections throughout (all seven).
+            `tests/b5a.test.ts` (39). No engine change.
+      - [x] B5b **the Drowned Shore** DONE 2026-11-17 (content; the Unity place build and the on-device playtest are P10
+            work; `npm run export` has not been run for it): `tools/maps/gen_ds_shore.py` (walkability and reachability
+            checked) → `maps/ds_stilts.ts` (80×60, Gull Stilts: a stilt village over a drowned town, boardwalks for streets,
+            a grounded ferry where the village's court sits, a trading post on a pontoon, net lofts, a smokehouse, a dive
+            stage, old steps where the dead go out on the ebb, a drowned hotel's roof, the sea wall east), `ds_rigs.ts`
+            (64×48, the Rigs: a working platform, a dead one carrying the shore's light, a third with only its legs),
+            `ds_rig_leg.ts` (40×30, a flooded leg; a cell), `ds_terminal.ts` (48×36, Blackcap, a drowned tank: the new hidden
+            landmark `lm_shore_01`) and `ds_wade.ts` (40×26, a dike road across the delta for encounters; a cell).
+            `hamlet_shore` and `rigs` bound to their maps; settlements `hamlet_shore` (stilt village) and `rigs`; three open
+            sites, two cells; a route along the sea wall. Transport: the tide boat (`net_tide`: Meridian, Gull Stilts, the
+            Rigs; fast travel on the field map), boat rides in the village to the Rigs and Blackcap, the platform's launch,
+            the sea wall walkable at low water, a borrowed skiff. Cast `npcs/ds_shore.ts` (ids `npc_ds_*`: 19 named, 3
+            minor; three families). Dialogue `dialogue/ds_stilts.ts`, `ds_rigs.ts` (50 trees, 246 nodes, every node with a
+            return line; 39 companion interjections across all seven). Quests `quests/b5b_shore.ts`: the shore's line
+            `q_ds_sheen` (seven routes; six ends, three without violence), side lines `q_ds_court` (four ends) and
+            `q_ds_light` (four ends), each with hook, investigation, turn, choice and a visible outcome, and the dives
+            `q_ds_dives`. Activities: salvage dives in three bands (slack water only; three finds each, then a thin base
+            yield; your own diving gear lowers the cost and the DC), fishing at dawn, a cabin to rent (safehouse), five
+            merchants. Items `items/ds_shore.ts` (9); 16 leads + 4 conclusions; 5 world events that wait for the player;
+            6 road and water encounters (4 passing, 2 on the dike map). Reads `prec_unrecorded` and `rc_line`.
+            `tests/b5b.test.ts` (41). No engine change.
+            **Meridian's Docks DONE 2026-11-17** (same terms: P10 place build, no export run): `tools/maps/gen_md_docks.py`
+            (walkability and reachability checked) → `maps/md_docks.ts` (80×60, Carrick: a Meridian district across the dry
+            river from Bridgeward: the Line's terminus under a freight shed, a turntable and yard throat, the guild's warehouse
+            and weighbridge, a fenced bonded yard, the harbour office where a court sits on the steps, the dawn hiring line,
+            cranes along a tidal basin, a barge quay, fish steps, the water stairs, a fuel berth, stacked containers lived in,
+            and stranded ships on the dry riverbed below the wall; a site beside Bridgeward). It is the Line's real Meridian
+            stop (`lineBoard()`'s Meridian stop and its own ticket window; `net_line` unchanged), the tide boat's city landing
+            (from the water stairs to the shore and the Rigs, and up from both), and the barges' city quay (B5c's board, both
+            ways). Joined to the city: a river road round by the Wall to the Precinct's gate (exits both ways; the field map's
+            Line and shore arrivals now come in by it), a quay tram to the Loop's last halt, an answer to NO BRIDGE on every
+            Loop board, and a night crossing to Bridgeward's drop. Cast `npcs/md_docks.ts` (ids `npc_dk_*`: 14 named, 7 guards
+            and hired hands; one family). Dialogue `dialogue/md_docks.ts` (44 trees, 227 nodes, every node with a return line;
+            53 companion interjections across all seven). Quests `quests/b5b_docks.ts`: the district's line `q_dk_crane` (five
+            ends, one with two outcomes; four without violence) and side lines `q_dk_girl` (five ends) and `q_dk_far` (four
+            ends), each with hook, investigation, turn, choice and a visible outcome. Activities: the dawn call-on (a day's
+            wage), fishing off the basin wall, a bunk (safehouse), four merchants. Items `items/md_docks.ts` (9); 14 leads + 4
+            conclusions; 2 world events that wait for the player. Reads `rc_line`, `rc_pilot`, `rc_derailed`, `rc_stock`,
+            `dr_leven`, `bw_dogs_hold`, `ds_barge`, `ds_rig`, `ds_thorne`, `prec_unrecorded`. `tests/b5b_docks.test.ts` (34).
+            No engine change.
+      - [x] B5c **the Teeth mines and the Northern Wet** DONE 2026-11-17 (content; the Unity place build and the on-device
+            playtest are P10 work; `npm run export` has not been run for it; build notes `story/B5c_NOTES_SECRET.md`):
+            `tools/maps/gen_tm_teeth.py` and `tools/maps/gen_nw_wet.py` (walkability and reachability checked) →
+            `maps/tm_pit.ts` (72×56, Number Four: a pit camp under a headframe, the col path and its hut, the bucket line's
+            top station), `tm_level.ts` (48×30 cell, the old level and the drift to the col), `tm_trail.ts` (mountain
+            roadside cell), `nw_sawtown.ts` (72×52, Sawtown: the boom's pens on the water, the mill, the cookhouse, the two
+            crews' grounds, the landing, the north track's railhead), `nw_dam.ts` (64×44, Ashby Dam: the crest, the lock, the
+            gatehouse, the gauge-well hut), `nw_gallery.ts` (44×14 cell, inside the dam), `nw_landing.ts` (72×48, Low
+            Landing: the quay, three barges and a hulk, the guild's winch house and office, the chandler), `nw_bank.ts`
+            (riverbank roadside cell). The four existing world locations bound to their maps; settlements `number_four`,
+            `sawtown`, `ashby`, `low_landing` (gossip two-way to East Halt, the Skirts, Yard Nine and Meridian); four open
+            sites and four cells. Cast `npcs/tm_teeth.ts`, `npcs/nw_wet.ts` (23 named, 6 guards and boatmen, 3 road
+            people; four families). **Ways about:** `net_barge` now runs every morning (a landing board at each river stop
+            built by one function, `bargeBoard()`: 10 a reach, the wait, the ride narrated, the field map; a free ride for a
+            turn at the sweeps or on a bargewoman's token); the north track from Yard Nine carries a timber train only while
+            the depot's second engine runs (reads `rc_engine`; a sign added at Yard Nine through B5a's generator); the old
+            aerial ropeway between the pit and East Halt's cutting (a sign added there); the old drift under the mountain.
+            Dialogue `nw_river.ts`, `tm_pit.ts`, `nw_dam.ts`, `nw_sawtown.ts`, `nw_landing.ts` (84 trees, 332 nodes, every
+            node with a return line; 88 companion interjections, all seven). Quests `quests/b5c_wilds.ts`: the mines' line
+            `q_tm_path` (four ends: knowledge, talk, barter, fight; two without violence; plus the family by path, drift or
+            fight) and `q_tm_digger` (three ends); the Wet's line `q_nw_dam` (four ends: talk, tech, barter, fight; two
+            without violence); side lines `q_nw_feud` (four ends) and `q_nw_run` (three ends, none violent), each with hook,
+            investigation, turn, choice and visible outcome. Items `items/b5c_wilds.ts` (9); 23 leads + 11 conclusions
+            (`world/b5c_wilds.ts`); 3 world events that wait for the player; 12 road encounters (8 passing, 4 on the
+            roadside maps). Activities: shifts at the face in three bands, three trap lines, a day on the boom, riding the
+            drive, the winch, eels at the tailrace; three rooms to rent (safehouses); five merchants; hunting 0.7/0.6.
+            Reads `hs_shift`, `ks_maren`, `hs_gate_shut`, `hs_car_down`, `hs_parts`, `sk_pumps`, `rc_engine`.
+            `tests/b5c.test.ts` (43). No engine change.
+      - [ ] B5d **the Ashlands and the Long Night** (planned: the Ashlands' sites and beat 17, the act's alliance; ids
+            `an_*`, `ln_*`; reads the corridor's `rc_*` flags listed in the build notes).
 - [ ] B6 **Act 3 + endings**: return, lockdown, Spire, finale, endings A–E + modifiers, epilogue slides.
 - [ ] B7 **Systemic depth + presentation**: ruins templates, bounty/gig templates, rare encounters, music
       and ambience, title art, menus, credits, settings, tips.
@@ -1847,9 +1991,9 @@ mid-range Android phone; deployed to Pages.
 | Signal Hill | 1/1 | 3/3 | 7/7 | 2/2 | playable; relay, voice, gully |
 | Dry Wells | 1/1 | 6/6 | 13/13 | 2/2 | playable; the Act 1 finale, the family |
 | Act 1 wilds | 5/5 | 15/15 | 17/17 | 2/2 | playable; ten road encounters, discoveries on foot, hunting and traps, the windpumps, the wreck, the orchard |
-| Meridian | 12/14 | 121/125 | 206/210 | 29/30 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward, the Crown, the Archive Spire (the close and landing ninety-one), the Court of Accounts and the Dead Ring written; the Loop joins six stops (one outside the Wall), stairs the Sink, the chain Bridgeward, the invitation car the Crown, a lane the Spire close, the gate road the Ring. Loose ends: the far bank (NO BRIDGE) is Act 2 part 2 / B5; Unity sites for the Spire close and the Ring (P10 place build); vehicle travel reading the buggy flag (P12); the Spire beat's end now opens beat 16 (B4a) |
+| Meridian | 13/14 | 142/145 | 250/255 | 32/33 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward, the Crown, the Archive Spire (the close and landing ninety-one), the Court of Accounts and the Dead Ring written; the Docks across the dry river written (B5b, Carrick: the Line's end, the tide boat's and the barges' landing, the district's line and two side lines); the Loop joins six stops (one outside the Wall), stairs the Sink, the chain Bridgeward, the invitation car the Crown, a lane the Spire close, the gate road the Ring, the river road and the quay tram the Docks, and every board answers NO BRIDGE. Loose ends: Unity sites for the Spire close, the Ring and the Docks (P10 place build); vehicle travel reading the buggy flag (P12); the Spire beat's end now opens beat 16 (B4a) |
 | Halcyon/Skirts | 2/6 | 22/40 | 40/55 | 6/12 | the Skirts written (B4a): the town under the arcology and a gallery under its pit; the Line's last stop; beat 16 opened; the seventh companion joins here. The arcology itself is B4b |
-| Act 2 wilds | 4/14 | 38/50 | 64/80 | 9/16 | Ninebridge, Openfield, the Sump and Cistern 4 playable (counts approximate) |
+| Act 2 wilds | 22/26 | 118/140 | 257/300 | 23/28 | Ninebridge, Openfield, the Sump and Cistern 4 playable; the Rail Corridor written (B5a): Four Ways, both halts, Yard Nine and Kettle Cut, the Line ridden from every stop, the rail bandits' line and four side lines; the Drowned Shore written (B5b): Gull Stilts, the Rigs, Blackcap and the dike road, the tide boat, the shore's line, two side lines and the dives in three bands; the Teeth mines and the Northern Wet written (B5c): Number Four and its old level, Sawtown, Ashby Dam and its gallery, Low Landing, two roadside maps, the barges from every river stop, the north track, the ropeway, the mines' line and the Wet's line and three side lines, activities in bands. B5d planned (counts approximate; Meridian's Docks are counted under Meridian) |
 | Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |
 | Companions | — | 7/7 | 0/7 arcs | 0/7 | Tamsin, Wren, Ilya, Odile, Ash, Nine can join; Kes joins in the Skirts (B4a, with her arc and quest); arcs later |
 | Factions joinable | — | — | — | 0/9 | design pending |

@@ -180,7 +180,7 @@ openfield = {
     'npcs': [
         {'def': 'npc_of_01', 'x': 42, 'y': 21, 'facing': 0},
         {'def': 'npc_of_02', 'x': 32, 'y': 17, 'facing': 2},
-        {'def': 'npc_of_03', 'x': 55, 'y': 21, 'facing': 1, 'if': {'not': {'flag': 'ash_joined'}}},
+        {'def': 'npc_of_03', 'x': 55, 'y': 21, 'facing': 1, 'if': {'any': [{'not': {'flag': 'ash_joined'}}, {'all': [{'any': [{'flag': 'ash_left'}, {'flag': 'ash_gone'}]}, {'not': {'inParty': 'npc_of_03'}}]}]}},
         {'def': 'npc_of_04', 'x': 10, 'y': 9, 'facing': 2},
         {'def': 'npc_of_05', 'x': 41, 'y': 36, 'facing': 0},
         {'def': 'npc_of_06', 'x': 21, 'y': 20, 'facing': 2},

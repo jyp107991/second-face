@@ -1323,9 +1323,32 @@ export const ninebridge: MapDef = {
       y: 17,
       facing: 2,
       if: {
-        not: {
-          flag: "odile_joined"
-        }
+        any: [
+          {
+            not: {
+              flag: "odile_joined"
+            }
+          },
+          {
+            all: [
+              {
+                any: [
+                  {
+                    flag: "odile_left"
+                  },
+                  {
+                    flag: "odile_gone"
+                  }
+                ]
+              },
+              {
+                not: {
+                  inParty: "npc_nb_03"
+                }
+              }
+            ]
+          }
+        ]
       }
     },
     {

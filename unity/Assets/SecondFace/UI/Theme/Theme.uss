@@ -1649,7 +1649,7 @@
     margin-top: 10px;
 }
 .sf-surgery__fine { font-size: var(--fs-18); color: var(--plate-dim); white-space: normal; margin-bottom: 10px; }
-.sf-surgery__act { min-height: 100px; min-width: 100px; padding: 0 18px; font-size: var(--fs-22); white-space: normal; }
+.sf-surgery__act { min-height: 100px; min-width: 100px; flex-shrink: 0; padding: 0 18px; font-size: var(--fs-22); white-space: normal; }
 .sf-surgery__done { background-color: var(--ochre); color: var(--ink); }
 .sf-surgery__done:enabled:hover { background-color: #D59B3A; }
 .sf-surgery__slot {

@@ -66,7 +66,7 @@ export const md_precinct: MapDef = {
     "RrrrrrrrrrHHcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
     "RrrrrrrrrrHHcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
     "RrrrrrrrrrHHcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccR",
-    "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR"
+    "RRRrrrrrRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR"
   ],
   legend: {
     c: {
@@ -221,6 +221,13 @@ export const md_precinct: MapDef = {
       y: 54,
       rot: 1,
       id: "md_drain_sign"
+    },
+    {
+      kind: "sign",
+      x: 8,
+      y: 57,
+      rot: 1,
+      id: "md_river_sign"
     },
     {
       kind: "terminal",
@@ -897,21 +904,21 @@ export const md_precinct: MapDef = {
     },
     {
       id: "from_halt_w",
-      x: 2,
-      y: 28,
-      facing: 1
+      x: 5,
+      y: 57,
+      facing: 0
     },
     {
       id: "from_hamlet_shore",
-      x: 2,
-      y: 31,
-      facing: 1
+      x: 5,
+      y: 57,
+      facing: 0
     },
     {
       id: "from_rigs",
-      x: 2,
-      y: 31,
-      facing: 1
+      x: 5,
+      y: 57,
+      facing: 0
     },
     {
       id: "inside",
@@ -954,6 +961,12 @@ export const md_precinct: MapDef = {
       x: 5,
       y: 2,
       facing: 2
+    },
+    {
+      id: "from_docks",
+      x: 5,
+      y: 57,
+      facing: 0
     }
   ],
   exits: [
@@ -1016,6 +1029,22 @@ export const md_precinct: MapDef = {
         spawn: "from_precinct"
       },
       label: "The gate road north along the Wall, to the Ring"
+    },
+    {
+      x: 3,
+      y: 59,
+      w: 5,
+      h: 1,
+      to: {
+        location: "md_docks",
+        spawn: "from_precinct"
+      },
+      label: "The river road south along the Wall, to the Docks",
+      effects: [
+        {
+          time: 60
+        }
+      ]
     }
   ],
   talk: {
@@ -1069,6 +1098,10 @@ export const md_precinct: MapDef = {
     },
     md_ring_sign: {
       dialogue: "d_md_ring_sign",
+      name: "Chalk on the Wall"
+    },
+    md_river_sign: {
+      dialogue: "d_md_river_sign",
       name: "Chalk on the Wall"
     }
   },

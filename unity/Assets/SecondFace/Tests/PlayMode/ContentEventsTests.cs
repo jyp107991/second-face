@@ -182,7 +182,10 @@ namespace SecondFace.Tests
             var offers = table.Offers;
             Assert.That(offers, Is.Not.Empty, "the surgeon has pieces to fit");
             Assert.That(table.FitButtons.Count, Is.EqualTo(offers.Count));
-            Assert.That(table.FitButtons[0].resolvedStyle.height, Is.GreaterThanOrEqualTo(100f - 0.5f), "a tap target the HUD's size");
+            // the HUD's action buttons are 100 px in the theme; the panel scales them to the screen (99 at the test's size)
+            var hudButton = UIService.Instance != null && UIService.Instance.Hud != null ? UIService.Instance.Hud.Q<Button>(className: "sf-hud__action") : null;
+            var hudSize = hudButton != null && hudButton.resolvedStyle.height > 1f ? hudButton.resolvedStyle.height : 99f;
+            Assert.That(table.FitButtons[0].resolvedStyle.height, Is.GreaterThanOrEqualTo(hudSize - 0.5f), "a tap target the HUD's size");
             var o = offers[0];
             var tolls = walk.Game.Pc.Inventory.Tolls;
             var minutes = boot.Stage.Clock.Minutes;

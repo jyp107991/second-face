@@ -49,6 +49,23 @@ export const SITES: Record<string, SiteDef> = {
   md_stacks: { kind: 'open', beside: { site: 'md_market', side: 's' }, rim: 'keep' },
   // the Teeth: the Skirts under Halcyon (B4a)
   hs_skirts: { kind: 'open', at: 'skirts', rim: 'strip' },
+  // the Rail Corridor (B5a)
+  rc_fourways: { kind: 'open', at: 'junction', rim: 'strip' },
+  rc_halt_w: { kind: 'open', at: 'halt_w', rim: 'strip' },
+  rc_halt_e: { kind: 'open', at: 'halt_e', rim: 'strip' },
+  rc_yard: { kind: 'open', at: 'depot', rim: 'strip' },
+  rc_kettle: { kind: 'open', at: 'lm_rc_kettle', rim: 'strip' },
+  // the Drowned Shore (B5b): the stilt village, the platform offshore, the drowned tank (each drawn with open water to its edges)
+  ds_stilts: { kind: 'open', at: 'hamlet_shore', rim: 'keep' },
+  ds_rigs: { kind: 'open', at: 'rigs', rim: 'keep' },
+  ds_terminal: { kind: 'open', at: 'lm_shore_01', rim: 'keep' },
+  // Carrick, Meridian's docks (B5b): across the dry river from Bridgeward's drop, its west edge the riverbed
+  md_docks: { kind: 'open', beside: { site: 'md_bridgeward', side: 'e' }, rim: 'keep' },
+  // the Teeth mines and the Northern Wet (B5c): the free pit, the logging town, the dam, the barge port
+  tm_pit: { kind: 'open', at: 'mine_teeth', rim: 'strip' },
+  nw_sawtown: { kind: 'open', at: 'timber', rim: 'strip' },
+  nw_dam: { kind: 'open', at: 'dam', rim: 'strip' },
+  nw_landing: { kind: 'open', at: 'riverdock', rim: 'strip' },
   // cells: enclosed places, entered through their doors
   cistern9: { kind: 'cell' },
   cistern4: { kind: 'cell' },
@@ -62,4 +79,10 @@ export const SITES: Record<string, SiteDef> = {
   bench_crowd: { kind: 'cell' },
   wild_track: { kind: 'cell' },
   wild_rough: { kind: 'cell' },
+  ds_rig_leg: { kind: 'cell' },
+  ds_wade: { kind: 'cell' },
+  tm_level: { kind: 'cell' },
+  tm_trail: { kind: 'cell' },
+  nw_gallery: { kind: 'cell' },
+  nw_bank: { kind: 'cell' },
 };

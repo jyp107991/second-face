@@ -2638,6 +2638,19 @@ widest zoom, inside the saloon (opened), the town's edge over the scrub; each vi
   on, a resting arm is placed by `RestArm` and `SkinRest` (the `!RestReach` branch) never runs. The stage trace
   (`StageA1`, the trace's `saR0..saR5`) named the step that moved the arm (`SkinClear`'s first push, 17° to 22-25°) the
   whole time. Read which stage moves a measure, then find where that stage's code is called, before editing.
+- **Ask what judged a contact before giving the body more room.** Five rounds deepened the flank correctives (2.5 → 8 cm,
+  wider sweeps) for the broad men's resting arms at little gain. The game's skin (`BodySkin.Depth`: the three nearest
+  points' planes, up to 4 cm across) was reading the arm as 3-4 cm inside a body it cleared: the dent had moved the side's
+  points away, so the armpit's floor and the chest's front became the nearest, and the arm beside them counted as behind
+  their planes. Worse, the dent's smoothing and seam welding gave up-facing points their neighbours' directions and moved
+  them 1.6-1.9 cm *out*, toward the arm. Record the judging points (`tools/qa/patches/push_why.py`, normals facing the side
+  = a real contact, facing front, up or down = a false one), probe a corrective with the game's own depth on posed bodies
+  (`Editor/FlankProbe.cs`: depth by angle, with and without the corrective; torso points it moves outward), and check a
+  corrective's directions as well as its sizes.
+- **The skin's clothes are on both sides of a contact.** Every skin point stands out by its layers (`P = p + n·off`), the
+  arm's sleeve too, but at rest only the body's side was given back (`ClothGive`): elbows whose bare skin cleared the waist
+  were held 1-2 cm off it through a shirt and were pushed out at the shoulder. Count what the measure counts (C1 is skin on
+  skin) before deciding what may press.
 
 ## 9. Open decisions for the owner (spoiler-free; defaults in force until answered)
 

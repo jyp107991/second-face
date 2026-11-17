@@ -132,8 +132,9 @@ jobs:
     # a full pass: the Library's import from a cold cache (half an hour and more since the people and the world grew) plus
     # PlayMode, the people's gate render among them. At 40 min every run since P4.15c was cut off before EditMode finished
     # (runs 112-124), so nothing was tested and no cache was saved; run 128, the first to finish, took 2 h 19 min with
-    # EditMode (46 min of it), now the Core workflow's
-    timeout-minutes: 150
+    # EditMode (46 min of it), now the Core workflow's. Run 426 (13 place tests added) was cut off at 150 min in PlayMode:
+    # raised to 330 until the place tests run in a job of their own (GitHub's limit for a job is 360)
+    timeout-minutes: 330
     if: ${{ !cancelled() }}
     permissions:
       contents: read

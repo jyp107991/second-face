@@ -85,6 +85,7 @@ export const d_hs_board: DialogueDef = {
       effects: [{ learn: 'hs_line_board' }],
       options: [
         { id: 'board.hail', text: '(Watch the board for a while.)', if: { all: [{ knows: 'kes_hail' }, { not: { flag: 'kes_met' } }] }, next: 'hail' },
+        { id: 'board.ride', text: '(Buy a ticket west at the window under the board.)', effects: [{ event: 'dialogue', data: { tree: 'd_rc_board_sk', name: 'The Line board' } }], exit: true, repeat: true },
         leave,
       ],
     },

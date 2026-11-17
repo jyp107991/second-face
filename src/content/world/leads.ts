@@ -1,4 +1,7 @@
 import type { ConclusionDef, LeadDef } from '../../engine/world/frontier';
+import { DS_CONCLUSIONS, DS_LEADS } from './ds_shore';
+import { DK_CONCLUSIONS, DK_LEADS } from './md_docks';
+import { B5C_CONCLUSIONS, B5C_LEADS } from './b5c_wilds';
 
 /** Clues for the notebook's leads board, and the conclusions they support. */
 export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
@@ -184,6 +187,31 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_hs_par', label: 'Par', text: 'The changer\'s ledger has a column headed PAR that never moves: the guild takes the Concern\'s scrip at one to one on its own floor.' },
   { id: 'l_hs_overlay', label: 'Deeper paper, dearer bread', text: 'Provision\'s price board reads each customer\'s Window balance and moves the price a few points: the deeper the debt, the dearer the bread.' },
   { id: 'l_hs_numbed', label: 'Baek\'s arm', text: 'Jun Baek\'s company arm goes dead to the shoulder whenever he falls behind on the Window, and wakes when he pays. Nobody touches it.' },
+  // B5a — the Rail Corridor
+  { id: 'l_rc_reward', label: 'Two hundred for Kettle', text: 'The guild pays two hundred and a Line pass for the band that stops freight at Kettle Cut. A guild guard, Hamish Gorse, was killed there.' },
+  { id: 'l_rc_sealed', label: 'Only sealed cars', text: 'The cars opened at the cuttings are always the Concern\'s sealed ones. Nobody\'s purse is taken; the coach is never touched.' },
+  { id: 'l_rc_manifest', label: 'Manifests by wire', text: 'What every sealed car on the through carries goes by wire from Two-Twelve to Four Ways\' signal box, and nowhere else. The band at Kettle always knows which car to open.' },
+  { id: 'l_rc_stockcar', label: 'A stock car', text: 'One of the cars in the ditch at Kettle carried people. Its hasp was sawn from outside; inside, names scratched into the boards and a child\'s shoe.' },
+  { id: 'l_rc_handcar', label: 'A handcar from the west', text: 'At Kettle, in the rust on the rails, the bright line of a handcar\'s flanges, and hobnailed boots coming and going from the west. The band came along the track at night.' },
+  { id: 'l_rc_tag', label: 'WH 4', text: 'A brass watch tag, WH 4, in the blind on the north bank at Kettle Cut.' },
+  { id: 'l_rc_tagboard', label: 'An empty peg', text: 'West Halt\'s watch hangs its brass tags on a board in the watch house. The peg for number four is empty.' },
+  { id: 'l_rc_casings', label: 'Five, then one', text: 'Five .308 cases where the guard stood on the coach roof at Kettle, and one 9 mm from the bank. The guard fired first.' },
+  { id: 'l_rc_token', label: 'Occupation, permanent way', text: 'Four Ways\' register: on every night a car was opened at Kettle, the West Halt to Yard Nine section was released for OCCUPATION — PERMANENT WAY at night, by the stationmaster\'s own release, C.B.' },
+  { id: 'l_rc_wires', label: 'Ticks on the wire', text: 'The stationmaster copies the through\'s manifests off the wire, and ticks some of the sealed cars in pencil.' },
+  { id: 'l_rc_tins', label: 'Concern tins, cheap', text: 'The halts\' stalls sell Concern tins at two Tolls, a third of the price anywhere else, and nobody says where from.' },
+  { id: 'l_rc_length', label: 'Length money', text: 'The guild pays the halts length money for keeping their track, but per train that stops. Since through-running, nothing stops, and nothing is paid.' },
+  { id: 'l_rc_tower', label: 'The tower at West Halt', text: 'West Halt\'s water tower is padlocked with the ladder drawn up, and people are living in it.' },
+  { id: 'l_rc_intake', label: 'Intake', text: 'The twelve in West Halt\'s tower are on Concern paper from the Ninebridge block: INTAKE — WEIGHHOUSE — TWO-TWELVE.' },
+  { id: 'l_rc_asleep', label: 'Dorcas asleep', text: 'Dorcas\'s controller is not burned. It is a Concern board, the closed eye on it, with one lamp blinking a pattern, waiting for something.' },
+  { id: 'l_rc_timing', label: 'The night after', text: 'Dorcas died the night after Ida Szalai sent the Concern\'s first letter back unsigned.' },
+  { id: 'l_rc_spanner', label: 'Bright threads', text: 'East Halt\'s long track spanner hangs in the tool shed with fresh oil on it, and the bolts on the east length have bright threads where they were backed off.' },
+  { id: 'l_rc_kofi', label: 'Out at night', text: 'Kofi Mensah counts the through\'s cars every night, and lately he has seen the halt\'s keeper out on the east length with a lamp after dark.' },
+  // B5b — the Drowned Shore (ds_shore.ts)
+  ...DS_LEADS,
+  // B5b — Carrick, Meridian's docks (md_docks.ts)
+  ...DK_LEADS,
+  // B5c — the Teeth mines and the Northern Wet (b5c_wilds.ts)
+  ...B5C_LEADS,
 ] as LeadDef[]).map((l) => [l.id, l]));
 
 export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
@@ -212,4 +240,18 @@ export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
   { id: 'c_hs_parts', from: ['l_hs_yield', 'l_hs_freight', 'l_hs_boots'], text: 'The Weighhouse grades debtors for parts and sends them up the hill asleep. The boots come home. Clinic service is being taken apart.' },
   { id: 'c_hs_toll_paper', from: ['l_hs_par', 'l_hs_seal'], text: 'The Toll is Halcyon\'s paper. The guild takes the Concern\'s scrip at par and gives the Skirts six to one; the spread is the guild\'s tithe on every miner\'s savings.', effects: [{ learn: 'hs_toll_paper' }] },
   { id: 'c_hs_window', from: ['l_hs_numbed', 'l_hs_overlay'], text: 'The Window reaches into everything it fits and everything it sells: it prices bread by your debt and switches off the arm it put on you. Its chrome works for it first.' },
+  // B5a — the Rail Corridor
+  { id: 'c_rc_watch', from: ['l_rc_token', 'l_rc_handcar'], text: 'The band at Kettle comes along the rails on a handcar from the west, on nights the stationmaster at Four Ways releases the section to them himself: a halt\'s own watch, on the Junction\'s token.', effects: [{ learn: 'rc_watch_known' }, { learn: 'rc_brodsky_known' }] },
+  { id: 'c_rc_watch_tag', from: ['l_rc_tag', 'l_rc_tagboard'], text: 'The brass tag in the blind at Kettle is West Halt\'s watch, number four, missing from its peg. The band at Kettle is West Halt\'s own watch.', effects: [{ learn: 'rc_watch_known' }] },
+  { id: 'c_rc_marked', from: ['l_rc_wires', 'l_rc_manifest'], text: 'The stationmaster at Four Ways reads the through\'s manifests off his wire and ticks the cars that will be opened at Kettle.', effects: [{ learn: 'rc_brodsky_known' }] },
+  { id: 'c_rc_why', from: ['l_rc_tins', 'l_rc_length'], text: 'What is taken at Kettle feeds the halts that through-running has starved. The Concern\'s freight runs past them, and its tins come back to them by night.', effects: [{ learn: 'rc_why_known' }] },
+  { id: 'c_rc_stock', from: ['l_rc_stockcar', 'l_rc_tower'], text: 'The last car opened at Kettle carried people, and the people are in West Halt\'s water tower.', effects: [{ learn: 'rc_stock_known' }] },
+  { id: 'c_rc_leashed', from: ['l_rc_asleep', 'l_rc_timing'], text: 'Dorcas did not die. Her board was switched off from far away, the night after the yard said no to the Concern.', effects: [{ learn: 'rc_leashed_known' }] },
+  { id: 'c_rc_east', from: ['l_rc_spanner', 'l_rc_kofi'], text: 'East Halt\'s keeper is loosening the east length herself, a joint at a time, to throw the through off the rails at her own halt.', effects: [{ learn: 'rc_east_known' }] },
+  // B5b — the Drowned Shore (ds_shore.ts)
+  ...DS_CONCLUSIONS,
+  // B5b — Carrick, Meridian's docks (md_docks.ts)
+  ...DK_CONCLUSIONS,
+  // B5c — the Teeth mines and the Northern Wet (b5c_wilds.ts)
+  ...B5C_CONCLUSIONS,
 ] as ConclusionDef[]).map((c) => [c.id, c]));

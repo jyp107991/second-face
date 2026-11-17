@@ -1,5 +1,6 @@
 import type { DialogueDef, OptionDef } from '../../engine/dialogue/dialogue';
 import type { Cond } from '../../engine/world/logic';
+import { DOCKS_ANSWER, DOCKS_ASK } from './md_docks';
 
 /**
  * Meridian, the Precinct: the gate and the lens, the hearing, the cells, the records office and the assessor who
@@ -158,7 +159,9 @@ export const d_md_loop: DialogueDef = {
         { text: '(Leave it.)', exit: true },
       ],
     },
-    works: { text: 'NO BRIDGE, in chalk, through THE DOCKS. A citizen waiting on the bench says the Docks line has said that since before she was born, and that the rest said WORKS all spring, and that the works were on schedule. Clover, she says, is outside the Wall: the tram goes, and comes back, and the Ring is outside the law, and she has never been.', effects: [{ learn: 'md_loop_works' }, { learn: 'dr_ring_heard' }], options: [{ text: '(Leave it.)', exit: true }] },
+    works: { text: 'NO BRIDGE, in chalk, through THE DOCKS. A citizen waiting on the bench says the Docks line has said that since before she was born, and that the rest said WORKS all spring, and that the works were on schedule. Clover, she says, is outside the Wall: the tram goes, and comes back, and the Ring is outside the law, and she has never been.', again: 'NO BRIDGE through THE DOCKS, and the citizen on the bench.', effects: [{ learn: 'md_loop_works' }, { learn: 'dr_ring_heard' }], options: [DOCKS_ASK('loop.docks'), { text: '(Leave it.)', exit: true }] },
+    // the far bank's answer (B5b, Carrick)
+    docks: DOCKS_ANSWER,
   },
 };
 

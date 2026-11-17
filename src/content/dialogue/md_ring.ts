@@ -117,6 +117,8 @@ export const d_dr_loop: DialogueDef = {
         loopSeat('drloop.lantern', 'Lantern Row.', 'md_lantern', 20),
         loopSeat('drloop.stacks', 'The Stacks.', 'md_stacks', 30),
         loopSeat('drloop.bridgeward', 'Bridgeward.', 'md_bridgeward', 15),
+        // the far bank's half of the Loop: a single car round the ring road and over the old ring bridge to Carrick (B5b); outside the Wall, no lens
+        { id: 'drloop.quay', text: 'The quay tram, round the ring road to the Docks. (2 Tolls)', if: { item: 'tolls', count: 2 }, effects: [{ take: 'tolls', count: 2 }, { learn: 'dk_far_bank' }, { event: 'goto', data: { location: 'md_docks', spawn: 'tram', minutes: 25 } }], exit: true, repeat: true },
         { id: 'drloop.lens', text: '(Face the lens.)', if: { not: { flag: 'md_inside' } }, next: 'lens' },
         leave,
       ],

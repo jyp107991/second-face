@@ -37,6 +37,9 @@ namespace SecondFace.EditorTools
         /// <summary>The chest's side gives this much (m) from <see cref="DeepBelow"/> under the elbow up: the broad men's elbows
         /// at the reference lay 6-8 cm into their waists, a jacket's with them (A1 462 -> 451 at 4 cm, 2026-11-08).</summary>
         public const float TorsoDeep = 0.08f, DeepBelow = 0.02f;
+        /// <summary>The most a torso point may be moved out from the spine's line (m): the dent's spread and its seams' welding
+        /// carry neighbours' directions, and a larger move out is taken off (see the deltas' writing).</summary>
+        public const float OutMax = 0.01f;
         /// <summary>How much of the forearm from the elbow the waist gives for (a share of its length: about 12 cm).</summary>
         public const float ForeReach = 0.45f;
         /// <summary>The arm's points further than this off its bone (m) are the webbing under it, folded onto the arm by as much as
@@ -408,12 +411,30 @@ namespace SecondFace.EditorTools
                     for (var i = 0; i < pos.Length; i++)
                     {
                         if (a[i] < 1e-4f || d[i] == Vector3.zero) continue;
+                        // the torso never moves out from the spine's line (spread over the surface and welded at its seams, the
+                        // dents took their neighbours' directions, and points facing up and toward the body's middle, the armpit's
+                        // floor, were moved 1.6-1.9 cm out toward the arm: the game's skin then read the hanging arm beside them as
+                        // 3-4 cm inside, and the shoulder turned it out to 21-29°, A1, 2026-11-16): past OutMax the outward part is
+                        // taken off, and a move that was all outward is none (turned in toward the spine instead, the dents grew and
+                        // two men's resting arms came 0.3 cm into their sides, C1; every small one taken off too, a man's arm came
+                        // 0.3 cm into his side, C1 0.28 -> 0.57)
+                        var dir = d[i];
+                        if (part[i] == 0)
+                        {
+                            var away = wp[i] - SpineAt(wp[i].y); away.y = 0f;
+                            if (away.sqrMagnitude > 1e-6f)
+                            {
+                                away.Normalize();
+                                var outBy = Vector3.Dot(dir, away);
+                                if (outBy * a[i] > OutMax) { dir -= away * outBy; if (dir.sqrMagnitude < 0.04f) continue; }
+                            }
+                        }
                         // from the world back to the mesh's own space, through this vertex's skinning as posed
                         var b = bw[i];
                         var m = new Matrix4x4();
                         void Add(int bi, float w) { if (w <= 0f) return; var mm = bones[bi].localToWorldMatrix * bp[bi]; for (var k = 0; k < 16; k++) m[k] += mm[k] * w; }
                         Add(b.boneIndex0, b.weight0); Add(b.boneIndex1, b.weight1); Add(b.boneIndex2, b.weight2); Add(b.boneIndex3, b.weight3);
-                        o[i] = m.inverse.MultiplyVector(d[i] * a[i]);
+                        o[i] = m.inverse.MultiplyVector(dir * a[i]);
                     }
                 }
                 var path = PathFor(fbxPath);

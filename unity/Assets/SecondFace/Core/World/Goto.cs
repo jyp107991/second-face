@@ -81,6 +81,14 @@ namespace SecondFace.Core.World
             if (!string.IsNullOrEmpty(map.Settlement))
             {
                 t.Place = placeOf(map.Settlement);
+                // (a town's place need not share its id: Number Four stands at the world's mine_teeth)
+                if (t.Place == null)
+                    foreach (var loc in Registry.WorldMap.Locations.Values)
+                    {
+                        if (loc == null || loc.Settlement != map.Settlement) continue;
+                        t.Place = placeOf(loc.Id) ?? (!string.IsNullOrEmpty(loc.Map) ? placeOf(loc.Map) : null);
+                        if (t.Place != null) break;
+                    }
                 if (t.Place != null) { t.Via = "settlement"; return t; }
             }
             return null;

@@ -828,6 +828,11 @@ namespace SecondFace.Game.People
         /// the vertical in every state, the arm's swing out at its 15-17° all along, A1, 2026-11-07: cloth pressed between an
         /// arm and the body gives all but its weave, and between them it is not seen.)</summary>
         public float ClothGive = 0.5f;   // (0.85: the whole cast's A1 574 -> 566 and A4 190 -> 172, but a gear-held man's forearm past its cap, A3, and C1 42 -> 45; 0.7: one woman's resting hand placed 3.4 cm into the thigh through her clothes and the push out stood her arm 31-41° off the vertical for a frame, A1 +1, 2026-11-08)
+        /// <summary>And the share of the arm's own clothes there (the sleeve's thickness) that gives at rest: the cloth between an arm
+        /// and the body is pressed on both sides. (The body's alone, the broad men's resting elbows, whose bare skin cleared their
+        /// waists at the 17° cap, were held 1-2.2 cm into them through a shirt's sleeve and side, and the shoulder turned them out
+        /// to 21-26°, A1, 2026-11-16; the gate's C1 is skin on skin, so the cloth pressed between them is not a clip.)</summary>
+        public float SleeveGive = 0.5f;
         /// <summary>At rest, how far the upper arm above its third by the elbow may press into the chest's side before it is turned out (m).</summary>
         public float UpperGive = 0.025f;
         private int _needFirst = -1;
@@ -1077,7 +1082,7 @@ namespace SecondFace.Game.People
                 if (within.HasValue && (_skin.P[i] - within.Value).sqrMagnitude > radius * radius) continue;
                 if (!_skin.Got(i, out var d, out _)) continue;
                 // soft: a share of the clothes' thickness there may be pressed in (canvas and webbing give under an arm)
-                var g = -d + (soft > 0f && _skin.Near >= 0 ? soft * _skin.Off(_skin.Near) : 0f);
+                var g = -d + (soft > 0f && _skin.Near >= 0 ? soft * _skin.Off(_skin.Near) : 0f) + (soft > 0f ? SleeveGive * _skin.Off(i) : 0f);
                 if (g < gap) { gap = g; _gapArm = i; _gapBody = _skin.Near; }
             }
             return gap == float.MaxValue ? far : gap;
@@ -1390,7 +1395,7 @@ namespace SecondFace.Game.People
                 // (at rest, the whole forearm: given by the elbow only, a hand that would come in to the thigh pressed the forearm's
                 // lower half into the hip's clothes and was refused, the hand left 5-5.5 cm off the thigh after the gestures, A4,
                 // 2026-11-09)
-                if (_restW > 0.99f && i < hand && _skin.Near >= 0) d -= ClothGive * _skin.Off(_skin.Near);
+                if (_restW > 0.99f && i < hand && _skin.Near >= 0) d -= ClothGive * _skin.Off(_skin.Near) + SleeveGive * _skin.Off(i);
                 if (_restW > 0.99f && i < forearm && (p - elbowAt).magnitude > highAbove) d -= UpperGive;
                 if (d + Margin3 <= 0f) continue;
                 var arm = p - shoulder;

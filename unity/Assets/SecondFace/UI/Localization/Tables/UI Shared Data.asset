@@ -2231,6 +2231,330 @@ MonoBehaviour:
     m_Key: dialogue.someone
     m_Metadata:
       m_Items: []
+  - m_Id: 6732710240698368
+    m_Key: dialogue.you
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669888
+    m_Key: reverie.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669889
+    m_Key: combat.pit_won
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669890
+    m_Key: combat.pit_lost
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669891
+    m_Key: combat.pit_called
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669892
+    m_Key: surgery.body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669893
+    m_Key: surgery.table
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669894
+    m_Key: surgery.tolls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669895
+    m_Key: surgery.sheet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669896
+    m_Key: surgery.drift.steady
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669897
+    m_Key: surgery.drift.cool
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669898
+    m_Key: surgery.drift.cold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669899
+    m_Key: surgery.drift.drifting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669900
+    m_Key: surgery.slot.eyes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669901
+    m_Key: surgery.slot.neural
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669902
+    m_Key: surgery.slot.armL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669903
+    m_Key: surgery.slot.armR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669904
+    m_Key: surgery.slot.legs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669905
+    m_Key: surgery.slot.spine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669906
+    m_Key: surgery.slot.skin
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669907
+    m_Key: surgery.slot.organs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669908
+    m_Key: surgery.grade.old
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669909
+    m_Key: surgery.grade.dark
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710261669910
+    m_Key: surgery.grade.concern
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864192
+    m_Key: surgery.empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864193
+    m_Key: surgery.fitted
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864194
+    m_Key: surgery.upkeep_due
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864195
+    m_Key: surgery.upkeep_in
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864196
+    m_Key: surgery.not_working
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864197
+    m_Key: surgery.repair
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864198
+    m_Key: surgery.remove
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864199
+    m_Key: surgery.theirs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864200
+    m_Key: surgery.yours
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864201
+    m_Key: surgery.replaces
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864202
+    m_Key: surgery.needs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864203
+    m_Key: surgery.drift_add
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864204
+    m_Key: surgery.terms
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864205
+    m_Key: surgery.terms_piece
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864206
+    m_Key: surgery.total
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864207
+    m_Key: surgery.fit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864208
+    m_Key: surgery.nothing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864209
+    m_Key: surgery.risk_note
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864210
+    m_Key: surgery.done
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864211
+    m_Key: surgery.clean
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864212
+    m_Key: surgery.complication
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864213
+    m_Key: surgery.rejected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864214
+    m_Key: surgery.boxed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864215
+    m_Key: surgery.cannot_pay
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864216
+    m_Key: surgery.cannot_repair
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864217
+    m_Key: surgery.cannot_remove
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864218
+    m_Key: surgery.repaired
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864219
+    m_Key: surgery.removed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864220
+    m_Key: surgery.nothing_there
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864221
+    m_Key: surgery.said_clean
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864222
+    m_Key: surgery.said_complication
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864223
+    m_Key: surgery.said_rejected
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864224
+    m_Key: dust.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864225
+    m_Key: dust.terms
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864226
+    m_Key: dust.terms_prize
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864227
+    m_Key: dust.you
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864228
+    m_Key: dust.run_yours
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864229
+    m_Key: dust.run_theirs
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864230
+    m_Key: dust.wins
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864231
+    m_Key: dust.roll
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864232
+    m_Key: dust.bank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864233
+    m_Key: dust.bank_run
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864234
+    m_Key: dust.leave
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864235
+    m_Key: dust.rules
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864236
+    m_Key: dust.log.stake
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864237
+    m_Key: dust.log.stake_prize
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864238
+    m_Key: dust.log.dusted
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864239
+    m_Key: dust.log.bank
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864240
+    m_Key: dust.log.level
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864241
+    m_Key: dust.log.pot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864242
+    m_Key: dust.log.pot_prize
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864243
+    m_Key: dust.won_tolls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864244
+    m_Key: dust.lost_tolls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864245
+    m_Key: dust.won_prize
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864246
+    m_Key: dust.lost_prize
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864247
+    m_Key: dust.you_short
+    m_Metadata:
+      m_Items: []
+  - m_Id: 6732710265864248
+    m_Key: dust.they_short
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
