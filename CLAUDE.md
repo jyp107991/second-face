@@ -201,7 +201,9 @@ The owner wants to play unspoiled.
   turns, a clear turn order, nothing hidden); real strategic depth (cover, flanking, height, stances, overwatch,
   throwables and surfaces, called shots, status effects, morale); an AI that uses all of it by type and never plays
   stupid. The checklist, its tests and the status are `docs/COMBAT.md`; combat's people pass the motion gate like
-  everyone else.
+  everyone else. **Root causes, never iterations** (owner, 2026-11-17): every combat-animation failure is first traced to its
+  cause with evidence (the clip on its own actor against the same measure, then retarget, runtime, prop and state machine),
+  and each cause is removed once at its source; no rounds of tuning symptoms (`docs/COMBAT_ROOT_CAUSE.md`).
 - **A new origin** (owner, 2026-10-29, binding): the player is NOT a shelter-dweller who ventures out for the first
   time (too derivative of Fallout, to the point of an IP breach). The opening gives the player character a life of
   their own and the people in it, so the player cares about them as much as about the hero, and it builds the world,
