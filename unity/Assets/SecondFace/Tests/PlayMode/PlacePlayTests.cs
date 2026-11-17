@@ -167,11 +167,16 @@ namespace SecondFace.Tests
             Assert.That(hidden.All(r => r.shadowCastingMode == UnityEngine.Rendering.ShadowCastingMode.On), "the saloon closes again");
         }
 
-        /// <summary>Every place built after the first three (P8: the Sallow and the Glass Flats), as Shale is checked: on its
-        /// pad in the streamed world, its NavMesh built, every person's post and every thing the story uses reached on foot
-        /// from where the player arrives; captured wide and as an arrival (`place_<id>_wide`, `place_<id>_arrival`).</summary>
+        /// <summary>Every place built after the first three (P8: the Sallow and the Glass Flats; Meridian's districts by the
+        /// megacity kit), as Shale is checked: on its pad in the streamed world, its NavMesh built, every person's post and
+        /// every thing the story uses reached on foot from where the player arrives; captured wide and as an arrival
+        /// (`place_<id>_wide`, `place_<id>_arrival`). A district of the city is also seen from the game camera at its
+        /// lowest over the player at the arrival (`place_<id>_street`: the see-through round them), at night
+        /// (`place_<id>_night`, `place_<id>_night_wide`: the city's light), and its places' draws in that view are counted
+        /// from the built hierarchy against the phone's budget.</summary>
         [UnityTest, Timeout(900000)]
-        public IEnumerator EachPlaceStandsAndIsWalkable([Values("tollhouse", "signalhill", "drywells", "orchard", "wheel", "lm_sallow_01", "lm_sallow_02", "ninebridge", "openfield", "sump")] string id)
+        public IEnumerator EachPlaceStandsAndIsWalkable([Values("tollhouse", "signalhill", "drywells", "orchard", "wheel", "lm_sallow_01", "lm_sallow_02", "ninebridge", "openfield", "sump",
+            "meridian", "site_md_market", "site_md_lantern", "site_md_bridgeward", "site_md_stacks")] string id)
         {
 #if UNITY_EDITOR
             var layers = AssetDatabase.LoadAssetAtPath<BiomeLayerSet>("Assets/SecondFace/Terrain/BiomeLayers.asset");
@@ -289,6 +294,33 @@ namespace SecondFace.Tests
             var to = heart / count - arrive.transform.position; to.y = 0f;
             var yaw = to.sqrMagnitude > 16f ? Mathf.Atan2(to.x, to.z) * Mathf.Rad2Deg : arrive.transform.eulerAngles.y;
             yield return Shot(cam, arrive.transform.position, 50f, yaw + 20f, 22f, $"place_{id}_arrival");
+            if (place.GetComponent<PlaceReveal>() == null) yield break;
+
+            // the city: the player stands at the arrival and the game camera looks at them from its lowest and widest
+            // (35°, 26 m: the view a tall front most often stands in), the see-through open round them
+            world.Focus = arrive.transform.position;
+            var interiors = place.GetComponent<PlaceInteriors>();
+            interiors.World = world;
+            interiors.Refresh();
+            yield return Shot(cam, arrive.transform.position + Vector3.up * 1.3f, 35f, yaw + 200f, 26f, $"place_{id}_street");
+            // what that view draws of the places standing (each renderer in the frustum, a draw per material)
+            var planes = GeometryUtility.CalculateFrustumPlanes(cam);
+            var draws = 0; var renderers = 0;
+            foreach (var (_, standing) in streamer.PlaceSpawner.Standing())
+                foreach (var r in standing.GetComponentsInChildren<Renderer>())
+                {
+                    if (!r.enabled || !r.gameObject.activeInHierarchy || !GeometryUtility.TestPlanesAABB(planes, r.bounds)) continue;
+                    renderers++; draws += r.sharedMaterials.Length;
+                }
+            Debug.Log($"PlacePlayTests: {id}: the street view draws {draws} ({renderers} renderers) of the places standing");
+            // and at night: the windows, the neon, the screens
+            clock.SetHour(22.5);
+            sky.Apply();
+            for (var i = 0; i < 10; i++) yield return null;
+            yield return Shot(cam, arrive.transform.position, 50f, yaw + 20f, 22f, $"place_{id}_night");
+            yield return Shot(cam, centre, 52f, 30f, 80f, $"place_{id}_night_wide");
+            world.Focus = centre;
+            Assert.That(draws, Is.LessThanOrEqualTo(CityKit.DrawBudget), $"{id}: the street view draws {draws} of the places standing (budget {CityKit.DrawBudget})");
         }
 
         /// <summary>The shelter under its mouth (step 21b): Cistern 9's rooms ten metres down a ramp tunnel from the door in

@@ -26,9 +26,10 @@ namespace SecondFace.EditorTools
     /// and lean-tos with overhangs. Fences come from the frontier kit, a cell's bars are made; doors, shutters and
     /// every prop are kit prefabs (nested); the ground's streets and rubble are road-shader patches with ragged edges;
     /// lights and markers come from the map. Meshes are stored one asset each under Prefabs/places/&lt;id&gt;/ (rebuilt in
-    /// place: the same map gives the same files).
+    /// place: the same map gives the same files). Meridian's districts are built by the megacity kit instead
+    /// (PlaceBuilder.City.cs, Core <see cref="CityKit"/>).
     /// </summary>
-    public static class PlaceBuilder
+    public static partial class PlaceBuilder
     {
         public const string Dir = "Assets/SecondFace/Prefabs/places";
         public const string SetPath = "Assets/SecondFace/World/PlaceSet.asset";
@@ -39,6 +40,8 @@ namespace SecondFace.EditorTools
             "shale", "cistern9", "rustdogs", "tollhouse", "signalhill", "drywells", "orchard", "wheel", "lm_sallow_01", "lm_sallow_02",
             // the Glass Flats (Act 2's way in)
             "ninebridge", "openfield", "sump",
+            // Meridian (the megacity kit): the Precinct, Old Market, Lantern Row, Bridgeward, the Stacks
+            "meridian", "site_md_market", "site_md_lantern", "site_md_bridgeward", "site_md_stacks",
         };
 
         /// <summary>A place's interior map under the ground (step 21b), reached from its surface map's main exit to it.</summary>
@@ -94,7 +97,7 @@ namespace SecondFace.EditorTools
             {
                 if (!layout.Places.TryGetValue(id, out var info) || info.Map == null || maps[info.Map] == null) { Debug.LogWarning($"PlaceBuilder: {id} has no map"); continue; }
                 var belowId = Below.TryGetValue(id, out var bm) ? bm : null;
-                var prefab = Make(id, maps[info.Map].ToObject<MapDef>(), belowId != null ? maps[belowId]?.ToObject<MapDef>() : null);
+                var prefab = Make(id, maps[info.Map].ToObject<MapDef>(), belowId != null ? maps[belowId]?.ToObject<MapDef>() : null, layout);
                 var group = Group(settings, $"places-{info.Region}");
                 var entry = settings.CreateOrMoveEntry(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(prefab)), group, false, false);
                 entry.address = $"places/{id}";
@@ -132,7 +135,7 @@ namespace SecondFace.EditorTools
         private static ExitDef MainExit(MapDef map, string to) =>
             (map.Exits ?? new List<ExitDef>()).Where(e => e.To?.Location == to).OrderByDescending(e => (e.W ?? 1) * (e.H ?? 1)).FirstOrDefault();
 
-        private static GameObject Make(string id, MapDef surfaceMap, MapDef belowMap)
+        private static GameObject Make(string id, MapDef surfaceMap, MapDef belowMap, WorldLayout layout)
         {
             var meshDir = $"{Dir}/{id}";
             Directory.CreateDirectory(meshDir);
@@ -160,11 +163,21 @@ namespace SecondFace.EditorTools
                     surfaceMap.Layout = rows;
                 }
             }
-            var plan = PlacePlan.Build(surfaceMap);
+            // a Meridian district: its border is the map's edge (CityKit.Prepare), the megacity kit raises it
+            var style = belowMap == null ? CityKit.StyleFor(surfaceMap.Id) : null;
+            var plan = PlacePlan.Build(style != null ? CityKit.Prepare(surfaceMap) : surfaceMap);
             var navMin = new Vector3(-plan.Width / 2 - 12f, -6f, -plan.Depth / 2 - 12f);
             var navMax = new Vector3(plan.Width / 2 + 12f, 34f, plan.Depth / 2 + 12f);
-            Layer(root.transform, plan, meshDir, "", stored, unknown, rng, false);
+            CityKit.City city = null;
+            if (style != null)
+            {
+                city = City(id, surfaceMap, plan, style, layout);
+                CityLayer(root.transform, plan, city, meshDir, stored, unknown);
+            }
+            else Layer(root.transform, plan, meshDir, "", stored, unknown, rng, false);
             var summary = $"{plan.Rooms.Count} buildings, {plan.Walls.Count} walls ({plan.Walls.Sum(w => w.Openings.Count)} openings), {plan.Fences.Count} fences, {plan.Items.Count} props, {plan.Lamps.Count} lights";
+            if (city != null)
+                summary += $"; the {city.Style.Id} kit: storeys {string.Join(",", city.Blocks.Select(b => b.Storeys))}, {city.Masses.Count} masses, {city.Pieces.Count} pieces, {city.Towers.Count} towers, {city.Pools.Count} pools, a view about {CityKit.EstimateDraws(city)} draws";
             if (belowMap != null)
             {
                 var below = PlacePlan.Build(belowMap);
@@ -186,6 +199,8 @@ namespace SecondFace.EditorTools
             }
             // the place opens the building the player walks into; its NavMesh is built where it is put
             root.AddComponent<PlaceInteriors>();
+            // the city dissolves round the player where it stands between them and the camera
+            if (city != null) root.AddComponent<PlaceReveal>();
             var nav = root.AddComponent<PlaceNav>();
             nav.Centre = (navMin + navMax) / 2; nav.Size = navMax - navMin;
 
@@ -678,9 +693,11 @@ namespace SecondFace.EditorTools
 
         /// <summary>The yards' scenes (Core <see cref="PlaceYards"/>), each made of baked props round its anchor, turned to face
         /// the nearest way; a prop that is not baked is left out.</summary>
-        private static void Yards(PlacePlan plan, Transform parent, int seed)
+        private static void Yards(PlacePlan plan, Transform parent, int seed) => Scenes(plan, PlaceYards.For(plan, seed), parent);
+
+        /// <summary>The yards' scenes as built (the frontier's from <see cref="PlaceYards.For"/>, the city's from its kit).</summary>
+        private static void Scenes(PlacePlan plan, List<PlaceYards.Vignette> scenes, Transform parent)
         {
-            var scenes = PlaceYards.For(plan, seed);
             var made = 0;
             foreach (var v in scenes)
             {

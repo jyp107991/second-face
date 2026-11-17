@@ -27,6 +27,12 @@ namespace SecondFace.Game.World
 
         public SkyLook Look { get; private set; }
 
+        private static readonly int NightId = Shader.PropertyToID("_SF_Night");
+
+        /// <summary>How far into the night the sun's height is: 0 with the sun 4.6° up and over, 1 with it 7° under the
+        /// horizon (civil dusk), linear between.</summary>
+        public static float Night(float sunY) => Mathf.Clamp01((0.08f - sunY) / 0.2f);
+
         private Material _sky;
         private WeatherLayers _layers;
         private float _since = 999f;
@@ -86,6 +92,8 @@ namespace SecondFace.Game.World
             RenderSettings.ambientGroundColor = Col(l.AmbientGround);
             RenderSettings.fogColor = Col(l.Fog);
             RenderSettings.fogDensity = l.FogDensity;
+            // the city's lights come up as the sun goes down (SecondFace/City: windows, neon, screens)
+            Shader.SetGlobalFloat(NightId, Night(l.SunY));
             if (_sky != null)
             {
                 _sky.SetColor("_Zenith", Col(l.Zenith));
