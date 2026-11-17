@@ -40,11 +40,20 @@ namespace SecondFace.Core.State
         public float CamYaw, CamPitch, CamDistance;
     }
 
+    /// <summary>A companion who has joined the player at least once (Core <see cref="Npc.Party"/>): their sheet and pack, kept
+    /// between maps and fights, and where they are when not travelling with the player.</summary>
     public sealed class CompanionSave
     {
         public CharacterSheet Sheet;
         public Inventory.Inventory Inv;
+        /// <summary>Dismissed to wait (a bare "wait here"): where, as <c>{ Location, X, Y, Z, Yaw }</c> (the place's id and
+        /// the world point they stand at; the game writes the point once it has seen them stop). Null while they travel
+        /// with the player or once they have left the road.</summary>
         public JToken WaitingAt;
+        /// <summary>Left the road (a leave the story recorded as a decision: gone home, gone for good): not waiting anywhere;
+        /// wherever they stand now is their content's placements' to say. Null (not written) otherwise. Optional and additive,
+        /// so saves without it read as before (no migration).</summary>
+        public bool? Left;
     }
 
     /// <summary>

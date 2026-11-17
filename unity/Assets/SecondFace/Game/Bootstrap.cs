@@ -377,6 +377,8 @@ namespace SecondFace.Game
 
         /// <summary>The HUD over the walkabout (P5.3b): the compass turns with the camera, the clock is the world's.</summary>
         public Hud Hud => _hud;
+        /// <summary>What the HUD shows now (tests read the party strip from it).</summary>
+        public HudState HudState => _hudState;
 
         private void UpdateHud()
         {
@@ -411,12 +413,42 @@ namespace SecondFace.Game
             // the player's own face in the party strip (a letter stood there, T36), drawn once a walker
             var me = Walkabout.Walker.gameObject;
             if (_hudFace != me && _hudState.Party.Count > 0) { _hudFace = me; _hudState.Party[0].Portrait = SecondFace.Game.People.Portraits.Of(me); }
+            Members(g);
             var tracked = SecondFace.Core.World.Notebook.Tracked(g);
             var page = tracked == null ? null : SecondFace.Core.World.Notebook.Quests(g, Registry.Quests).Find(e => e.Id == tracked);
             _hudState.Quest = page?.Title;
             _hudState.Objective = page?.Items.Find(i => !i.Done && !i.Optional)?.Text;
             _hudState.Clock = $"{(int)(minutes % 1440 / 60):00}:{(int)(minutes % 60):00}";
             _hud.Show(_hudState);
+        }
+
+        /// <summary>The party strip: the player, then each companion travelling with them (their portrait once their body
+        /// stands, else their initial; their name; their health from their own sheet).</summary>
+        private void Members(GameState g)
+        {
+            var party = _hudState.Party;
+            if (party.Count == 0) return;
+            var pc = g.Pc.Sheet;
+            party[0].Hp = pc.Hp;
+            party[0].MaxHp = System.Math.Max(1, SecondFace.Core.Stats.Sheet.Derived(pc).MaxHp);
+            var ids = new System.Collections.Generic.List<string>();
+            foreach (var id in g.World.Party) if (Registry.Npcs.ContainsKey(id)) ids.Add(id);
+            while (party.Count > ids.Count + 1) party.RemoveAt(party.Count - 1);
+            for (var i = 0; i < ids.Count; i++)
+            {
+                if (party.Count <= i + 1) party.Add(new HudMember());
+                var m = party[i + 1];
+                var id = ids[i];
+                var def = Registry.Npcs[id];
+                var save = SecondFace.Core.Npc.Party.Save(g, id);
+                m.Leader = false;
+                m.Name = !string.IsNullOrEmpty(def.Name) ? def.Name : Content?.Entry("npcs", id)?["name"]?.ToString() ?? id;
+                m.Hp = save.Sheet != null ? save.Sheet.Hp : 1;
+                m.MaxHp = save.Sheet != null ? System.Math.Max(1, SecondFace.Core.Stats.Sheet.Derived(save.Sheet).MaxHp) : 1;
+                // (drawn once for each body: a portrait is cached by the body it is of)
+                var body = Walkabout.Party != null ? Walkabout.Party.Of(id) : null;
+                m.Portrait = body != null ? SecondFace.Game.People.Portraits.Of(body.gameObject) : null;
+            }
         }
 
         /// <summary>Opens the notebook over the walkabout's game, at a quest if given.</summary>

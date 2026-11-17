@@ -215,9 +215,11 @@ namespace SecondFace.Core.Dialogue
             return view;
         }
 
-        /// <summary>A companion who travels with the player now (joined and not left waiting somewhere).</summary>
-        private bool Travelling(string id) => G.Companions != null && G.Companions.TryGetValue(id, out var c) && c != null
-                                              && (c.WaitingAt == null || c.WaitingAt.Type == JTokenType.Null);
+        /// <summary>A companion who travels with the player now (in the party; or joined and neither left waiting somewhere
+        /// nor gone from the road).</summary>
+        private bool Travelling(string id) => G.World.Party.Contains(id)
+                                              || (G.Companions != null && G.Companions.TryGetValue(id, out var c) && c != null && c.Left != true
+                                                  && (c.WaitingAt == null || c.WaitingAt.Type == JTokenType.Null));
 
         /// <summary>Effects that do the same the second time (a flag set, a thing learned, a lead, a memory overwritten): an
         /// option carrying only these can close as a spent topic; anything else (items, approval, reputation, XP, news,

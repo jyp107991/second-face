@@ -183,8 +183,10 @@ namespace SecondFace.Core.World
                     if (!w.Decisions.Any(d => d.Id == id)) w.Decisions.Add(new Decision { Id = id, Text = (string)dec["text"], Minutes = g.Minutes });
                 }
                 else if (e.TryGetValue("after", out var after)) w.Timers.Add(new Timer { Id = (string)after["id"], At = g.Minutes + (double)after["minutes"], Effects = (JArray)after["effects"] });
-                else if (e.TryGetValue("join", out var join)) { if (!w.Party.Contains((string)join)) w.Party.Add((string)join); }
-                else if (e.TryGetValue("leave", out var leave)) w.Party.Remove((string)leave);
+                // the party (Core Npc.Party): a join puts them on the road with their sheet and pack; a leave alone is "wait
+                // here", a leave with a decision or a flag of its own is leaving the road
+                else if (e.TryGetValue("join", out var join)) Npc.Party.Joined(g, (string)join);
+                else if (e.TryGetValue("leave", out var leave)) Npc.Party.Departed(g, (string)leave, Npc.Party.LeavesTheRoad(effects));
                 else if (e.TryGetValue("time", out var time)) g.Minutes += (double)time;
                 else if (e.TryGetValue("until", out var until))
                 {

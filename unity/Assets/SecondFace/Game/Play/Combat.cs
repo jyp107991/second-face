@@ -21,11 +21,14 @@ namespace SecondFace.Game.Play
     /// Turn-based fights in the open world (P6.4; DESIGN_UNITY §5.2; the rules are Core <see cref="Battle"/>). A fight
     /// starts when someone standing near the walker turns hostile (their definition's hostileIf comes true: a choice in a
     /// conversation): the walker, everyone hostile within <see cref="Reach"/> and everyone whose ally condition holds
-    /// stand where they are and take turns by initiative. On the player's turn a tap on the ground shows the walk and its
-    /// AP (a second tap goes), a tap on an enemy opens the radial with the attacks and their odds; the bar holds the AP,
-    /// end turn, reload and patch up. Others act by the battle's AI, step by step, each step played out (a walk, a shot
-    /// with its tracer, a hit or a miss said, a fall into the ragdoll). The dead are written into the game (their
-    /// placements no longer stand, the quests see them dead); the player's defeat ends the game back at the title.
+    /// stand where they are and take turns by initiative. The companions following the player (<see cref="PartyFollowers"/>)
+    /// fight on the player's side under the player's hand (DESIGN_UNITY §5: direct control): on the player's turn and on each
+    /// companion's, a tap on the ground shows the walk and its AP (a second tap goes), a tap on an enemy opens the radial
+    /// with the attacks and their odds; the bar holds the AP, end turn, reload and patch up. Others act by the battle's AI,
+    /// step by step, each step played out (a walk, a shot with its tracer, a hit or a miss said, a fall into the ragdoll).
+    /// The dead are written into the game (their placements no longer stand, the quests see them dead); companions go down
+    /// instead, and get up wounded when it is over (Core <see cref="Party.AfterFight"/>); the player's defeat ends the
+    /// game back at the title.
     /// </summary>
     public sealed class Combat : MonoBehaviour
     {
@@ -44,6 +47,11 @@ namespace SecondFace.Game.Play
         private readonly Dictionary<BattleUnit, Transform> _bodies = new();
         private readonly Dictionary<BattleUnit, Townsperson> _people = new();
         private BattleUnit _player;
+        /// <summary>The units under the player's hand (the player and the companions fighting beside them), and the one whose
+        /// turn it is now (null on anyone else's).</summary>
+        private readonly HashSet<BattleUnit> _controlled = new();
+        private readonly HashSet<BattleUnit> _companions = new();
+        private BattleUnit _acting;
         private bool _playerDone;
         private Vector3? _pendingMove;
         private LineRenderer _path, _tracer;
@@ -77,7 +85,7 @@ namespace SecondFace.Game.Play
             var g = Walkabout.Game;
             var at = Walkabout.Walker.transform.position;
             var hostile = People.StandingPeople.Where(p => p.Def?.HostileIf != null && (at - p.transform.position).sqrMagnitude < Reach * Reach
-                                                           && Logic.Test(p.Def.HostileIf, g) && !Dead(g, p)).ToList();
+                                                           && Logic.Test(p.Def.HostileIf, g) && !Dead(g, p) && !WithPlayer(g, p)).ToList();
             if (hostile.Count == 0) return false;
             Starting?.Invoke();   // (saved first: a fight lost goes back to just before it)
             StartCoroutine(Fight(hostile, Time.unscaledTime - _talkAt < 5f));
@@ -85,6 +93,32 @@ namespace SecondFace.Game.Play
         }
 
         private static bool Dead(GameState g, Townsperson p) => p.Def != null && g.Npcs.TryGetValue(p.Def.Id, out var n) && n.Dead == true;
+
+        /// <summary>A place's body of someone travelling with the player (kept out of sight there): never a side of its own.</summary>
+        private static bool WithPlayer(GameState g, Townsperson p) => p.Def != null && g.World.Party.Contains(p.Def.Id);
+
+        /// <summary>A companion following the player, as the battle's unit: their own sheet and pack (what the fight does to
+        /// them stays with them), on the player's side, in the body that follows.</summary>
+        private BattleUnit CompanionUnit(string id, Townsperson body)
+        {
+            var g = Walkabout.Game;
+            var save = Party.Save(g, id);
+            var def = body.Def;
+            var c = new Combatant
+            {
+                Id = id, Name = string.IsNullOrEmpty(def?.Name) ? id : def.Name, Team = "player", Sheet = save.Sheet, Inv = save.Inv,
+                Morale = CombatRules.InitialMorale(def?.Courage ?? 60), Courage = def?.Courage, Natural = def?.Natural,
+            };
+            var u = new BattleUnit { C = c, Hostile = false };
+            u.Place(body.transform.position.x, body.transform.position.z);
+            _bodies[u] = body.transform;
+            _people[u] = body;
+            body.Held = true;
+            if (body.Agent != null && body.Agent.enabled && body.Agent.isOnNavMesh) body.Agent.ResetPath();
+            _controlled.Add(u);
+            _companions.Add(u);
+            return u;
+        }
 
         private BattleUnit UnitOf(Townsperson p, bool hostile)
         {
@@ -108,7 +142,8 @@ namespace SecondFace.Game.Play
         private IEnumerator Fight(List<Townsperson> hostiles, bool ourMove = false)
         {
             var g = Walkabout.Game;
-            _bodies.Clear(); _people.Clear();
+            _bodies.Clear(); _people.Clear(); _controlled.Clear(); _companions.Clear();
+            _acting = null;
             var units = new List<BattleUnit>();
             var pc = new Combatant
             {
@@ -119,11 +154,15 @@ namespace SecondFace.Game.Play
             var wp = Walkabout.Walker.transform.position;
             _player.Place(wp.x, wp.z);
             _bodies[_player] = Walkabout.Walker.transform;
+            _controlled.Add(_player);
             units.Add(_player);
             foreach (var h in hostiles) units.Add(UnitOf(h, true));
+            // the party: every companion following the player, under the player's hand
+            if (Walkabout.Party != null)
+                foreach (var (id, body) in Walkabout.Party.Fighters()) units.Add(CompanionUnit(id, body));
             // allies: anyone near whose ally condition holds
             foreach (var p in People.StandingPeople)
-                if (p.Def?.Ally != null && !hostiles.Contains(p) && (wp - p.transform.position).sqrMagnitude < AllyReach * AllyReach && Logic.Test(p.Def.Ally, g) && !Dead(g, p))
+                if (p.Def?.Ally != null && !hostiles.Contains(p) && (wp - p.transform.position).sqrMagnitude < AllyReach * AllyReach && Logic.Test(p.Def.Ally, g) && !Dead(g, p) && !WithPlayer(g, p))
                     units.Add(UnitOf(p, false));
             _battle = new Battle(new NavField(this), new Rng(g.RngState != 0 ? g.RngState : 7u));
             var (hitMod, dmgMul) = Difficulty != null ? Difficulty() : (0, 1.0);
@@ -142,7 +181,7 @@ namespace SecondFace.Game.Play
                 if (u == null) break;
                 FlushLog(ref shown);
                 var logged = _battle.Log.Count;
-                if (u == _player) yield return PlayerTurn();
+                if (_controlled.Contains(u)) yield return PlayerTurn(u);
                 else yield return AiTurn(u);
                 quiet = u.C.Ap >= CombatRules.MaxAp(u.C) && _battle.Log.Count == logged ? quiet + 1 : 0;
                 if (quiet >= _battle.Order.Count * 3) { _battle.Standoff(); _quietUntil = Time.unscaledTime + 60f; }
@@ -156,26 +195,29 @@ namespace SecondFace.Game.Play
 
         // ---- the player's turn -------------------------------------------------------------------------------------
 
-        private IEnumerator PlayerTurn()
+        /// <summary>A turn under the player's hand: their own, or a companion's (DESIGN_UNITY §5, direct control).</summary>
+        private IEnumerator PlayerTurn(BattleUnit u)
         {
+            _acting = u;
             _playerDone = false;
             _pendingMove = null;
             Refresh();
-            Say(Strings.Get("combat.your_turn", _player.C.Ap));
+            Say(u == _player ? Strings.Get("combat.your_turn", u.C.Ap) : $"{Strings.Get("combat.their_turn", u.C.Name)} {Strings.Get("combat.ap", u.C.Ap, CombatRules.MaxAp(u.C))}");
             while (!_playerDone && _battle.Active) yield return null;
             ClearPath();
+            _acting = null;
         }
 
         private bool OnGround(Vector3 point)
         {
-            if (!Active || _battle.Current != _player || _busy) return true;
+            if (!Active || _acting == null || _battle.Current != _acting || _busy) return true;
             if (!NavMesh.SamplePosition(point, out var hit, 2f, NavMesh.AllAreas)) return true;
-            var cost = _battle.MoveCost(_player, hit.position.x, hit.position.z);
-            if (cost == int.MaxValue || cost > _player.C.Ap) { Say(Strings.Get("combat.too_far")); DrawPath(hit.position, false); _pendingMove = null; return true; }
+            var cost = _battle.MoveCost(_acting, hit.position.x, hit.position.z);
+            if (cost == int.MaxValue || cost > _acting.C.Ap) { Say(Strings.Get("combat.too_far")); DrawPath(hit.position, false); _pendingMove = null; return true; }
             if (_pendingMove != null && (_pendingMove.Value - hit.position).sqrMagnitude < 1.2f)
             {
                 _pendingMove = null;
-                StartCoroutine(Run(MoveUnit(_player, hit.position)));
+                StartCoroutine(Run(MoveUnit(_acting, hit.position)));
                 return true;
             }
             _pendingMove = hit.position;
@@ -188,38 +230,46 @@ namespace SecondFace.Game.Play
         public bool Tapped(Interactable it, Vector2 screen)
         {
             if (!Active) return false;
-            if (_battle.Current != _player || _busy) return true;
+            var me = _acting;
+            if (me == null || _battle.Current != me || _busy) return true;
             var target = _bodies.FirstOrDefault(kv => kv.Value == it.transform || it.transform.IsChildOf(kv.Value)).Key;
             if (target == null || !target.Hostile || !target.Alive) return true;
             var ui = UIService.Instance;
             var verbs = new List<RadialVerb>();
-            var snap = _battle.Preview(_player, target);
+            var snap = _battle.Preview(me, target);
             RadialVerb Verb(string id, (bool Ok, string Reason, int Chance, int Ap) pv) =>
                 new(id, pv.Ok, pv.Ok ? Strings.Get("combat.odds", pv.Chance, pv.Ap) : null);
             verbs.Add(Verb("attack", snap));
-            var w = CombatRules.WeaponOf(_player.C).def;
-            if (!CombatRules.IsMelee(w)) { verbs.Add(Verb("aim_head", _battle.Preview(_player, target, "head"))); verbs.Add(Verb("aim_legs", _battle.Preview(_player, target, "legL"))); }
-            if (w.Burst != null) verbs.Add(Verb("burst", _battle.Preview(_player, target, null, true)));
+            var w = CombatRules.WeaponOf(me.C).def;
+            if (!CombatRules.IsMelee(w)) { verbs.Add(Verb("aim_head", _battle.Preview(me, target, "head"))); verbs.Add(Verb("aim_legs", _battle.Preview(me, target, "legL"))); }
+            if (w.Burst != null) verbs.Add(Verb("burst", _battle.Preview(me, target, null, true)));
             var title = $"{target.C.Name} · {Strings.Get("combat.chance", Strings.Get("verb.attack"), snap.Chance)}";
             if (!snap.Ok && snap.Reason != null) title += $" · {snap.Reason}";
-            if (ui == null) { StartCoroutine(Run(AttackUnit(_player, target, null, false))); return true; }
+            if (ui == null) { StartCoroutine(Run(AttackUnit(me, target, null, false))); return true; }
             ui.Open(new RadialMenu(ui.ToPanel(screen), title, verbs, v =>
             {
                 var aimed = v == "aim_head" ? "head" : v == "aim_legs" ? "legL" : null;
-                StartCoroutine(Run(AttackUnit(_player, target, aimed, v == "burst")));
+                StartCoroutine(Run(AttackUnit(me, target, aimed, v == "burst")));
             }));
             return true;
         }
 
-        /// <summary>The player's turn is up and waiting for a choice.</summary>
-        public bool PlayersTurn => Active && _battle.Current == _player && !_busy && !_playerDone;
+        /// <summary>A turn under the player's hand (theirs or a companion's) is up and waiting for a choice.</summary>
+        public bool PlayersTurn => Active && _acting != null && _battle.Current == _acting && !_busy && !_playerDone;
 
-        /// <summary>The player's turn played as the allies' AI would play it (the playthrough tests; later an auto-turn).</summary>
+        /// <summary>The companions fighting beside the player in the fight on now, by id (empty outside a fight).</summary>
+        public List<string> CompanionsFighting => _battle == null ? new List<string>() : _companions.Select(u => u.C.Id).ToList();
+
+        /// <summary>Everyone on the player's side in the fight on now, by id ("pc" for the player; empty outside a fight).</summary>
+        public List<string> Allies => _battle == null ? new List<string>() : _battle.Units.Where(u => !u.Hostile).Select(u => u.C.Id).ToList();
+
+        /// <summary>The turn under the player's hand played as the allies' AI would play it (the playthrough tests; later an
+        /// auto-turn).</summary>
         public IEnumerator PlayerTurnByAi()
         {
             if (!PlayersTurn) yield break;
             _busy = true;
-            yield return AiTurn(_player);
+            yield return AiTurn(_acting);
             _busy = false;
             _playerDone = true;
         }
@@ -232,7 +282,7 @@ namespace SecondFace.Game.Play
             yield return step;
             _busy = false;
             Refresh();
-            if (_player.C.Ap <= 0 || !_battle.Active || _battle.CheckEnd()) _playerDone = true;
+            if (_acting == null || _acting.C.Ap <= 0 || !_acting.Alive || !_battle.Active || _battle.CheckEnd()) _playerDone = true;
         }
 
         // ---- the others' turns -----------------------------------------------------------------------------------------
@@ -375,11 +425,14 @@ namespace SecondFace.Game.Play
             // what the fight did to the world: the dead stay dead, the living keep their wounds
             foreach (var u in _battle.Units)
             {
-                if (u == _player) continue;
+                if (u == _player || _companions.Contains(u)) continue;   // (a companion's wounds are on their own sheet)
                 if (!g.Npcs.TryGetValue(u.C.Id, out var save)) g.Npcs[u.C.Id] = save = new NpcSave();
                 save.Hp = u.C.Sheet.Hp;
                 if (!u.Alive) save.Dead = true;
             }
+            // companions who went down get up wounded, never dead
+            if (Walkabout.Party != null) Walkabout.Party.AfterFight((int)g.Minutes);
+            else Party.AfterFight(g, (int)g.Minutes);
             foreach (var p in _people.Values) if (p != null) p.Held = false;
             var outcome = _battle.Outcome ?? "truce";
             // losing forward: people whose content says what follows when they beat the player leave them on the ground, hurt,
@@ -420,8 +473,8 @@ namespace SecondFace.Game.Play
             {
                 _hud ??= new SecondFace.Game.UI.CombatHud(ui,
                     () => { if (Mine()) _playerDone = true; },
-                    () => { if (Mine()) { _battle.Reload(_player); Refresh(); } },
-                    () => { if (Mine() && _battle.UseItem(_player, Battle.HealItem, (int)Walkabout.Game.Minutes)) Refresh(); });
+                    () => { if (Mine()) { _battle.Reload(_acting); Refresh(); } },
+                    () => { if (Mine() && _battle.UseItem(_acting, Battle.HealItem, (int)Walkabout.Game.Minutes)) Refresh(); });
                 if (_hud.Root.parent == null) ui.Hud.Add(_hud.Root);
                 _lines.Clear();
                 Refresh();
@@ -435,14 +488,18 @@ namespace SecondFace.Game.Play
         /// <summary>The fight's HUD is up (through the fight and its last line, a moment after the battle itself ends).</summary>
         public bool HudUp => _hud != null && _hud.Root.parent != null;
 
-        private bool Mine() => Active && _battle.Current == _player && !_busy;
+        private bool Mine() => Active && _acting != null && _battle.Current == _acting && !_busy;
 
         private void Refresh()
         {
             if (_hud == null || _battle == null) return;
             var cur = _battle.Current;
-            _hud.Status(cur == _player ? Strings.Get("combat.ap", _player.C.Ap, CombatRules.MaxAp(_player.C)) : Strings.Get("combat.their_turn", cur?.C.Name ?? ""), string.Join("\n", _lines));
-            _hud.Mine(cur == _player && !_busy);
+            var mine = cur != null && cur == _acting;
+            var status = !mine ? Strings.Get("combat.their_turn", cur?.C.Name ?? "")
+                : cur == _player ? Strings.Get("combat.ap", cur.C.Ap, CombatRules.MaxAp(cur.C))
+                : $"{cur.C.Name} · {Strings.Get("combat.ap", cur.C.Ap, CombatRules.MaxAp(cur.C))}";
+            _hud.Status(status, string.Join("\n", _lines));
+            _hud.Mine(mine && !_busy);
         }
 
         private readonly List<SecondFace.Game.UI.CombatHud.Fighter> _fighters = new();
@@ -517,7 +574,9 @@ namespace SecondFace.Game.Play
         {
             if (_path == null) _path = Line("combat-path", Color.white, 0.08f);
             var path = new NavMeshPath();
-            if (Walkabout.Walker == null || !NavMesh.CalculatePath(Walkabout.Walker.transform.position, to, NavMesh.AllAreas, path)) { ClearPath(); return; }
+            // (from whoever is moving: the player, or the companion whose turn it is)
+            var from = _acting != null && _bodies.TryGetValue(_acting, out var body) && body != null ? body : Walkabout.Walker != null ? Walkabout.Walker.transform : null;
+            if (from == null || !NavMesh.CalculatePath(from.position, to, NavMesh.AllAreas, path)) { ClearPath(); return; }
             _path.startColor = _path.endColor = ok ? new Color(0.55f, 0.95f, 0.7f, 0.9f) : new Color(1f, 0.45f, 0.35f, 0.9f);
             _path.positionCount = path.corners.Length;
             for (var i = 0; i < path.corners.Length; i++) _path.SetPosition(i, path.corners[i] + Vector3.up * 0.08f);

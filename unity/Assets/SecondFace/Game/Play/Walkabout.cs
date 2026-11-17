@@ -48,6 +48,9 @@ namespace SecondFace.Game.Play
         public int Townsfolk => People != null ? People.Standing : 0;
         /// <summary>The world's people keeping their routines (P6.2; null until the walker is first set down).</summary>
         public PeopleService People { get; private set; }
+        /// <summary>The party in the world: the companions following the player, and those waiting where they were left
+        /// (null until the walker is first set down).</summary>
+        public PartyFollowers Party { get; private set; }
         /// <summary>The people about watching the walker (P6.3: the light on them, who has noticed them).</summary>
         public Watchers Watch { get; private set; }
         /// <summary>The standing places' things that can be used: containers, talking props, fires, seats (P6.1).</summary>
@@ -102,6 +105,7 @@ namespace SecondFace.Game.Play
             if (def.Effects != null) Logic.Apply(def.Effects, Game, new Host(this));
             if (Stage != null && Stage.Clock != null && Game.Minutes != before) Stage.Clock.Minutes += Game.Minutes - before;
             Quests.Update();
+            if (Party != null) Party.Sync();
             if (People != null) People.Refresh();
         }
 
@@ -111,6 +115,8 @@ namespace SecondFace.Game.Play
         {
             Milestone?.Invoke();
             Quests.Update();
+            // the party first: one who joined goes on in the body they stood in before the place's people are brought anew
+            if (Party != null) Party.Sync();
             if (People != null) People.Refresh();
             if (Combat != null) Combat.Check(true);
         }
@@ -162,6 +168,7 @@ namespace SecondFace.Game.Play
         /// <summary>The game as it stands now, for a save: where the walker is and how the camera looks at them, the hour.</summary>
         public GameState Snapshot()
         {
+            if (Party != null) Party.Keep();   // where the waiting stand
             if (Walker != null)
             {
                 var p = Walker.Footing;
@@ -182,6 +189,7 @@ namespace SecondFace.Game.Play
             _placing++;   // a setting down under way is dropped
             if (Walker != null) Destroy(Walker.gameObject);
             Walker = null;
+            if (Party != null) Party.Clear();
             if (Input != null) Input.Walker = null;
             if (Pad != null) Pad.Walker = null;
             if (Rig != null) Rig.Leader = null;
@@ -269,6 +277,9 @@ namespace SecondFace.Game.Play
             }
             Pad.Walker = Walker;
             Populate(assets);
+            // the party beside the walker, wherever they were set down (a new game, a load, a journey by the map)
+            if (Party == null) { Party = gameObject.AddComponent<PartyFollowers>(); Party.Walkabout = this; }
+            Party.SetDown();
             if (Piles == null)
             {
                 Piles = gameObject.AddComponent<GroundPiles>();
@@ -733,6 +744,8 @@ namespace SecondFace.Game.Play
                 var d = to.magnitude;
                 if (d > reach) continue;
                 var score = d * (d < 0.01f || Vector3.Dot(fwd, to / d) > 0.3f ? 1f : 2f);
+                // (the party is always within reach: one of them is acted on only when no one else is near)
+                if (Party != null && Party.Holds(it)) score *= 3f;
                 if (score < bestScore) { bestScore = score; best = it; }
             }
             if (best == null) return false;
@@ -904,7 +917,7 @@ namespace SecondFace.Game.Play
                 if (!Game.World.KnownLocations.Contains(p.Id)) { Game.World.KnownLocations.Add(p.Id); changed = true; }
                 foreach (var map in new[] { p.Map, p.Id })
                     if (!string.IsNullOrEmpty(map) && !Game.Flags.ContainsKey("visited_" + map)) { Game.Flags["visited_" + map] = true; changed = true; }
-                if (changed) { Quests.Update(); People?.Refresh(); }
+                if (changed) { Quests.Update(); Party?.Sync(); People?.Refresh(); }
                 return;
             }
         }

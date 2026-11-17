@@ -1,26 +1,45 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json.Linq;
 using SecondFace.Core.Content;
 using SecondFace.Core.Inventory;
 using SecondFace.Core.Scene;
+using SecondFace.Core.State;
 using SecondFace.Core.Stats;
+using SecondFace.Core.World;
 
 namespace SecondFace.Core.Npc
 {
-    /// <summary>What a companion keeps between maps: their sheet, their pack, and where they wait when dismissed.</summary>
-    public sealed class CompanionSave
+    /// <summary>Where a companion is, as the story has them (<see cref="Party.StateOf"/>).</summary>
+    public enum CompanionState
     {
-        public CharacterSheet Sheet;
-        public Inventory.Inventory Inv;
-        public WaitingAt WaitingAt;
+        /// <summary>Never joined.</summary>
+        None,
+        /// <summary>In the party: they follow the player and fight beside them.</summary>
+        Travelling,
+        /// <summary>Dismissed to wait (a bare "wait here"): they stand where they were left until asked to rejoin.</summary>
+        Waiting,
+        /// <summary>Left the road (a leave the story recorded as a decision): not following and not waiting anywhere; their
+        /// content's placements say where, if anywhere, they stand now.</summary>
+        Left,
     }
 
-    public sealed class WaitingAt { public string Location; public int X, Y; }
+    /// <summary>A waiting companion's spot (<see cref="CompanionSave.WaitingAt"/>): the place's id and the world point and
+    /// heading they stand at (no point until the game has written one).</summary>
+    public sealed class WaitSpot
+    {
+        public string Location;
+        public bool HasPoint;
+        public float X, Y, Z, Yaw;
+    }
 
     /// <summary>
     /// Companions in the scene (port of npc/party.ts): they follow at a short distance, fight on the player's side, go
-    /// down instead of dying in combat (there is no permanent-death mode), and keep their sheet and pack between maps.
-    /// Pure helpers; the game wires them to actors and the encounter.
+    /// down instead of dying in combat (there is no permanent-death mode), and keep their sheet and pack between maps
+    /// (<see cref="GameState.Companions"/>). A bare "wait here" (a <c>leave</c> alone) leaves them waiting where they
+    /// stand; a leave the story records as a decision (or with a flag of its own) is leaving the road, and the content's
+    /// placements say where they are after it. Pure helpers; the game wires them to bodies and the encounter.
     /// </summary>
     public static class Party
     {
@@ -68,6 +87,148 @@ namespace SecondFace.Core.Npc
                 Mods = new List<Modifier> { new Modifier { Target = "attr:grit", Add = -1 }, new Modifier { Target = "attr:reflex", Add = -1 } },
             });
             return true;
+        }
+
+        // ---- the story's side: who travels, who waits where, who has left the road ----------------------------------
+
+        /// <summary>Where a companion is as the story has them.</summary>
+        public static CompanionState StateOf(GameState g, string id)
+        {
+            if (g == null || id == null) return CompanionState.None;
+            if (g.World.Party.Contains(id)) return CompanionState.Travelling;
+            if (g.Companions == null || !g.Companions.TryGetValue(id, out var c) || c == null) return CompanionState.None;
+            if (c.Left == true) return CompanionState.Left;
+            return c.WaitingAt != null && c.WaitingAt.Type != JTokenType.Null ? CompanionState.Waiting : CompanionState.Left;
+        }
+
+        /// <summary>A companion's record, made the first time it is asked for: their sheet and pack built from their
+        /// definition (with the health the world last saw them at) when the content has them.</summary>
+        public static CompanionSave Save(GameState g, string id)
+        {
+            g.Companions ??= new Dictionary<string, CompanionSave>();
+            if (!g.Companions.TryGetValue(id, out var c) || c == null) g.Companions[id] = c = new CompanionSave();
+            if ((c.Sheet == null || c.Inv == null) && Registry.Npcs.TryGetValue(id, out var def))
+            {
+                var (sheet, inv) = NpcStats.Build(def);
+                if (g.Npcs.TryGetValue(id, out var seen) && seen.Hp is int hp) sheet.Hp = Math.Max(1, Math.Min(hp, Sheet.Derived(sheet).MaxHp));
+                c.Sheet ??= sheet;
+                c.Inv ??= inv;
+            }
+            return c;
+        }
+
+        /// <summary>The content's <c>join</c>: on the road with the player (no longer waiting, no longer gone).</summary>
+        public static void Joined(GameState g, string id)
+        {
+            if (id == null) return;
+            if (!g.World.Party.Contains(id)) g.World.Party.Add(id);
+            var c = Save(g, id);
+            c.WaitingAt = null;
+            c.Left = null;
+        }
+
+        /// <summary>The content's <c>leave</c>: waiting where they stand (a bare leave; the game writes the point), or gone
+        /// from the road (<paramref name="forGood"/>: see <see cref="LeavesTheRoad"/>).</summary>
+        public static void Departed(GameState g, string id, bool forGood)
+        {
+            if (id == null) return;
+            var was = g.World.Party.Remove(id);
+            // (someone who never joined has nothing to keep: a leave of theirs is the content tidying up)
+            if (!was && (g.Companions == null || !g.Companions.ContainsKey(id))) return;
+            var c = Save(g, id);
+            if (forGood) { c.WaitingAt = null; c.Left = true; return; }
+            // (a bare leave of someone not travelling changes nothing: the waiting go on waiting, the gone stay gone)
+            if (!was) return;
+            c.Left = null;
+            c.WaitingAt = new JObject { ["Location"] = g.LocationId };
+        }
+
+        /// <summary>Whether a <c>leave</c> among <paramref name="effects"/> is leaving the road rather than waiting: the
+        /// content's "wait here" is a leave alone, while every leaving of the road records a decision or sets a flag of its
+        /// own in the same effects.</summary>
+        public static bool LeavesTheRoad(JToken effects)
+        {
+            if (effects is not JArray list) return false;
+            foreach (var t in list)
+                if (t is JObject e && (e.ContainsKey("decision") || e.ContainsKey("set"))) return true;
+            return false;
+        }
+
+        /// <summary>Where a waiting companion stands (null when they are not waiting).</summary>
+        public static WaitSpot Spot(GameState g, string id)
+        {
+            if (StateOf(g, id) != CompanionState.Waiting) return null;
+            var t = g.Companions[id].WaitingAt;
+            if (t is JObject o)
+            {
+                var s = new WaitSpot { Location = o.Value<string>("Location") };
+                if (o["X"] != null && o["Z"] != null)
+                {
+                    s.HasPoint = true;
+                    s.X = o.Value<float>("X"); s.Y = o.Value<float?>("Y") ?? 0f; s.Z = o.Value<float>("Z"); s.Yaw = o.Value<float?>("Yaw") ?? 0f;
+                }
+                return s;
+            }
+            return new WaitSpot { Location = t.Type == JTokenType.String ? (string)t : null };
+        }
+
+        /// <summary>Writes where a waiting companion stands (the game, once it has seen them stop).</summary>
+        public static void WaitAt(GameState g, string id, string location, float x, float y, float z, float yaw)
+        {
+            var c = Save(g, id);
+            c.Left = null;
+            c.WaitingAt = new JObject { ["Location"] = location, ["X"] = Round(x), ["Y"] = Round(y), ["Z"] = Round(z), ["Yaw"] = Round(yaw) };
+        }
+
+        private static double Round(float v) => Math.Round(v, 2);
+
+        /// <summary>The companions waiting somewhere now.</summary>
+        public static IEnumerable<string> Waiting(GameState g) =>
+            g.Companions == null ? Enumerable.Empty<string>() : g.Companions.Keys.Where(id => StateOf(g, id) == CompanionState.Waiting).ToList();
+
+        /// <summary>Whether one of the content's placements of this person holds now, on any map (and they are alive): the
+        /// content has put them somewhere (home, their post), so no waiting figure of theirs stands anywhere else.</summary>
+        public static bool PlacedByContent(GameState g, string id)
+        {
+            if (id == null || (g.Npcs.TryGetValue(id, out var n) && n.Dead == true)) return false;
+            foreach (var p in PlacementsOf(id))
+                if (p.If == null || Logic.Test(p.If, g)) return true;
+            return false;
+        }
+
+        private static Dictionary<string, MapDef> _indexed;
+        private static readonly Dictionary<string, List<NpcPlacement>> Placements = new();
+
+        /// <summary>Every placement of a person on the content's maps (indexed once per registry).</summary>
+        public static IReadOnlyList<NpcPlacement> PlacementsOf(string id)
+        {
+            if (!ReferenceEquals(_indexed, Registry.Maps))
+            {
+                Placements.Clear();
+                foreach (var map in Registry.Maps.Values)
+                    if (map?.Npcs != null)
+                        foreach (var p in map.Npcs)
+                        {
+                            if (p?.Def == null) continue;
+                            if (!Placements.TryGetValue(p.Def, out var l)) Placements[p.Def] = l = new List<NpcPlacement>();
+                            l.Add(p);
+                        }
+                _indexed = Registry.Maps;
+            }
+            return Placements.TryGetValue(id, out var list) ? list : (IReadOnlyList<NpcPlacement>)Array.Empty<NpcPlacement>();
+        }
+
+        /// <summary>After a fight: every travelling companion who went down gets up wounded (never dead). The ids of those
+        /// who were down.</summary>
+        public static List<string> AfterFight(GameState g, int now)
+        {
+            var up = new List<string>();
+            foreach (var id in g.World.Party)
+            {
+                var c = g.Companions != null && g.Companions.TryGetValue(id, out var s) ? s : null;
+                if (c?.Sheet != null && ReviveDowned(c.Sheet, now)) up.Add(id);
+            }
+            return up;
         }
     }
 
