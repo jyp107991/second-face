@@ -22,6 +22,13 @@ namespace SecondFace.Game.World
         public Light Sun;
         /// <summary>A fixed weather for tests and captures; null follows the regions and the days.</summary>
         public WeatherKind? Force;
+        /// <summary>A fixed hour for the light (a still composed at a named light: the clock itself is not moved); null
+        /// follows the clock.</summary>
+        public double? Hour;
+        /// <summary>Smoke over the sky, 0..1 (Core <see cref="SkyTurn.Smoke"/>: a place's dressing by the story sets it).</summary>
+        public float Smoke;
+        /// <summary>The light is turning from one look to the next (<see cref="Turn"/>).</summary>
+        public bool Turning => _turnSeconds > 0f;
         public float BlendRadius = 300f;
         public float UpdateInterval = 0.1f;
 
@@ -68,9 +75,26 @@ namespace SecondFace.Game.World
 
         private void LateUpdate()
         {
+            // (a turn plays every frame on real time: a screen that stops the world does not hold the light)
+            if (Turning) { Apply(); return; }
             _since += Time.deltaTime;
             if (_since < UpdateInterval) return;
             _since = 0;
+            Apply();
+        }
+
+        private SkyLook _turnFrom;
+        private float _turnAt, _turnSeconds;
+
+        /// <summary>The clock (or the hour, the weather, the smoke) has changed by a jump: the light turns from the look
+        /// shown now to the new one over <paramref name="seconds"/> of real time (Core <see cref="SkyTurn"/>; 0 or less:
+        /// at once). A conversation's "until dusk" turns the light while its page stays open.</summary>
+        public void Turn(float seconds)
+        {
+            if (seconds <= 0f || Look == null) { _turnSeconds = 0f; Apply(); return; }
+            _turnFrom = Look;
+            _turnAt = Time.unscaledTime;
+            _turnSeconds = seconds;
             Apply();
         }
 
@@ -78,9 +102,17 @@ namespace SecondFace.Game.World
         public void Apply()
         {
             Ensure();
-            var hour = Clock != null ? Clock.Hour : 13.0;
+            var hour = Hour ?? (Clock != null ? Clock.Hour : 13.0);
             var day = Clock != null ? Clock.Day : 1;
-            Look = Compute(hour, day);
+            var look = Compute(hour, day);
+            if (Smoke > 0f) look = SkyTurn.Smoke(look, Smoke);
+            if (Turning)
+            {
+                var t = (Time.unscaledTime - _turnAt) / _turnSeconds;
+                if (t >= 1f) { _turnSeconds = 0f; _turnFrom = null; _envAt = -999; }   // (turned: the reflections follow at once)
+                else look = SkyTurn.Blend(_turnFrom, look, t);
+            }
+            Look = look;
             var l = Look;
             var towards = new Vector3(l.LightX, l.LightY, l.LightZ);
             Sun.transform.rotation = Quaternion.LookRotation(-towards, Vector3.up);

@@ -108,7 +108,7 @@ namespace SecondFace.Game.Play
             if (Stage != null && Stage.Clock != null) Game.Minutes = Stage.Clock.Minutes;
             var before = Game.Minutes;
             if (def.Effects != null) Logic.Apply(def.Effects, Game, new Host(this));
-            if (Stage != null && Stage.Clock != null && Game.Minutes != before) Stage.Clock.Minutes += Game.Minutes - before;
+            if (Stage != null && Stage.Clock != null && Game.Minutes != before) { Stage.Clock.Minutes += Game.Minutes - before; TurnSky(before); }
             Quests.Update();
             if (Party != null) Party.Sync();
             if (People != null) People.Refresh();
@@ -743,11 +743,12 @@ namespace SecondFace.Game.Play
             var ui = UIService.Instance;
             if (ui == null || string.IsNullOrEmpty(tree) || !Registry.Dialogues.TryGetValue(tree, out var def)) return null;
             ClockToGame();
+            var before = Game.Minutes;   // (the first line's own effects may move the clock: followed from before them)
             var runner = new DialogueRunner(def, Game, Quests);
             if (runner.Ended) return null;
             _speaking = null;
             var panel = new DialoguePanel(runner, id => SpeakerName(id, def, name));
-            TimeFollows(panel);
+            TimeFollows(panel, before);
             Conversation = ui.Open(panel);
             return panel;
         }
@@ -970,16 +971,33 @@ namespace SecondFace.Game.Play
         /// and when it ends: the choice that moves the time often ends the conversation ("I'll take the lamp", "Sleep until
         /// morning"), and followed only line by line its jump was lost (the watch began at seven in the morning, the cot slept
         /// no night away; KnockPlaythroughTests, 2026-11-16).</summary>
-        private void TimeFollows(DialoguePanel panel)
+        /// <remarks>Followed from <paramref name="before"/>, the game's minutes before the conversation's runner was made:
+        /// its first line's own effects (a node that opens on "until dusk") moved the clock before the panel was there. The
+        /// light turns with each jump while the page is open (Core <see cref="SkyTurn"/>).</remarks>
+        private void TimeFollows(DialoguePanel panel, double before)
         {
-            var minutes = Game.Minutes;
+            var minutes = before;
             void Follow()
             {
                 Quests.Update();   // a choice's effects may move a quest on
-                if (Stage != null && Stage.Clock != null && Game.Minutes != minutes) { Stage.Clock.Minutes += Game.Minutes - minutes; minutes = Game.Minutes; }
+                if (Stage != null && Stage.Clock != null && Game.Minutes != minutes)
+                {
+                    var from = Stage.Clock.Minutes;
+                    Stage.Clock.Minutes += Game.Minutes - minutes;
+                    minutes = Game.Minutes;
+                    TurnSky(from);
+                }
             }
             panel.Presented += _ => Follow();
             panel.Ended += () => { Follow(); Settle(); };
+        }
+
+        /// <summary>The light turns to the world clock's new time (from <paramref name="fromMinutes"/>), over a second or
+        /// two of real time.</summary>
+        private void TurnSky(double fromMinutes)
+        {
+            if (Stage == null || Stage.Sky == null || Stage.Clock == null) return;
+            Stage.Sky.Turn(SkyTurn.Seconds(fromMinutes, Stage.Clock.Minutes));
         }
 
         // ---- after a fight -------------------------------------------------------------------------------------------
@@ -1002,11 +1020,12 @@ namespace SecondFace.Game.Play
             if (ui == null || thing == null || map?.Talk == null || !map.Talk.TryGetValue(thing.Id, out var talk)
                 || !Registry.Dialogues.TryGetValue(talk.Dialogue, out var def)) return false;
             ClockToGame();
+            var before = Game.Minutes;
             var runner = new DialogueRunner(def, Game, Quests);
             if (runner.Ended) return false;
             _speaking = null;
             var panel = new DialoguePanel(runner, _ => talk.Name);
-            TimeFollows(panel);
+            TimeFollows(panel, before);
             Conversation = ui.Open(panel);
             return true;
         }
@@ -1157,6 +1176,7 @@ namespace SecondFace.Game.Play
             tree ??= who.GetComponent<Townsperson>()?.Placement?.Dialogue ?? npc?.Dialogue;   // a placement may say other things
             if (ui == null || npc == null || string.IsNullOrEmpty(tree) || !Registry.Dialogues.TryGetValue(tree, out var def)) return false;
             ClockToGame();
+            var before = Game.Minutes;
             var runner = new DialogueRunner(def, Game, Quests);
             if (runner.Ended) return false;
             _speaking = who;
@@ -1171,7 +1191,7 @@ namespace SecondFace.Game.Play
                 var shots = ConversationCamera.Begin(Stage.Camera, Walker.transform, who.transform);
                 panel.Ended += () => { if (shots != null) shots.End(); };
             }
-            TimeFollows(panel);
+            TimeFollows(panel, before);
             Conversation = ui.Open(panel);
             return true;
         }
