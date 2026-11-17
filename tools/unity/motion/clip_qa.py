@@ -27,11 +27,19 @@ Checks, per clip (the converter's FBX + json) and per source trial (CMU ASF/AMC,
             ankle and the ball and of the contact point (the lower sole point); fails where the slowest of the three moves
             over 0.1 m/s from the second key after touchdown to toe-off (plant.py: stance_measure)
 
+  combat v4 (--combat on a json with `source_kind`; combat_v4_qa.py): the weight-bearing feet still (G4), the main hand's palm
+            on grip_main within 1 cm and the off hand's on grip_off within 2 cm wherever the sidecar's IK track holds them (WG1,
+            WG2), the weapon's line out of the trunk and the head (C1), the FBX's default pose the converters' shared T-pose
+            within 0.5° per bone (Unity's avatar configuration source from MotionImportPostprocessor v11), each state's cited
+            timing within +/-15 % (combat_v4_jobs.TIMING), and every clip's hands against the capture (hand turn), the hands
+            the sidecar's IK places on a weapon left out; a gait of unrecorded sex is flagged (G2), and upright walking's
+            cadence and walk-ratio norms are reported, not judged, for crouched, backward and sideways gaits
     # 1. dump the clips' joints (Blender, the converter's output)
     blender -b --factory-startup --python tools/unity/motion/clip_qa.py -- dump <out_dir> <clip.fbx> [...]
     # 2. the gate (numpy)
     python3 -I tools/unity/motion/clip_qa.py qa <dump_dir> <clip json dir> <out.json> [--cmu <dirs>] [--accad <dir>]
         [--project <the Unity project's Motion folder>: judge the configuration against the .meta files there]
+        [--combat] [--style <100STYLE BVH folder>]
     # 3. two sets' stance measures side by side (each a qa output)
     python3 -I tools/unity/motion/clip_qa.py compare <qa_a.json> <qa_b.json> [<out.json>]
 """
@@ -41,8 +49,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 BONES = ['Hips', 'Spine', 'Chest', 'UpperChest', 'Neck', 'Head', 'LeftShoulder', 'LeftUpperArm', 'LeftLowerArm', 'LeftHand', 'RightShoulder',
          'RightUpperArm', 'RightLowerArm', 'RightHand', 'LeftUpperLeg', 'LeftLowerLeg', 'LeftFoot', 'LeftToes', 'RightUpperLeg', 'RightLowerLeg',
-         'RightFoot', 'RightToes']
-ROTS = ['Hips', 'Chest', 'UpperChest', 'Head', 'LeftFoot', 'RightFoot']
+         'RightFoot', 'RightToes', 'LeftWristTwist', 'RightWristTwist']
+# (combat v4: the hands' turn and the wrist joints for the palms' centres, combat_v4_qa.py)
+ROTS = ['Hips', 'Chest', 'UpperChest', 'Head', 'LeftFoot', 'RightFoot', 'LeftHand', 'RightHand', 'Spine', 'Neck']
 
 
 def dump(out_dir, paths):
@@ -121,7 +130,7 @@ NORMS = {'walk_cadence': (80, 135), 'walk_ratio_m': (0.0046, 0.0074), 'walk_rati
 SEX = {  # the database's own record of the source person's sex (CMU records none but in a subject's title)
     '111': 'f (pregnant)', '113': 'f (after pregnancy)', '114': 'f (pregnant)', '106': 'f', '141': 'f (= 106, "Female General Subject")',
     '104': 'm', '144': 'f'}
-FPS_LISTED = {'77': 60, '75': 60, '79': 60, '80': 60}   # the index; every CMU trial used confirmed by its C3D header
+FPS_LISTED = {'77': 60, '75': 60, '79': 60, '80': 60, '33': 60, '34': 60}   # the index; every CMU trial used confirmed by its C3D header
 FPS_TRUE = {'141': 60, '106': 60, '143': 60}   # listed 120; their own jumps fit 56-61 (docs/qa/motion_calibration.md)
 
 
@@ -427,6 +436,29 @@ def _angles(X, Y):
     return np.degrees(np.arccos(np.clip((np.einsum('nij,nij->n', X, Y) - 1) / 2, -1, 1)))
 
 
+def _rotvec(M):
+    """Rotation vectors (N, 3) of rotation matrices (N, 3, 3)."""
+    np = _np()
+    ang = np.arccos(np.clip((np.einsum('nii->n', M) - 1) / 2, -1, 1))
+    w = np.stack([M[:, 2, 1] - M[:, 1, 2], M[:, 0, 2] - M[:, 2, 0], M[:, 1, 0] - M[:, 0, 1]], 1)
+    s = np.linalg.norm(w, axis=1, keepdims=True)
+    return w / np.maximum(s, 1e-12) * ang[:, None]
+
+
+def _world_turn(X, Y, bs):
+    """The constant world turn A of X = A Y B in closed form, free of the bones' axes B: each bone's turn from its first frame,
+    X_t X_0^T = A (Y_t Y_0^T) A^T, maps its rotation axis by A, so A is the Kabsch fit of the rotation vectors of the
+    captures' relative turns onto the file's (every bone, every frame)."""
+    np = _np()
+    P, Q = [], []
+    for b in bs:
+        P.append(_rotvec(np.einsum('nij,kj->nik', Y[b], Y[b][0]))); Q.append(_rotvec(np.einsum('nij,kj->nik', X[b], X[b][0])))
+    P, Q = np.concatenate(P), np.concatenate(Q)
+    H = P.T @ Q
+    U, _, Vt = np.linalg.svd(H); D = np.eye(3); D[2, 2] = np.sign(np.linalg.det(Vt.T @ U.T))
+    return Vt.T @ D @ U.T
+
+
 def fit_frames(X, Y, iters=40):
     """X[bone], Y[bone]: (N, 3, 3) world rotations of the same bones on two skeletons whose world axes differ by one constant
     turn A (the file's axes, the converter's facing turn) and whose bone axes differ by a constant turn B[bone] each: the A
@@ -437,7 +469,11 @@ def fit_frames(X, Y, iters=40):
     import skel
     bs = [b for b in X if b in Y]
     best = None
-    for A in [X[bs[0]][0] @ Y[bs[0]][0].T] + skel._rotations24():
+    # the starts: the first bone's first frame with each of the 24 axis turns between the skeletons' bone axes (a source read
+    # with its joints' axes relabelled, ACCAD's, differs from the file by one of them: started from the first frame alone the
+    # alternation stopped in a local minimum and read 1.5-8° on exact ACCAD clips, combat v4 2026-11-17), then the 24 alone
+    X0, Y0 = X[bs[0]][0], Y[bs[0]][0]
+    for A in [_world_turn(X, Y, bs)] + [X0 @ Y0.T] + [X0 @ S_ @ Y0.T for S_ in skel._rotations24()] + skel._rotations24():
         for _ in range(iters):
             B = {b: _polar(np.einsum('nji,njk->ik', np.einsum('ij,njk->nik', A, Y[b]), X[b])) for b in bs}
             A = _polar(sum(np.einsum('nij,nkj->ik', X[b], Y[b] @ B[b]) for b in bs))
@@ -607,11 +643,30 @@ def gait_cycle_params(m, speed, sex):
     return {'stride_s': round(stride_t, 3), 'cadence': round(cad, 1), 'step_m': round(step, 3), 'walk_ratio': round(step / cad, 5) if cad else None}
 
 
+def mirror_motion(m):
+    """A capture reflected through its mid-plane (x -> -x), left and right swapped: the source of a mirrored clip
+    (combat v4: a left-handed throw made right-handed)."""
+    np = _np()
+    sys.path.insert(0, os.path.join(HERE, '..', '..', 'qa', 'calibration'))
+    import skel
+    Mx = np.diag([-1.0, 1.0, 1.0]); sw = lambda k: k.replace('Left', '#').replace('Right', 'Left').replace('#', 'Right')
+    P = {sw(k): v * np.array([-1.0, 1.0, 1.0]) for k, v in m.P.items()}
+    R = {sw(k): np.einsum('ij,njk,kl->nil', Mx, v, Mx) for k, v in m.R.items()}
+    return skel.Motion(P, R, m.fps, m.meta)
+
+
+STYLE_DIR = None    # 100STYLE's BVH folder (--style)
+
+
 def load_source(src, cmu_dirs, accad_dir, fps=None):
-    """The capture a clip came from ('CMU 07_01', 'ACCAD Female1_B03_Walk1'), at its true rate."""
+    """The capture a clip came from ('CMU 07_01', 'ACCAD Female1_B03_Walk1', '100STYLE Swat_ID'), at its true rate."""
     sys.path.insert(0, os.path.join(HERE, '..', '..', 'qa', 'calibration'))
     import skel
     kind, tid = src.split()[0], src.split()[1]
+    if kind == '100STYLE':
+        import style100
+        p = os.path.join(STYLE_DIR or '', tid + '.bvh')
+        return style100.load(p) if STYLE_DIR and os.path.exists(p) else None
     if kind == 'CMU':
         s = tid.split('_')[0]
         for d in cmu_dirs:
@@ -671,7 +726,7 @@ def combat_checks(m, meta, r, fails, source):
         fails.append(f'travel: a loop that ends {end * 100:.0f} cm from where it began')
     # two-handed grips: both hands on one rigid weapon keep their distance; a mimed take's hands drift apart and need IK
     # (a reload takes the support hand off the weapon by design)
-    if (meta.get('two_hands') or 'two hand' in str(meta.get('weapon', ''))) and 'reload' not in str(meta.get('kind', '')):
+    if (meta.get('two_hands') or 'two hand' in str(meta.get('weapon', ''))) and 'reload' not in str(meta.get('kind', '')) and not meta.get('ik'):
         dh = np.linalg.norm(m.P['LeftHand'] - m.P['RightHand'], axis=1) * 100
         spread = float(np.percentile(dh, 98) - np.percentile(dh, 2))
         r['checks']['hands_cm'] = {'mean': round(float(dh.mean()), 1), 'spread_p2_p98': round(spread, 1), 'min': round(float(dh.min()), 1), 'max': round(float(dh.max()), 1)}
@@ -713,6 +768,7 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False, proj
         listed = FPS_LISTED.get(subj, 120)
         true = FPS_TRUE.get(subj, listed)
         if src.startswith('ACCAD'): listed = true = meta.get('src_fps', 30)   # the BVH's own frame time (ACCAD exports at 30)
+        if src.startswith('100STYLE'): listed = true = meta.get('src_fps', 60)   # Xsens at 60 Hz, the files' own frame time
         assumed = meta.get('src_fps') or (60 if subj == '77' and meta.get('frames', 0) > 400 else 120)
         r['sex'] = {'u': 'not recorded', 'm': 'm', 'f': 'f'}.get(meta.get('sex'), meta.get('sex')) if meta.get('sex') else SEX.get(subj, 'not recorded')
         r['set'] = meta.get('set', 'both (all clips play on everyone before 2026-11-17)')
@@ -802,6 +858,7 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False, proj
         sp = float(meta.get('speed') or 0)
         mt = travelling(m, sp) if sp > 0.3 else m
         source = load_source(src, cmu_dirs, accad_dir) if (cmu_dirs or accad_dir) else None
+        if source is not None and meta.get('mirrored'): source = mirror_motion(source)
         if source is not None and meta.get('range') and not sp > 0.3:
             # a gesture or an idle against the stretch of its capture it was cut from (not the whole take)
             source = source.slice(meta['range'][0], meta['range'][1])
@@ -813,8 +870,24 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False, proj
             if ht:
                 for b in ('LeftHand', 'RightHand'):
                     if ht[b]['max'] > 5.0: fails.append(f"hand turn: {b} leaves the capture's world turn by up to {ht[b]['max']:.1f}° (p98 {ht[b]['p98']:.1f})")
+        v4 = bool(meta.get('source_kind'))
+        if combat and v4 and os.path.exists(fbx) and sp <= 0.3:
+            # combat v4 (coordinator 2026-11-17): every clip's hands against the capture, the hands the sidecar's IK places on
+            # a weapon left out (their turn is the grip's by design); built clips' bodies are layered, so reported only
+            ik = meta.get('ik') or {}
+            ikd = {'RightHand': any(k.get('w_main', 0) > 0 for k in ik.get('keys', [])), 'LeftHand': any(k.get('w_off', 0) > 0 for k in ik.get('keys', []))}
+            if meta.get('build') or meta.get('source_kind') == 'built': ikd = {'RightHand': True, 'LeftHand': True}
+            ht = hand_turn(fbx, meta, source) if source is not None else None
+            r['checks']['hand_turn_deg'] = ht
+            if ht:
+                for b in ('LeftHand', 'RightHand'):
+                    if ikd[b]: ht[b]['judged'] = 'no: placed by IK on the weapon or layered (the sidecar)'
+                    elif ht[b]['max'] > 5.0: fails.append(f"hand turn: {b} leaves the capture's world turn by up to {ht[b]['max']:.1f}° (p98 {ht[b]['p98']:.1f})")
         if combat:
             combat_checks(mt, meta, r, fails, source)
+            if v4:
+                import combat_v4_qa as V4
+                V4.checks(m, meta, r, fails, fbx)     # on the clip in place: the IK targets are in the clip's own space
         elif not meta.get('root'):
             # a fixed heel or ball point of a rolling real foot moves too (and capture noise): the clip is held to its own
             # capture at the game's rate (30 fps keys, 60 Hz), not to zero
@@ -833,7 +906,11 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False, proj
             r['source_gait'] = {k: round(v, 3) for k, v in gs.items() if isinstance(v, float)}
         use = meta.get('set', meta.get('use', 'both'))
         if use in ('both', 'f') and sp > 0.3 and not r['sex'].startswith('f'):
-            fails.append(f"sex: a gait from a person whose sex is {r['sex']} plays on women")
+            if combat and meta.get('source_kind') and r['sex'] == 'not recorded':
+                # the combat standard's G2: a take of unrecorded sex plays on both until a documented take replaces it (flagged)
+                r.setdefault('flags', []).append('G2: a gait of unrecorded sex plays on both (until a documented take replaces it)')
+            else:
+                fails.append(f"sex: a gait from a person whose sex is {r['sex']} plays on women")
         if use in ('both', 'm') and r['sex'].startswith('f'):
             fails.append(f"sex: a woman's capture ({r['sex']}) plays on men")
         if sp > 0.3:
@@ -860,10 +937,21 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False, proj
             elif w6['p98'] > 2.5 or w6['max'] > 4.0: fails.append(f"W6: the still stance foot stands {w6['p98']:.1f} cm up (p98; {w6['max']:.1f} at most; limit 2.5, cap 4)")
             run = sp > 2.0
             lo, hi = NORMS['run_cadence' if run else 'walk_cadence']
-            if not lo <= g['cadence'] <= hi: fails.append(f"cadence {g['cadence']:.0f} steps/min outside {lo}-{hi} for a {'run' if run else 'walk'} at {sp:.2f} m/s")
+            # (combat: a crouched gait, or one walked backward or sideways, is not upright forward walking, whose norms these
+            # are; reported for it, not judged)
+            off_norm = combat and meta.get('source_kind') and (meta.get('state') == 'S16' or abs(float(meta.get('travel_vs_facing_deg') or 0)) > 45)
+            if not lo <= g['cadence'] <= hi:
+                msg = f"cadence {g['cadence']:.0f} steps/min outside {lo}-{hi} for a {'run' if run else 'walk'} at {sp:.2f} m/s"
+                if off_norm: r.setdefault('flags', []).append(msg + ' (not upright forward walking)')
+                else: fails.append(msg)
             if not run:
                 wr = NORMS['walk_ratio_f' if r['sex'].startswith('f') else 'walk_ratio_m']
-                if not wr[0] <= g['walk_ratio'] <= wr[1]: fails.append(f"walk ratio {g['walk_ratio']:.4f} outside {wr[0]}-{wr[1]}")
+                if not wr[0] <= g['walk_ratio'] <= wr[1]:
+                    if off_norm:
+                        # a crouched gait is not upright walking, whose norm this is: real crouched gaits read 0.0042 (100STYLE
+                        # Crouched) to 0.0058 (CMU 136_10); reported, not judged
+                        r.setdefault('flags', []).append(f"walk ratio {g['walk_ratio']:.4f} outside upright walking's {wr[0]}-{wr[1]} (crouched, backward or sideways: not upright forward walking)")
+                    else: fails.append(f"walk ratio {g['walk_ratio']:.4f} outside {wr[0]}-{wr[1]}")
         r['fail'] = fails; r['pass'] = not fails
         rows.append(r)
     return rows
@@ -906,6 +994,7 @@ if __name__ == '__main__':
     elif a[0] == 'qa':
         cmu = a[a.index('--cmu') + 1].split(',') if '--cmu' in a else []
         accad = a[a.index('--accad') + 1].split(',') if '--accad' in a else None
+        if '--style' in a: STYLE_DIR = a[a.index('--style') + 1]
         rows = qa_clips(a[1], a[2], cmu, accad, combat='--combat' in a, project=a[a.index('--project') + 1] if '--project' in a else None)
         json.dump(rows, open(a[3], 'w'), indent=1)
         for r in rows:

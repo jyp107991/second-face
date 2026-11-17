@@ -226,7 +226,98 @@ captured long-gun take with a real weapon is found. The by-sex numbers above sho
 women's bladed guard sets the guard's K1 bound, the men's tucked chin its H1). The combat set's own stance values are in
 each clip's `stance` (combat `clip_qa.json`) for the same comparison.
 
-## 8. Sources
+## 8. Combat v4: the gate's combat states re-derived on real actors (2026-11-17; proposals, none applied)
+
+`docs/COMBAT_ANIMATION_STANDARD.md` §5 asks the gate's owner to re-derive the provisional aim limits from at least three actors,
+to give strikes limits per weapon class, and to measure the states the gate does not hold yet (dodge, peek, full cover, prone and
+crawl, turn, fall and death, rise). Measured here by `tools/unity/motion/combat_v4_calib.py` (the gate's own definitions, through
+`tools/qa/calibration/combat_states.py`; staged as `combat/v4/calibration_v4.json` with every trial's own p50/p98), on the
+captures at their true rates (CMU's C3D header rates, ACCAD's and 100STYLE's BVH frame times), the cuts being combat set v4's.
+New here: **100STYLE** (Ian Mason, CC BY 4.0; Xsens at 60 fps, one actor of 182 cm, sex not recorded); CMU 143 (labelled Male1 by
+its own capture file), 80_71, 124_07, 90_16/18, 111, 114, 77_16; ACCAD Male1 and Female1 lying, crawling, side-stepping and turning,
+ACCAD Male2's footwork. A CMU or 100STYLE head is read against the actor's own relaxed stance in the same take (CMU 80_03,
+79_01, 80_71 and 124_07 have none and give no head measures); TL is the trunk's (upper chest's) lean from the vertical, Hy the hips'
+height over the floor. Values: p2 … p98 (min … max), all the state's frames pooled; the number of actors in brackets.
+
+**Aim, long gun: three actors now.** CMU 79_96 (head and knees: K1 0-0, H2 20-22, H3 14-17), CMU 80_03 (K1 1.4-2.3, no head)
+and 100STYLE `Swat_ID` (K1 32-34, Kmax 36-38, H1 −4…−3, H2 33, H3 8-9, F3w 43-45, TL 11-17). The provisional column of §7
+(K1 ≤ 2.2) is two actors who stood straight; the third bends both knees as real shooters do (the isosceles reference
+15 ± 10° and the trunk 10 ± 5° forward [R8 of the standard]; the fighter stance [R7]).
+
+| Measure | aim (3) | strike, unarmed (5) | strike, two-handed (3) | guard (3) | dodge (4) |
+|---|---|---|---|---|---|
+| K1 straighter knee ° | 0 … 33.5 (0 … 34.9) | 0 … 85.8 (0 … 89.3) | 0.1 … 36.1 (0 … 39.3) | 0 … 68.3 (0 … 81.1) | 9.4 … 122.6 (4.3 … 124) |
+| K more bent ° | 4 … 37.2 (3.2 … 38) | 18.7 … 93.4 (8.8 … 97.1) | 0.7 … 54.9 (0.4 … 57.6) | 27.5 … 77.7 (24.2 … 94.5) | 12.3 … 127.9 (4.5 … 129.2) |
+| H1 head pitch ° | −7.1 … 0.6 (−7.1 … 1.6) | −52.3 … 7.9 (−53.3 … 10.1) | - | −27.9 … 9.8 (−33 … 10.7) | −47.5 … 3.9 (−54 … 7.9) |
+| H2 head yaw on chest ° | 15.7 … 33.3 (15.1 … 33.7) | 0.7 … 58.8 (0.1 … 65.9) | - | 0.4 … 49.1 (0 … 52.2) | 1.2 … 54.4 (0 … 55.4) |
+| H3 head roll ° | 7.9 … 16.3 (7.8 … 16.7) | 1.2 … 20.6 (0 … 22.4) | - | 0.5 … 19.1 (0.1 … 20.1) | 0.2 … 18.2 (0 … 21) |
+| F2 heel lift, cm | −0.4 … 1.8 (−0.7 … 1.9) | 0 … 11.9 (−1 … 14.3) | −0.4 … 15.1 (−0.9 … 15.3) | −1.5 … 10.4 (−1.8 … 14.4) | −0.8 … 6.6 (−1.9 … 10.5) |
+| F3w stance width, cm | 23.4 … 44.7 (23.3 … 44.7) | 13.7 … 62.6 (6.7 … 70.8) | 23.1 … 66 (22.1 … 66.4) | 19 … 71.1 (3.9 … 79.2) | 13.2 … 110.8 (7.1 … 139.8) |
+| A1 upper arm from hanging ° | 54.8 … 86.2 (50.2 … 90.5) | 23.7 … 80.2 (16 … 93.9) | 28.5 … 122.5 (17.7 … 129.4) | 19.6 … 58 (12.3 … 68.8) | 11.4 … 78.1 (10.4 … 104.5) |
+| A2 elbow bend ° | 119.7 … 146.1 (119.5 … 146.6) | 91.4 … 138.8 (53.3 … 145.4) | 13.8 … 128.6 (11.6 … 135.2) | 112.7 … 147.1 (111.7 … 149.9) | 16.6 … 134.4 (14.3 … 134.7) |
+| TL trunk lean ° | 2 … 16.9 (1.3 … 17.8) | 4.7 … 40.9 (0.9 … 43.6) | 8.7 … 39.9 (3.6 … 48.2) | 2.1 … 32 (0.5 … 42.5) | 2.7 … 80.2 (1.2 … 81.7) |
+| Hy hips height, cm | 92.8 … 97.6 | 66 … 94 | 95.2 … 98.9 | 76.1 … 102.7 | 47.3 … 110.3 |
+
+| Measure | peek (1) | full cover (3) | prone (3) | crawl (3) | turn (3) | fall (4) | rise (7) |
+|---|---|---|---|---|---|---|---|
+| K1 straighter knee ° | 7.3 … 10.2 | 6.5 … 11.8 (6 … 11.9) | 10.8 … 29.2 (10 … 29.3) | 11.2 … 77.7 (8.3 … 85.3) | 5.3 … 39.9 (1.9 … 48) | 0 … 152.6 | 0 … 141.5 (0 … 152.2) |
+| K more bent ° | 8.2 … 11 | 6.9 … 13.4 | 17.5 … 30.5 | 18.9 … 134.4 (18.2 … 143.7) | 11.9 … 68.7 (3.8 … 74.7) | 17.1 … 155.1 | 33.7 … 155.7 (24.5 … 160.2) |
+| H1 head pitch ° | −27.3 … 30.8 | −4.9 … 5.2 (−5 … 5.5) | −65.3 … −32.5 (−69.6 … −32.1) | −58.2 … 36.2 | −35.2 … 4.3 (−40.6 … 7.8) | −10 … 31.6 | −10.3 … 39.7 |
+| H2 head yaw on chest ° | 2.7 … 19.9 | 0.2 … 11 | 1.4 … 25.2 (0.1 … 32.2) | 0.4 … 31.1 (0.1 … 35) | 0.5 … 50.5 (0 … 64.1) | 0.1 … 92.1 | 2 … 97.7 |
+| H3 head roll ° | 47.4 … 53.9 | 0.6 … 4 | 0.5 … 39.4 (0.1 … 43.2) | 0.1 … 28.8 (0 … 42.2) | 0.1 … 8 (0 … 14.7) | 0.8 … 55.7 | 1 … 80.7 |
+| F2 heel lift, cm | 0 … 0.4 | −0.1 … 0.2 | −0.1 … 8 | −5.6 … 14.1 | −1.5 … 11.6 (−3.8 … 15.4) | −2.1 … 9.5 | −2.9 … 15.1 (−9.5 … 17.2) |
+| F3w stance width, cm | 31.1 … 32.2 | 14.8 … 27.7 | 18.7 … 53.7 | 24.2 … 64.6 | 1.9 … 49.7 (0 … 52) | 0.2 … 75.4 | 1.3 … 46.1 |
+| A1 upper arm from hanging ° | 41.5 … 47.6 | 12.5 … 17.9 | 69.7 … 129.3 | 38.7 … 116.4 (31.3 … 135.1) | 12.7 … 51.6 (11.5 … 54.7) | 7 … 124.3 | 10.9 … 117.6 |
+| A2 elbow bend ° | 20.2 … 32.3 | 16.2 … 27.4 | 95.4 … 142 (95.1 … 149.4) | 81.9 … 157.1 (55.7 … 158.4) | 13.8 … 112.5 (10.6 … 119.2) | 11.5 … 143.6 | 20.3 … 125.4 |
+| TL trunk lean ° | 38.9 … 48 (38.3 … 48.1) | 1.1 … 4.1 | 4.5 … 22.8 (from horizontal: lying) | 2.5 … 28.3 | 0.8 … 10.2 (0.1 … 14.1) | 2.9 … 97 | 4.8 … 93.3 |
+| Hy hips height, cm | 97.9 … 98.1 | 92.2 … 105.6 | 5.9 … 8.2 | 6.8 … 28.7 (6.7 … 31.1) | 89.4 … 110.2 | 5.5 … 152.3 | 4.2 … 98 |
+| TR turn rate °/s (0.3 s) | - | - | - | - | 82.6 … 169.7 (8 turns) | - | - |
+| HL head lead over pelvis ° | - | - | - | - | 12.9 … 54.7 (8 turns) | - | - |
+| FT release to impact, s | - | - | - | - | - | 0.48 … 0.67 (5 falls) | - |
+| EL elbow bend at impact ° | - | - | - | - | - | 71.5 … 139.8 | - |
+
+Actors: aim CMU 79, 80, 100STYLE; strike, unarmed ACCAD Male2, CMU 143 (men), 144, 141, 113 (women); strike, two-handed CMU 79, 80,
+124 (sex not recorded); guard ACCAD Male2, CMU 144, CMU 13; dodge ACCAD Male2, Male1, Female1, CMU 77; peek 100STYLE (left and right
+leans: the only free capture of a full-cover lean); full cover the standing holds of ACCAD Male1, Male2, Female1; prone and crawl
+and turn ACCAD Male1, Male2, Female1 (turns: two guard turn-rounds, six walking turns of 78-189°); fall CMU 90 (an acrobat: a
+fall on the face 0.53 s, a rug-pull backward 0.48 s) and the three ACCAD drops to prone (0.57-0.67 s); rise CMU 140, 77, 111,
+113, 114, ACCAD Male2, Female1.
+
+What it says:
+- **Aim**: knees bent up to 34° are real (100STYLE's shooter), and so is a straight leg (CMU); the head is turned onto the stock
+  15-33° and rolled 8-16° by every actor whose head can be read; the trunk leans forward 2-17° (R8's 10 ± 5°).
+- **Two-handed strikes are not punches**: the arms rise far higher (A1 to 122°) and the elbows open (A2 down to 14°), the trunk
+  bends 9-40° into the blow, and the batter's stance is wider (to 66 cm). Holding club strikes to the unarmed limits is the
+  cause the standard named for strike's A1/A2 failures (§5.2 of the standard).
+- **Peek and full cover** (one actor for the lean): the lean holds the trunk 39-48° off the vertical over feet 31-32 cm apart,
+  knees near straight (7-11°), the head rolled with the trunk (47-54°); the hold before it is quiet standing.
+- **Turn**: the head leads the pelvis by 13-55° (R32: healthy adults turn head-first); the pelvis turns at 83-170°/s.
+- **Fall**: 0.48-0.67 s from release to impact (R24's 0.6-0.8 s for forward falls; the acrobat falls faster), the elbows at
+  impact bent 72-140° (R24: about 129° of extension, i.e. a bend of about 51°, in a conscious forward fall; the drops to prone
+  land on bent arms).
+
+**Proposals for the gate's owner** (none applied; each limit the real actors' p98 and p2 where a lower bound applies, each cap
+their max and min; quiet standing's limits never loosened for them; applied only while the game shows the state):
+1. `aim` (long gun) replaces §7's provisional column: K1 ≤ 33.5 (cap 34.9), Kmax ≤ 37.2 (38.0), H1 −7.1 … +0.6 (−7.1 … +1.6),
+   H2 15.7 … 33.3 (15.1 … 33.7), H3 7.9 … 16.3 (7.8 … 16.7), F2 ≤ 1.8 (1.9), F3w 23.4 … 44.7, A1 54.8 … 86.2 (50.2 … 90.5),
+   A2 119.7 … 146.1 (119.5 … 146.6), TL ≤ 16.9 (17.8). `aim_pistol` takes the same legs and trunk (K1, Kmax, F3w, TL) and the
+   standing head (no stock: H2, H3 as quiet standing).
+2. `strike` per weapon class: unarmed as §7's strike column (the five actors here agree with it: K1 ≤ 85.8, A1 ≤ 80.2, A2
+   91.4 … 138.8); two-handed: K1 ≤ 36.1 (39.3), Kmax ≤ 54.9 (57.6), F2 ≤ 15.1 (15.3), F3w 23.1 … 66.0 (22.1 … 66.4), A1 ≤ 122.5
+   (129.4), A2 13.8 … 128.6 (11.6 … 135.2), TL ≤ 39.9 (48.2), the head as unarmed until a two-handed actor's head can be read;
+   one-handed weapons: no capture holds one, so the unarmed limits hold the built one-handed clips (their bodies are captured
+   blows) until one is captured.
+3. `guard` as §7 (Male2, CMU 144 and 13 agree: K1 ≤ 68.3, H2 ≤ 49.1, A2 112.7 … 147.1).
+4. New states: `dodge` K1 ≤ 122.6 (124), Kmax ≤ 127.9 (129.2), H1 −47.5 … +3.9, H2 ≤ 54.4, F3w ≤ 110.8 (139.8), TL ≤ 80.2 (81.7);
+   `peek` TL 38.9 … 48.0 (38.3 … 48.1) over F3w 31-32 with K1 ≤ 10.2 (one actor: provisional), the head's roll with the trunk;
+   `cover_full` (the hold) quiet standing's limits as they are, with C1 against the cover; `prone` Hy ≤ 8.2 (8.3), K1 10.8 … 29.2,
+   A2 95.4 … 142.0, TL (from horizontal) ≤ 22.8 (25.9); `crawl` Hy ≤ 28.7 (31.1), A2 81.9 … 157.1; `turn` the head leading the
+   pelvis (HL p2 12.9 > 0) and the pelvis at most 169.7°/s, stepping (F4 as standing); `fall` FT 0.48 … 0.80 s (the capture's
+   0.48, R24's 0.8) with C1 and the soles at contact by eye; `death` C1 of the resting pose (no capture: physics); `rise` C1 as
+   now, with K, A and TL bounded by the seven actors' caps (Kmax ≤ 160.2, TL ≤ 102.1).
+5. The clips' own figures against these are in each v4 clip's `stance` (combat v4 `clip_qa.json`), for the same comparison as §7.
+
+## 9. Sources
 
 - Winter DA (1992) Foot trajectory in human gait: a precise and multifactorial motor control task. Phys Ther 72:45-56
   (minimum toe clearance 1.29 cm). https://consensus.app/papers/details/w:233e28a0-4591-4a8b-9b7e-0ceb2f9be716/
@@ -245,3 +336,8 @@ each clip's `stance` (combat `clip_qa.json`) for the same comparison.
   C3D header, 1 KB read, for its capture rate: 60 fps for 77, 79, 80, 106, 141, 143, 120 for every other trial used, which
   confirms §2's gravity fits).
 - ACCAD Open Motion Project, accad.osu.edu (CC BY 3.0; the subjects' take lists).
+- 100STYLE: Mason I, Starke S, Komura T (2022) Real-time style modelling of human locomotion via feature-wise transformations
+  and local motion phases. "The 100STYLE Dataset - Ian Mason", CC BY 4.0. https://www.ianxmason.com/100style/
+- The combat standard's references (docs/COMBAT_ANIMATION_STANDARD.md §7): R7 Brown et al. 2018 (stance and shooting), R8 Mishra
+  et al. 2026 (isosceles baselines), R24 Borrelli et al. 2023 (fall timing and arm extension at impact), R32 Leveridge et al.
+  2026 (head-first turning).
