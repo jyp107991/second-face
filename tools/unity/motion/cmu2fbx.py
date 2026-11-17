@@ -9,6 +9,11 @@ the bones renamed to Mecanim names, and exported as FBX with the animation baked
 Humanoid clip that retargets to every person. Walks play in place (the steady travel removed, the stride's own surge
 and sway kept in the pose); falls keep root motion.
 
+Gaits (motion v6): a walk's loop ends closed (its stride resampled to whole keys, its last key its first: v4's convention), a
+jog's or a run's open (v5's), and every gait's stance feet are planted by leg IK (plant.py: the contact point, heel then
+ball, held still on the ground; the json's `speed` from the planted stride, `speed_root` the travel of the trial's root,
+`plant` the record). SF_NO_PLANT=1 makes the unplanted loops (comparison only).
+
 Each clip's json names its source person as the database records them (`sex`: m, f, or u for not recorded; CMU records
 sex only in a subject's title), the set it is for (`set`: m, f or both; LocomotionBuild picks by the person's sex) and the
 frame rate the trial was read at (`src_fps`, docs/qa/motion_calibration.md). Women's captures from ACCAD (BVH) are made by
@@ -16,8 +21,10 @@ the sibling accad2fbx.py, which reuses this file's cutting and export.
 """
 import bpy, math, os, sys
 from mathutils import Quaternion, Vector, Euler, Matrix
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'kits'))
 import kitlib as K
+import plant as PL
 
 CMU = OUT = ONLY = None
 REL = 'Assets/SecondFace/Motion'
@@ -36,6 +43,22 @@ SEAM = float(os.environ.get('SF_SEAM', '0.12'))
 # the stance foot once a stride in game (jog_test, 2026-11-17: the open cut reads W6 0, every closed one lifted it 4-9 cm).
 # SF_CLOSED_LOOP=1 makes v4's closed loops (for comparison only)
 OPEN = not os.environ.get('SF_CLOSED_LOOP')
+# motion v6: every gait's stance feet planted by leg IK (plant.py: the contact point rolling heel to ball held still on the
+# ground, the speed from the planted stride). SF_NO_PLANT=1 makes v5's unplanted loops (for comparison only)
+PLANT = not os.environ.get('SF_NO_PLANT')
+# motion v6: a walk's loop ends closed (v4's convention: the stride resampled to a whole number of keys, its last key its first,
+# so Unity's Loop Pose has nothing to spread), a jog's or a run's open (v5's). In game (editor, 2026-11-17, a 14-person pick):
+# v5's open walks regressed against v4's closed ones (W1 6-7 % of frames on 3 of 7 women on walk_f_b, W6 2.7-3.1 cm on two
+# men), while v5's open jogs and runs passed W1 and W6 where v4's closed ones lifted a stance foot. A walk is a gait whose
+# stride is under WALK_MAX m/s; SF_CLOSED_LOOP=1 / SF_OPEN_LOOP=1 make every gait one or the other (trials)
+WALK_MAX = 2.0
+
+
+def closed_loop(d, speed):
+    if os.environ.get('SF_CLOSED_LOOP'): return True
+    if os.environ.get('SF_OPEN_LOOP'): return False
+    return d.get('closed', speed < WALK_MAX)
+PL.DEBUG = bool(os.environ.get('SF_PLANT_DEBUG'))
 # listed at 120 but captured at 60: their own jumps fit gravity at 56-61 fps (141/106: jumps 04-06; 143: 05-06) and their runs
 # read at 120 would be 335-354 steps a minute (clip_qa.py, docs/qa/motion_calibration.md); 106 ("Female General Subject") is
 # byte for byte 141
@@ -48,10 +71,10 @@ CLIPS = [
     # men's set (the old names): captures whose subjects' sex CMU does not record, and CMU 104 ("neutral Male walk").
     # walk_slow from 07_03 (1.02 m/s, 97 steps/min), not 07_04 (83 steps/min, a walk ratio past real people's); 104's walks
     # at their natural cadence (104_35's 74 steps/min out); carry from 70_10 (12.5 lb, 94 steps/min), not 70_01 (75)
-    {'name': 'walk', 'src': '07_01', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_b', 'src': '08_01', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_slow', 'src': '07_03', 'loop': 'gait', 'set': 'm'},
-    {'name': 'walk_brisk', 'src': '07_12', 'loop': 'gait', 'set': 'm'}, {'name': 'jog', 'src': '35_17', 'loop': 'gait', 'set': 'm'}, {'name': 'jog_b', 'src': '16_35', 'loop': 'gait', 'set': 'm'},
-    {'name': 'run', 'src': '09_01', 'loop': 'gait', 'set': 'm'}, {'name': 'carry', 'src': '70_10', 'loop': 'gait', 'set': 'both', 'sex': 'm', 'sex_source': "the take's own file names its subject Male1 (\\\\sashay\\E\\Suitcase\\...\\Male1.ASF); CMU's title records no sex", 'stature_est_m': 1.67}, {'name': 'sneak', 'src': '136_09', 'loop': 'gait', 'set': 'both', 'sex': 'm', 'sex_source': "the take's own file names its subject male (G:\\JayActor3\\...\\male.ASF); CMU's title records no sex", 'stature_est_m': 1.68},
-    {'name': 'walk_c', 'src': '104_19', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_slow_b', 'src': '104_02', 'loop': 'gait', 'set': 'm'},
+    {'name': 'walk', 'src': '07_01', 'loop': 'gait', 'set': 'm', 'cycle': 'wide', 'seam_share': 0.25}, {'name': 'walk_b', 'src': '08_01', 'loop': 'gait', 'set': 'm', 'cycle': 'near', 'seam_share': 0.25}, {'name': 'walk_slow', 'src': '07_03', 'loop': 'gait', 'set': 'm', 'cycle': 'wide', 'seam_share': 0.12},
+    {'name': 'walk_brisk', 'src': '07_12', 'loop': 'gait', 'set': 'm'}, {'name': 'jog', 'src': '35_17', 'loop': 'gait', 'set': 'm', 'cycle': 'near', 'seam_share': 0.25}, {'name': 'jog_b', 'src': '16_35', 'loop': 'gait', 'set': 'm', 'cycle': 'off', 'seam_share': 0.12},
+    {'name': 'run', 'src': '09_01', 'loop': 'gait', 'set': 'm', 'cycle': 'near', 'seam_share': 0.25}, {'name': 'carry', 'src': '70_10', 'loop': 'gait', 'set': 'both', 'cycle': 'wide', 'seam_share': 0.12, 'sex': 'm', 'sex_source': "the take's own file names its subject Male1 (\\\\sashay\\E\\Suitcase\\...\\Male1.ASF); CMU's title records no sex", 'stature_est_m': 1.67}, {'name': 'sneak', 'src': '136_09', 'loop': 'gait', 'set': 'both', 'cycle': 'near', 'seam_share': 0.25, 'sex': 'm', 'sex_source': "the take's own file names its subject male (G:\\JayActor3\\...\\male.ASF); CMU's title records no sex", 'stature_est_m': 1.68},
+    {'name': 'walk_c', 'src': '104_19', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_slow_b', 'src': '104_02', 'loop': 'gait', 'set': 'm', 'cycle': 'wide', 'seam_share': 0.12},
     {'name': 'jog_c', 'src': '104_01', 'loop': 'gait', 'set': 'm'}, {'name': 'run_b', 'src': '104_37', 'loop': 'gait', 'set': 'm'},
     # the standing idle at its real speed (77 at 60 fps: the same frames as before, now 11.2 s, not 5.6). Both fail the
     # clips' K1 (the actors' own knees bent 11-22°) and 77_02 holds the head 35-42° down (H1): the men's idle is now ACCAD
@@ -59,7 +82,7 @@ CLIPS = [
     {'name': 'idle', 'src': '77_02', 'loop': 'seam', 'range': (1.0, 14.6), 'seam': 2.4, 'set': 'm'}, {'name': 'idle_b', 'src': '82_08', 'loop': 'seam', 'range': (0.5, 6), 'seam': 1.2, 'set': 'm'},
     # women's captures (CMU 111/113/114: one woman, pregnant and after; 141 = 106 "Female General Subject", 60 fps): women only
     {'name': 'idle_c', 'src': '111_28', 'loop': 'seam', 'range': (2, 10), 'seam': 1.2, 'set': 'f'}, {'name': 'idle_d', 'src': '113_21', 'loop': 'seam', 'range': (2, 10), 'seam': 1.2, 'set': 'f'},
-    {'name': 'walk_f_c', 'src': '113_25', 'loop': 'gait', 'set': 'f'}, {'name': 'jog_f', 'src': '141_02', 'loop': 'gait', 'set': 'f'}, {'name': 'jog_f_b', 'src': '141_03', 'loop': 'gait', 'set': 'f'},
+    {'name': 'walk_f_c', 'src': '113_25', 'loop': 'gait', 'set': 'f', 'cycle': 'near', 'seam_share': 0.12}, {'name': 'jog_f', 'src': '141_02', 'loop': 'gait', 'set': 'f', 'cycle': 'off', 'seam_share': 0.25}, {'name': 'jog_f_b', 'src': '141_03', 'loop': 'gait', 'set': 'f', 'cycle': 'wide', 'seam_share': 0.12},
     {'name': 'stretch', 'src': '141_13', 'loop': False, 'range': (0, 6), 'set': 'f'},
     # the men's stretch and yawn: CMU 143 "Stretch And Yawn" (60 fps, listed 120: its C3D header and its jumps say 60). Its own
     # file labels its subject Male1; its skeleton puts him at about 1.51 m (short for a man: CMU 141, a woman, 1.55; 104 and 07,
@@ -164,6 +187,31 @@ def world_pose(bones, locals_, root_pos):
         for c in b['children']: visit(c, q, tail)
     visit('root', Quaternion(), root_pos)
     return out
+
+class Legs:
+    """The legs of a CMU skeleton for plant.py: each side's hip, knee, ankle and ball joints and the world rotations of the
+    thigh's parent, the thigh, the shin and the foot (world_pose: a bone's rotation places its tail), written back as local
+    rotations."""
+    SIDES = ('Left', 'Right')
+    BONES = {'Left': ('lhipjoint', 'lfemur', 'ltibia', 'lfoot'), 'Right': ('rhipjoint', 'rfemur', 'rtibia', 'rfoot')}
+    JOINTS = ('lfemur', 'ltibia', 'lfoot', 'rfemur', 'rtibia', 'rfoot')
+    CHAIN = {'Left': ('lfemur', 'ltibia', 'lfoot'), 'Right': ('rfemur', 'rtibia', 'rfoot')}
+
+    def __init__(self, bones): self.bones = bones
+
+    def fk(self, row):
+        wp = world_pose(self.bones, row['loc'], row['pos'])
+        out = {}
+        for s, (hj, fe, ti, fo) in self.BONES.items():
+            out[s] = {'H': wp[fe][1], 'K': wp[fe][2], 'A': wp[ti][2], 'B': wp[fo][2], 'Wp': wp[hj][0], 'Wt': wp[fe][0], 'Ws': wp[ti][0], 'Wf': wp[fo][0]}
+        return out
+
+    def set(self, row, s, Wt, Ws, Wf, Wp):
+        hj, fe, ti, fo = self.BONES[s]
+        row['loc'][fe] = (Wp.inverted() @ Wt).normalized()
+        row['loc'][ti] = (Wt.inverted() @ Ws).normalized()
+        row['loc'][fo] = (Ws.inverted() @ Wf).normalized()
+
 
 def hip_height(bones):
     hj, fe, ti, fo = bones['lhipjoint'], bones['lfemur'], bones['ltibia'], bones['lfoot']
@@ -387,12 +435,15 @@ def build_clip(d):
         mx = sum(r['pos'].x for r in cyc) / len(cyc); mz = sum(r['pos'].z for r in cyc) / len(cyc)
         for r in cyc: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, r['pos'].z - mz))
         surge = max(r['pos'].z for r in cyc) - min(r['pos'].z for r in cyc); sway = max(r['pos'].x for r in cyc) - min(r['pos'].x for r in cyc)
-        if OPEN or os.environ.get('SF_OPEN_LOOP'):   # v1's open loop, fixed-step keys; the speed the stance foot runs back at
+        if not closed_loop(d, dv.length / (P / SRC_FPS)):   # v1's open loop, fixed-step keys; the speed the stance foot runs back at
             out = resample(cyc, OUT_FPS); speed = dv.length / (P / SRC_FPS); d['_open'] = True
-        else:
+        else:   # (a walk, v4) the stride resampled to whole keys, closed
             out = resample_loop(cyc, OUT_FPS)
             speed = dv.length / ((len(out) - 1) / OUT_FPS)     # the pace at which the loop as played lays one stride
-        print(f'  {d["name"]}: stride {dv.length:.2f} m over {P / SRC_FPS:.3f} s ({len(out) - 1} frames at {OUT_FPS}, closed), off the trial line by {math.degrees(math.atan2(dv.x, dv.z)):.1f} deg, surge {surge * 100:.1f} cm, sway {sway * 100:.1f} cm')
+        if PLANT:   # motion v6: the stance feet planted, the speed from the planted stride (plant.py)
+            d['_speed_root'] = speed
+            out, speed, d['_plant'] = PL.plant_loop(out, Legs(bones), speed, OUT_FPS, P / SRC_FPS, d['name'])
+        print(f'  {d["name"]}: stride {dv.length:.2f} m over {P / SRC_FPS:.3f} s ({len(out) - 1} frames at {OUT_FPS}, {"open" if d.get("_open") else "closed"}), off the trial line by {math.degrees(math.atan2(dv.x, dv.z)):.1f} deg, surge {surge * 100:.1f} cm, sway {sway * 100:.1f} cm')
     elif d.get('loop') == 'seam':
         seam = round(d.get('seam', 1.0) * SRC_FPS); P = len(rows) - seam
         P = refine_seam([r['key'] for r in rows], P, seam, round(1.0 * SRC_FPS))
@@ -611,12 +662,13 @@ def export_clip(d, bones, rows, speed, hip):
                    'fps': OUT_FPS, 'frames': len(rows), 'src_fps': d.get('src_fps', SRC_FPS), 'sex': d.get('sex', SEX.get(subj, 'u')), 'set': d.get('set', 'both'),
                    'licence': d.get('licence', 'CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses'), 'cycle': REFINE, 'seam_share': SEAM if d.get('loop') == 'gait' else None, 'closed': bool(d.get('loop')) and not d.get('_open'),
                    'flips_repaired': d.get('_flips') or None, 'inbetween': d.get('_inbetween') or None,
+                   'speed_root': round(d['_speed_root'], 3) if d.get('_speed_root') else None, 'plant': PL.summary(d.get('_plant')),
                    'sex_source': d.get('sex_source'), 'stature_est_m': d.get('stature_est_m'),
                    'range': list(d['range']) if d.get('range') else None}, f)
     print(f'clip {d["name"]}: {len(rows)} frames, speed {speed:.2f} m/s')
 
 def main():
-    global CMU, OUT, ONLY, SRC_FPS, CLIPS
+    global CMU, OUT, ONLY, SRC_FPS, CLIPS, REFINE, SEAM
     args = sys.argv[sys.argv.index('--') + 1:]
     if os.environ.get('SF_CLIPS_JSON'):   # a trial list in place of CLIPS (for trying ranges and seams), same fields
         import json
@@ -629,6 +681,10 @@ def main():
         subj = d['src'].split('_')[0]
         if not os.path.exists(os.path.join(CMU, subj, d['src'] + '.amc')): print('  skip', d['name'], '(no amc)'); continue
         SRC_FPS = RATES.get(subj, 120)
+        # the loop cut each clip keeps (its json's `cycle`, `seam_share`: the choice whose loop passed clip_qa.py best); the
+        # environment's SF_REFINE / SF_SEAM override it for trials
+        REFINE = os.environ.get('SF_REFINE') or d.get('cycle', 'near')
+        SEAM = float(os.environ.get('SF_SEAM') or d.get('seam_share', 0.12))
         bones, rows, speed, hip = build_clip(d)
         export_clip(d, bones, rows, speed, hip)
     print('motion: done')

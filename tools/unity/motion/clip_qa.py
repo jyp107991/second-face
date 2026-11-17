@@ -13,15 +13,22 @@ Checks, per clip (the converter's FBX + json) and per source trial (CMU ASF/AMC,
   inbetween each in-between bone (between two Humanoid bones: Neck2, the wrists' twist bones, the hip joints) holds its rest
             rotation (the converter's record) in the bind and every frame (fails above 0.5°); the bind-vs-mean-take angle is
             reported only
+  stance    gaits: the planted foot as the editor measured it in game (2026-11-17): the loop as Loop Pose plays it, its travel
+            added, each stance from the key before touchdown to toe-off, key by key, the ground speed of the slower of the
+            ankle and the ball and of the contact point (the lower sole point); fails where the slowest of the three moves
+            over 0.1 m/s from the second key after touchdown to toe-off (plant.py: stance_measure)
 
     # 1. dump the clips' joints (Blender, the converter's output)
     blender -b --factory-startup --python tools/unity/motion/clip_qa.py -- dump <out_dir> <clip.fbx> [...]
     # 2. the gate (numpy)
     python3 -I tools/unity/motion/clip_qa.py qa <dump_dir> <clip json dir> <out.json> [--sources <cmu dir> <accad dir> <listing tsv>]
+    # 3. two sets' stance measures side by side (each a qa output)
+    python3 -I tools/unity/motion/clip_qa.py compare <qa_a.json> <qa_b.json> [<out.json>]
 """
 import json, math, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
 BONES = ['Hips', 'Spine', 'Chest', 'UpperChest', 'Neck', 'Head', 'LeftShoulder', 'LeftUpperArm', 'LeftLowerArm', 'LeftHand', 'RightShoulder',
          'RightUpperArm', 'RightLowerArm', 'RightHand', 'LeftUpperLeg', 'LeftLowerLeg', 'LeftFoot', 'LeftToes', 'RightUpperLeg', 'RightLowerLeg',
          'RightFoot', 'RightToes']
@@ -302,16 +309,24 @@ def seam_pop(m):
     return worst * 100
 
 
-def seam_jerk(m):
+def seam_jerk(m, skip=()):
     """The loop's seam as a jerk (cm): the largest second difference of any joint across the seam (frames N-2, N-1, 0 and
     N-1, 0, 1) beyond that joint's own 99th percentile inside the clip. A natural acceleration through the seam reads 0;
-    a pop reads its size. (seam_pop's first difference counts a hand speeding up through the seam as a pop.)"""
+    a pop reads its size. (seam_pop's first difference counts a hand speeding up through the seam as a pop.) A left or right
+    joint is held to the larger of its own 99th percentile and its mirror's: a gait's loop starts at the left foot's
+    touchdown, and once the feet are planted (motion v6) the left foot's stop falls on the seam while the right foot's same
+    stop falls inside the clip (sneak: 5.8 cm, the right foot's own touchdown 5.4). `skip`: joints left out (a planted
+    foot touching down at the seam: its stop there is an arrival, not a pop; the caller reports it apart)."""
     np = _np()
     worst = 0.0
-    for k, p in m.P.items():
+    def own(p):
         d2 = np.linalg.norm(p[2:] - 2 * p[1:-1] + p[:-2], axis=1)
-        if len(d2) < 4: continue
-        ref = float(np.percentile(d2, 99))
+        return float(np.percentile(d2, 99)) if len(d2) >= 4 else None
+    for k, p in m.P.items():
+        ref = own(p)
+        if ref is None or k in skip: continue
+        mk = k.replace('Left', '#').replace('Right', 'Left').replace('#', 'Right')
+        if mk != k and mk in m.P: ref = max(ref, own(m.P[mk]) or 0.0)
         s1 = np.linalg.norm(p[0] - 2 * p[-1] + p[-2]); s2 = np.linalg.norm(p[1] - 2 * p[0] + p[-1])
         worst = max(worst, max(s1, s2) - ref)
     return worst * 100
@@ -492,8 +507,19 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False):
         if meta.get('src_fps') and meta['src_fps'] != true: fails.append(f"rate: read at {meta['src_fps']} fps, the subject's evidence says {true}")
         if not meta.get('src_fps') and true != 120: fails.append(f'rate: read at 120 fps (the converter before 2026-11-17), the subject was captured at {true}: plays {120 / true:.0f}x fast')
         if meta.get('loop'):
-            pop = seam_pop(m); jerk = seam_jerk(m)
+            # a planted foot (motion v6) that touches down on the seam (a gait's loop starts at the left foot's touchdown)
+            # stops there from its arrival speed in one key: that foot's joints are judged by the stance check, not here
+            skip = set()
+            if float(meta.get('speed') or 0) > 0.3:
+                import plant as PL
+                st0 = PL.stance_measure(travelling(m, float(meta['speed'])).P, travelling(m, float(meta['speed'])).R, m.fps, m.n)
+                for side in ('Left', 'Right'):
+                    if any(x['touchdown'] % m.n in (0, 1, m.n - 1) for x in st0[side]):
+                        skip |= {side + 'Foot', side + 'Toes', side + 'ToeTip'}
+            pop = seam_pop(m); jerk = seam_jerk(m, skip)
             r['checks']['seam_cm'] = round(pop, 2); r['checks']['seam_jerk_cm'] = round(jerk, 2)
+            if skip:
+                r['checks']['seam_jerk_touchdown'] = {'joints': sorted(skip), 'jerk_cm_with_them': round(seam_jerk(m), 2)}
             # the pop is the jerk (a discontinuity); the step (seam_cm) also counts a fast hand or foot speeding up through
             # the seam, natural motion, and is reported, not judged
             if jerk > 0.5: fails.append(f'seam: a {jerk:.1f} cm jerk at the loop past the clip\'s own')
@@ -577,6 +603,17 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False):
             r['gait'] = g
             # W6: the stance foot down while it is still both ways (in game v3's jogs lifted it 4-9 cm, 2026-11-17; on the
             # actors' own skeletons they read 0.2-1.4 cm, so this catches a cut that lifts it, not a lift made in retargeting)
+            # the planted foot (motion v6): from the second key after touchdown to toe-off the stance foot stands still on
+            # the ground (under 0.1 m/s), as the editor measured it key by key in game
+            import plant as PL
+            st = PL.stance_measure(mt.P, mt.R, m.fps, m.n)
+            r['checks']['stance'] = st
+            # judged on the slowest of the ankle, the ball and the contact point (a walk's foot still turns down onto its
+            # planted heel at the 2nd key: the heel stands, the ankle and the ball move); the slower of ankle and ball
+            # (`max_slow`, the editor's own reading) reported beside it
+            if not (st['Left'] and st['Right']): fails.append('stance: a foot with no stance found (no touchdown under 2 m/s within 2.5 cm of its floor)')
+            elif st['max_foot'] > PL.LIMIT_MS:
+                fails.append(f"stance: the stance foot moves {st['max_foot']:.2f} m/s over the ground (slowest of ankle, ball and contact point) from the 2nd key after touchdown to toe-off (limit {PL.LIMIT_MS})")
             w6 = w6_stance(mt); r['checks']['w6_cm'] = w6
             if w6 is None: fails.append('W6: no stance foot holds still both ways for 3 samples at the clip\'s speed (its stance foot slides against its pace)')
             elif w6['p98'] > 2.5 or w6['max'] > 4.0: fails.append(f"W6: the still stance foot stands {w6['p98']:.1f} cm up (p98; {w6['max']:.1f} at most; limit 2.5, cap 4)")
@@ -591,8 +628,38 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False):
     return rows
 
 
+def compare(qa_a, qa_b):
+    """Two sets' gaits side by side: speed, the stance foot's worst and median ground speed (slower of ankle and ball) from
+    the second key after touchdown to toe-off, and each foot's first stance key by key from the key before touchdown."""
+    A = {r['clip']: r for r in json.load(open(qa_a))}; B = {r['clip']: r for r in json.load(open(qa_b))}
+    out = []
+    for name in sorted(set(A) | set(B)):
+        ra, rb = A.get(name), B.get(name)
+        sa = (ra or {}).get('checks', {}).get('stance'); sb = (rb or {}).get('checks', {}).get('stance')
+        if not (sa or sb): continue
+        row = {'clip': name, 'speed': [ra and ra.get('speed'), rb and rb.get('speed')],
+               'max_slow': [sa and sa['max_slow'], sb and sb['max_slow']], 'max_foot': [sa and sa['max_foot'], sb and sb['max_foot']],
+               'pass': [ra and ra['pass'], rb and rb['pass']], 'feet': {}}
+        for side in ('Left', 'Right'):
+            row['feet'][side] = []
+            for st in (sa, sb):
+                x = (st or {}).get(side) or []
+                row['feet'][side].append({'median': x[0]['median_slow'], 'from_key_before': x[0]['slow'][:7]} if x else None)
+        out.append(row)
+    return out
+
+
 if __name__ == '__main__':
     a = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
+    if a[0] == 'compare':
+        rows = compare(a[1], a[2])
+        if len(a) > 3: json.dump(rows, open(a[3], 'w'), indent=1)
+        print(f"{'gait':13s} {'speed m/s':>15s}   {'stance max (slower of ankle, ball)':>34s}   first stance from the key before touchdown")
+        for r in rows:
+            f = lambda v: '-' if v is None else f'{v:.3f}'
+            print(f"{r['clip']:13s} {f(r['speed'][0]):>7s} {f(r['speed'][1]):>7s}   {f(r['max_slow'][0]):>16s} {f(r['max_slow'][1]):>17s}   " +
+                  '  '.join(f"{s[0]}: " + ' / '.join(','.join(f'{v:.2f}' for v in (x or {}).get('from_key_before', [])) for x in r['feet'][s]) for s in ('Left', 'Right')))
+        sys.exit(0)
     if a[0] == 'dump':
         dump(a[1], a[2:])
     elif a[0] == 'qa':
