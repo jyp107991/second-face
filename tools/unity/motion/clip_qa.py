@@ -96,6 +96,86 @@ def load_dump(path):
     return skel.Motion(P, R, float(d['fps']), {'src': os.path.basename(path)})
 
 
+def fbx_rotation_curves(path):
+    """Every node's local rotation curves as the FBX file stores them (what Unity reads): {name: (N, 3) Euler degrees}.
+    A small reader of binary FBX 7.x (nodes, properties, zlib arrays; AnimationCurve -> AnimationCurveNode 'Lcl Rotation'
+    -> Model connections)."""
+    import struct, zlib
+    np = _np()
+    b = open(path, 'rb').read()
+    big = struct.unpack('<I', b[23:27])[0] >= 7500
+
+    def prop(o):
+        t = chr(b[o]); o += 1
+        if t in 'YCILFD':
+            fmt = {'Y': '<h', 'C': '<?', 'I': '<i', 'L': '<q', 'F': '<f', 'D': '<d'}[t]; n = struct.calcsize(fmt)
+            return struct.unpack(fmt, b[o:o + n])[0], o + n
+        if t in 'fdlib':
+            ln, enc, cl = struct.unpack('<III', b[o:o + 12]); o += 12
+            raw = b[o:o + cl]; o += cl
+            if enc: raw = zlib.decompress(raw)
+            return np.frombuffer(raw, dtype='<' + {'f': 'f', 'd': 'd', 'l': 'q', 'i': 'i', 'b': '?'}[t], count=ln), o
+        if t in 'SR':
+            ln = struct.unpack('<I', b[o:o + 4])[0]; o += 4
+            v = b[o:o + ln]; o += ln
+            return (v.decode('utf-8', 'replace') if t == 'S' else v), o
+        raise ValueError(t)
+
+    def node(o):
+        if big: end, n_, _ = struct.unpack('<QQQ', b[o:o + 24]); o += 24
+        else: end, n_, _ = struct.unpack('<III', b[o:o + 12]); o += 12
+        nl = b[o]; o += 1
+        name = b[o:o + nl].decode(); o += nl
+        if end == 0: return None, o
+        props = []
+        for _ in range(n_):
+            v, o = prop(o); props.append(v)
+        kids = []
+        while o < end:
+            k, o2 = node(o)
+            if k is None: o = o2; break
+            kids.append(k); o = o2
+        return (name, props, kids), end
+    o, top = 27, []
+    while o < len(b) - 200:
+        n, o2 = node(o)
+        if n is None: break
+        top.append(n); o = o2
+    objs = [n for n in top if n[0] == 'Objects'][0][2]; conns = [n for n in top if n[0] == 'Connections'][0][2]
+    models = {n[1][0]: n[1][1].split('\x00')[0] for n in objs if n[0] == 'Model'}
+    curves = {n[1][0]: n for n in objs if n[0] == 'AnimationCurve'}
+    cnodes = {n[1][0] for n in objs if n[0] == 'AnimationCurveNode'}
+    c2 = [(c[1][1], c[1][2], c[1][3] if len(c[1]) > 3 else None) for c in conns]
+    out = {}
+    for cn in cnodes:
+        tgt = [(d, p) for s_, d, p in c2 if s_ == cn and d in models]
+        if not tgt or tgt[0][1] != 'Lcl Rotation': continue
+        ax = {}
+        for s_, d, p in c2:
+            if d == cn and s_ in curves: ax[p] = [k for k in curves[s_][2] if k[0] == 'KeyValueFloat'][0][1][0]
+        if all(k in ax for k in ('d|X', 'd|Y', 'd|Z')) and len(set(len(ax[k]) for k in ax)) == 1:
+            out[models[tgt[0][0]]] = np.stack([ax['d|X'], ax['d|Y'], ax['d|Z']], 1).astype(float)
+    return out
+
+
+def rotation_steps(path):
+    """Each node's largest rotation from one key to the next (deg) and its largest Euler-angle step, read from the FBX's
+    own curves (FBX Euler XYZ: R = Rz Ry Rx). A flip (a joint turned over between two frames) shows as a step near 180°."""
+    np = _np()
+    worst = {}
+    for name, E in fbx_rotation_curves(path).items():
+        x, y, z = [np.radians(E[:, i]) for i in range(3)]
+        cx, sx, cy, sy, cz, sz = np.cos(x), np.sin(x), np.cos(y), np.sin(y), np.cos(z), np.sin(z)
+        # R = Rz Ry Rx, row by row
+        R = np.stack([np.stack([cz * cy, cz * sy * sx - sz * cx, cz * sy * cx + sz * sx], 1),
+                      np.stack([sz * cy, sz * sy * sx + cz * cx, sz * sy * cx - cz * sx], 1),
+                      np.stack([-sy, cy * sx, cy * cx], 1)], 1)
+        tr = np.einsum('nji,nji->n', R[:-1], R[1:])
+        ang = np.degrees(np.arccos(np.clip((tr - 1) / 2, -1, 1)))
+        worst[name] = (float(ang.max()) if len(ang) else 0.0, float(np.abs(np.diff(E, axis=0)).max()) if len(E) > 1 else 0.0)
+    return worst
+
+
 def seam_pop(m):
     """The loop's seam: the largest joint jump from the last frame to the first, less the mean of the steps on either side (cm),
     with the steady travel removed (gaits play in place)."""
@@ -210,6 +290,9 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None):
         name = f[:-4]
         meta = json.load(open(os.path.join(json_dir, name + '.json')))
         m = load_dump(os.path.join(dump_dir, f))
+        if meta.get('closed') and m.n > 2:
+            # a closed loop's last key is its first again (Unity's convention): the loop's own frames are all but the last
+            m = m.slice(0, (m.n - 1) / m.fps)
         src = meta.get('src', '')
         subj = src.split()[-1].split('_')[0] if src.startswith('CMU') else src
         r = {'clip': name, 'src': src, 'frames': m.n, 'fps': m.fps, 'loop': meta.get('loop'), 'speed': meta.get('speed'), 'checks': {}}
@@ -229,10 +312,34 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None):
             # the pop is the jerk (a discontinuity); the step (seam_cm) also counts a fast hand or foot speeding up through
             # the seam, natural motion, and is reported, not judged
             if jerk > 0.5: fails.append(f'seam: a {jerk:.1f} cm jerk at the loop past the clip\'s own')
+        if meta.get('joins'):
+            # a stride built from a half and its mirror image: each join judged as the seam is, against the clip's own
+            # second differences away from the joins
+            np_ = _np(); worst = 0.0; n_ = m.n
+            near = set((j + k) % n_ for j in meta['joins'] for k in (-2, -1, 0, 1, 2))
+            for k_, p in m.P.items():
+                d2 = np_.array([np_.linalg.norm(p[(i + 1) % n_] - 2 * p[i] + p[i - 1]) for i in range(n_)])
+                ref = float(np_.percentile([d2[i] for i in range(n_) if i not in near], 99))
+                for j in meta['joins']:
+                    for i in ((j - 1) % n_, j % n_):
+                        worst = max(worst, float(d2[i]) - ref)
+            r['checks']['joins_jerk_cm'] = round(worst * 100, 2)
+            if worst * 100 > 0.5: fails.append(f'joins: a {worst * 100:.1f} cm jerk at a mirrored half\'s join past the clip\'s own')
         if name.startswith('idle'):
             vals, why = stand_checks(m); r['stand'] = vals
             fails += [f'standing {w}' for w in why]
         r['checks']['bones_cm'] = round(bone_dev(m), 3)
+        fbx = os.path.join(json_dir, name + '.fbx')
+        if os.path.exists(fbx):
+            # flips: the largest rotation of any joint from one key to the next, read from the FBX's own curves (a joint
+            # turned over in a frame; Unity reported one as an in-between error, 2026-11-17); a voluntary joint turns
+            # under ~1500°/s, 50° a frame at 30 fps
+            st = rotation_steps(fbx)
+            bone, (step, estep) = max(st.items(), key=lambda kv: kv[1][0]) if st else ('', (0.0, 0.0))
+            ebone, (_, emax) = max(st.items(), key=lambda kv: kv[1][1]) if st else ('', (0.0, 0.0))
+            r['checks']['rot_step_deg'] = {'max': round(step, 1), 'bone': bone, 'euler_max': round(emax, 1), 'euler_bone': ebone}
+            if step > 60.0: fails.append(f'flip: {bone} turns {step:.0f}° between two frames')
+            if emax > 90.0 and emax > 2 * step + 30: fails.append(f'euler: {ebone}\'s angles jump {emax:.0f}° between keys (near gimbal lock)')
         if r['checks']['bones_cm'] > 0.5: fails.append('bones: lengths vary by %.1f cm' % r['checks']['bones_cm'])
         sp = float(meta.get('speed') or 0)
         mt = travelling(m, sp) if sp > 0.3 else m

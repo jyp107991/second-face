@@ -56,14 +56,18 @@ CLIPS = [
     # women's captures (CMU 111/113/114: one woman, pregnant and after; 141 = 106 "Female General Subject", 60 fps): women only
     {'name': 'idle_c', 'src': '111_28', 'loop': 'seam', 'range': (2, 10), 'seam': 1.2, 'set': 'f'}, {'name': 'idle_d', 'src': '113_21', 'loop': 'seam', 'range': (2, 10), 'seam': 1.2, 'set': 'f'},
     {'name': 'walk_f_c', 'src': '113_25', 'loop': 'gait', 'set': 'f'}, {'name': 'jog_f', 'src': '141_02', 'loop': 'gait', 'set': 'f'}, {'name': 'jog_f_b', 'src': '141_03', 'loop': 'gait', 'set': 'f'},
-    {'name': 'stretch', 'src': '141_13', 'loop': False, 'range': (0, 6), 'set': 'f'}, {'name': 'yawn', 'src': '111_32', 'loop': False, 'range': (0, 6.2), 'set': 'f'},
+    {'name': 'stretch', 'src': '141_13', 'loop': False, 'range': (0, 6), 'set': 'f'},
+    # the men's stretch and yawn: CMU 143 "Stretch And Yawn" (sex not recorded; 60 fps, listed 120: its jumps fit 58-61; its
+    # skeleton puts the actor at about 1.51 m), for want of any from a man (docs: staging README, v3)
+    {'name': 'stretch_m', 'src': '143_30', 'loop': False, 'range': (0.3, 6.1), 'set': 'm', 'sex': 'unrecorded'}, {'name': 'yawn', 'src': '111_32', 'loop': False, 'range': (0, 6.2), 'set': 'f'},
     {'name': 'yawn_b', 'src': '113_23', 'loop': False, 'range': (0, 8.4), 'set': 'f'}, {'name': 'sit', 'src': '114_05', 'loop': 'seam', 'range': (4, 14), 'seam': 1.2, 'set': 'f'},
     # everyone (sex not recorded; gestures and work): to be split by sex when captures of both are found
-    {'name': 'sit_stool', 'src': '13_04', 'loop': 'seam', 'range': (3, 9), 'seam': 1.0}, {'name': 'sit_ground', 'src': '82_05', 'loop': 'seam', 'range': (4, 14), 'seam': 1.2},
+    {'name': 'sit_stool', 'src': '13_04', 'loop': 'seam', 'range': (3, 9), 'seam': 1.0}, {'name': 'sit_ground', 'src': '82_05', 'loop': 'seam', 'range': (4, 14), 'seam': 1.2, 'max_rate': 600.0},
     {'name': 'talk', 'src': '18_08', 'loop': 'seam', 'range': (2, 14), 'seam': 1.0}, {'name': 'talk_b', 'src': '19_08', 'loop': 'seam', 'range': (2, 14), 'seam': 1.0},
     {'name': 'argue', 'src': '18_10', 'loop': 'seam', 'range': (2, 12), 'seam': 1.0}, {'name': 'drink', 'src': '13_09', 'loop': False, 'range': (0, 8)},
-    {'name': 'wave', 'src': '13_26', 'loop': False, 'range': (1, 6)}, {'name': 'sweep', 'src': '13_23', 'loop': 'seam', 'range': (2, 10), 'seam': 0.8},
+    {'name': 'wave', 'src': '13_26', 'loop': False, 'range': (1, 6)}, {'name': 'sweep', 'src': '13_23', 'loop': 'seam', 'range': (12, 20), 'seam': 1.2},
     {'name': 'guard', 'src': '13_17', 'loop': 'seam', 'range': (2, 8), 'seam': 0.8}, {'name': 'fall', 'src': '90_16', 'loop': False, 'root': True},
+    # (sweep: 12-20 s of the take, its cleanest loop: 0.5 cm/s of slide past the capture's, where 2-10 s gave 3.4)
     {'name': 'pickup', 'src': '26_09', 'loop': False, 'range': (0, 6)},
 ]
 
@@ -181,7 +185,56 @@ def gait_cycle(feet_z):
     return P, start, seam
 
 def slerp(a, b, t):
+    """The shortest-path slerp: mathutils' slerp takes q and -q (the same rotation) as different ends and swung the long
+    way round between frames whose signs differed, a hand or a foot turning up to 180° in one frame (idle_c, jog_c, run_b,
+    sit_ground, 2026-11-17)."""
+    if a.dot(b) < 0.0: b = Quaternion((-b.w, -b.x, -b.y, -b.z))
     return a.slerp(b, t)
+
+MAX_RATE = 2000.0    # deg/s: no joint of these clips turns faster (a thrown arm's peak); a capture's faster step is its solver's flip
+
+def repair_flips(rows, fps, log=None, max_rate=None):
+    """A capture's solver now and then turns a joint over for a few frames and back (a foot or a hand flipped up to 180°
+    and back within 2-3 frames at 30 fps: jog_c, run_b, sit_ground, 2026-11-17): for each joint, a step faster than
+    MAX_RATE opens a flip, and the first later frame that a joint moving at MAX_RATE could reach from the frame before it
+    closes it, within half a second; the frames between are slerped across. A flip that does not come back stays as it
+    is (reported)."""
+    import math
+    thr = math.radians((max_rate or MAX_RATE) / fps)   # (a clip at rest may set a lower rate: sit_ground's hand, 600°/s)
+    span = max(2, round(0.5 * fps))
+    fixed = {}
+    keys = list(rows[0]['loc'].keys())
+    for k in keys:
+        n = len(rows); i = 0
+        while i < n - 1:
+            a = rows[i]['loc'][k]; b = rows[i + 1]['loc'][k]
+            if a.rotation_difference(b).angle > thr and a.rotation_difference(Quaternion((-b.w, -b.x, -b.y, -b.z))).angle > thr:
+                j = None
+                for jj in range(i + 2, min(n, i + 1 + span)):
+                    if a.rotation_difference(rows[jj]['loc'][k]).angle <= thr * (jj - i):
+                        j = jj; break
+                if j is None:
+                    fixed.setdefault(k, []).append(f'unrepaired at {i}'); i += 1; continue
+                for t in range(i + 1, j):
+                    rows[t]['loc'][k] = slerp(a, rows[j]['loc'][k], (t - i) / (j - i))
+                fixed.setdefault(k, []).append([i + 1, j - 1])
+                i = j
+            else:
+                i += 1
+    if log is not None: log.update(fixed)
+    return rows
+
+def continuous(rows):
+    """Each joint's quaternions given one sign along the take (q and -q are one rotation; a sign that changes between
+    frames, where a capture's Euler angle wraps past 180°, made the blends and the resampling swing the long way)."""
+    prev = {}
+    for r in rows:
+        for k, q in r['loc'].items():
+            p = prev.get(k)
+            if p is not None and p.dot(q) < 0.0:
+                q = Quaternion((-q.w, -q.x, -q.y, -q.z)); r['loc'][k] = q
+            prev[k] = q
+    return rows
 
 def build_rows(bones, frames, f0, f1):
     rows = []
@@ -239,6 +292,10 @@ def resample_loop(rows, fps):
         t = k * n / N; i = int(t); f = t - i
         a = rows[i]; b = rows[(i + 1) % n]
         out.append({'loc': {q: slerp(a['loc'][q], b['loc'][q], f) for q in a['loc']}, 'pos': a['pos'].lerp(b['pos'], f)})
+    # closed: the first frame again at the end, so the take spans the loop's whole time and its last key is its first, as
+    # Unity's looping clip expects (its Loop Pose otherwise closed the one-frame gap by bending the whole clip, and played the
+    # stride a frame short of the pace the json gives)
+    out.append({'loc': dict(out[0]['loc']), 'pos': out[0]['pos'].copy()})
     return out
 
 def canonical(rows, travel):
@@ -287,7 +344,9 @@ def build_clip(d):
     n = len(frames)
     f0 = min(n - 2, round(d['range'][0] * SRC_FPS)) if d.get('range') else 0
     f1 = min(n, round(d['range'][1] * SRC_FPS)) if d.get('range') else n
-    rows = build_rows(bones, frames, f0, f1)
+    d['_flips'] = {}
+    rows = repair_flips(continuous(build_rows(bones, frames, f0, f1)), SRC_FPS, d['_flips'], d.get('max_rate', MAX_RATE))
+    if d['_flips']: print(f"  {d['name']}: solver flips repaired: {d['_flips']}")
     # the direction of travel in the capture's own frame (the feet are measured in it: canonical turns only the root)
     a0, b0 = rows[0]['pos'], rows[-1]['pos']
     travel = Vector((b0.x - a0.x, 0.0, b0.z - a0.z))
@@ -321,8 +380,8 @@ def build_clip(d):
         for r in cyc: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, r['pos'].z - mz))
         surge = max(r['pos'].z for r in cyc) - min(r['pos'].z for r in cyc); sway = max(r['pos'].x for r in cyc) - min(r['pos'].x for r in cyc)
         out = resample_loop(cyc, OUT_FPS)
-        speed = dv.length / (len(out) / OUT_FPS)     # the pace at which the loop as played lays one stride
-        print(f'  {d["name"]}: stride {dv.length:.2f} m over {P / SRC_FPS:.3f} s ({len(out)} frames at {OUT_FPS}), off the trial line by {math.degrees(math.atan2(dv.x, dv.z)):.1f} deg, surge {surge * 100:.1f} cm, sway {sway * 100:.1f} cm')
+        speed = dv.length / ((len(out) - 1) / OUT_FPS)     # the pace at which the loop as played lays one stride
+        print(f'  {d["name"]}: stride {dv.length:.2f} m over {P / SRC_FPS:.3f} s ({len(out) - 1} frames at {OUT_FPS}, closed), off the trial line by {math.degrees(math.atan2(dv.x, dv.z)):.1f} deg, surge {surge * 100:.1f} cm, sway {sway * 100:.1f} cm')
     elif d.get('loop') == 'seam':
         seam = round(d.get('seam', 1.0) * SRC_FPS); P = len(rows) - seam
         P = refine_seam([r['key'] for r in rows], P, seam, round(1.0 * SRC_FPS))
@@ -369,13 +428,15 @@ def write_bvh(path, bones, rows):
             if c not in DROP: visit(c)
     visit('root')
     lines.append('MOTION'); lines.append(f'Frames: {len(rows)}'); lines.append(f'Frame Time: {1.0 / OUT_FPS:.6f}')
+    prev = {}
     for r in rows:
         vals = [f'{r["pos"].x:.5f} {r["pos"].y:.5f} {r["pos"].z:.5f}']
         for n in order:
             # BVH channels "Z X Y" are intrinsic: M = Rz·Rx·Ry, which is Blender's (extrinsic) 'YXZ'. Decomposing as
             # Blender's 'ZXY' (M = Ry·Rx·Rz) scrambled every large rotation: arms that hang from the capture's T-pose
-            # came out reaching forward (P4.8)
-            e = r['loc'][n].to_euler('YXZ')
+            # came out reaching forward (P4.8). Each frame's angles the nearest to the last frame's (no wrap past 180°)
+            e = r['loc'][n].to_euler('YXZ', prev[n]) if n in prev else r['loc'][n].to_euler('YXZ')
+            prev[n] = e
             vals.append(f'{math.degrees(e.z):.4f} {math.degrees(e.x):.4f} {math.degrees(e.y):.4f}')
         lines.append(' '.join(vals))
     with open(path, 'w') as f: f.write('\n'.join(lines) + '\n')
@@ -429,13 +490,17 @@ def export_clip(d, bones, rows, speed, hip):
         subj = d['src'].split('_')[0]
         json.dump({'name': d['name'], 'src': d.get('src_label', 'CMU ' + d['src']), 'loop': bool(d.get('loop')), 'speed': round(speed, 3), 'root': bool(d.get('root')), 'hip': round(hip, 4),
                    'fps': OUT_FPS, 'frames': len(rows), 'src_fps': d.get('src_fps', SRC_FPS), 'sex': d.get('sex', SEX.get(subj, 'u')), 'set': d.get('set', 'both'),
-                   'licence': d.get('licence', 'CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses'), 'cycle': REFINE, 'seam_share': SEAM if d.get('loop') == 'gait' else None,
+                   'licence': d.get('licence', 'CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses'), 'cycle': REFINE, 'seam_share': SEAM if d.get('loop') == 'gait' else None, 'closed': bool(d.get('loop')),
+                   'flips_repaired': d.get('_flips') or None,
                    'range': list(d['range']) if d.get('range') else None}, f)
     print(f'clip {d["name"]}: {len(rows)} frames, speed {speed:.2f} m/s')
 
 def main():
-    global CMU, OUT, ONLY, SRC_FPS
+    global CMU, OUT, ONLY, SRC_FPS, CLIPS
     args = sys.argv[sys.argv.index('--') + 1:]
+    if os.environ.get('SF_CLIPS_JSON'):   # a trial list in place of CLIPS (for trying ranges and seams), same fields
+        import json
+        CLIPS = [dict(c, range=tuple(c['range'])) if c.get('range') else c for c in json.load(open(os.environ['SF_CLIPS_JSON']))]
     CMU, OUT = args[0], args[1]
     ONLY = set(args[2].split(',')) if len(args) > 2 else None
     os.makedirs(OUT, exist_ok=True); K.write_folder_meta(OUT, REL)
