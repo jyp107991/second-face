@@ -178,6 +178,20 @@ namespace SecondFace.Game.Play
 
         // ---- the ground: preview, then go (B2, B10) ------------------------------------------------------------------
 
+        /// <summary>A tap on the ground in a fight, as a finger's (tests; the pad's act at its cursor goes the same way).</summary>
+        public bool TapGround(Vector3 point) => OnGround(point);
+
+        /// <summary>The held shots, the intents and the marks worked out afresh (after something changed the fight from
+        /// outside a step: a test, a scripted event).</summary>
+        public void Redraw()
+        {
+            if (!Active) return;
+            ShowWatches();
+            QueueIntents();
+            MarksDirty();
+            Refresh();
+        }
+
         /// <summary>A tap on the ground in a fight (the touch controls' ground tap; the pad's act at its cursor).</summary>
         private bool OnGround(Vector3 point)
         {
@@ -234,6 +248,13 @@ namespace SecondFace.Game.Play
             _spend = plan.Ap;
             Refresh();
             return true;
+        }
+
+        /// <summary>Takes back what is previewed (a walk, a throw being aimed): the pad's east, a test.</summary>
+        public void CancelPreview()
+        {
+            if (_throwItem != null) { ExitThrow(); Refresh(); return; }
+            if (_preview != null) { ClearPreview(); Refresh(); }
         }
 
         private void ClearPreview()

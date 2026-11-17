@@ -410,11 +410,13 @@ namespace SecondFace.Game.Play
             yield return Beat(0.2f, false);
         }
 
-        /// <summary>Every shot held now, on the ground (B5: cones and rings; hidden ambushes left out).</summary>
+        /// <summary>Every shot held now, on the ground (B5: cones and rings; hidden ambushes left out), and what lies on the
+        /// ground (fire, oil, smoke, chem, water, current).</summary>
         private void ShowWatches()
         {
             if (_overlay == null || _battle == null) return;
             _overlay.ShowWatches(_battle.Watches(), u => BodyOf(u) is { } b && b != null ? b.position : (Vector3?)null);
+            if (_battle.Surfaces.Count > 0 || _overlay.SurfacesShown) _overlay.ShowSurfaces(_battle.Surfaces, Walkabout != null && Walkabout.Walker != null ? Walkabout.Walker.transform.position.y : 0f);
         }
     }
 }

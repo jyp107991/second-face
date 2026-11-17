@@ -28,7 +28,7 @@ namespace SecondFace.Game.Play
         public static readonly Color32 WatchFill = new(230, 70, 52, 20), WatchEdge = new(236, 84, 60, 120);
 
         private Material _material;
-        private Layer _reach, _path, _area, _watches, _cursor;
+        private Layer _reach, _path, _area, _watches, _cursor, _ground;
         private LineRenderer _arcLine;
         private readonly BandLines _bands = new();
         private readonly List<Vector3> _pts = new();
@@ -41,6 +41,7 @@ namespace SecondFace.Game.Play
         public bool AreaShown => _area != null && _area.Shown;
         public bool WatchesShown => _watches != null && _watches.Shown;
         public bool CursorShown => _cursor != null && _cursor.Shown;
+        public bool SurfacesShown => _ground != null && _ground.Shown;
         /// <summary>The band lines last drawn (the tests read them): move-and-act, dash.</summary>
         public int ActLines => _bands.Act.Count;
         public int DashLines => _bands.Dash.Count;
@@ -84,7 +85,7 @@ namespace SecondFace.Game.Play
             var shader = Shader.Find("SecondFace/Combat Ground");
             if (shader == null || !shader.isSupported) shader = Shader.Find("Sprites/Default");
             _material = new Material(shader) { name = "combat ground", renderQueue = 2980 };
-            _reach = Make("combat reach"); _path = Make("combat path"); _area = Make("combat area"); _watches = Make("combat watches"); _cursor = Make("combat cursor");
+            _reach = Make("combat reach"); _path = Make("combat path"); _area = Make("combat area"); _watches = Make("combat watches"); _cursor = Make("combat cursor"); _ground = Make("combat ground");
             _arcLine = new GameObject("combat arc").AddComponent<LineRenderer>();
             _arcLine.transform.SetParent(transform, false);
             _arcLine.sharedMaterial = _material;
@@ -304,6 +305,29 @@ namespace SecondFace.Game.Play
 
         public void HideWatches() { if (_watches != null) { _watches.Clear(); _watches.Apply(); } }
 
+        // ---- B5: what lies on the ground (fire, oil, water, smoke, chem, current) --------------------------------------
+
+        /// <summary>Draws the battle's surfaces cell by cell (a metre each, soft at the edges): fire orange, oil dark, water
+        /// blue, smoke grey, a chem cloud green, live current bright blue; the field's own plain scrub is left out.</summary>
+        public void ShowSurfaces(SurfaceGrid grid, float hint)
+        {
+            Build();
+            var l = _ground;
+            l.Clear();
+            if (grid != null && grid.Count > 0)
+                foreach (var (cx, cz, c) in grid.All())
+                {
+                    Color32? col = c.Fire > 0 ? new Color32(255, 120, 30, 120) : c.Shock > 0 ? new Color32(110, 190, 255, 120) : c.Cloud == "chem" ? new Color32(150, 220, 70, 96)
+                        : c.Cloud == "smoke" || c.Cloud == "steam" ? new Color32(210, 210, 206, 80) : c.Ground == "oil" ? new Color32(40, 30, 20, 120) : c.Ground == "water" ? new Color32(90, 150, 220, 60) : (Color32?)null;
+                    if (col == null) continue;
+                    var (x, z) = SurfaceGrid.Centre(cx, cz);
+                    Disc(l, new Vector3((float)x, hint, (float)z), (float)(SurfaceGrid.Cell * 0.72), col.Value, 10, hint);
+                }
+            l.Apply();
+        }
+
+        public void HideSurfaces() { if (_ground != null) { _ground.Clear(); _ground.Apply(); } }
+
         // ---- B10: the pad's cursor ------------------------------------------------------------------------------------
 
         public void ShowCursor(Vector3 at)
@@ -318,11 +342,11 @@ namespace SecondFace.Game.Play
 
         public void HideCursor() { if (_cursor != null) { _cursor.Clear(); _cursor.Apply(); } }
 
-        public void Clear() { HideReach(); HidePath(); HideArea(); HideWatches(); HideCursor(); }
+        public void Clear() { HideReach(); HidePath(); HideArea(); HideWatches(); HideCursor(); HideSurfaces(); }
 
         private void OnDestroy()
         {
-            foreach (var l in new[] { _reach, _path, _area, _watches, _cursor }) if (l?.Mesh != null) Destroy(l.Mesh);
+            foreach (var l in new[] { _reach, _path, _area, _watches, _cursor, _ground }) if (l?.Mesh != null) Destroy(l.Mesh);
             if (_material != null) Destroy(_material);
         }
 
