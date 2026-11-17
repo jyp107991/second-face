@@ -201,7 +201,7 @@ the truth that wrecks a marriage and a baby's father, or quiet that leaves a wom
 - **Reads from other slices (built):** the Mateo hearing reads the Court of Accounts' `prec_unrecorded` (yields −10 on the
   living argument, property +5; Oona has heard of the city's ruling by the tide boat); Thorne's offer reads `rc_line` (= guild:
   the guild holds the Line end to end, and the Line runs on Hum's oil). The safehouse is a cabin under an upturned hull.
-- **Not built here (still planned in the story plan's B5b entry): Meridian's Docks** across the river (the Line's far end,
+- **Not built here (built since, as `md_docks`: see "Carrick" below): Meridian's Docks** across the river (the Line's far end,
   the far-bank answer on the Loop's boards, `ds_docks`), and the reads that belong to them (`bw_dogs_hold`, `dr_leven`,
   `rc_stock`'s news west). The Docks are a Meridian district; they want their own small slice (Meridian's boards and the Line's
   `meridian` arrival are shared files). The tide boat's network already lands at `meridian`; when the Docks exist, its
@@ -210,3 +210,129 @@ the truth that wrecks a marriage and a baby's father, or quiet that leaves a wom
   Lantern Row's boat does; deep water is `water` + `blocks`). The place build for `ds_stilts`, `ds_rigs`, `ds_terminal` (open
   sites at their locations, drawn with open water to the edges, `rim: keep`) and the cells `ds_rig_leg`, `ds_wade` is P10 work;
   `npm run export` has not been run for this slice.
+
+## Carrick — Meridian's Docks (B5b, the last piece; built 2026-11-17)
+Ids: map `md_docks` (Meridian settlement; site beside Bridgeward's east edge, across the dry river), NPCs `npc_dk_*`, flags
+`dk_*`, quests `q_dk_*`, dialogues `d_dk_*`, leads `l_dk_*`, conclusions `c_dk_*`, items `k_dk_*` / `c_dk_*`. Content:
+`tools/maps/gen_md_docks.py` → `maps/md_docks.ts` (80×60); `npcs/md_docks.ts`; `dialogue/md_docks.ts`; `quests/b5b_docks.ts`;
+`items/md_docks.ts`; `world/md_docks.ts` (leads, conclusions, events); tests `tests/b5b_docks.test.ts`.
+
+**Found history.** Before the Burn: Carrick Point container terminal, the city's port at the river mouth, with the freight
+railhead (the Line's coastal end), the Customs House and a bonded warehouse. When the river stopped (the Burn, the dams
+upriver, the upper river diverted into the north channel by the city's own works: Nine has the drawings) the river berths were
+stranded; the ships on them are **the Hulls** (nine, on the dry bed; four on the map: the *Benguela Star*, the *Orinoco*, the
+*Cape Hope*, the *Saint Kilda* and five more), ~300 people who have signed their crew books every Sunday for ninety years. The
+seaward **Basin** stayed wet: the tide boat, the Wet's barges, a few coasters. The road bridge (Bridgeward's) fell in the
+Charter Wars with a tram on it; the far half of the Loop's Docks branch still runs as **the quay tram** round the ring road and
+over the old ring bridge to Clover. The guild bought the old Port Authority's concession ninety years ago; the Ledger enforces
+the **Harbour Act** and nothing else here: s. 19 bonded premises (the Harbour Master's writ stops at the Bond's fence), s. 41
+idle berths may be leased for works, Schedule 2 the goods (cargo, livestock, mails, stores, ballast: no persons), Schedule 3 a
+crewed vessel in port cannot be moved save by her master's leave or the court on proof of abandonment. The Harbour court:
+the Customs House steps at the change of shift (six), the Act on the Harbour Master's knee, rulings on what is on the table.
+Places: the railhead under the long brick freight shed (Sixty at the buffer, Femi's window), the turntable and yard throat,
+**the guild's floor** (B5c's "guild's floor at the Docks") and the weighbridge, **the Bond** (the Concern's fenced, white-lit
+yard; Lucien Roux's office), the Customs House, **the Stand** (the white line of the call-on), Crane Six and Crane Two, the barge
+quay, the fish steps, the water stairs (the tide boat), the fuel berth (LINE ACCOUNT), **the Boxes** (stacked containers:
+Espe's cookshop, the bunk), and on the bank above the Hulls Crane One, dead, whose jib carries **the cradle**: a basket on a
+cable over the dry bed to Bridgeward's drop, five a head at night, the Rustmouths taking two of five at their end.
+
+**Cast** (frame narrow for women, broad for men): Factor Henrike Dahl (56, npc_dk_01, Harbour Master: the Act is the Act) ·
+Constance "Connie" Okoye (48, npc_dk_02, drives Crane Two, the Stand's voice) · Mattias Platt (44, npc_dk_03, the guild's
+night gang-master, short-handed by order) · Oksana Lysenko (33, npc_dk_04, the dead man's widow; daughter Zoya, 8, bad lungs) ·
+Lucien Roux (42, npc_dk_05, the Concern's bond officer: courteous, exact) · Imogen Thrale (31, npc_dk_06, House Vane's
+engineer at the far end of the Crown's road) · Kwabena "Kobby" Ofori (61, npc_dk_07, master of the *Star*, the cradle's
+winchman) and Abena Ofori (19, npc_dk_08, rides the basket, keeps the crew books) · Mirela Stan (15, npc_dk_09, the girl off
+the through) · Grigor Avakian (67, npc_dk_10, the fish steps) · Esperanza "Espe" Cardenas (52, npc_dk_11, the cookshop, the
+bunk) · Femi Adebayo (23, npc_dk_12, the Line's last window) · Tomas Hruska (58, npc_dk_13, the weighbridge, the floor's
+counter) · Nadia Kassab (38, npc_dk_14, the Hulls' fence); guild guards g1–g2, Bond guards c1–c2, the Ring's hired men h1–h3.
+Dmytro Lysenko (dead, no NPC). Cameo: Cyprian Thorne copying dues at the Customs House if the shore put him off (`ds_thorne` =
+fled; placement `npc_ds_04_carrick`, tree `d_dk_thorne`). Kin: Ofori.
+
+### Crane Six — `q_dk_crane` (the district's line)
+*Hook:* a box fell from Crane Six in the night onto Dmytro Lysenko, the night gang's hooker-on; the guild's board: DOCKER'S
+NEGLIGENCE, Gang Nine stood down, no funeral tally. *Investigation:* the box (MACHINE PARTS 14 T; cast copper inside, ~31 T;
+the twistlocks sheared, `l_dk_box`); Crane Six's cab (Connie's relief's leave, or a climb / a picked padlock; the load tape
+02:06 31.2 T CUTOUT, 02:07 KEY 6/N OVERRIDE, `k_dk_tape`, `l_dk_tape`; a failed read still gives the tape and Hruska reads it;
+the key switch scratched by a copied key); Platt (five on a crane that wants eight, by order, for the through's four-hour
+turnaround under the contract's demurrage, `l_dk_short`, `k_dk_order`; his own key never left him); the widow (her girl
+breathes now; he came home with medicine; the tin `k_dk_tin`: a hand-cut key 6/N, blue Concern inhalers, a Bond night pass;
+given at Speech 35, or shown up by the tape, or taken off the shelf by night); the weighbridge register (THROUGH — NOT WEIGHED
+for two years, `l_dk_unweighed`); the Bond's drawer at night (Security 45: the Concern's own slip 31.4 T against the guild's
+bill 14 T, `k_dk_slip`, `l_dk_slip`). Conclusions `c_dk_override` (box + tape), `c_dk_paid` (key + medicine; also learned
+from Oksana when shown the tape: `dk_paid`), `c_dk_skim` (slip + register, `dk_skim`). *Turn:* Dmytro turned the cutout
+himself, at the Bond's pay in medicine for his girl: the Concern bills its boxes at half their weight and the guild never
+weighs the through; the guild's verdict is true and a lie, the dockers' grievance just and wrong, and the man who paid sits
+behind s. 19. *Ends* (`dk_crane`): **bond** (the whole truth at the court, Speech 45 with the evidence: every through box to
+the plate, `dk_weighbridge` = on, `dk_concern_billed`; no funeral tally by the Act unless the player pays 30, `dk_buried` =
+paid, or argues the relief clause, Speech 50, = guild) · **gang** (the short gang argued with the tin kept off the table, Speech
+40: negligence struck, the guild pays, Six at complement, `dk_complement`; the skim goes on) · **black** (the truth to Connie,
+Speech 45 with mods: the Stand blacks the Bond; at dawn the Ring's hired men on the Stand (placement + a repeating trigger,
+waits for the player): talked home Speech 45, paid 60, or fought (`dk_breakers_fight`; lost fight = broken) → `dk_black` =
+won: the Concern settles through the guild, the plate, `dk_stand` = organised, **`dk_stand_owed`**; or step off the line →
+`dk_black` = broken, `dk_stand` = broken) · **guild** (the tin given to Dahl in private: 100, a quiet bill, the board left
+wrong) · **bought** (Roux's 150 for the papers, or the same to the widow at Speech 40, `dk_widow_paid`). A failed argument
+adjourns the court (`dk_adjourned`); it sits again. Visible: the tally board, the box, the weighbridge's needle, Oksana's
+lines (the Hulls, or Zoya over a kettle when the Bond's medicine stops), Connie's, the call-on's wage (12 after the Stand
+stood, 7 otherwise).
+
+### Mirela's Paper — `q_dk_girl`
+*Hook:* the Bond's notice on the guild floor's door (RETURNABLE LOST — REWARD 60) or Roux. *Investigation:* Espe's "niece" at
+the back of the cookshop (Speech 35; Connie's word −15; or the girl herself, Speech 40); Mirela (15, terrace nine, rode six
+days west in a box of spares); the paper sewn in her coat (`l_dk_surety`; she lets the player carry it, `k_dk_paper`).
+*Turn:* she is the surety on her mother's Concern contract, returnable on default or flight: her flight is the default, and
+her mother wrote GO on the back. *Ends* (`dk_girl`): **shore** (the tide boat to Gull Stilts, 6) · **choir** (a ticket east
+and the track south from West Halt to Openfield, 25; Survival 30, no check if `rc_stock` = openfield) · **bought** (her surety
+discharged at the Bond, 150, Barter 50 to 90: the mother's contract whole) · **ruled** (the Harbour court: Schedule 2 has no
+persons; a person landed on the quay is a passenger who owes her fare, paid 125 or worked off: **`dk_prec_passenger`**; reads
+`prec_unrecorded` = yields) · **returned** (Roux's 60: the event `dk_girl_taken` puts her on the through at two, the next night
+the player is at Carrick; Espe will not serve the player). The mother's default (shore, choir, ruled) is left for B4b to read.
+
+### Stakes on the Hulls — `q_dk_far`
+*Hook:* the river stairs: House Vane's blue stakes among the hulls; the Harbour notice (s. 41 lease, occupiers to quit on
+commencement; chalk: WE ARE NOT OCCUPIERS WE ARE CREW). *Investigation:* Kobby (the Hulls; the cradle and its lamp signal,
+`dk_cradle_known`; three masters have signed, `l_dk_signed`; the crew books, `l_dk_crews`), Abena (the books; she lends the
+*Star*'s, `k_dk_crewbook`), Imogen (the far end wants the old road bridge's footing; the road is so the Crown's freight need
+not go round by the Wall past the gate's lens; she is buying the masters' marks of abandonment at 40 a hull), the Act
+(`l_dk_act`) → `c_dk_crewed`, the survey plate on the wall (Science 40: the old tram bridge's footing under the Bond's edge,
+`l_dk_footing`). Reads `dr_leven` (the steel: LEVEN girders on the quay, or late) and `bw_dogs_hold` (the near end held).
+*Ends* (`dk_hulls`): **crewed** (the court: Schedule 3 and the crew book, Speech 45: the lease cannot move a crewed vessel;
+the cradle runs) · **cleared** (Imogen's purse carried to the masters, Barter 45, or Kobby's own mark at Speech 55: the event
+`dk_hulls_cleared` clears the bed at the next dawn the player is at Carrick, `dk_hulls_empty`, `dk_cradle` = cut) · **sold**
+(all nine together at 120 a hull, Barter 50: the masters walk up the stairs with the money; Kobby runs the cradle for House
+Vane at a wage until the bridge) · **moved** (the far end worked onto the tram bridge's footing under the Bond, Science 45:
+`dk_abutment` = bond, the Crown and the Concern want the same ground; the Hulls stay).
+
+### Transport (both networks from every stop)
+- **The Line**: `STOPS.meridian` = Carrick's platform (`md_docks`/`platform`, name "Meridian Docks"); every corridor ticket
+  point's ride to Meridian lands there; the rods' "all the way to the city" drops at the yard throat (`yard`); Carrick's own
+  window is `lineBoard('d_dk_line', 'meridian', …)` (Femi's tree too). `net_line` unchanged.
+- **The tide boat**: Carrick's water stairs (`d_dk_tide`: Gull Stilts 6, the Rigs 12, down the delta at five); up from the
+  Stilts (Mele's `ride.city`, at six) and from the Rigs (`launch.city`, by the Stilts) to `md_docks`/`stairs`. `net_tide`
+  unchanged; the field map's fast travel still arrives at the `meridian` location's map (the Precinct), now at the river road's
+  mouth (`from_hamlet_shore`, `from_rigs`, `from_halt_w` moved there).
+- **The barges** (B5c): `RIVER_STOPS.meridian` → `md_docks`/`barge`; Carrick's barge quay is `bargeBoard('d_dk_barge', 'meridian', …)`.
+- **The city**: the river road (exits both ways, an hour, outside the Wall: `md_precinct` south ↔ `md_docks` north-west); the
+  quay tram (Carrick ↔ Clover, 2, `d_dk_tram` / Clover's `drloop.quay`); the Loop boards' answer to NO BRIDGE (`DOCKS_ASK` /
+  `DOCKS_ANSWER` on the Precinct's, Old Market's, Lantern Row's, the Stacks' and Bridgeward's boards); the cradle at night
+  (20–4, 5 Tolls, both ways: the winch, Kobby, Abena, and Bridgeward's drop with `CRADLE_SIGNAL` once `dk_cradle_known`).
+
+### Activities
+The call-on at the Stand at dawn (Brawn 5, eight hours, 7 Tolls; 12 once the Stand has stood); Grigor's lines off the Basin
+wall at dawn (2, Survival 30, two mullet); Espe's soup and the bunk (20, safehouse); counters: Grigor (fish), Espe (food),
+Hruska (the guild's floor, guild prices), Nadia (the Hulls' fence, Concern goods dear, blue inhalers).
+
+### Flags later parts read (B5d's Long Night, Act 3)
+`dk_crane` (bond | gang | black | guild | bought) · `dk_black` (won | broken) · `dk_stand` (organised | quiet | broken |
+black) · **`dk_stand_owed`** (the Stand at Carrick owes the player: in the Long Night the dockers can black the guild's and the
+Concern's freight, e.g. Openfield's stores landed at Carrick) · `dk_weighbridge` (on) · `dk_concern_billed` · `dk_complement` ·
+`dk_buried` (paid | guild | concern) · `dk_girl` (returned | shore | choir | bought | ruled) · **`dk_prec_passenger`** (on
+Carrick's quay a person is a passenger, never cargo: B5d's warden car carrying keystone 7 west through the Docks can be read
+against it) · `dk_hulls` (crewed | cleared | sold | moved) · `dk_abutment` (bond: the Crown's far end on the Concern's ground,
+a crack between them for the Long Night) · `dk_cradle` (cut; unset = running: a way into the city past the gate's lens) ·
+`dk_hulls_empty` · `dk_bond_barred` · `dk_bond_fight`.
+
+### Open
+Unity: the place build for `md_docks` (an open site beside Bridgeward's east edge, its west strip the dry bed; cranes and the
+tram are prop stand-ins: `windpump`, `machine`) is P10 work; `npm run export` has not been run. B5d: Calla's warden escort
+through Carrick; the Long Night's freight at the Bond and the guild's floor (`nw_controllers` = guild lands on the floor).
+B4b: Mirela's mother's contract after a default.

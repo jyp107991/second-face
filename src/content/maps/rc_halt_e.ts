@@ -213,6 +213,13 @@ export const rc_halt_e: MapDef = {
       kind: "fire_barrel",
       x: 21,
       y: 20
+    },
+    {
+      kind: "sign",
+      x: 44,
+      y: 30,
+      rot: 3,
+      id: "rc_he_bucket"
     }
   ],
   lights: [
@@ -306,6 +313,10 @@ export const rc_halt_e: MapDef = {
     rc_he_cutting: {
       dialogue: "d_rc_cutting",
       name: "The cutting east"
+    },
+    rc_he_bucket: {
+      dialogue: "d_tm_bucket_foot",
+      name: "The bucket line"
     }
   },
   spots: {

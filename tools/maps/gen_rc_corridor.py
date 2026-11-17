@@ -405,6 +405,8 @@ props = [
     {'kind': 'tank', 'x': 33, 'y': 6}, {'kind': 'pipe_h', 'x': 34, 'y': 10},
     {'kind': 'debris', 'x': 44, 'y': 18, 'id': 'rc_he_joint'}, {'kind': 'sign', 'x': 43, 'y': 21, 'rot': 3, 'id': 'rc_he_cutting'},
     {'kind': 'cot', 'x': 14, 'y': 26, 'rot': 1}, {'kind': 'planter', 'x': 22, 'y': 29}, {'kind': 'dead_tree', 'x': 30, 'y': 28}, {'kind': 'rock', 'x': 6, 'y': 31}, {'kind': 'fire_barrel', 'x': 21, 'y': 20},
+    # B5c: the foot of Number Four's bucket line, in the cutting
+    {'kind': 'sign', 'x': 44, 'y': 30, 'rot': 3, 'id': 'rc_he_bucket'},
 ]
 spots = {
     'imani': {'x': 11, 'y': 7}, 'imani_platform': {'x': 17, 'y': 14}, 'imani_sleep': {'x': 13, 'y': 5},
@@ -433,6 +435,7 @@ rc_halt_e = {
         'rc_he_shed': {'dialogue': 'd_rc_shed', 'name': 'The tool shed'},
         'rc_he_joint': {'dialogue': 'd_rc_joint', 'name': 'The east length'},
         'rc_he_cutting': {'dialogue': 'd_rc_cutting', 'name': 'The cutting east'},
+        'rc_he_bucket': {'dialogue': 'd_tm_bucket_foot', 'name': 'The bucket line'},
     },
     'spots': spots, 'npcs': npcs,
     'triggers': [
@@ -476,6 +479,8 @@ props = [
     {'kind': 'pump', 'x': 35, 'y': 28}, {'kind': 'car_wreck', 'x': 10, 'y': 34}, {'kind': 'car_wreck', 'x': 20, 'y': 37}, {'kind': 'car_wreck', 'x': 34, 'y': 40}, {'kind': 'car_wreck', 'x': 46, 'y': 34}, {'kind': 'car_wreck', 'x': 52, 'y': 37},
     {'kind': 'campfire', 'x': 10, 'y': 42}, {'kind': 'blanket', 'x': 8, 'y': 41}, {'kind': 'sign', 'x': 3, 'y': 29, 'rot': 1, 'id': 'rc_yd_curve'},
     {'kind': 'lamp_post', 'x': 29, 'y': 18}, {'kind': 'lamp_post', 'x': 44, 'y': 28}, {'kind': 'lamp_post', 'x': 52, 'y': 18},
+    # B5c: the north track's foot, where the timber train for Sawtown leaves when Dorcas runs
+    {'kind': 'sign', 'x': 33, 'y': 18, 'rot': 0, 'id': 'rc_yd_north'},
 ]
 spots = {
     'ida': {'x': 37, 'y': 7}, 'ida_shed': {'x': 13, 'y': 10}, 'ida_sleep': {'x': 40, 'y': 10},
@@ -509,6 +514,7 @@ rc_yard = {
         'rc_yd_slate': {'dialogue': 'd_rc_slate', 'name': 'Ida\'s slate'},
         'rc_yd_board': {'dialogue': 'd_rc_board_yd', 'name': 'The yard board'},
         'rc_yd_curve': {'dialogue': 'd_rc_curve', 'name': 'The curve'},
+        'rc_yd_north': {'dialogue': 'd_nw_north_track', 'name': 'The north track'},
     },
     'spots': spots, 'npcs': npcs,
     'triggers': [

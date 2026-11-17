@@ -1,4 +1,5 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
+import { DOCKS_ANSWER, DOCKS_ASK } from './md_docks';
 
 /**
  * Old Market: the dead mall and its streets. The Broker's hatch and the gigs board, the kiosk that knows your
@@ -30,9 +31,12 @@ export const d_mk_loop: DialogueDef = {
         { id: 'mkloop.stacks', text: 'The Stacks. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_stacks', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { id: 'mkloop.bridgeward', text: 'Bridgeward. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_bridgeward', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { id: 'mkloop.clover', text: 'Clover, outside the Wall. (4 Tolls)', if: { item: 'tolls', count: 4 }, effects: [{ take: 'tolls', count: 4 }, { event: 'goto', data: { location: 'md_ring', spawn: 'loop', minutes: 30 } }], exit: true, repeat: true },
+        DOCKS_ASK('mkloop.docks'),
         { text: '(Leave it.)', exit: true },
       ],
     },
+    // the far bank's answer (B5b, Carrick)
+    docks: DOCKS_ANSWER,
   },
 };
 

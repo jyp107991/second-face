@@ -42,6 +42,8 @@ fill(0, 0, W - 1, 0, 'R'); fill(0, H - 1, W - 1, H - 1, 'R'); fill(0, 0, 0, H - 
 fill(1, 1, 9, H - 2, 'r'); fill(1, 26, 9, 33, 'c'); fill(0, 28, 0, 31, 'c')
 # the gate road north along the Wall, out of the map to the Ring (B3.12)
 fill(3, 0, 7, 0, 'r')
+# the river road south along the Wall, out of the map round to the Docks across the dry river (B5b, Carrick)
+fill(3, H - 1, 7, H - 1, 'r')
 fill(2, 36, 8, 48, ',')
 # THE WALL: tall concrete, the gate cut through it, a drain under it to the south
 fill(10, 1, 11, H - 2, 'H')
@@ -84,6 +86,8 @@ props = [
     {'kind': 'sign', 'x': 4, 'y': 25, 'rot': 1, 'id': 'md_wall_sign'}, {'kind': 'sign', 'x': 8, 'y': 2, 'rot': 3, 'id': 'md_ring_sign'}, {'kind': 'car_wreck', 'x': 4, 'y': 10, 'rot': 1}, {'kind': 'debris', 'x': 6, 'y': 16}, {'kind': 'debris', 'x': 3, 'y': 56}, {'kind': 'dead_tree', 'x': 7, 'y': 6},
     {'kind': 'sandbags', 'x': 9, 'y': 27}, {'kind': 'sandbags', 'x': 9, 'y': 32}, {'kind': 'fence_post', 'x': 8, 'y': 29}, {'kind': 'fence_post', 'x': 8, 'y': 30},
     {'kind': 'pipe_h', 'x': 5, 'y': 52}, {'kind': 'pipe_h', 'x': 6, 'y': 52}, {'kind': 'sign', 'x': 9, 'y': 54, 'rot': 1, 'id': 'md_drain_sign'},
+    # the river road's mouth: the chalk that answers the Loop's NO BRIDGE (B5b, Carrick)
+    {'kind': 'sign', 'x': 8, 'y': 57, 'rot': 1, 'id': 'md_river_sign'},
     # the gate: the scanner, lamps, the barrier, the rates board
     {'kind': 'terminal', 'x': 13, 'y': 26, 'rot': 0, 'id': 'md_scanner'}, {'kind': 'lamp_post', 'x': 12, 'y': 26}, {'kind': 'lamp_post', 'x': 12, 'y': 33}, {'kind': 'sign', 'x': 20, 'y': 26, 'rot': 3, 'id': 'md_gate_board'},
     {'kind': 'counter', 'x': 15, 'y': 22, 'rot': 0}, {'kind': 'counter', 'x': 16, 'y': 22, 'rot': 0}, {'kind': 'locker', 'x': 18, 'y': 23, 'id': 'md_booth_locker'},
@@ -142,8 +146,11 @@ md_precinct = {
     ],
     'spawns': [
         {'id': 'start', 'x': 2, 'y': 29, 'facing': 1}, {'id': 'from_ninebridge', 'x': 2, 'y': 30, 'facing': 1}, {'id': 'from_openfield', 'x': 2, 'y': 29, 'facing': 1}, {'id': 'from_sump', 'x': 2, 'y': 31, 'facing': 1},
-        {'id': 'from_riverdock', 'x': 2, 'y': 28, 'facing': 1}, {'id': 'from_halt_w', 'x': 2, 'y': 28, 'facing': 1}, {'id': 'from_hamlet_shore', 'x': 2, 'y': 31, 'facing': 1}, {'id': 'from_rigs', 'x': 2, 'y': 31, 'facing': 1},
+        {'id': 'from_riverdock', 'x': 2, 'y': 28, 'facing': 1},
+        # the Line and the tide boat land at Carrick across the dry river; from there it is the river road along the Wall (B5b)
+        {'id': 'from_halt_w', 'x': 5, 'y': 57, 'facing': 0}, {'id': 'from_hamlet_shore', 'x': 5, 'y': 57, 'facing': 0}, {'id': 'from_rigs', 'x': 5, 'y': 57, 'facing': 0},
         {'id': 'inside', 'x': 22, 'y': 29, 'facing': 1}, {'id': 'cell', 'x': 16, 'y': 13, 'facing': 2}, {'id': 'drain', 'x': 13, 'y': 52, 'facing': 1}, {'id': 'loop', 'x': 63, 'y': 24, 'facing': 2}, {'id': 'sink_stair', 'x': 40, 'y': 51, 'facing': 0}, {'id': 'from_spire', 'x': 56, 'y': 2, 'facing': 2}, {'id': 'from_ring', 'x': 5, 'y': 2, 'facing': 2},
+        {'id': 'from_docks', 'x': 5, 'y': 57, 'facing': 0},
     ],
     'exits': [
         {'x': 0, 'y': 28, 'w': 1, 'h': 4, 'to': {'worldMap': True}, 'label': 'The road out'},
@@ -151,6 +158,7 @@ md_precinct = {
         {'x': 71, 'y': 27, 'w': 1, 'h': 6, 'to': {'location': 'md_market', 'spawn': 'from_precinct'}, 'label': 'The avenue east, to Old Market', 'if': {'flag': 'md_market_open'}},
         {'x': 56, 'y': 0, 'w': 2, 'h': 1, 'to': {'location': 'md_spire', 'spawn': 'from_precinct'}, 'label': 'The lane north, to the Spire close', 'if': {'flag': 'md_inside'}},
         {'x': 3, 'y': 0, 'w': 5, 'h': 1, 'to': {'location': 'md_ring', 'spawn': 'from_precinct'}, 'label': 'The gate road north along the Wall, to the Ring'},
+        {'x': 3, 'y': H - 1, 'w': 5, 'h': 1, 'to': {'location': 'md_docks', 'spawn': 'from_precinct'}, 'label': 'The river road south along the Wall, to the Docks', 'effects': [{'time': 60}]},
     ],
     'talk': {
         'md_scanner': {'dialogue': 'd_md_scanner', 'name': 'The face scanner'},
@@ -166,6 +174,7 @@ md_precinct = {
         'md_cell_cot': {'dialogue': 'd_md_cell', 'name': 'The cell'},
         'md_spire_sign': {'dialogue': 'd_md_spire_sign', 'name': 'A sign at the lane'},
         'md_ring_sign': {'dialogue': 'd_md_ring_sign', 'name': 'Chalk on the Wall'},
+        'md_river_sign': {'dialogue': 'd_md_river_sign', 'name': 'Chalk on the Wall'},
     },
     'containers': {
         'md_booth_locker': {'name': 'Gate Locker', 'items': [['c_water', 2]], 'tolls': 20, 'lock': 50},

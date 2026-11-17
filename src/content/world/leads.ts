@@ -1,5 +1,7 @@
 import type { ConclusionDef, LeadDef } from '../../engine/world/frontier';
 import { DS_CONCLUSIONS, DS_LEADS } from './ds_shore';
+import { DK_CONCLUSIONS, DK_LEADS } from './md_docks';
+import { B5C_CONCLUSIONS, B5C_LEADS } from './b5c_wilds';
 
 /** Clues for the notebook's leads board, and the conclusions they support. */
 export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
@@ -206,6 +208,10 @@ export const LEADS: Record<string, LeadDef> = Object.fromEntries(([
   { id: 'l_rc_kofi', label: 'Out at night', text: 'Kofi Mensah counts the through\'s cars every night, and lately he has seen the halt\'s keeper out on the east length with a lamp after dark.' },
   // B5b — the Drowned Shore (ds_shore.ts)
   ...DS_LEADS,
+  // B5b — Carrick, Meridian's docks (md_docks.ts)
+  ...DK_LEADS,
+  // B5c — the Teeth mines and the Northern Wet (b5c_wilds.ts)
+  ...B5C_LEADS,
 ] as LeadDef[]).map((l) => [l.id, l]));
 
 export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
@@ -244,4 +250,8 @@ export const CONCLUSIONS: Record<string, ConclusionDef> = Object.fromEntries(([
   { id: 'c_rc_east', from: ['l_rc_spanner', 'l_rc_kofi'], text: 'East Halt\'s keeper is loosening the east length herself, a joint at a time, to throw the through off the rails at her own halt.', effects: [{ learn: 'rc_east_known' }] },
   // B5b — the Drowned Shore (ds_shore.ts)
   ...DS_CONCLUSIONS,
+  // B5b — Carrick, Meridian's docks (md_docks.ts)
+  ...DK_CONCLUSIONS,
+  // B5c — the Teeth mines and the Northern Wet (b5c_wilds.ts)
+  ...B5C_CONCLUSIONS,
 ] as ConclusionDef[]).map((c) => [c.id, c]));

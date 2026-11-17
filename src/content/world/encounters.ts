@@ -1,5 +1,6 @@
 import type { RoadEncounterDef } from '../../engine/world/roads';
 import { DS_ENCOUNTERS } from './ds_shore';
+import { B5C_ENCOUNTERS } from './b5c_wilds';
 
 /**
  * Road encounters, by region. A leg of a trip rolls its risk; on a hit one of these that fits the place, the hour and
@@ -108,4 +109,6 @@ export const ROAD_ENCOUNTERS: Record<string, RoadEncounterDef> = Object.fromEntr
   },
   // --- the Drowned Shore (B5b): ds_shore.ts
   ...DS_ENCOUNTERS,
+  // --- the Teeth mines and the Northern Wet (B5c): b5c_wilds.ts
+  ...B5C_ENCOUNTERS,
 ] as RoadEncounterDef[]).map((e) => [e.id, e]));

@@ -37,7 +37,8 @@ export const LEVY: Cond = { flag: 'rc_kettle_levy' };
 
 /** Where each stop on the Line puts you down. */
 export const STOPS: Record<string, { name: string; map: string; spawn: string }> = {
-  meridian: { name: 'Meridian', map: 'md_precinct', spawn: 'from_halt_w' },
+  // the Line's far end is Carrick, Meridian's docks across the dry river (B5b): the terminus under the freight shed
+  meridian: { name: 'Meridian Docks', map: 'md_docks', spawn: 'platform' },
   halt_w: { name: 'West Halt', map: 'rc_halt_w', spawn: 'platform' },
   depot: { name: 'Yard Nine', map: 'rc_yard', spawn: 'platform' },
   junction: { name: 'Four Ways', map: 'rc_fourways', spawn: 'platform' },
@@ -201,7 +202,7 @@ export const d_rc_curve: DialogueDef = {
       interject: [{ companion: WREN, text: 'Wren lands on the roof beside you without a sound and lies there grinning at the stars. "Kessler would have charged for that," she says.' }],
       options: [
         { id: 'rods.kettle', text: '(Drop off at Kettle, where she slows for the curve.)', effects: [{ time: 180 }, { learn: 'loc_lm_rc_kettle' }, { set: 'rc_rode_rods' }, { event: 'goto', data: { location: 'rc_kettle', spawn: 'from_depot' } }], exit: true, repeat: true },
-        { id: 'rods.city', text: '(Ride her all the way to the city.)', effects: [{ time: 960 }, { set: 'rc_rode_rods' }, { set: 'visited_meridian' }, { event: 'goto', data: { location: 'md_precinct', spawn: 'from_halt_w' } }], exit: true, repeat: true },
+        { id: 'rods.city', text: '(Ride her all the way to the city.)', effects: [{ time: 960 }, { set: 'rc_rode_rods' }, { set: 'visited_meridian' }, { event: 'goto', data: { location: 'md_docks', spawn: 'yard' } }], exit: true, repeat: true },
       ],
     },
     caught: {

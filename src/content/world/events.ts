@@ -1,5 +1,7 @@
 import type { WorldEventDef } from '../../engine/world/frontier';
 import { DS_EVENTS } from './ds_shore';
+import { DK_EVENTS } from './md_docks';
+import { B5C_EVENTS } from './b5c_wilds';
 
 /**
  * Scheduled world events. There are no day limits in this game: an event waits for the player (it fires at its
@@ -138,3 +140,7 @@ export const WORLD_EVENTS: Record<string, WorldEventDef> = {
 };
 // the Drowned Shore's events (B5b) live in ds_shore.ts
 Object.assign(WORLD_EVENTS, DS_EVENTS);
+// Carrick's events (B5b, Meridian's docks) live in md_docks.ts
+Object.assign(WORLD_EVENTS, DK_EVENTS);
+// the Teeth mines' and the Northern Wet's events (B5c) live in b5c_wilds.ts
+Object.assign(WORLD_EVENTS, B5C_EVENTS);

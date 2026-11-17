@@ -235,6 +235,8 @@ export const d_ds_launch: DialogueDef = {
       again: 'The launch, waiting.',
       options: [
         { id: 'launch.stilts', text: '(Back to Gull Stilts. 3 Tolls)', if: TOLLS(3), effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'ds_stilts', spawn: 'jetty', minutes: 80 } }], exit: true, repeat: true },
+        // the tide boat calls at the Rigs for a fare and goes on up the delta by the Stilts to the city (B5b, Carrick)
+        { id: 'launch.city', text: '(Wait for the tide boat to the city: by the Stilts to Carrick\'s water stairs. 12 Tolls)', if: TOLLS(12), effects: [{ take: 'tolls', count: 12 }, { until: 6 }, { time: 900 }, { learn: 'loc_meridian' }, { set: 'visited_meridian' }, { event: 'goto', data: { location: 'md_docks', spawn: 'stairs' } }], exit: true, repeat: true },
         leave,
       ],
     },

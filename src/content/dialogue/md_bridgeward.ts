@@ -1,5 +1,6 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
 import type { Cond } from '../../engine/world/logic';
+import { CRADLE_SIGNAL, DOCKS_ANSWER, DOCKS_ASK } from './md_docks';
 
 /**
  * Bridgeward: the broken bridge and its toll, three crews and their paint, the Saints' tower and the girl who hears,
@@ -36,16 +37,33 @@ export const d_bw_loop: DialogueDef = {
         { id: 'bwloop.lantern', text: 'Lantern Row. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_lantern', spawn: 'loop', minutes: 10 } }], exit: true, repeat: true },
         { id: 'bwloop.stacks', text: 'The Stacks. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_stacks', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { id: 'bwloop.clover', text: 'Clover, outside the Wall. (4 Tolls)', if: { item: 'tolls', count: 4 }, effects: [{ take: 'tolls', count: 4 }, { event: 'goto', data: { location: 'md_ring', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
+        DOCKS_ASK('bwloop.docks'),
         { text: '(Leave it.)', exit: true },
       ],
     },
+    // the far bank's answer (B5b, Carrick)
+    docks: DOCKS_ANSWER,
   },
 };
 
 const SIGN = (id: string, text: string, learn: string, again: string): DialogueDef => ({ id, owner: 'narrator', start: [{ node: 'read' }], nodes: { read: { text, again, effects: [{ learn }], options: [{ text: '(Leave it.)', exit: true }] } } });
 export const d_bw_west_sign = SIGN('d_bw_west_sign', 'The chain, from this side: WORKS, in the Gilt\'s gold, over a Rustmouth\'s rust-red X, over a white hand with the palm scored through. Three crews, one chain, and the paint is the only fighting that has happened on it so far.', 'bw_three_paints', 'Gold over rust-red over a white hand: three paints on one chain.');
 export const d_bw_toll_sign = SIGN('d_bw_toll_sign', 'A notice in Crown print, screwed to the booth: TOLL — BRIDGEWARD CROSSING — BY WARRANT OF HOUSE VANE — COLLECTED BY ARRANGEMENT. There is no crossing. The toll is five to stand on the near end of a bridge to nowhere, and a Tenured house holds the paper on it.', 'bw_vane_toll', 'BY WARRANT OF HOUSE VANE. A toll on a crossing that is not there.');
-export const d_bw_drop = SIGN('d_bw_drop', 'The deck ends in torn rebar and forty feet of air. Across the dry river: the far bank, the Docks\' cranes, lamps, a tram that is not the Loop. Close enough to hear a bell. No way to reach it that does not go round by the Wall, which is a day, and a warrant.', 'docks_seen', 'Torn rebar, forty feet of air, and the Docks\' lamps across the dry river, close enough to hear a bell.');
+// the drop also signals the Hulls' cradle at night, for whoever Carrick has taught the lamp (B5b)
+export const d_bw_drop: DialogueDef = {
+  id: 'd_bw_drop', owner: 'narrator', start: [{ node: 'read' }],
+  nodes: {
+    read: {
+      text: [
+        { if: { knows: 'dk_cradle_known' }, text: 'The deck ends in torn rebar and forty feet of air. Across the dry river, Carrick: the cranes, the lamps, the quay tram. And from the dead crane on the far bank\'s lip, a cable you would never notice by day, running out over the bed to an eyebolt in the rebar at your feet, and a hook on it for a basket.' },
+        { text: 'The deck ends in torn rebar and forty feet of air. Across the dry river: the far bank, the Docks\' cranes, lamps, a tram that is not the Loop. Close enough to hear a bell. No way to reach it that does not go round by the Wall, which is a day, and a warrant.' },
+      ],
+      again: 'Torn rebar, forty feet of air, and the Docks\' lamps across the dry river, close enough to hear a bell.',
+      effects: [{ learn: 'docks_seen' }],
+      options: [CRADLE_SIGNAL, { text: '(Leave it.)', exit: true }],
+    },
+  },
+};
 export const d_bw_chop_sign = SIGN('d_bw_chop_sign', 'PETROV — CUT — PARTS — ANYTHING THAT HAD WHEELS. A buggy seat nailed over the door like a trophy, with a dog\'s head burned into the leather, old.', 'bw_chop_seen', 'PETROV — CUT, and the old buggy seat over the door with its burned dog\'s head.');
 export const d_bw_tower_sign = SIGN('d_bw_tower_sign', 'THE SAINTS OF STATIC — LISTEN. A dead relay mast with a red lamp at the top that somebody climbs to keep lit, and under it the brick shell where the radios are. People come out of it slowly, as from a church.', 'bw_tower_seen', 'THE SAINTS OF STATIC — LISTEN. The red lamp on the dead mast, kept lit.');
 export const d_bw_pale_sign = SIGN('d_bw_pale_sign', 'The white hand, palm scored through, over a stair house with one door. The Pale\'s. Under the hand, small: THE SINK IS UNDER YOU.', 'bw_pale_hatch_seen', 'The white hand over the stair house. THE SINK IS UNDER YOU.');

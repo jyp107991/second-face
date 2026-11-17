@@ -71,6 +71,18 @@ import { ds_rig_leg } from './maps/ds_rig_leg';
 import { ds_terminal } from './maps/ds_terminal';
 import { ds_wade } from './maps/ds_wade';
 import { SHORE_NPCS } from './npcs/ds_shore';
+import { md_docks } from './maps/md_docks';
+import { DOCKS_NPCS } from './npcs/md_docks';
+import { tm_pit } from './maps/tm_pit';
+import { tm_level } from './maps/tm_level';
+import { tm_trail } from './maps/tm_trail';
+import { nw_sawtown } from './maps/nw_sawtown';
+import { nw_dam } from './maps/nw_dam';
+import { nw_gallery } from './maps/nw_gallery';
+import { nw_landing } from './maps/nw_landing';
+import { nw_bank } from './maps/nw_bank';
+import { TEETH_NPCS } from './npcs/tm_teeth';
+import { WET_NPCS } from './npcs/nw_wet';
 import { SKIRTS_NPCS } from './npcs/hs_skirts';
 import { RING_NPCS } from './npcs/md_ring';
 import { SPIRE_NPCS } from './npcs/md_spire';
@@ -102,10 +114,11 @@ export const MAPS: Record<string, MapDef> = {
   dev_yard,
   dev_bunker,
   bench_crowd, tollhouse, signalhill, drywells, wild_track, wild_rough, windpumps, saltpan, orchard, wheel, ninebridge, openfield, sump, cistern4, md_precinct, md_market, md_sink, md_lantern, md_stacks, md_stacks_9, md_stacks_roof, md_bridgeward, md_crown, md_spire, md_spire_top, md_ring, hs_skirts, hs_six, rc_fourways, rc_halt_w, rc_halt_e, rc_yard, rc_kettle,
-  ds_stilts, ds_rigs, ds_rig_leg, ds_terminal, ds_wade,
+  ds_stilts, ds_rigs, ds_rig_leg, ds_terminal, ds_wade, md_docks,
+  tm_pit, tm_level, tm_trail, nw_sawtown, nw_dam, nw_gallery, nw_landing, nw_bank,
 };
 
-export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...KNOCK, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...TOLLHOUSE_NPCS, ...SIGNALHILL_NPCS, ...DRYWELLS_NPCS, ...WILDS_NPCS, ...LANDMARK_NPCS, ...ORCHARD_NPCS, ...WHEEL_NPCS, ...NINEBRIDGE_NPCS, ...OPENFIELD_NPCS, ...SUMP_NPCS, ...MERIDIAN_NPCS, ...MARKET_NPCS, ...SINK_NPCS, ...LANTERN_NPCS, ...STACKS_NPCS, ...BRIDGEWARD_NPCS, ...CROWN_NPCS, ...SPIRE_NPCS, ...RING_NPCS, ...SKIRTS_NPCS, ...CORRIDOR_NPCS, ...SHORE_NPCS, ...BENCH_NPCS].map((n) => [n.id, n]));
+export const NPCS: Record<string, NpcDef> = Object.fromEntries([...DEV_NPCS, ...CH1_CISTERN, ...KNOCK, ...SHALE_NPCS, ...RUSTDOG_NPCS, ...TOLLHOUSE_NPCS, ...SIGNALHILL_NPCS, ...DRYWELLS_NPCS, ...WILDS_NPCS, ...LANDMARK_NPCS, ...ORCHARD_NPCS, ...WHEEL_NPCS, ...NINEBRIDGE_NPCS, ...OPENFIELD_NPCS, ...SUMP_NPCS, ...MERIDIAN_NPCS, ...MARKET_NPCS, ...SINK_NPCS, ...LANTERN_NPCS, ...STACKS_NPCS, ...BRIDGEWARD_NPCS, ...CROWN_NPCS, ...SPIRE_NPCS, ...RING_NPCS, ...SKIRTS_NPCS, ...CORRIDOR_NPCS, ...SHORE_NPCS, ...DOCKS_NPCS, ...TEETH_NPCS, ...WET_NPCS, ...BENCH_NPCS].map((n) => [n.id, n]));
 
 export { FAMILIES, LETTERS, FACTIONS, WORLD_MAP, REGIONS, TRAITS, PERKS, CHROME, ITEMS, ORIGINS, DIALOGUES, QUESTS, SETTLEMENTS, LEADS, CONCLUSIONS, WORLD_EVENTS, ROAD_ENCOUNTERS };
 registerRules({ traits: TRAITS, perks: PERKS });

@@ -928,7 +928,7 @@ ambush's rifle; respects Chela); Kes (Dorcas's board is her neck: the dark route
 `rc_abe`, `rc_chela`, `rc_stock`, `rc_joaquin`, `rc_engine`, `rc_concern_paths`, `rc_concern_marked`, `rc_box_nospare`,
 `rc_east`, `rc_derailed`, `rc_willem_dead`, `rc_imani`, `rc_halts` (paid | starving | fed), `rc_hw_trust`, the item `k_rc_pass`.
 
-### B5b — the Drowned Shore (planned)
+### B5b — the Drowned Shore (built: the shore and, as `md_docks`, Carrick, Meridian's Docks; as built in `story/B5b_NOTES_SECRET.md`)
 Gull Stilts (`hamlet_shore`), the Rigs (`rigs`), and **Meridian's Docks** across the river (NO BRIDGE: the Line's terminus
 is the Docks; the ferry and the stilt boats are how the far bank is reached; B5b gives the `meridian` stop's Line arrivals
 the Docks map, `ds_docks`, and Meridian's Loop board its far-bank answer). Lines: *The Rigs* (a salvage dive into a rig that
@@ -937,7 +937,8 @@ precedent that reads `prec_unrecorded`), fishing and dives as activities, a safe
 `rc_stock` (= openfield sends the twelve's news west), `bw_dogs_hold` (the Crown's road to the Docks blocked at its near end),
 `dr_leven` (the road's steel). Calla (keystone 7) passes through the Docks under warden escort only in B5d.
 
-### B5c — the Teeth mines and the Northern Wet (planned)
+### B5c — the Teeth mines and the Northern Wet (built 2026-11-17: the full notes, lines, cast and the flags B5d reads are in
+`story/B5c_NOTES_SECRET.md`; the plan as it stood is kept below)
 Number Four Pit (`mine_teeth`: a free pit the Concern does not own, worked by people who left the Skirts; the Shift's
 reach; hunting and trapping in the Teeth), Sawtown (`timber`), Ashby Dam (`dam`), Low Landing (`riverdock`), the barges
 (`net_barge`). Lines: *The Dam* (the Wet's water against Meridian's: the Ledger's pumps and the Sink's spring read

@@ -1,5 +1,6 @@
 import type { DialogueDef } from '../../engine/dialogue/dialogue';
 import type { Cond } from '../../engine/world/logic';
+import { DOCKS_ANSWER, DOCKS_ASK } from './md_docks';
 
 /**
  * Lantern Row: the canal, the Coinage, the hall, the Velvet, the Lantern, the pit. Bets, bouts, reveries, Dust.
@@ -31,9 +32,12 @@ export const d_lr_loop: DialogueDef = {
         { id: 'lrloop.stacks', text: 'The Stacks. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_stacks', spawn: 'loop', minutes: 15 } }], exit: true, repeat: true },
         { id: 'lrloop.bridgeward', text: 'Bridgeward. (3 Tolls)', if: { item: 'tolls', count: 3 }, effects: [{ take: 'tolls', count: 3 }, { event: 'goto', data: { location: 'md_bridgeward', spawn: 'loop', minutes: 10 } }], exit: true, repeat: true },
         { id: 'lrloop.clover', text: 'Clover, outside the Wall. (4 Tolls)', if: { item: 'tolls', count: 4 }, effects: [{ take: 'tolls', count: 4 }, { event: 'goto', data: { location: 'md_ring', spawn: 'loop', minutes: 25 } }], exit: true, repeat: true },
+        DOCKS_ASK('lrloop.docks'),
         { text: '(Leave it.)', exit: true },
       ],
     },
+    // the far bank's answer (B5b, Carrick)
+    docks: DOCKS_ANSWER,
   },
 };
 

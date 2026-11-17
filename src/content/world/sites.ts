@@ -59,6 +59,13 @@ export const SITES: Record<string, SiteDef> = {
   ds_stilts: { kind: 'open', at: 'hamlet_shore', rim: 'keep' },
   ds_rigs: { kind: 'open', at: 'rigs', rim: 'keep' },
   ds_terminal: { kind: 'open', at: 'lm_shore_01', rim: 'keep' },
+  // Carrick, Meridian's docks (B5b): across the dry river from Bridgeward's drop, its west edge the riverbed
+  md_docks: { kind: 'open', beside: { site: 'md_bridgeward', side: 'e' }, rim: 'keep' },
+  // the Teeth mines and the Northern Wet (B5c): the free pit, the logging town, the dam, the barge port
+  tm_pit: { kind: 'open', at: 'mine_teeth', rim: 'strip' },
+  nw_sawtown: { kind: 'open', at: 'timber', rim: 'strip' },
+  nw_dam: { kind: 'open', at: 'dam', rim: 'strip' },
+  nw_landing: { kind: 'open', at: 'riverdock', rim: 'strip' },
   // cells: enclosed places, entered through their doors
   cistern9: { kind: 'cell' },
   cistern4: { kind: 'cell' },
@@ -74,4 +81,8 @@ export const SITES: Record<string, SiteDef> = {
   wild_rough: { kind: 'cell' },
   ds_rig_leg: { kind: 'cell' },
   ds_wade: { kind: 'cell' },
+  tm_level: { kind: 'cell' },
+  tm_trail: { kind: 'cell' },
+  nw_gallery: { kind: 'cell' },
+  nw_bank: { kind: 'cell' },
 };

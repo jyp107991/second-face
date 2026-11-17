@@ -297,6 +297,13 @@ export const rc_yard: MapDef = {
       kind: "lamp_post",
       x: 52,
       y: 18
+    },
+    {
+      kind: "sign",
+      x: 33,
+      y: 18,
+      rot: 0,
+      id: "rc_yd_north"
     }
   ],
   lights: [
@@ -431,6 +438,10 @@ export const rc_yard: MapDef = {
     rc_yd_curve: {
       dialogue: "d_rc_curve",
       name: "The curve"
+    },
+    rc_yd_north: {
+      dialogue: "d_nw_north_track",
+      name: "The north track"
     }
   },
   spots: {

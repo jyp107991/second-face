@@ -40,11 +40,11 @@ const L: LocationDef[] = [
   // The Teeth
   { id: 'skirts', name: 'Skirts', region: 'teeth', x: 628, y: 142, kind: 'major', settlement: 'skirts', map: 'hs_skirts' },
   { id: 'halcyon', name: 'Halcyon', region: 'teeth', x: 642, y: 118, kind: 'major' },
-  { id: 'mine_teeth', name: 'Number Four Pit', region: 'teeth', x: 600, y: 222, kind: 'minor' },
-  // The Northern Wet
-  { id: 'timber', name: 'Sawtown', region: 'northern_wet', x: 300, y: 92, kind: 'minor' },
-  { id: 'dam', name: 'Ashby Dam', region: 'northern_wet', x: 196, y: 62, kind: 'landmark' },
-  { id: 'riverdock', name: 'Low Landing', region: 'northern_wet', x: 150, y: 150, kind: 'minor' },
+  { id: 'mine_teeth', name: 'Number Four Pit', region: 'teeth', x: 600, y: 222, kind: 'minor', settlement: 'number_four', map: 'tm_pit' },
+  // The Northern Wet (B5c: the logging town, the dam and its keepers, the barge port)
+  { id: 'timber', name: 'Sawtown', region: 'northern_wet', x: 300, y: 92, kind: 'minor', settlement: 'sawtown', map: 'nw_sawtown' },
+  { id: 'dam', name: 'Ashby Dam', region: 'northern_wet', x: 196, y: 62, kind: 'landmark', settlement: 'ashby', map: 'nw_dam' },
+  { id: 'riverdock', name: 'Low Landing', region: 'northern_wet', x: 150, y: 150, kind: 'minor', settlement: 'low_landing', map: 'nw_landing' },
   // The Ashlands
   { id: 'lm_ash_01', name: 'Cratered base', region: 'ashlands', x: 630, y: 402, kind: 'landmark', hidden: true },
 ];
@@ -98,9 +98,9 @@ const N: NetworkDef[] = [
   // The Line: slow trains, a day between big stations; tickets and gate checks.
   { id: 'net_line', name: 'the Line', kind: 'rail', stops: ['meridian', 'halt_w', 'depot', 'junction', 'halt_e', 'skirts'],
     legHours: [10, 6, 6, 9, 12], fare: 25, every: 24, firstHour: 7, danger: 0.08 },
-  // River barges from the timber country down to the city docks.
+  // River barges from the timber country down to the city docks (B5c: a barge each way every morning at six, as the landings' boards say).
   { id: 'net_barge', name: 'the river barges', kind: 'barge', stops: ['timber', 'dam', 'riverdock', 'meridian'],
-    legHours: [14, 18, 16], fare: 10, every: 48, firstHour: 6, danger: 0.12 },
+    legHours: [14, 18, 16], fare: 10, every: 24, firstHour: 6, danger: 0.12 },
   // Tollmen caravan run: work or pay your passage; safe-ish, slow, on a schedule.
   { id: 'net_caravan', name: 'the Tollmen caravan', kind: 'caravan', stops: ['shale', 'tollhouse', 'ninebridge', 'meridian'],
     legHours: [30, 60, 140], fare: 12, every: 72, firstHour: 6, danger: 0.05 },

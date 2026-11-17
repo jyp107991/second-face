@@ -587,6 +587,8 @@ export const d_ds_rui: DialogueDef = {
 const RIDES: OptionDef[] = [
   { id: 'ride.rigs', text: 'Out to the Rigs. (4 Tolls)', if: TOLLS(4), effects: [{ take: 'tolls', count: 4 }, { learn: 'loc_rigs' }, { event: 'goto', data: { location: 'ds_rigs', spawn: 'landing', minutes: 90 } }], exit: true, repeat: true },
   { id: 'ride.blackcap', text: 'Blackcap. (2 Tolls)', if: ALL(TOLLS(2), ANY({ knows: 'loc_lm_shore_01' }, { knows: 'ds_old_line' })), effects: [{ take: 'tolls', count: 2 }, { learn: 'loc_lm_shore_01' }, { event: 'goto', data: { location: 'ds_terminal', spawn: 'jetty', minutes: 40 } }], exit: true, repeat: true },
+  // the tide boat's city end is Carrick's water stairs, Meridian's docks (B5b): the network's six o'clock and its eight hours
+  { id: 'ride.city', text: 'Up the delta to the city at six: Carrick\'s water stairs. (6 Tolls)', if: TOLLS(6), effects: [{ take: 'tolls', count: 6 }, { until: 6 }, { time: 480 }, { learn: 'loc_meridian' }, { set: 'visited_meridian' }, { event: 'goto', data: { location: 'md_docks', spawn: 'stairs' } }], exit: true, repeat: true },
 ];
 
 export const d_ds_mele: DialogueDef = {
