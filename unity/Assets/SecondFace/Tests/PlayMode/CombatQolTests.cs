@@ -79,6 +79,11 @@ namespace SecondFace.Tests
             done(boot);
         }
 
+        /// <summary>For the animation package's tests (CombatMotionPlayTests): the same boot, fight and turn.</summary>
+        internal static IEnumerator BootAt(System.Action<Bootstrap> done) => Boot(done);
+        internal IEnumerator FightNearest(Walkabout walk, System.Action<Townsperson> done) => Fight(walk, done);
+        internal static IEnumerator MyTurnOf(Walkabout walk) => MyTurn(walk);
+
         /// <summary>Whatever conversation the moment brought closed first.</summary>
         private static IEnumerator Quiet(Walkabout walk)
         {

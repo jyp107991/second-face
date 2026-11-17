@@ -33,9 +33,20 @@ namespace SecondFace.Game.Fighting
             var walk = fight.Walkabout;
             var walker = walk != null && walk.Walker != null && walk.Walker.transform == body ? walk.Walker : null;
             var female = Female(anim, person, walker != null ? walk.Game : null, body);
-            var f = Fighter.Ensure(anim, Set, female, body, u?.C?.Id);
+            return ForBody(u, body, fight, fx, Set, female, !fight.UnderPlayer(u), walker, person);
+        }
+
+        /// <summary>The view for a body as the fight makes it (the fighter on its animator, the weapon from the unit's own
+        /// pack): the game's own path, which the motion gate and the tests use for their fighters too.</summary>
+        public static AnimatedUnitView ForBody(BattleUnit u, Transform body, MonoBehaviour host, CombatFx fx, CombatSet set, bool female, bool theirs,
+                                               Walker walker = null, Townsperson person = null)
+        {
+            if (body == null || set == null) return null;
+            var anim = body.GetComponentInChildren<Animator>();
+            if (anim == null || !anim.isHuman || !Fighter.HasLayers(anim)) return null;
+            var f = Fighter.Ensure(anim, set, female, body, u?.C?.Id);
             if (f == null || !f.Ready) return null;
-            return new AnimatedUnitView(u, body, fight, fx, f, walker, person, !fight.UnderPlayer(u));
+            return new AnimatedUnitView(u, body, host, fx, f, walker, person, theirs);
         }
 
         private static readonly int SexId = Animator.StringToHash("Sex");

@@ -40,7 +40,10 @@ It is binding. It sits beside the face and skin gate (`docs/PEOPLE_QA.md`) and i
    - each gesture: talk, talk_b, argue, drink, wave, stretch, yawn, yawn_b, and the 0.6 s after it ends;
    - turning to face someone behind (the conversation turn);
    - walking and jogging at the game's speeds, straight and on a 3 m radius; starting and stopping; sneaking;
-   - the conversation pose: two people at the game's talking distance, facing as the game faces them.
+   - the conversation pose: two people at the game's talking distance, facing as the game faces them;
+   - fighting (§2.7): each weapon's ready stance; a long gun's and a pistol's aim, a shot, a burst, the reload; blows by
+     weapon and sex, a block; down into cover and the crouch held; a throw; a crit's stagger; a long gun carried over a
+     walk; hands up; a fall and the get-up, each made by the game's own fight view (`CombatViews.ForBody`).
 3. **People.** The quick set in every CI run: women and men; slim, broad and heavy; young and old; the player's body.
    The full set (`Category("Heavy")`, before every build to the owner): every Rocketbox person in the catalogue and
    both player bodies.
@@ -156,6 +159,61 @@ difference.
 | G2 | Order | a layer worn over another stands further out than it (straps over the vest, the vest over the jacket, the belt over the trousers and the vest, boots' shafts and shin guards over the trousers) | always |
 | G3 | Nothing through | an inner layer's surface (or the body's) through an outer layer in any state of §2 | ≤ 0.3 cm (C1's method on the layer's own mesh) |
 | G4 | Cloth, not shells | seams, hems, folds and wear visible at the game camera's closest zoom; no smooth, padded or rubbery surface; colours of the wardrobe rule, not mud | review, §3 item 10 |
+
+### 2.7 Fighting (COMBAT.md A1–A8; added 2026-11-17)
+
+The combat states the game shows, measured on people made as the game makes them and put in a fight's view by the game's own
+code (`CombatViews.ForBody`: the fighter on the animator, the weapon from the pack), every runtime system on, every frame,
+like the walks. Their limits are real fighters', measured with this gate's own measures on the actors' own skeletons at their
+true frame rates and accepted for WP2: **source: `docs/qa/motion_calibration.md` §7** (ACCAD Male2 and Female1, CMU 144,
+141_14, 113_13, 13_17, 79_96, 80_03, 77_03/77_09; `motion_calibration_combat.json`). Each limit is the real fighters' p98
+(and p2 where a lower bound applies), each cap their max (and min), the trials of the state pooled. **The long-gun aim is
+provisional**: two actors miming a gun (the head from one), to be replaced by a captured long-gun take with a real weapon.
+These limits apply only while the game shows the fight's own stance (the gate's states `combat:<set>:<what>`); quiet
+standing's (§2.1) and walking's (§2.4) limits are never loosened by them.
+
+| Measure | Guard | Strike | Aim, long gun (provisional) | Crouch / cover |
+|---|---|---|---|---|
+| K1 straighter knee ° | ≤ 67 (81) | ≤ 82 (89) | ≤ 2.2 (2.5) | 16.7 … 147 (16.1 … 148) |
+| Kb more bent knee ° | ≤ 75.5 (94.5) | ≤ 90.5 (97.1) | ≤ 20.4 (20.7) | ≤ 148 (148) |
+| H1 head pitch ° | −26.9 … +10.3 (−33.0 … +14.0) | −41.9 … +16.8 (−53.3 … +22.9) | −3.0 … +1.2 (−3.0 … +1.6) | −44.7 … +33.8 (−53.3 … +35.4) |
+| H2 head yaw on chest ° | ≤ 55.9 (59.5) | ≤ 56.8 (65.9) | 15.2 … 22.2 (15.1 … 22.9) | ≤ 92.1 (93.2) |
+| H3 head roll ° | ≤ 19.5 (21.5) | ≤ 22.1 (25.7) | 10.6 … 16.6 (10.4 … 16.7) | ≤ 36.7 (45.6) |
+| F2 heel lift, cm | ≤ 9.8 (14.4) | ≤ 13.2 (14.7) | ≤ 1.9 (1.9) | ≤ 17.1 (17.2) |
+| F3w stance width, cm | 21.2 … 70.4 (3.9 … 79.2) | 16.4 … 83.2 (1.3 … 90.5) | 23.3 … 32.8 (23.3 … 33.0) | 18.9 … 50.6 (16.0 … 51.0) |
+| A1 upper arm from hanging ° | ≤ 103 (119) | ≤ 88.5 (112) | 53.2 … 88.8 (50.2 … 90.5) | ≤ 134 (135) |
+| A2 elbow bend ° | 112.8 … 146.9 (109.3 … 149.9) | 83.9 … 140.5 (41.1 … 145.7) | 119.6 … 143.0 (119.5 … 146.6) | ≤ 140.7 (141.5) |
+
+Limit p2 … p98 (cap min … max). New measures for these states: **Kb**, the more bent knee (the angle between thigh and shin,
+as K1 for the straighter); **WG1**, the weapon's main grip from the palm's centre (≤ 1 cm, cap 2: the weapon stays in the hand,
+COMBAT.md A1); **WG2**, the off hand's palm from the weapon's `grip_off` (a pistol's support point beside its grip) while it is
+held there (≤ 2 cm, cap 3: the fix for the captured long-gun and club takes whose mimed hands drift 5-27 cm apart).
+
+Which limits each state is held to (`HumanMotionGateTests.CombatLimits`), and C1 (nothing clips) in every one:
+
+| Gate set | States | Limits |
+|---|---|---|
+| guard | the unarmed and one-handed guard | Guard, all of it; F1, F4, WG1 |
+| ready | a gun's or a two-handed club's ready stance | Guard's legs, head and feet (the arms are on the weapon); F1, F4, WG1, WG2 |
+| strike | blows, a block | Strike, all of it; F1, WG1, WG2 (no F4: fighters pivot and step on their blows, and were not measured for it) |
+| aim | a long gun's aim, its shot and its burst | Aim, all of it (provisional); F1, F4, WG1, WG2 |
+| aim_pistol | a pistol's aim and shots (both hands by IK on the long gun's captured stance) | Aim's legs and feet and H1; H2 and H3 as standing (§2.1: no stock at the cheek); F1, F4, WG1, WG2 |
+| crouch | down into cover, the crouch held | Crouch / cover, all of it; F1, F4, WG1, WG2 |
+| reload | a reload | as a gesture (§2.2): F1, F2, F4, H1 −25 … +15, H2, S1 ≤ 10; WG1 |
+| yield | hands up | as a gesture (§2.2) with stretch's S1 (≤ 20) |
+| hit, throw | a crit's stagger (with the procedural hit on every hit), a throw | Strike's legs, head and feet; F1 (the arms are thrown about) |
+| rise | the captured get-up after the ragdoll | C1 only: no real people's limits for rising are measured yet; reviewed by eye at the game's cameras |
+| carry | a long gun carried over a walk | §2.4 walking's own limits but W3 and A6 (the arms hold the weapon, as §2.2 frees them for a gesture); WG1, WG2 |
+
+While the fight's own stance plays, the standing systems that hold quiet standing's own limits give way to the fight's, as the
+foot plant gives way to a fall: the foot plant (it keeps quiet standing's stance width and straight bearing leg) is paused and
+the fighter keeps the clip's stance on the ground under each foot, a planted foot held where it was put down; the gaze clamps
+the head within the stance's own limits (real fighters' p98, a little less); the arms are still kept out of the body
+(`ArmClearance`, told the arms hold something: neither rested at the side nor swung); idle gestures wait. The weapon walk
+(`combat:carry`) is the people's own locomotion with the fight's arms over it. The gate's captures add the fight at the game
+camera (`motion_fight_*`, 8 m and 20 m, pitch 50°): the guard, the long gun's ready stance, its aim, the pistol's aim and the
+crouch; each is reviewed in writing like the others (§1.6), the weapon in the hand, the off hand on the weapon, the feet on
+the ground, the head on the target.
 
 ## 3. The review checklist (each capture, each person, in writing)
 

@@ -33,6 +33,10 @@ namespace SecondFace.Game.Fighting
         public CombatPace Pace { get; set; } = CombatPace.Normal;
         public bool Theirs { get; }
         public bool Moving => _walk.Moving;
+        /// <summary>Getting up off the ground (the get-up playing).</summary>
+        public bool Rising => _rising;
+        /// <summary>On the ground (fallen, not yet up).</summary>
+        public bool Down => _down;
 
         private bool _down, _yielded, _holding, _aiming, _rising, _ended, _walking;
         private float _quietFor;   // since the last shot or aim (s), for lowering the weapon

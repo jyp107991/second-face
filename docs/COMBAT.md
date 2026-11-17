@@ -6,7 +6,8 @@
 > status and its tests; every item is "done" only with a test (Core EditMode for rules and AI, PlayMode for the game)
 > and, where it shows a person, the motion gate (`docs/PEOPLE_MOTION.md`) passing in that state.
 
-WP1 (rules and AI in Core) delivered 2026-11-17 on `side/combat`: C1–C7, C9, C10, D1–D6 below, with the APIs the
+WP2 (animation and weapons: A1–A8) delivered 2026-11-17 on `side/combat`, compile-checked and Core-tested here; its import, build,
+PlayMode tests, gate run and captures wait for the editor (section "WP2 delivered"). WP1 (rules and AI in Core) delivered 2026-11-17 on `side/combat`: C1–C7, C9, C10, D1–D6 below, with the APIs the
 presentation package needs (end of this file). WP3 (presentation and QoL: A9, B1–B11) delivered 2026-11-17 on the same
 branch, compile-checked and Core-tested here; its PlayMode tests and captures wait for the editor (section "WP3 delivered"). Status at 2026-11-17 before it (audit of `Core/Combat/*`, `Game/Play/Combat.cs`, `Game/UI/CombatHud.cs`, `Motion/`): the rules
 have AP by metres, initiative, line of sight, half/full cover, called shots (aim head/legs), bursts, reload,
@@ -17,14 +18,14 @@ face and a tracer line, a hit plays a wave gesture, no weapon is held, and the c
 ## A. Animation (smooth, captured, weapons in hands)
 | # | Item | Benchmark | Status |
 |---|---|---|---|
-| A1 | Weapons held: rifle (two hands, IK on the off hand), pistol, melee (blade, club), fists; holstered out of a fight | all | missing |
-| A2 | Combat locomotion: combat-ready idle, walk/jog with weapon, stop, turn in place; no sliding (the gate's W-measures) | BG3, XCOM | everyday clips only |
-| A3 | Aim → fire → recover per weapon (single, burst), muzzle flash, recoil, shell, tracer; reload | XCOM, W3 | tracer only |
-| A4 | Melee: wind-up, strike, follow-through per weapon; unarmed strikes | BG3, DOS2 | none |
-| A5 | Hit reactions by direction and zone (head, torso, legs), stagger, knockback; graze vs crit | all | wave gesture |
-| A6 | Cover: step into half cover (crouch) and full cover (lean), peek to fire, back | XCOM | none |
-| A7 | Throw (grenade, bottle, lamp) with an arc | DOS2, XCOM | none |
-| A8 | Fall (ragdoll, exists), rise from down (exists for companions), death pose held; surrender (hands up), flee | all | partial |
+| A1 | Weapons held: rifle (two hands, IK on the off hand), pistol, melee (blade, club), fists; holstered out of a fight | all | **built (game, WP2; tests and gate states written, to run in the editor)**: each weapon's grip matched palm frame to weapon frame (Core `CombatMotion` grips: pistol grip, hammer grip; the off hand under a fore-end, on a club's handle, wrapping a pistol), the off hand held on `grip_off` by two-bone IK (the fix for the 7 `use_with_ik` rifle and club takes), the fingers closed round each grip, fists in the guard; holstered on the right thigh (pistols), slung across the back (long guns, two-handed clubs), at the left hip (one-handed); drawn as a fight begins, holstered as it ends, dropped on a fall or hands up; both lore paints (by who holds it); every content weapon mapped by its `held` key (stand-ins flagged: spear, sledge, sub-gun, pump gun, zip and arc pistols); `Game/Fighting/Fighter.cs`, `Limbs.cs`; tests `CombatMotionPlayTests.WeaponsStayInHandAndTheOffHandOnItsGrip`, `CombatMotionTests`, `CombatBuildTests` |
+| A2 | Combat locomotion: combat-ready idle, walk/jog with weapon, stop, turn in place; no sliding (the gate's W-measures) | BG3, XCOM | **built (game, WP2; tests and gate states written, to run in the editor)**: the weapon's ready stance per weapon (the captured guard `fist_guard_accad`; pistol and long-gun low ready, hand-keyed stopgaps), the weapon carried over the people's own captured walk and jog on an arms-only layer (`CombatArms`), crouched moves as the locomotion's captured sneak (README v3 §2 (a)), turns to face by stepping (wide turns on the foot plant), planted feet held through the fight's crossfades; gate states `combat:ready:*`, `combat:carry:rifle` |
+| A3 | Aim → fire → recover per weapon (single, burst), muzzle flash, recoil, shell, tracer; reload | XCOM, W3 | **built (game, WP2; tests and gate states written, to run in the editor)**: long gun: raise (`rifle_raise_cmu`'s second half) → hold (`rifle_aim_b_cmu`) → single or burst (`rifle_fire/burst_cmu`, each round at the clip's own fire frame) → lower; the gun's line against the bladed chest learnt and turned onto the target, the wrist correcting ≤ 12°; pistol: the aim by IK on `rifle_aim_b_cmu`'s captured legs and torso, both hands on the eye-to-target line, a spring recoil; muzzle flash at the muzzle, a spent case, the tracer from the muzzle; reloads (`rifle_reload_ual`, `pistol_reload_ual`); gate states `combat:aim:*`, `combat:aim_pistol:*`, `combat:reload:*` |
+| A4 | Melee: wind-up, strike, follow-through per weapon; unarmed strikes | BG3, DOS2 | **built (game, WP2; tests and gate states written, to run in the editor)**: unarmed blows by sex (men: ACCAD Male2's jab, cross, hooks, uppercuts; women: CMU 144's jab, CMU 113's cross), the high block; one-handed: the slash on `fist_hook_r_accad`'s captured body with the weapon hand IK'd along an arc (README v3 §2 (c)), `melee_strike_ual` (stopgap); two-handed: `club_overhead(_b)_cmu` with the off hand by IK; the target struck at each clip's impact frame (read off its own curves); gate states `combat:guard:*`, `combat:strike:*` |
+| A5 | Hit reactions by direction and zone (head, torso, legs), stagger, knockback; graze vs crit | all | **built (game, WP2; tests and gate states written, to run in the editor)**: a procedural directional hit on every hit (a spring-damped turn of the spine, chest and head away from it, by zone and graze/hit/crit); crits stagger (from behind `stagger_fwd_cmu`, cut; from the front a woman's `stagger_cmu`, a man's `hit_chest/head_ual` stopgaps: no man's stagger is captured); a blow that misses blocked or slipped (men's captured dodges, women's duck), a shot that misses flinched from (new hook `OnMiss`); gate state `combat:hit:rifle` |
+| A6 | Cover: step into half cover (crouch) and full cover (lean), peek to fire, back | XCOM | **built (game, WP2; tests and gate states written, to run in the editor)**: down into half cover (`crouch_down(_f)_accad`, its travel applied), the crouch held (`crouch_rifle_ual` with two hands on a long gun or club, the captured wary `ready_crouch_cmu` otherwise), stepping out to fire as a crossfade to the aim hold and back, out of cover at a run (`crouch_to_run(_f)_accad` cut at its first stride, crossfading into the walk); full cover's lean not built (no capture); gate state `combat:crouch:rifle` |
+| A7 | Throw (grenade, bottle, lamp) with an arc | DOS2, XCOM | **built (game, WP2; tests and gate states written, to run in the editor)**: the overhand throw (a woman's captured `throw_overhand_cmu`; a man's `throw_overhand_ual`, a flagged stopgap: no man's throw is captured), released at the clip's own frame, the grenade, bottle or spike flown from the hand along the arc and gone where it lands (`OnThrow` now names the item); gate state `combat:throw:rifle` |
+| A8 | Fall (ragdoll, exists), rise from down (exists for companions), death pose held; surrender (hands up), flee | all | **built (game, WP2; tests and gate states written, to run in the editor)**: the ragdoll's fall (the weapon dropped), then the captured get-up for the side the body lies on (`getup_back/front/side_cmu`, women `getup_f_cmu`; to a crouch `getup_to_crouch(_f)_accad`), set onto the lying pose and rising where it rises; prone as the face-down get-up's first frame held (no prone or crawl is captured); hands up (`surrender_enter/idle_ual`, the weapon dropped); the fight's end relaxes the guard and holsters (new hook `OnEnd`); gate states `combat:yield:unarmed`, `combat:rise:unarmed` |
 | A9 | Camera: smooth follow of the acting unit, frame attacker and target for shots, never a cut; speed settings; skip | BG3 | **done (game, WP3; to verify in the editor)**: `CombatCamera` drives the game's own `OrbitRig` (new eased `FocusOn`/`ClearFocus`/`EaseDistance`, critically damped, never a cut, pitch untouched): follows the one acting, frames shooter and target (out as far as both need, never in closer than the player had it), eases back; eases ÷ combat speed; skip: the other side's not framed; a portrait tap looks at that fighter |
 Sources: CC0/free humanoid mocap sets retargeted through the existing Mecanim pipeline (candidates: Quaternius
 Universal Animation Library (CC0), CMU mocap's fighting takes; no account-gated sources); weapons from CC0 model
@@ -169,3 +170,58 @@ of `ContinueReach` (4 ms budget) and `PredictIntent` (one a frame) on the phone.
 
 **Left for later**: talk as a way to end a fight (the content's), the player's own flight to an exit, shooting props (no
 props are listed by the places yet), the tactical top-down toggle (DESIGN_UNITY §2), dashed or animated path lines.
+
+
+## WP2 delivered: animation and weapons (A1–A8), 2026-11-17
+Gate: red, 55 at the last verdict; the fight's states are added to it (`docs/PEOPLE_MOTION.md` §2.7) and have not been
+measured: nothing of this has been seen in the editor yet.
+
+**What is in the branch.** The staged combat set v3 (`/home/user/second-face-staging/combat/v3`: 73 clips, its MANIFEST's
+`use`, `use_with_ik` and `stopgap_hand_keyed`; `do_not_use` left out) in `Assets/SecondFace/Combat/Motion`, each sidecar with
+the impact or release frames read off its own curves (`tools/unity/combat/clip_events.py`), and the 13 lore-textured weapons
+in `Combat/Weapons`, with stable GUIDs (`tools/unity/combat/stage_combat.py`). Core `CombatMotion` is the one table of the
+fight's motion: every state's clip by sex (a women's take as `<state>_f`), root motion per clip from the travel table (applied:
+get-ups, stumbles, the crouch down, a step into a blow, the run out of cover; the rest baked in place; the height as captured
+for crouches and get-ups, from the feet otherwise; the turn kept in the pose from the clip's start, applied for get-ups,
+dropped for the stumble that spins), where each state goes at its cut, the grips, the holsters, each content weapon as a model.
+`Editor/Build/CombatImportPostprocessor.cs` imports clips and weapons by it; `Editor/Build/CombatAnimatorBuild.cs` builds the
+layers `Combat` (whole body) and `CombatArms` (arms only, over the walk) onto `People/Locomotion.controller`, the weapons'
+URP materials in both paints remapped onto their models, and `Combat/CombatSet.asset` (given to `WorldAssets.Combat`). In the
+game, `Game/Fighting`: `Fighter` (on each fighter's animator: layers, IK, grips, the procedural hit and recoil, the fight's
+feet, root motion), `AnimatedUnitView` (the `IUnitView` hooks, every beat at its clip's frame and the fight's pace),
+`CombatViews` (installed into `Combat.MakeView` by `Bootstrap`; animals and bodies without the layers keep the placeholder).
+Hooks added: `OnMiss`, `OnEnd`, `OnFire(..., rounds)`, `OnThrow(arc, item)`; `ArmClearance.Holding` (the arms hold a weapon:
+neither rested nor swung, still cleared of the body).
+
+**Tests.** Core/EditMode `CombatMotionTests` (9, pass here): every state's clip staged for both sexes, no state left hanging,
+loops as sidecars say, root motion against each clip's travel, each sex its own takes (the women's guard and slash body
+flagged), blows, throws and shots with their frames, every content weapon a staged model, every model's grips staged, the
+pace's rate. Editor `Tests/CombatBuild/CombatBuildTests` (6): the layers built from the table on a copy of the controller,
+rebuilt without leftovers, clip settings by the table, beats from the sidecars, each weapon's paints and nulls where its
+sidecar says, the set given to the game. PlayMode `CombatMotionPlayTests` (5): every action plays its state and comes back to
+the weapon's stance (rifle, pistol, machete, fists, sledge; a man and a woman); the weapon within 1 cm of the palm and the
+off hand within 2 cm of its grip through aim, shot, burst and the carried walk; every one-shot of the table goes on within its
+length; the clips' import settings and the layers as built; a fight at Shale uses the animated bodies. All compile against
+Game/Editor here (dotnet); none has run.
+
+**For the editor owner, on merge** (in order): (1) merge `side/combat`; keep `ArmClearance.Holding` (three lines), §2.7 of
+`docs/PEOPLE_MOTION.md` and the new entries of `docs/qa/gates/motion_gate_inputs.json`; (2) let Unity import `Combat/`
+(the postprocessor sets everything: no hand settings); (3) run `Second Face/Build the fight's motion and weapons` (or
+`SecondFace.EditorTools.CombatAnimatorBuild.Rebuild` from the command line) and commit what it writes (the controller, the
+arms mask, the weapons' materials, `CombatSet.asset`, `WorldAssets.asset`, Unity's rewritten metas); `LocomotionBuild`
+rebuilding the controller clears its layers, and the import puts them back (check it once); (4) EditMode `CombatMotionTests`,
+`CombatBuildTests`; PlayMode `CombatMotionPlayTests`, then `CombatQolTests` again; (5) the gate (quick set, then the whole
+cast): the verdict is stale until then; (6) review the `motion_fight_*` captures at the game camera in writing.
+
+**Doubts to settle in the editor.** (1) The long-gun hold is README's `rifle_aim_b_cmu` (CMU 80) but the shots are built on
+`rifle_aim_cmu` (CMU 79, a stance 6 cm wider): each shot crossfades between two actors' stances (the fight's feet hold the
+planted feet). (2) A bladed long-gun stance points the gun off the chest's line: the offset is learnt the first time the hold
+plays and the body turned by it; check it reads right. (3) The root turn is baked into the pose from each clip's start (the
+people's own clips extract it); check the guards and aims face their target. (4) The standing foot plant gives way while the
+fight's stance plays (it would straighten a guard's legs and narrow its stance) and the fighter keeps the feet on the ground;
+the gaze clamps the head by the stance's own limits; idle gestures wait: written into §2.7 for the gate's owner to judge. (5)
+The provisional aim limits are tight (H1 −3…+1.2, K1 ≤ 2.2 on two mimed takes): expect the aim states to fail first on the
+hand-keyed and IK'd parts. (6) Stopgaps (hand-keyed, passing clip QA): the pistol and long-gun idles and reloads, the melee
+strike, the men's throw and heavy front hits, the long-gun crouch; men's takes on women: the guard and the slash's body. (7)
+No capture for prone, a crawl or full cover's lean. (8) `Fighter` writes no "Sex": a body's sex comes from its Rocketbox person
+or base or the player's look (main's `Pace.SetSex` will carry it too).

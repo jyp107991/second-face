@@ -5,7 +5,12 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using NUnit.Framework;
+using SecondFace.Core.Combat;
+using SecondFace.Core.Content;
+using SecondFace.Core.Inventory;
 using SecondFace.Core.Npc;
+using SecondFace.Core.Stats;
+using SecondFace.Game.Fighting;
 using SecondFace.Game.People;
 using SecondFace.Game.Play;
 using SecondFace.Game.World;
@@ -22,8 +27,10 @@ namespace SecondFace.Tests
     /// by the game's own code (<see cref="PeopleService.Animate"/> for residents, <see cref="Walker.Animate"/> for the
     /// player's body) with every runtime system on, played through every state the game shows them in (the four idles on
     /// flat and sloped ground, looking at someone round them, each gesture and its end, the conversation turn, walking,
-    /// jogging, sneaking, straight and round a bend, two people talking), measured every frame by <see cref="MotionProbe"/>
-    /// and held to the limits taken from real people (§2 there). Writes test-results/motion_gate.json and .md; captures
+    /// jogging, sneaking, straight and round a bend, two people talking, and fighting: each weapon's ready stance, aim and
+    /// shots, blows, a block, a crit's stagger, cover, a throw, a reload, the weapon carried over a walk, hands up, a fall
+    /// and the get-up, through the game's own fight view), measured every frame by <see cref="MotionProbe"/> and held to
+    /// the limits taken from real people (§2 there; the fight's from real fighters, §2.7). Writes test-results/motion_gate.json and .md; captures
     /// from the game camera (default and closest zoom), the conversation view and human height. Any measure past its
     /// limit fails the gate (S2).
     /// </summary>
@@ -86,8 +93,70 @@ namespace SecondFace.Tests
 
         private static readonly Lim[] TalkLimits = StandLimits.Concat(new[] { L("T2", -Inf, 20f, -Inf, 20f), L("T3", 0.9f, 1.6f, 0.9f, 1.6f) }).ToArray();
 
+        // ---------------------------------------------------------------- the fight's states (docs/PEOPLE_MOTION.md §2.7)
+        // Real fighters' p2…p98 as the limit, their min…max as the cap, each state's trials pooled (docs/qa/motion_calibration.md
+        // §7, accepted for WP2 2026-11-17; the long-gun aim provisional: two actors, a mimed gun). They apply only while the
+        // game shows the fight's own stance: quiet standing's and walking's limits above are not loosened by them. Kb is the
+        // more bent knee; WG1 the weapon's main grip from the palm's centre and WG2 the off hand's palm from its grip (cm,
+        // COMBAT.md A1).
+
+        private static readonly Lim[] GuardLegsHead =
+        {
+            L("K1", -Inf, 67f, -Inf, 81f), L("Kb", -Inf, 75.5f, -Inf, 94.5f), L("H1", -26.9f, 10.3f, -33.0f, 14.0f), L("H2", -Inf, 55.9f, -Inf, 59.5f),
+            L("H3", -Inf, 19.5f, -Inf, 21.5f), L("F2", -Inf, 9.8f, -Inf, 14.4f), L("F3w", 21.2f, 70.4f, 3.9f, 79.2f),
+        };
+        private static readonly Lim[] GuardArms = { L("A1", -Inf, 103f, -Inf, 119f), L("A2", 112.8f, 146.9f, 109.3f, 149.9f) };
+        private static readonly Lim[] StrikeLegsHead =
+        {
+            L("K1", -Inf, 82f, -Inf, 89f), L("Kb", -Inf, 90.5f, -Inf, 97.1f), L("H1", -41.9f, 16.8f, -53.3f, 22.9f), L("H2", -Inf, 56.8f, -Inf, 65.9f),
+            L("H3", -Inf, 22.1f, -Inf, 25.7f), L("F2", -Inf, 13.2f, -Inf, 14.7f), L("F3w", 16.4f, 83.2f, 1.3f, 90.5f),
+        };
+        private static readonly Lim[] StrikeArms = { L("A1", -Inf, 88.5f, -Inf, 112f), L("A2", 83.9f, 140.5f, 41.1f, 145.7f) };
+        /// <summary>The long-gun aim: provisional (CMU 79_96 and 80_03, two actors miming a gun; the head from 79_96 alone).</summary>
+        private static readonly Lim[] AimLegs = { L("K1", -Inf, 2.2f, -Inf, 2.5f), L("Kb", -Inf, 20.4f, -Inf, 20.7f), L("F2", -Inf, 1.9f, -Inf, 1.9f), L("F3w", 23.3f, 32.8f, 23.3f, 33.0f) };
+        private static readonly Lim[] AimHead = { L("H1", -3.0f, 1.2f, -3.0f, 1.6f), L("H2", 15.2f, 22.2f, 15.1f, 22.9f), L("H3", 10.6f, 16.6f, 10.4f, 16.7f) };
+        private static readonly Lim[] AimArms = { L("A1", 53.2f, 88.8f, 50.2f, 90.5f), L("A2", 119.6f, 143.0f, 119.5f, 146.6f) };
+        private static readonly Lim[] CrouchLimits =
+        {
+            L("K1", 16.7f, 147f, 16.1f, 148f), L("Kb", -Inf, 148f, -Inf, 148f), L("H1", -44.7f, 33.8f, -53.3f, 35.4f), L("H2", -Inf, 92.1f, -Inf, 93.2f),
+            L("H3", -Inf, 36.7f, -Inf, 45.6f), L("F2", -Inf, 17.1f, -Inf, 17.2f), L("F3w", 18.9f, 50.6f, 16.0f, 51.0f), L("A1", -Inf, 134f, -Inf, 135f),
+            L("A2", -Inf, 140.7f, -Inf, 141.5f),
+        };
+        private static readonly Lim WG1 = L("WG1", -Inf, 1f, -Inf, 2f), WG2 = L("WG2", -Inf, 2f, -Inf, 3f);
+
+        /// <summary>The limits for a fight's state set (the gate's state "combat:&lt;set&gt;:&lt;what&gt;"; Core's table names
+        /// each state's set: <see cref="CombatMotion"/>). Where real fighters were measured (guard, strike, aim, crouch) their
+        /// limits; where they were not, the nearest measured state's for the legs, head and feet, the arms by their hold on the
+        /// weapon (WG1, WG2), and the owner's rule that nothing clips (C1) always.</summary>
+        private static Lim[] CombatLimits(string set) => set switch
+        {
+            // the unarmed and one-handed guard (fists up: the guard's arms)
+            "guard" => GuardLegsHead.Concat(GuardArms).Concat(new[] { F1, F4, C1, WG1 }).ToArray(),
+            // a weapon's ready stance (low ready: the guard's legs and head, the arms on the weapon)
+            "ready" => GuardLegsHead.Concat(new[] { F1, F4, C1, WG1, WG2 }).ToArray(),
+            // blows (feet pivot and step: no F4, which real fighters were not measured on)
+            "strike" => StrikeLegsHead.Concat(StrikeArms).Concat(new[] { F1, C1, WG1, WG2 }).ToArray(),
+            // the long gun's aim and its shots (provisional)
+            "aim" => AimLegs.Concat(AimHead).Concat(AimArms).Concat(new[] { F1, F4, C1, WG1, WG2 }).ToArray(),
+            // the pistol's aim on the long gun's captured stance: its legs; no stock at the cheek, so the head as standing (§2.1)
+            "aim_pistol" => AimLegs.Concat(new[] { AimHead[0], L("H2", -Inf, 30f, -Inf, 45f), L("H3", -Inf, 10f, -Inf, 15f), F1, F4, C1, WG1, WG2 }).ToArray(),
+            "crouch" => CrouchLimits.Concat(new[] { F1, F4, C1, WG1, WG2 }).ToArray(),
+            // a reload is a gesture with a weapon (§2.2)
+            "reload" => new[] { C1, F1, F2, F4, L("H1", -25f, 15f, -30f, 20f), L("H2", -Inf, 30f, -Inf, 45f), L("S1", -Inf, 10f, -Inf, 10f), WG1 },
+            // hands up raises the shoulders as a stretch does (§2.2's stretch)
+            "yield" => new[] { C1, F1, F2, F4, L("H1", -25f, 15f, -30f, 20f), L("H2", -Inf, 30f, -Inf, 45f), L("S1", -Inf, 20f, -Inf, 20f) },
+            // struck, and a throw: the strike's legs, head and feet (violent motion; the arms are thrown about)
+            "hit" or "throw" => StrikeLegsHead.Concat(new[] { F1, C1 }).ToArray(),
+            // up from the ground: nothing clips (no real people's limits for rising measured yet: reviewed by eye)
+            "rise" => new[] { C1 },
+            // the weapon carried over a walk: walking's own limits but the arms' swing (the arms hold the weapon)
+            "carry" => WalkLimits.Where(l => l.M != "W3" && l.M != "A6").Concat(new[] { WG1, WG2 }).ToArray(),
+            _ => StandLimits,
+        };
+
         private static Lim[] LimitsFor(string state)
         {
+            if (state.StartsWith("combat:")) return CombatLimits(state.Split(':')[1]);
             if (state.StartsWith("gesture:")) return GestureLimits(state.Substring(8));
             if (state == "turn") return TurnLimits;
             if (state.EndsWith(":jog")) return JogLimits;
@@ -607,6 +676,11 @@ namespace SecondFace.Tests
             }
             Stop();
 
+            // 8. fighting (§2.7)
+            if (assets.Combat != null && people.Count > 0 && Fighter.HasLayers(people[0].A))
+                yield return Fighting(people, root, runner, assets.Combat, captures, (st, k) => Record(st, k), Stop, Place);
+            else Debug.LogWarning("HumanMotionGate: the fight's motion is not built: its states are not measured (Second Face/Build the fight's motion and weapons)");
+
             // the captures: the game camera (default and closest zoom), the conversation view, human height
             if (captures)
             {
@@ -705,6 +779,196 @@ namespace SecondFace.Tests
             yield break;
 #endif
         }
+
+        /// <summary>
+        /// 8. Fighting (docs/PEOPLE_MOTION.md §2.7): each person in a fight's view as the game makes one
+        /// (<see cref="CombatViews.ForBody"/>: the fighter on their animator, the weapon from their pack, every runtime system
+        /// on), through every state the fight shows, each weapon in turn: its ready stance; a long gun's and a pistol's aim, a
+        /// shot and a burst, the reload; blows by weapon and sex and a block; down into cover and the crouch held; a throw; a
+        /// crit's stagger; the long gun carried over a walk; hands up; a fall and the captured get-up. The probe measures every
+        /// frame as it does the walks; the more bent knee (Kb) and the weapon's grips (WG1, WG2) are measured here.
+        /// </summary>
+        private static IEnumerator Fighting(List<Subject> people, GameObject root, Runner runner, CombatSet set, bool captures,
+            System.Action<string, MotionProbe.K?> record, System.Action stop, System.Action<Vector3, float> place)
+        {
+            if (Registry.Items.Count == 0)
+            {
+                var db = new ContentDb();
+                foreach (var name in ContentDb.Registries) db.Load(name, File.ReadAllText(Path.Combine(Application.streamingAssetsPath, "content", name + ".json")));
+                Registry.Load(db);
+            }
+            foreach (var s in people) { if (s.Partner != null) Object.Destroy(s.Partner); if (s.Gaze != null) s.Gaze.Target = null; }
+            place(Vector3.zero, 0f);
+            yield return Wait(1f);
+            var fx = new CombatFx(root.transform);
+            var ahead = Vector3.forward * 8f;
+            var views = new List<AnimatedUnitView>();
+            Camera cam = null;
+            if (captures)
+            {
+                cam = new GameObject("fight camera") { tag = "MainCamera" }.AddComponent<Camera>();
+                cam.transform.SetParent(root.transform);
+                cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.7f, 0.75f, 0.8f); cam.fieldOfView = 28f;
+                cam.enabled = false;
+            }
+
+            IEnumerator Measure(string state, float hold, System.Func<AnimatedUnitView, IEnumerator> act, MotionProbe.K kind = MotionProbe.K.Stand)
+            {
+                record(state, kind);
+                var running = 0;
+                if (act != null)
+                    foreach (var v in views)
+                    {
+                        if (v == null) continue;
+                        running++;
+                        runner.StartCoroutine(Counted(act(v), () => running--));
+                    }
+                for (int n = Frames(hold), cap = Frames(25f), i = 0; (i < n || running > 0) && i < cap; i++)
+                {
+                    yield return null;
+                    for (var k = 0; k < people.Count && k < views.Count; k++) Grips(people[k], views[k], state);
+                }
+                stop();
+            }
+
+            IEnumerator Shoot(AnimatedUnitView v, int rounds) { for (var i = 0; i < rounds; i++) yield return v.OnFire(v.Body.position + ahead + Vector3.up * 1.1f, true, i, rounds); }
+            IEnumerator Blows(AnimatedUnitView v, int n) { for (var i = 0; i < n; i++) { yield return v.OnStrike(v.Body.position + ahead * 0.12f, true); yield return Wait(0.9f); } }
+            IEnumerator Then(System.Action a, float s) { a(); yield return Wait(s); }
+            IEnumerator Throw(AnimatedUnitView v)
+            {
+                var arc = new List<Vector3>();
+                PlaceholderUnitView.ArcPoints(v.Body.position + Vector3.up * 1.5f, v.Body.position + ahead, arc);
+                yield return v.OnThrow(arc, "w_frag");
+                yield return Wait(0.8f);
+            }
+            IEnumerator Rise(AnimatedUnitView v)
+            {
+                v.OnRise();
+                yield return null;
+                for (var t = 0f; t < 20f && v.Rising; t += Time.deltaTime) yield return null;
+            }
+            IEnumerator Shot(string name, int k)
+            {
+                if (cam == null) yield break;
+                var s = people[k];
+                var focus = s.Go.transform.position + Vector3.up * 1.2f;
+                cam.enabled = true;
+                foreach (var (dist, label) in new[] { (OrbitRig.MinDistance, "8m"), (20f, "20m") })
+                {
+                    var rot = Quaternion.Euler(50f, 210f, 0f);
+                    cam.transform.SetPositionAndRotation(focus - rot * Vector3.forward * dist, rot);
+                    yield return ScreenshotTests.Capture($"motion_fight_{name}_{label}_{s.Id}", 1600, 900);
+                }
+                cam.enabled = false;
+            }
+
+            foreach (var (item, arms) in new[] { ("w_carbine556", "rifle"), ("w_pistol9", "pistol"), ("w_machete", "melee"), ((string)null, "unarmed"), ("w_sledge", "club2") })
+            {
+                views.Clear();
+                foreach (var s in people) views.Add(CombatViews.ForBody(GateUnit(s.Id, item), s.Go.transform, runner, fx, set, Female(s.Id), theirs: false));
+                yield return Wait(1.2f);
+                yield return Measure($"combat:{(arms is "unarmed" or "melee" ? "guard" : "ready")}:{arms}", 3f, null);
+                if (arms is "unarmed" or "rifle") yield return Shot("ready_" + arms, 0);
+                if (arms is "rifle" or "pistol")
+                {
+                    var aim = arms == "rifle" ? "aim" : "aim_pistol";
+                    foreach (var v in views) if (v != null) runner.StartCoroutine(v.OnAim(v.Body.position + ahead));
+                    yield return Wait(1.6f);
+                    yield return Measure($"combat:{aim}:{arms}", 2.5f, null);
+                    yield return Shot("aim_" + arms, 0);
+                    yield return Measure($"combat:{aim}:{arms}_shot", 0f, v => Shoot(v, 1));
+                    yield return Measure($"combat:{aim}:{arms}_burst", 0f, v => Shoot(v, 3));
+                    yield return Wait(2f);
+                    yield return Measure($"combat:reload:{arms}", 0f, v => v.OnReload());
+                    if (arms == "rifle")
+                    {
+                        // carried over a walk (the gate drives the body as the game's walker does; the fighter carries)
+                        place(new Vector3(0f, 0f, -30f), 0f);
+                        foreach (var v in views) v?.Fighter.Locomote(true, false);
+                        yield return Wait(0.5f);
+                        record("combat:carry:rifle", MotionProbe.K.Walk);
+                        float speed = 0f, travelled = 0f; const float length = 9f;
+                        while (travelled < length)
+                        {
+                            var dt = Time.deltaTime;
+                            var left = length - travelled;
+                            speed = left <= speed * speed / (2f * Walker.Acceleration) ? Mathf.Max(0.05f, speed - Walker.Acceleration * dt) : Mathf.Min(Walker.WalkSpeed, speed + Walker.Acceleration * dt);
+                            var step = Mathf.Min(left, speed * dt);
+                            travelled += step;
+                            foreach (var s in people) { s.Go.transform.position += Vector3.forward * step; Pace.Set(s.A, speed, false, 0.12f, dt); }
+                            yield return null;
+                            for (var k = 0; k < people.Count; k++) Grips(people[k], views[k], "combat:carry:rifle");
+                        }
+                        foreach (var s in people) s.A.SetFloat("Speed", 0f);
+                        stop();
+                        foreach (var v in views) v?.Fighter.Locomote(false, false);
+                        place(Vector3.zero, 0f);
+                        yield return Wait(1.2f);
+                        // down into cover, the crouch held, and up
+                        yield return Measure("combat:crouch:rifle", 3.5f, v => Then(() => v.OnStance("crouch"), 0.1f));
+                        yield return Shot("crouch_rifle", 0);
+                        foreach (var v in views) v?.OnStance("stand");
+                        yield return Wait(1.2f);
+                        yield return Measure("combat:throw:rifle", 0f, Throw);
+                        yield return Measure("combat:hit:rifle", 2.5f, v => Then(() => v.OnHit(v.Body.position + ahead, "torso", "crit"), 0.1f));
+                    }
+                }
+                else
+                {
+                    yield return Measure($"combat:strike:{arms}", 0f, v => Blows(v, 3));
+                    yield return Measure($"combat:strike:{arms}_block", 0f, v => Then(() => v.OnMiss(v.Body.position + ahead * 0.12f, true), 1.8f));
+                }
+                if (arms == "unarmed")
+                {
+                    yield return Measure("combat:yield:unarmed", 2.5f, v => Then(v.OnYield, 0.1f));
+                    foreach (var v in views) v?.OnEnd();
+                    yield return Wait(1f);
+                    views.Clear();
+                    foreach (var s in people) views.Add(CombatViews.ForBody(GateUnit(s.Id, null), s.Go.transform, runner, fx, set, Female(s.Id), theirs: false));
+                    yield return Wait(1f);
+                    foreach (var v in views) v?.OnFall(v.Body.position + ahead);
+                    yield return Wait(2.5f);
+                    yield return Measure("combat:rise:unarmed", 0f, Rise);
+                }
+                foreach (var v in views) v?.OnEnd();
+                yield return Wait(1.5f);
+                place(Vector3.zero, 0f);
+                yield return Wait(0.5f);
+            }
+            if (cam != null) Object.Destroy(cam.gameObject);
+        }
+
+        private static IEnumerator Counted(IEnumerator inner, System.Action done)
+        {
+            try { while (inner.MoveNext()) yield return inner.Current; }
+            finally { done(); }
+        }
+
+        /// <summary>The more bent knee (Kb), and the weapon's hold (WG1: its main grip from the palm; WG2: the off hand from its
+        /// grip, cm) for one person this frame.</summary>
+        private static void Grips(Subject s, AnimatedUnitView v, string state)
+        {
+            var a = s.A;
+            var hipL = a.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position; var hipR = a.GetBoneTransform(HumanBodyBones.RightUpperLeg).position;
+            var kneeL = a.GetBoneTransform(HumanBodyBones.LeftLowerLeg).position; var kneeR = a.GetBoneTransform(HumanBodyBones.RightLowerLeg).position;
+            var ankleL = a.GetBoneTransform(HumanBodyBones.LeftFoot).position; var ankleR = a.GetBoneTransform(HumanBodyBones.RightFoot).position;
+            Add(s.Probe, state, "Kb", Mathf.Max(Vector3.Angle(kneeL - hipL, ankleL - kneeL), Vector3.Angle(kneeR - hipR, ankleR - kneeR)));
+            if (v?.Fighter == null) return;
+            if (v.Fighter.InHand && v.Fighter.MainError >= 0f) Add(s.Probe, state, "WG1", v.Fighter.MainError * 100f);
+            if (v.Fighter.OffError >= 0f) Add(s.Probe, state, "WG2", v.Fighter.OffError * 100f);
+        }
+
+        /// <summary>A gate person as a fight's unit, holding <paramref name="item"/> (null: fists).</summary>
+        private static BattleUnit GateUnit(string id, string item)
+        {
+            var inv = Inv.Empty();
+            if (item != null) { Inv.AddItem(inv, Inv.MakeItem(item)); Inv.Equip(inv, 0); }
+            var u = new BattleUnit { C = new Combatant { Id = id, Name = id, Team = "gate", Sheet = Sheet.Empty(id), Inv = inv, Ap = 8, Morale = 60 } };
+            u.Place(0, 0);
+            return u;
+        }
+
+        private static bool Female(string id) { var p = RbPeople.Of(id); return p != null ? !p.Male : id.Contains("Female"); }
 
         /// <summary>The gate's verdict where the lock reads it (docs/qa/gates/motion_gate.json; tools/qa/people_gate.mjs, run by
         /// npm run check and CI): while it is red nothing with a person in it goes to the owner (docs/PEOPLE_MOTION.md §1.8).</summary>

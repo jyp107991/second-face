@@ -1,0 +1,180 @@
+using System.IO;
+using System.Linq;
+using NUnit.Framework;
+using SecondFace.Core.Combat;
+using SecondFace.EditorTools;
+using SecondFace.Game.Fighting;
+using UnityEditor;
+using UnityEditor.Animations;
+using UnityEngine;
+
+namespace SecondFace.Tests
+{
+    /// <summary>
+    /// The fight's build scripts (COMBAT.md A1–A8: Editor/Build/CombatAnimatorBuild.cs, CombatImportPostprocessor.cs), in the
+    /// editor: the layers built onto a copy of the people's controller as Core's table says (every state with its clip,
+    /// speed by "CombatRate", every one-shot going on at its cut by the weapon held and the stance, the arms layer masked to
+    /// the arms), built again without leaving anything of the old behind; the importer's clip settings by the table; the
+    /// clips' beats from their sidecars; each weapon's lore materials in both paints, remapped onto its model, its nulls
+    /// where its sidecar says (the axis conversion right).
+    /// </summary>
+    public class CombatBuildTests
+    {
+        private const string Copy = "Assets/SecondFace/Combat/_test_locomotion.controller";
+
+        [TearDown]
+        public void Out()
+        {
+            if (AssetDatabase.LoadMainAssetAtPath(Copy) != null) AssetDatabase.DeleteAsset(Copy);
+        }
+
+        private static AnimatorController CopyOfThePeoplesController()
+        {
+            if (AssetDatabase.LoadAssetAtPath<AnimatorController>(LocomotionBuild.ControllerPath) == null) Assert.Ignore("no locomotion controller built");
+            if (!CombatAnimatorBuild.ClipsImported()) Assert.Ignore("the fight's clips are not imported");
+            Assert.That(AssetDatabase.CopyAsset(LocomotionBuild.ControllerPath, Copy), Is.True, "copied");
+            return AssetDatabase.LoadAssetAtPath<AnimatorController>(Copy);
+        }
+
+        [Test]
+        public void TheLayersAreBuiltFromTheTable()
+        {
+            var ctl = CopyOfThePeoplesController();
+            var baseLayers = ctl.layers.Count(l => l.name != CombatMotion.FullLayer && l.name != CombatMotion.ArmsLayer);
+            CombatAnimatorBuild.AddLayers(ctl, true);
+            Assert.That(CombatAnimatorBuild.HasLayers(ctl), Is.True);
+            Assert.That(ctl.layers.Length, Is.EqualTo(baseLayers + 2), "the people's own layers kept, the two fight layers added");
+            foreach (var p in new[] { CombatMotion.ArmsParam, CombatMotion.CrouchParam, CombatMotion.RateParam, CombatAnimatorBuild.VersionParam })
+                Assert.That(ctl.parameters.Count(x => x.name == p), Is.EqualTo(1), p);
+            Assert.That(ctl.parameters.First(x => x.name == CombatMotion.RateParam).defaultFloat, Is.EqualTo(1f));
+            foreach (var l in ctl.layers.Where(l => l.name == CombatMotion.FullLayer || l.name == CombatMotion.ArmsLayer))
+            {
+                Assert.That(l.defaultWeight, Is.EqualTo(0f), l.name + " weighs nothing at rest");
+                Assert.That(l.stateMachine.defaultState.name, Is.EqualTo(CombatMotion.None));
+                var states = l.stateMachine.states.ToDictionary(s => s.state.name, s => s.state);
+                foreach (var s in CombatMotion.States.Where(s => s.Layer == l.name))
+                    foreach (var female in new[] { false, true })
+                    {
+                        Assert.That(states.TryGetValue(s.AnimName(female), out var st), Is.True, $"{l.name}: {s.AnimName(female)}");
+                        var clip = st.motion as AnimationClip;
+                        Assert.That(clip, Is.Not.Null, st.name + "'s clip");
+                        Assert.That(AssetDatabase.GetAssetPath(clip), Does.EndWith("/" + s.ClipFor(female) + ".fbx"), st.name);
+                        Assert.That(st.speed, Is.EqualTo(s.Speed), st.name + "'s speed");
+                        Assert.That(st.speedParameterActive && st.speedParameter == CombatMotion.RateParam, Is.True, st.name + " at the fight's pace");
+                        Assert.That(st.writeDefaultValues, Is.False, st.name);
+                        if (s.Then == null) { Assert.That(st.transitions, Is.Empty, st.name + " holds"); continue; }
+                        Assert.That(st.transitions, Is.Not.Empty, st.name + " goes on");
+                        foreach (var t in st.transitions)
+                        {
+                            Assert.That(t.hasExitTime, Is.True, st.name);
+                            Assert.That(t.exitTime, Is.EqualTo(Mathf.Min(s.Cut, 0.97f)).Within(1e-4f), st.name + " goes on at its cut");
+                        }
+                        // every weapon (and, going to the idle, both stances) has its way on
+                        if (s.Then == CombatMotion.ToIdle || s.Then == CombatMotion.ToCover)
+                            foreach (Arms arms in System.Enum.GetValues(typeof(Arms)))
+                                Assert.That(st.transitions.Any(t => t.conditions.Any(c => c.parameter == CombatMotion.ArmsParam && (int)c.threshold == (int)arms)), Is.True, $"{st.name} → {arms}");
+                    }
+            }
+            var mask = ctl.layers.First(l => l.name == CombatMotion.ArmsLayer).avatarMask;
+            Assert.That(mask, Is.Not.Null);
+            Assert.That(mask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftArm) && mask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.RightArm), Is.True, "arms");
+            Assert.That(mask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftLeg) || mask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.Body) || mask.GetHumanoidBodyPartActive(AvatarMaskBodyPart.Root), Is.False, "the legs and trunk are the walk's");
+        }
+
+        [Test]
+        public void BuildingAgainLeavesNothingOfTheOldBehind()
+        {
+            var ctl = CopyOfThePeoplesController();
+            CombatAnimatorBuild.AddLayers(ctl, true);
+            var objects = AssetDatabase.LoadAllAssetsAtPath(Copy).Length;
+            var layers = ctl.layers.Length; var parameters = ctl.parameters.Length;
+            CombatAnimatorBuild.AddLayers(ctl, true);
+            Assert.That(ctl.layers.Length, Is.EqualTo(layers));
+            Assert.That(ctl.parameters.Length, Is.EqualTo(parameters));
+            Assert.That(AssetDatabase.LoadAllAssetsAtPath(Copy).Length, Is.EqualTo(objects), "every state, transition and machine of the old layers removed");
+            // and a build that finds this version's layers leaves them alone
+            var machine = ctl.layers.First(l => l.name == CombatMotion.FullLayer).stateMachine;
+            CombatAnimatorBuild.AddLayers(ctl, false);
+            Assert.That(ctl.layers.First(l => l.name == CombatMotion.FullLayer).stateMachine, Is.SameAs(machine));
+        }
+
+        [Test]
+        public void ClipSettingsFollowTheTable()
+        {
+            foreach (var c in CombatMotion.Clips.Concat(CombatMotion.Spare))
+                foreach (var loop in new[] { false, true })
+                {
+                    var a = new ModelImporterClipAnimation();
+                    CombatImportPostprocessor.Settings(a, loop, c);
+                    Assert.That(a.loopTime, Is.EqualTo(loop), c.Name);
+                    Assert.That(a.lockRootPositionXZ, Is.EqualTo(c.XZ == RootXZ.Bake), c.Name + ": XZ");
+                    Assert.That(a.lockRootHeightY, Is.True, c.Name + ": never height as root motion");
+                    Assert.That(a.keepOriginalPositionY, Is.EqualTo(c.Y == RootY.Keep), c.Name + ": Y as captured");
+                    Assert.That(a.heightFromFeet, Is.EqualTo(c.Y == RootY.Feet), c.Name + ": Y from the feet");
+                    Assert.That(a.lockRootRotation, Is.EqualTo(!(c.Turn || c.DropTurn)), c.Name + ": the turn");
+                    Assert.That(a.keepOriginalOrientation, Is.False, c.Name + ": from the body's facing, never the file's axes");
+                }
+        }
+
+        [Test]
+        public void TheBeatsComeFromTheSidecars()
+        {
+            var facts = CombatAnimatorBuild.Facts();
+            Assert.That(facts.Select(f => f.Name), Is.EquivalentTo(CombatMotion.Clips.Where(c => File.Exists($"{CombatMotion.Folder}/{c.Name}.json")).Select(c => c.Name)));
+            var burst = facts.First(f => f.Name == "rifle_burst_cmu");
+            Assert.That(burst.Events.Count(e => e == "fire"), Is.EqualTo(3));
+            Assert.That(burst.Times.Zip(burst.Events, (t, e) => (t, e)).Where(x => x.e == "fire").Select(x => x.t).ToArray(),
+                Is.EqualTo(new[] { 7f / 35f, 10f / 35f, 13f / 35f }).Within(1e-4f));
+            foreach (var f in facts)
+            {
+                Assert.That(f.Length, Is.GreaterThan(0.1f), f.Name);
+                Assert.That(f.Times.All(t => t > 0f && t < 1f), Is.True, f.Name + "'s beats inside it");
+            }
+            foreach (var s in CombatMotion.States.Where(s => s.Gate == "strike" && !s.Name.Contains("block")))
+                Assert.That(facts.First(f => f.Name == s.Clip).Events, Does.Contain("impact"), s.Name);
+        }
+
+        [Test]
+        public void EachWeaponIsBuiltWithItsPaintsAndItsGripsWhereTheSidecarSaysThem()
+        {
+            var weapons = CombatAnimatorBuild.Weapons();
+            Assert.That(weapons.Select(w => w.Id), Is.EquivalentTo(CombatMotion.Models));
+            foreach (var w in weapons)
+            {
+                Assert.That(w.Prefab, Is.Not.Null, w.Id);
+                Assert.That(w.Paint1.Length, Is.GreaterThan(0), w.Id);
+                Assert.That(w.Paint2.Length, Is.EqualTo(w.Paint1.Length), w.Id);
+                Assert.That(w.Paint1.All(m => m != null && m.shader.name == "Universal Render Pipeline/Lit"), Is.True, w.Id + ": URP Lit");
+                Assert.That(w.Paint1.Zip(w.Paint2, (a, b) => a != b).Any(x => x), Is.True, w.Id + ": a second paint");
+                var renderers = w.Prefab.GetComponentsInChildren<Renderer>(true);
+                Assert.That(renderers.SelectMany(r => r.sharedMaterials).Any(m => w.Paint1.Contains(m)), Is.True, w.Id + ": its lore materials on the model");
+                // the staged nulls where the sidecar's points are (an axis or scale wrong moves them): within 1 mm
+                Transform Find(string n) => w.Prefab.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == n);
+                var main = Find("grip_main");
+                if (main != null) Assert.That(w.Prefab.transform.InverseTransformPoint(main.position).magnitude, Is.LessThan(0.001f), w.Id + ": grip_main at the origin");
+                foreach (var (n, p, has) in new[] { ("grip_off", w.GripOff, w.HasOff), ("muzzle", w.Muzzle, w.HasMuzzle) })
+                {
+                    if (!has) continue;
+                    var t = Find(n);
+                    Assert.That(t, Is.Not.Null, $"{w.Id}: the {n} null");
+                    Assert.That((w.Prefab.transform.InverseTransformPoint(t.position) - p).magnitude, Is.LessThan(0.001f), $"{w.Id}: {n} where the sidecar says");
+                }
+                Assert.That(w.Length, Is.GreaterThan(0.1f), w.Id);
+            }
+        }
+
+        [Test]
+        public void TheSetIsTheGamesAndCarriesTheController()
+        {
+            var set = AssetDatabase.LoadAssetAtPath<CombatSet>(CombatAnimatorBuild.SetPath);
+            if (set == null) Assert.Ignore("not built (Second Face/Build the fight's motion and weapons)");
+            Assert.That(set.Version, Is.EqualTo(CombatMotion.Version));
+            Assert.That(AssetDatabase.GetAssetPath(set.Controller), Is.EqualTo(LocomotionBuild.ControllerPath), "the people's own controller");
+            Assert.That(CombatAnimatorBuild.HasLayers((AnimatorController)set.Controller), Is.True);
+            var world = AssetDatabase.LoadAssetAtPath<SecondFace.Game.World.WorldAssets>(CombatAnimatorBuild.WorldAssetsPath);
+            if (world != null) Assert.That(world.Combat, Is.SameAs(set), "the game's fights use it");
+            Assert.That(set.WeaponOf("rifle_auto"), Is.Not.Null);
+            Assert.That(set.Beat("rifle_fire", false, "fire"), Is.EqualTo(7f / 29f).Within(1e-4f));
+        }
+    }
+}
