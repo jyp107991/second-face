@@ -226,7 +226,9 @@ namespace SecondFace.Core.Combat
             S("rifle_idle", "rifle_idle_ual", loop: true, fade: 0.35f, hands: HandsIk.Hold, gate: "ready");
             S("melee_idle", "fist_guard_accad", loop: true, fade: 0.35f, gate: "guard");
             S("club2_idle", "rifle_idle_ual", loop: true, fade: 0.35f, hands: HandsIk.Hold, gate: "ready");
-            // the long gun: up to the shoulder, the hold, single and burst, down; the reload
+            // the long gun: up to the shoulder, the hold, down; the reload. Its rounds are fired on the hold itself with their
+            // recoil at run time (Fighter.Recoil): rifle_fire and rifle_burst (CMU 79's aim with an authored recoil, a stance
+            // 9 cm wider than the hold's CMU 80) stay built for a later pass on one actor, unplayed by the view
             S("rifle_raise", "rifle_raise_cmu", then: "rifle_aim", from: 0.42f, speed: 1.5f, cut: 0.95f, fade: 0.15f, hands: HandsIk.OffHand, gate: "aim");
             S("rifle_aim", "rifle_aim_b_cmu", loop: true, fade: 0.2f, hands: HandsIk.OffHand, gate: "aim");
             S("rifle_fire", "rifle_fire_cmu", then: "rifle_aim", cut: 0.9f, fade: 0.1f, hands: HandsIk.OffHand, gate: "aim");
