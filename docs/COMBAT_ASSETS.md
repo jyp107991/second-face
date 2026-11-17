@@ -34,8 +34,13 @@ Idles: `fist_guard_accad`, `pistol_idle_ual`, `rifle_idle_ual`*, `melee_idle_ual
 ## Weapons (13)
 `rifle_auto` (AKM), `rifle_bolt` (rag-wrapped stock, scope), `pistol` (taped grip), `revolver`, `shotgun_sawn`,
 `machete`, `knife`, `crowbar`, `pipe_wrench`, `bat` (taped), `hatchet`, `grenade_stick`, `bottle`. 600–5000 triangles,
-1024 px base colour for long guns, 512 px otherwise. Still to do: the lore re-texture (paint out the wrench's and the
-knife's lettering; salvage, tape, wear), a transparent glass material for the bottle.
+1024 px base colour for long guns, 512 px otherwise. **Lore re-texture done (2026-11-17)**: every mark, stamp and
+number painted out (colour, normal and mask maps); rust, pitting, worn edges, grime, tape/cord wraps, replacement parts;
+a second variant per weapon (`_v2_*`); baked occlusion in the masks' G (use the mask as the Occlusion map); the bottle's
+glass a PNG with alpha (`material: glass`: URP Lit, Transparent, Premultiply) and a rag wick mesh. Sheet:
+`sheets/weapons_lore_sheet.png` (3/4 and game camera, before/after); scripts `tools/lore/`; originals
+`raw/weapons_pre_lore/`. Known: the revolver's mirrored grip wrap, the hatchet's ribs through the cord, single-sided
+glass (none visible at game scale).
 
 ## Doubts to settle when integrating (work package 2)
 1. No free captured rifle reload or low-ready: the IK-built stopgaps need an animator's pass; the captured rifle
