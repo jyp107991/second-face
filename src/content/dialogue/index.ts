@@ -46,6 +46,7 @@ import { LANDING_DIALOGUES } from './nw_landing';
 import { SPINDLE_DIALOGUES } from './an_spindle';
 import { KELSO_DIALOGUES } from './an_kelso';
 import { LONGNIGHT_DIALOGUES } from './ln_longnight';
+import { A3_ORDER_DIALOGUES } from './a3_order';
 import { d_dw_approach, d_dw_cato, d_dw_clerk, d_dw_console, d_dw_diary_table, d_dw_door, d_dw_juno, d_dw_oriel, d_dw_panel, d_dw_pumps, d_dw_sable, d_dw_valve, d_dw_wick } from './drywells';
 import { d_kn_maud, d_kn_hatch, d_kn_grille, d_kn_linnet, d_kn_buyer, d_kn_factor, d_kn_dace, d_kn_rib, d_kn_mast, d_kn_corin, d_kn_windpump, d_kn_snare, d_kn_postbook, d_kn_door, d_kn_tollsign, d_kn_watch, d_kn_stranger, d_kn_outriders, d_kn_bed } from './knock';
 import { d_c9_archive, d_c9_body, d_c9_bram, d_c9_great_door, d_c9_ines, d_c9_mother, d_c9_pell, d_c9_shaft, d_c9_tamsin, d_c9_teague } from './ch1_cistern';
@@ -63,4 +64,5 @@ export const DIALOGUES: Record<string, DialogueDef> = Object.fromEntries([
   ...STILTS_DIALOGUES, ...RIGS_DIALOGUES, ...DOCKS_DIALOGUES,
   ...RIVER_DIALOGUES, ...PIT_DIALOGUES, ...DAM_DIALOGUES, ...SAWTOWN_DIALOGUES, ...LANDING_DIALOGUES,
   ...SPINDLE_DIALOGUES, ...KELSO_DIALOGUES, ...LONGNIGHT_DIALOGUES,
+  ...A3_ORDER_DIALOGUES,
 ].map((d) => [d.id, d]));

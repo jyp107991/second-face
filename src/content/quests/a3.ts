@@ -1,0 +1,304 @@
+import type { QuestDef } from '../../engine/quest/quest';
+import type { Cond } from '../../engine/world/logic';
+import { ALLY, AT_KNOCK, IN_SALLOW, LN, ORDER_READ, type Ally } from '../world/a3_conds';
+
+/**
+ * Act 3 (B6): every quest of the act, as skeletons. Each stage's journal is a placeholder line in the player's voice and
+ * each transition reads the flag its slice will set (registry: the end of `world/a3_conds.ts`), so a slice fills its
+ * scenes and the quest already moves. The four critical quests declare routes (build coverage at level 24); the side ones
+ * document theirs. The order starts the road home; the Ledger's card starts the Spire and the tracker. Nothing here waits
+ * on a date. Story notes: story/B6_NOTES_SECRET.md §2 and §8.
+ */
+
+const F = (flag: string, eq?: string): Cond => (eq === undefined ? { flag } : { flag, eq });
+
+// ---------------------------------------------------------------- 18 the order (critical)
+
+export const q_a3_order: QuestDef = {
+  id: 'q_a3_order', title: 'Escalation on Schedule', act: 'a3', critical: true, start: 'post', xp: 100,
+  routes: [{ id: 'read', kind: 'knowledge', label: 'Break the seal on the city\'s order and read it' }],
+  stages: {
+    post: {
+      journal: 'The post found me the morning after Openfield\'s night: a letter from Maud, a slip out of the Cistern\'s hatch tray, and a sealed order from the city, carried by hand and signed for.',
+      objectives: [{ id: 'read', text: 'Read the city\'s order', done: ORDER_READ }],
+      next: [{ if: ORDER_READ, stage: 'read' }],
+    },
+    read: { journal: 'The city has issued its fourth order for the Cistern, and it will not carry it out until I am standing at the door. Knock is under a column of wardens. I am going home.', end: 'done' },
+  },
+};
+
+// ---------------------------------------------------------------- 18b the recall (side)
+
+const RECALL = (v: string): Cond => F('a3_recall', v);
+export const q_a3_recall: QuestDef = {
+  id: 'q_a3_recall', title: 'Disposal, as Scheduled', act: 'a3', start: 'notice', xp: 200,
+  routes: [
+    { id: 'declined', kind: 'knowledge', label: 'A unit that is its own keeper declines its own recall', requires: F('nine_deed', 'self') },
+    { id: 'court', kind: 'talk', label: 'Argue the recall at the Court of Accounts', requires: { skill: 'speech', gte: 50 } },
+    { id: 'stayed', kind: 'talk', label: 'As the unit\'s owner, refuse to hand it over', requires: F('nine_deed', 'player') },
+    { id: 'bought', kind: 'barter', label: 'Buy its title at assessed value under clause 9(b)', requires: { item: 'tolls', count: 121 } },
+    { id: 'hidden', kind: 'stealth', label: 'Hide it outside the Wall' },
+    { id: 'fought', kind: 'fight', label: 'Turn the recall wardens away' },
+  ],
+  stages: {
+    notice: {
+      journal: 'A Precinct notice for Nine, in the city\'s post: DISPOSAL — AS SCHEDULED — R31 BROUGHT FORWARD. The city wants its unit back before the year it had written down.',
+      objectives: [{ id: 'answer', text: 'Answer the city\'s recall of Unit 9', done: F('a3_recall') }],
+      next: [
+        { if: RECALL('declined'), stage: 'declined' }, { if: RECALL('stayed'), stage: 'stayed' }, { if: RECALL('court'), stage: 'court' },
+        { if: RECALL('bought'), stage: 'bought' }, { if: RECALL('hidden'), stage: 'hidden' }, { if: RECALL('fought'), stage: 'fought' },
+        { if: RECALL('handed'), stage: 'handed' }, { if: RECALL('taken'), stage: 'taken' },
+      ],
+    },
+    declined: { journal: 'Nine declined its own recall, as its own keeper. The city has had its first refusal from one of its units.', end: 'done' },
+    stayed: { journal: 'The city asked me for its unit, and I said no. Nine stays with me.', end: 'done' },
+    court: { journal: 'The Court of Accounts heard the recall and kept Nine its own keeper.', end: 'done' },
+    bought: { journal: 'I bought Nine\'s title at its assessed value under clause 9(b). It is paid for, and nobody else\'s.', end: 'done' },
+    hidden: { journal: 'Nine is outside the Wall where the city\'s lenses cannot find it, until the city stops looking.', end: 'done' },
+    fought: { journal: 'The recall wardens went back to the Precinct without Nine. The wardens will remember it.', end: 'done' },
+    handed: { journal: 'I handed Nine over to the city. It went, because a lawful owner told it to, and said so.', end: 'failed' },
+    taken: { journal: 'The city took Nine back and disposed of it, as scheduled.', end: 'failed' },
+  },
+};
+
+// ---------------------------------------------------------------- 19 the road home (critical)
+
+export const q_a3_return: QuestDef = {
+  id: 'q_a3_return', title: 'Toll Road Home', act: 'a3', critical: true, start: 'west', xp: 250,
+  routes: [
+    { id: 'line', kind: 'barter', label: 'Ride the Line west on a fare or a pass' },
+    { id: 'column', kind: 'talk', label: 'Ride west with the column in the wardens\' car', requires: { any: [LN('ledger'), { member: 'wardens' }] } },
+    { id: 'first', kind: 'barter', label: 'Take the guild\'s first class', requires: { any: [LN('guild'), { member: 'tollmen', rank: 'hand' }] } },
+    { id: 'carts', kind: 'talk', label: 'Go west with Openfield\'s carts', requires: { any: [LN('choir'), { member: 'choir' }] } },
+    { id: 'wheel', kind: 'survival', label: 'Travel with the Wheel', requires: { member: 'wheel' } },
+    { id: 'buggy', kind: 'tech', label: 'Drive home in your own buggy', requires: F('dr_buggy') },
+    { id: 'foot', kind: 'survival', label: 'Walk the toll road home' },
+  ],
+  stages: {
+    west: {
+      journal: 'The city\'s column is camped at Knock by the stand, waiting for me, and the hatch is shut. It is a long way west to the Sallow.',
+      objectives: [
+        { id: 'sallow', text: 'Get back to the Sallow', done: { any: [IN_SALLOW, AT_KNOCK] } },
+        { id: 'knock', text: 'Go home to Knock', done: AT_KNOCK },
+      ],
+      next: [{ if: AT_KNOCK, stage: 'knock' }, { if: IN_SALLOW, stage: 'sallow' }],
+    },
+    sallow: {
+      journal: 'I am back in the Sallow. Knock is a day\'s walk from Shale.',
+      objectives: [{ id: 'knock', text: 'Go home to Knock', done: AT_KNOCK }],
+      next: [{ if: AT_KNOCK, stage: 'knock' }],
+    },
+    knock: { journal: 'I am home. Knock is dry and the wardens are polite, and the Cistern\'s door has not moved.', onEnter: [{ quest: 'q_a3_cistern', start: true }], end: 'done' },
+  },
+};
+
+// ---------------------------------------------------------------- 19b the mast (side; Signal Hill)
+
+const MAST = (v: string): Cond => F('a3_mast', v);
+export const q_a3_mast: QuestDef = {
+  id: 'q_a3_mast', title: 'Every Dead Radio', act: 'a3', start: 'list', xp: 300,
+  routes: [
+    { id: 'x', kind: 'tech', label: 'Rebuild the relay\'s band for every receiver', requires: { skill: 'science', gte: 50 } },
+    { id: 'c', kind: 'chrome', label: 'Talk to the grid through a neural port, or through Kes' },
+    { id: 'b', kind: 'barter', label: 'A pre-Scald board and the Hollow\'s price for the climb', requires: { item: 'tolls', count: 60 } },
+    { id: 't', kind: 'talk', label: 'Persuade the Hollow to keep the mast as theirs', requires: { skill: 'speech', gte: 45 } },
+    { id: 'v', kind: 'survival', label: 'Re-rig the aerial\'s top section from the gully', requires: { skill: 'survival', gte: 45 } },
+    { id: 'k', kind: 'knowledge', label: 'The band from Verity\'s letter', requires: F('bw_static', 'kept') },
+  ],
+  stages: {
+    list: {
+      journal: 'Every night the station on Signal Hill still reads its list. It speaks on a narrow band that reaches only the places the city chose. Raised, its mast could reach every radio in the Reach.',
+      objectives: [
+        { id: 'power', text: 'Find out what powers the relay', done: { knows: 'mast_powered' }, optional: true },
+        { id: 'band', text: 'Find out why the band is narrow', done: { knows: 'relay_log_read' }, optional: true },
+        { id: 'top', text: 'Find the aerial\'s top section', done: F('a3_aerial_found'), optional: true },
+        { id: 'raise', text: 'Raise the mast, or leave it as it is', done: F('a3_mast') },
+      ],
+      next: [{ if: MAST('raised'), stage: 'raised' }, { if: MAST('narrow'), stage: 'narrow' }],
+    },
+    raised: { journal: 'Signal Hill\'s mast stands at its full height again, and the relay can reach every receiver in the Reach.', end: 'done' },
+    narrow: { journal: 'I left Signal Hill\'s mast as the city built it, speaking only to the places it chose.', end: 'done' },
+  },
+};
+
+// ---------------------------------------------------------------- 19c the last ride (side; keystone 3, Shale)
+
+const ADA = (v: string): Cond => F('ks_ada', v);
+export const q_a3_ride: QuestDef = {
+  id: 'q_a3_ride', title: 'Sheriff\'s Last Ride', act: 'a3', start: 'notice', xp: 300,
+  routes: [
+    { id: 'stays', kind: 'talk', label: 'Talk Ada out of resigning', requires: { skill: 'speech', gte: 50 } },
+    { id: 'paid', kind: 'barter', label: 'Pay out Pike\'s contract, or have Odile talk it down; nothing, if the sheet it rests on was unwound', requires: { any: [{ item: 'tolls', count: 150 }, F('odile_sheet', 'torn')] } },
+    { id: 'sheet', kind: 'knowledge', label: 'Tear up the sheet the buyout rests on at Pike\'s counter, or hold the Tollhouse page over Pike', requires: { any: [F('odile_sheet', 'player'), F('th_page_taken')] } },
+    { id: 'safe', kind: 'stealth', label: 'Take the deed out of Pike\'s safe at night', requires: { skill: 'security', gte: 50 } },
+    { id: 'street', kind: 'fight', label: 'Put the guild\'s men off Shale\'s street with the militia' },
+  ],
+  stages: {
+    notice: {
+      journal: 'A notice on the sheriff\'s office door in Shale: SHALE — CONTRACT OF PROTECTION — ON THE SHERIFF\'S RESIGNATION. Pike\'s buyout has come due, and Ada means to ride out to his post and sign it.',
+      objectives: [{ id: 'ada', text: 'Decide what happens to Shale\'s sheriff', done: F('ks_ada') }],
+      next: [{ if: ADA('stays'), stage: 'stays' }, { if: ADA('resigns'), stage: 'resigned' }, { if: ADA('dead'), stage: 'dead' }],
+    },
+    stays: { journal: 'Ada Vey is still Shale\'s sheriff. Pike\'s contract is paper.', end: 'done' },
+    resigned: { journal: 'Ada Vey rode out to Pike\'s post and signed. Shale has a contract of protection instead of a sheriff.', end: 'done' },
+    dead: { journal: 'Ada Vey died in Shale\'s street, when the guild\'s men came to take possession.', end: 'failed' },
+  },
+};
+
+// ---------------------------------------------------------------- 20 the Cistern (critical: Knock, inside, the ring, the door)
+
+const C9 = (v: string): Cond => F('a3_c9', v);
+const C9_ENDS = [{ if: C9('sealed'), stage: 'sealed' }, { if: C9('opened'), stage: 'opened' }, { if: C9('relocated'), stage: 'relocated' }];
+export const q_a3_cistern: QuestDef = {
+  id: 'q_a3_cistern', title: 'Reserve 9 (The Mouth)', act: 'a3', critical: true, start: 'knock', xp: 800,
+  routes: [
+    { id: 'lowe', kind: 'talk', label: 'Stand the column down with its captain', requires: { skill: 'speech', gte: 60 } },
+    { id: 'stay', kind: 'knowledge', label: 'The Court\'s stay on the order as evidence at the door', requires: { any: [F('ca_reserve', 'stayed'), F('ca_reserve', 'attendance')] } },
+    { id: 'unfit', kind: 'medicine', label: 'Have the reserve certified unfit for relocation', requires: { any: [{ skill: 'speech', gte: 40 }, { origin: 'clinic_aide' }] } },
+    { id: 'welded', kind: 'tech', label: 'Weld the great door from inside', requires: { skill: 'mechanics', gte: 40 } },
+    { id: 'fought', kind: 'fight', label: 'Break the column at the apron' },
+    { id: 'word', kind: 'talk', label: 'Give the designate\'s word at the door' },
+  ],
+  stages: {
+    knock: {
+      journal: 'Knock is dry since the hatch shut. The city\'s column is camped on the toll road by the stand, and its captain will not move on the door until I attend it. Nobody in Knock has ever been inside.',
+      objectives: [
+        { id: 'lowe', text: 'Hear the column\'s captain out', done: F('a3_lowe_heard'), optional: true },
+        { id: 'in', text: 'Find a way into the Cistern', done: F('a3_inside') },
+      ],
+      next: [...C9_ENDS, { if: F('a3_in_how', 'door'), stage: 'door' }, { if: F('a3_inside'), stage: 'inside' }],
+    },
+    inside: {
+      journal: 'I am inside the Cistern for the first time in my life, and its people are looking at a face from Knock for the first time in theirs.',
+      objectives: [
+        { id: 'mother', text: 'Speak with MOTHER at her panel', done: F('a3_letter_read'), optional: true },
+        { id: 'archive', text: 'Ask Ines about the Archive', done: F('a3_archive'), optional: true },
+        { id: 'ring', text: 'Sit with the ring', done: F('a3_ring') },
+      ],
+      next: [...C9_ENDS, { if: F('a3_ring'), stage: 'door' }],
+    },
+    door: {
+      journal: 'The ring has decided what it wants. Now the door: the column on the apron, Knock behind it, the residents behind the steel, and me between.',
+      objectives: [{ id: 'door', text: 'Settle the door', done: F('a3_c9') }],
+      next: C9_ENDS,
+    },
+    sealed: { journal: 'The Cistern\'s door stays shut, and the city\'s fourth order is not carried out.', end: 'done' },
+    opened: { journal: 'The Cistern\'s door is open, and its people walked out of it by their own choice.', end: 'done' },
+    relocated: { journal: 'The Cistern\'s people were taken east on the city\'s order.', end: 'done' },
+  },
+};
+
+// ---------------------------------------------------------------- 20b the Unwritten at Knock (side)
+
+const UW = (v: string): Cond => F('a3_unwritten', v);
+export const q_a3_unwritten: QuestDef = {
+  id: 'q_a3_unwritten', title: 'Burn the Count', act: 'a3', start: 'chalk', xp: 250,
+  routes: [
+    { id: 'with_you', kind: 'talk', label: 'Turn the Unwritten from the reserve to the core', requires: { skill: 'speech', gte: 50 } },
+    { id: 'gone', kind: 'talk', label: 'Talk them into going home', requires: { skill: 'speech', gte: 40 } },
+    { id: 'stopped', kind: 'stealth', label: 'Take the burning party\'s lamp at the apron at night', requires: { skill: 'stealth', gte: 45 } },
+    { id: 'fought', kind: 'fight', label: 'Stop the burning party by force' },
+  ],
+  stages: {
+    chalk: {
+      journal: 'Chalk on the Cistern\'s apron at dawn: an open eye struck through. The Unwritten are at Knock by night, and they mean to burn what the Cistern keeps.',
+      objectives: [{ id: 'end', text: 'Decide what the Unwritten do at Knock', done: F('a3_unwritten') }],
+      next: [{ if: UW('with_you'), stage: 'with_you' }, { if: UW('gone'), stage: 'gone' }, { if: UW('stopped'), stage: 'stopped' }, { if: UW('burning'), stage: 'burning' }],
+    },
+    with_you: { journal: 'The Unwritten will not burn the Cistern\'s count. They are coming east with me, to the city.', end: 'done' },
+    gone: { journal: 'The Unwritten went home from Knock without lighting anything.', end: 'done' },
+    stopped: { journal: 'I stopped the Unwritten\'s burning party at the apron in the dark.', end: 'done' },
+    burning: { journal: 'I let the Unwritten have their night at Knock.', end: 'failed' },
+  },
+};
+
+// ---------------------------------------------------------------- 20f the platform (side; only after a relocation)
+
+const AFTER = (v: string): Cond => F('a3_c9_after', v);
+export const q_a3_platform: QuestDef = {
+  id: 'q_a3_platform', title: 'Sixty at the Buffer', act: 'a3', start: 'buffer', xp: 300,
+  routes: [
+    { id: 'harbour', kind: 'talk', label: 'At the Harbour court: a person landed on the quay is a passenger', requires: { any: [F('dk_prec_passenger'), { skill: 'speech', gte: 45 }] } },
+    { id: 'stand', kind: 'fight', label: 'Have the Stand black the wardens\' car', requires: ALLY('stand') },
+    { id: 'cradle', kind: 'stealth', label: 'Take them over the dry river in the cradle at night', requires: { not: F('dk_cradle', 'cut') } },
+  ],
+  stages: {
+    buffer: {
+      journal: 'The wardens\' car with the Cistern\'s people in it has come to the Line\'s buffer at Carrick.',
+      objectives: [{ id: 'quay', text: 'Get them off the car', done: F('a3_c9_after') }],
+      next: [{ if: AFTER('walked'), stage: 'walked' }, { if: AFTER('held'), stage: 'held' }],
+    },
+    walked: { journal: 'The Cistern\'s people walked off the wardens\' car at Carrick, free in the city.', end: 'done' },
+    held: { journal: 'The Cistern\'s people went from the buffer into the Precinct\'s keeping.', end: 'failed' },
+  },
+};
+
+// ---------------------------------------------------------------- 21 the Spire (critical: the close, the steps, the vault)
+
+const PNR = F('a3_pnr'), SASH = F('a3_sash'), END = F('a3_end');
+export const q_a3_spire: QuestDef = {
+  id: 'q_a3_spire', title: 'Public Steps Reopen', act: 'a3', critical: true, start: 'close', xp: 1000,
+  routes: [
+    { id: 'plan', kind: 'talk', label: 'Take the chair, or walk away from it' },
+    { id: 'unwritten', kind: 'fight', label: 'Bring the vault down with what you carry' },
+    { id: 'concern', kind: 'barter', label: 'Sign the city\'s core over on the Concern\'s paper' },
+    { id: 'opensky', kind: 'tech', label: 'Read the record into every radio in the Reach' },
+    { id: 'amendment', kind: 'knowledge', label: 'Amend the law from the chair, on your own rulings' },
+  ],
+  stages: {
+    close: {
+      journal: 'A card from the Ledger, in the post: THE DESIGNATE WILL ATTEND THE STEPS. Everyone who walked with me has come to the Spire\'s close.',
+      objectives: [{ id: 'up', text: 'Climb the Spire\'s steps', done: PNR }],
+      next: [{ if: END, stage: 'ended' }, { if: SASH, stage: 'vault' }, { if: PNR, stage: 'steps' }],
+    },
+    steps: {
+      journal: 'The steps of the photograph, and a crowd on them, and a sash held out to me.',
+      objectives: [{ id: 'sash', text: 'Answer the sash', done: SASH }],
+      next: [{ if: END, stage: 'ended' }, { if: SASH, stage: 'vault' }],
+    },
+    vault: {
+      journal: 'Under the Spire\'s foot, the Vault of Accounts, and the thing that keeps them.',
+      objectives: [{ id: 'end', text: 'Decide', done: END }],
+      next: [{ if: END, stage: 'ended' }],
+    },
+    ended: { journal: 'It is done, and the Reach will tell it as it stands.', end: 'done' },
+  },
+};
+
+// ---------------------------------------------------------------- 21a what you hold (the tracker)
+
+/** The notebook's "what you hold" page before the climb (the coordinator's default): allies, things carried, and how the
+ * places think of the player. Each line appears once it is held (hidden until done); none names a way to finish. */
+const ALLY_LINES: { id: Ally; text: string }[] = [
+  { id: 'shale', text: 'Shale\'s militia will come' }, { id: 'dogs', text: 'The Rust Dogs will ride' }, { id: 'choir', text: 'The Choir will come' },
+  { id: 'wheel', text: 'The Wheel will carry word' }, { id: 'shift', text: 'The Shift has sent powder' }, { id: 'stand', text: 'Carrick\'s dockers stand with you' },
+  { id: 'boats', text: 'The shore\'s boats are yours to call' }, { id: 'barges', text: 'The Wet\'s barges are yours to call' }, { id: 'gangs', text: 'The chain\'s holders will keep their streets' },
+  { id: 'saints', text: 'The Saints will read for you' }, { id: 'seventeen', text: 'An assessor of the Wet will read for you' },
+];
+const HELD_ITEMS: { id: string; text: string }[] = [
+  { id: 'k_ar_refusals', text: 'The copy of the Cistern\'s replies' }, { id: 'k_ar_warrant', text: 'The designate\'s warrant' },
+  { id: 'k_a3_first_letter', text: 'The letter MOTHER kept for you' }, { id: 'k_a3_transfer', text: 'The Concern\'s paper' },
+  { id: 'k_a3_charge', text: 'A charge, made up and wired' }, { id: 'k_an_core', text: 'The core out of Kelso\'s rack' },
+];
+const PLACES: { id: string; text: string }[] = [
+  { id: 'cistern9', text: 'Knock thinks well of you' }, { id: 'shale', text: 'Shale thinks well of you' },
+  { id: 'openfield', text: 'Openfield thinks well of you' }, { id: 'meridian', text: 'Meridian thinks well of you' },
+];
+export const q_a3_hold: QuestDef = {
+  id: 'q_a3_hold', title: 'What You Hold', act: 'a3', start: 'holding',
+  stages: {
+    holding: {
+      journal: 'Before the steps: who came, what I carry, and what the places I have been think of me.',
+      objectives: [
+        ...ALLY_LINES.map((a) => ({ id: `ally_${a.id}`, text: a.text, done: ALLY(a.id), hidden: true, optional: true })),
+        ...HELD_ITEMS.map((i) => ({ id: `item_${i.id}`, text: i.text, done: { item: i.id } as Cond, hidden: true, optional: true })),
+        ...PLACES.map((p) => ({ id: `place_${p.id}`, text: p.text, done: { standing: { settlement: p.id, gte: 10 } } as Cond, hidden: true, optional: true })),
+        { id: 'up', text: 'Climb the steps when you are ready', done: PNR },
+      ],
+      next: [{ if: PNR, stage: 'climbed' }],
+    },
+    climbed: { journal: 'I climbed the Spire\'s steps with what I held.', end: 'done' },
+  },
+};
+
+export const A3_QUESTS: QuestDef[] = [q_a3_order, q_a3_recall, q_a3_return, q_a3_mast, q_a3_ride, q_a3_cistern, q_a3_unwritten, q_a3_platform, q_a3_spire, q_a3_hold];

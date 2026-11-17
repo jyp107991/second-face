@@ -36,6 +36,8 @@ main at 0e9b5e6e/e1a1b472, about 1,080 `set:` flags. Flag values below are the o
 ## 1. What B6 reads from the rest of the game, and the two hooks
 
 ### 1.1 B5d (the Long Night) is being written in parallel. ASSUMED names, all reconciled in one place
+**Reconciled in B6a (2026-11-17)**: B5d is on main; the aliases below now read its real flags. The mapping, the names that
+did not exist and the new aliases are under "As built" → B6a. The table is kept as planned.
 B6a creates `src/content/world/a3_conds.ts`, and **every** read of a B5d flag goes through an alias in that file. If
 `story/B5d_NOTES_SECRET.md` exists when B6a starts, B6a renames the aliases' targets to B5d's real flags and records the
 mapping under "As built". No other B6 file names a B5d flag. The assumptions come from STORY_PLAN Build notes — B5d and
@@ -665,7 +667,7 @@ The default shared files touched by a content slice are the registries: `quests/
 `npcs/index.ts` (or the content index), `items/index.ts`, `world/events.ts` (spread), and `world/leads.ts` or a slice
 `world/a3_*.ts` spread in. Each slice lists only its other touches.
 
-### B6a — Act 3's spine and the shared conditions
+### B6a — Act 3's spine and the shared conditions — BUILT 2026-11-17 (all of it; deviations under "As built")
 - **Create** `world/a3_conds.ts` (§1.1 aliases, §1.2 B4B section, §4.1 gates, §5 selectors, `modValue(g, selector)`, the flag
   registry) · `quests/a3.ts` (every `q_a3_*` with stage skeletons and placeholder journals, `act: 'a3'`, critical ones with
   `routes`: order, return, cistern, spire; side ones: recall, mast, ride, unwritten, platform, hold) · `items/story_a3.ts`
@@ -1011,7 +1013,96 @@ The default shared files touched by a content slice are the registries: `quests/
 
 ---------------------------------------------------------------------------------------------------------------------
 ## As built (each slice appends here: what changed from this plan, and the B5d/B4b mapping once reconciled)
-- (empty)
+
+### B6a (built 2026-11-17)
+**Done, all of the slice:** `world/a3_conds.ts` (§1.1 aliases reconciled, §1.2 B4B section, §4.1 gates, §5 selectors with
+`modValue(g, mod)`, the flag registry at the end) · `quests/a3.ts` (all ten `q_a3_*`, `act: 'a3'`; critical with routes:
+order, return, cistern, spire; side: recall, mast, ride, unwritten, platform, hold) · `items/story_a3.ts` (the six items) ·
+`world/a3_events.ts` (`a3_order`, `a3_summons`, and one more: `a3_recall_notice`, below) · `dialogue/a3_order.ts` (only
+`d_a3_order_read`) · `tests/a3_fixture.ts` · `tests/b6a.test.ts` (40 tests). Registries touched only. No engine change.
+`npm run check` green (people gate red/stale as before). §12's change log mirrored into STORY_PLAN §16 (item 15).
+
+**The B5d mapping** (B5d committed; its notes' "Flags B6 should read"). Every alias keeps its plan name; B6 files read
+them, never B5d's flags. 8 table rows (13 alias names) reconciled, plus five other `[B5d?]` reads:
+| Alias | Plan assumed | Real (B5d) | Note |
+|---|---|---|---|
+| `LN_DONE` | `a2_longnight_done` (**does not exist**) | `ln_done` (set at the night's dawn with `act2_done`) | only `ln_done` is read |
+| `LN(side)` | `ln_alliance` = choir \| guild \| ledger \| truce | `ln_alliance` = choir \| guild \| ledger \| truce \| **none** | a fifth side: the player stood with nobody and the forecast was kept. `SIDES` has five. Fallback kept: `ln_done` with no alliance reads as `truce`. Why-now for `none` (the order): "THE DESIGNATE STOOD ASIDE AND THE FORECAST WAS KEPT TO THE LETTER. THE SCHEDULE HOLDS WITHOUT ASSISTANCE." B6c: `none` has no alliance transport (the Line, the Wheel by standing, the buggy, on foot); B6q: the Ledger's last conversation reads `none` like `ledger` |
+| `LN_BAND(b)` (new) | — | `ln_band` = strong \| mixed \| thin \| truce \| none | the night's strength band, for slices that read how the night went |
+| `MASON_BURNED` | `ks_mason` = burned (**no such value**) | `ln_openfield` = burned | keystone 8 itself is `ks_mason` = lives \| dead \| exiled: new aliases `MASON_DEAD`, `MASON_EXILED`, `MASON_LIVES` (unset = alive), `MASON_SCARRED` (`ln_mason_burned`: pulled out of the burning door alive), `OPENFIELD(v)` (`ln_openfield` = stands \| scorched \| guild \| evicted \| burned) |
+| `CALLA_HELD` / `CALLA_FREE` / `CALLA_DEAD` | `ks_calla` = held \| freed \| dead (**no such values**) | `ks_calla` = imprisoned \| free; `ln_calla` = freed \| taken | B5d never kills her: `CALLA_DEAD` = `dead npc_sh_05` only. Fallback kept (night over, nothing set = held) |
+| `SARR_FATE` | `ks_sarr` (unset unless B5d resolves it) | `ks_sarr` = dead, `ln_sarr` = lives \| dead | exported as `SARR_DEAD` / `SARR_ALIVE` (+ `dead npc_nb_01`). `ks_sarr` is B5d's, not new in B6 |
+| `HOUNDS_PLAYER` / `_CONCERN` / `_ASLEEP` | `an_kelso` values | `an_reserve` = player \| concern \| sealed \| **leaderless** | `an_kelso` exists but is Kelso's quest choice (sold \| held \| taken \| broken), not the reserve's state. The fourth state (command unit broken, the reserve nobody's) is the new alias `HOUNDS_FERAL` and a new M5 value **`feral`** (order: yours, woken, feral, dormant). Also `HOUNDS_LAID_DOWN` = `ln_hounds` = stood_down |
+| `ASH_LN_REDLINE` | B5d wires it | `ash_redline` = longnight, `ash_gone` | plus `ASH_REFUSED` = `ash_orders` ∈ {refused, **refused_late**} (refused at the knife itself): B_MEANS uses it, and every later "Ash with refused orders" read (20b's −15, 21b) should too |
+| `NINE_LN` | `nine_stance` | `nine_stance` (real) + `ln_nine_back` | `NINE_CONSCIENCE`, `NINE_DEPUTY`, `NINE_BACK` |
+| other `[B5d?]` | 19b B "the Ashlands' board" | `k_an_board` (the shunter's board, pre-Scald, nobody in it; carried only until its end is chosen) | `MAST_BOARD` = `j_controller` ∨ `j_tm_controller` ∨ `k_an_board` |
+| | slide 19's place `an_*` | `an_saddleback` (the ridge over the valley) | B6u |
+| | Kes tells "the Lieutenant" to stand down | LT-7 is a prop (`an_lt`, tree `d_an_lt`) in `an_hall`; B5d's held route already lets Kes seal it (`an_reserve` = sealed) | an Act 3 route to M5 = yours would need a new `d_an_lt` entry: not wired (B6o/B6u decide) |
+| | case `calla` | opens on `CALLA_HELD` (`ks_calla` = imprisoned) | B5d's notes: her trial reads `prec_forecast_fine`, `prec_unrecorded`, `prec_refuse_benefit`, `ca_calla_listed` |
+| | the truce's logistics | `ln_owed`, `ln_trust` = none, `ln_eviction_stayed` | B5d gives a truce no allies, only debts to call: B6c's "truce: any one, by asking" should read `ln_owed`; `ln_came_*` (who came to the night) can widen the muster |
+Also exported for later slices: `LN_PEOPLE(v)`, `LN_STORES(v)`, `LN_OWED`, `LN_CITY_WARRANT`, `LN_FORECAST_KEPT`, `LN_LEASH_SPREADS`.
+
+**Deviations and choices:**
+- Quest title "The Toll Road Home" → **"Toll Road Home"** (the validator's naming rule: never "The" + noun). Titles for the two
+  the plan left open: `q_a3_cistern` **"Reserve 9 (The Mouth)"** (the order's own heading), `q_a3_spire` **"Public Steps
+  Reopen"** (the Spire's notice).
+- **The first letter's date.** "R16 … at fourteen … kept eleven years" does not add up for a PC of ~25 at R30, and the PC's
+  age is a slider (22–28). `k_a3_first_letter` reads "dated in the year your first toll card was punched, when you were
+  fourteen": no fixed R-year. B6h's MOTHER lines should say it the same way.
+- **The order arrives** as three posts at the next seven o'clock after `ln_done`: Maud (`npc_kn_maud`), MOTHER's slip
+  (`npc_c9_05`) and the Ledger's receipt (`npc_ar_voice`, shown as "Ledger"), plus the items `k_a3_mother_letter` and
+  `k_a3_order`, and `q_a3_order` (stage `post`). The courier `npc_a3_01` is not needed for the arrival; B6b may still
+  place him. The Act Three card is `ACT THREE\nTHE DOOR`, on the first read only.
+- **The recall starts with the order.** The packet holds a fourth sheet (the Unit 9 notice) only with Nine on the player's
+  side (`ON_SIDE('nine')`); reading it starts `q_a3_recall` and sets `a3_recall_due` (B6b's Precinct placement reads it).
+  New world event `a3_recall_notice`: a Nine who joins or comes back after the order was read gets the notice at the next
+  seven o'clock. A Nine never met, left or gone is never recalled.
+- **Quest transitions** (skeletons; journals are placeholders the slices may rewrite): `q_a3_order` post → read (on
+  `a3_order_read`). `q_a3_return` west → sallow (on `IN_SALLOW`: any Sallow map, the wild of the Sallow, or `a3_in_sallow`,
+  which B6c's road scenes set) → knock (on `a3_at_knock`; entering it starts `q_a3_cistern` at `knock`). `q_a3_cistern` knock → inside (`a3_inside`) → door (`a3_ring`);
+  `a3_in_how` = door jumps straight to the door; every stage ends on `a3_c9` (sealed | opened | relocated, all `done`). Side
+  quests end on their slice's flag, one stage per value (`handed`/`taken`, `ks_ada` dead, `burning` and `held` are
+  `failed`). `q_a3_spire` close → steps (`a3_pnr`) → vault (`a3_sash`) → ended (`a3_end`); `q_a3_spire` and `q_a3_hold`
+  start with `a3_summons`; `q_a3_hold` ends at the PNR.
+- **Coordinator default 3 applied (no named list of ways to finish).** `q_a3_hold` "What You Hold" is the notebook's page:
+  hidden lines that appear once held, for the eleven allies (`a3_ally_*`), six carried things (`k_ar_refusals`,
+  `k_ar_warrant`, `k_a3_first_letter`, `k_a3_transfer`, `k_a3_charge`, `k_an_core`) and four places' standing (Knock,
+  Shale, Openfield, Meridian ≥ 10), plus "Climb the steps when you are ready". It never names a gate. **§3 step 1 is
+  superseded:** B6m's `d_a3_pnr` does not list the gates' keys; it points to the notebook page, warns once that the story
+  ends here, and leaves "what is possible" to the companions at the fire (B6n–B6o). `KEYS` (the gate keys by name) are for
+  tests only.
+- **Coordinator default 2 (only the slides whose subject the player met):** `EP_SLIDES` lists the 27; each slide's
+  `applies` is B6s–B6v's. There is no `met` condition for people in the engine (`world.met` is not a Cond): B6s uses
+  per-person flags (`tam_met`, `ilya_met`, `odile_met`, `ash_met`, `nine_met`, `kes_met`; Wren has none, use `wren_joined`
+  or her Act 1 quest), place knowledge (`loc_*`, uneven across places) or quests started; or adds a `met` Cond (an engine
+  and validator change: say so in that slice).
+- **Coordinator default 1:** no free roam after the end; `q_a3_spire` ends on `a3_end`; the epilogue then credits then the
+  title (B6r–B6s). The engine's save slots are `auto | quick | slot1–3`: the `steps` slot is still runtime ask §9.3; the
+  fixture's `saveAndLoad` writes `slot1` meanwhile.
+- **Companions:** `COMPANIONS` (each one's join, left and gone flags) and `ON_SIDE(c)` = joined ∧ ¬left ∧ ¬gone (travelling or
+  waiting: these gather at the close). Ilya and Kes have no separate gone flag (their `_left` covers it); Tamsin's gone is
+  `tam_home` or `a3_tamsin_dead`; Nine's includes `nine_disposed` and `a3_nine_struck`; Ash's `a3_ash` = self.
+- **Helpers added beyond the plan** (all in `a3_conds.ts`): `GUILD_IN_PLAY` / `HOUNDS_IN_PLAY` (B6f sets `a3_guild_in` /
+  `a3_hounds_in` from them), `IN_SALLOW`, `RESERVE_STAYED`, `ALLY_NEEDS` (§2.3's table, exact) with `ALLIES_AT_KNOCK` /
+  `ALLIES_AT_CLOSE`, `READY_ACTS` (§5 M7's eight), `CLAUSES` (§4.2's seven), `M9_STANDING(settlement)`, `EP_HOME` (R49's home:
+  city first under A1/C/E, then knock, shale, road, nowhere), `STRIKE_OUT`, `KES_LINEAGE` / `KES_LINEAGE_HEARD`, `C_BUYER_B4B`,
+  `B4B_FLAGS`, `LOWE`/`REYES`/`PETRA`/`HALE`/`QUILL` ids with `LOWE_DEAD`, `PETRA_DEAD`, `HALE_ALIVE`.
+- **M2** gets a default (`flooded`): by Act 3 the Sink's spring has either been settled (`sk_saved`) or come.
+
+**The fixture** (`tests/a3_fixture.ts`; every later slice builds its states here): `actThree(preset, over)` → `{ g, q, fired }`.
+Presets `prepared` (a thorough Acts 1–2, a truce at the night; every ally's need met; Nine its own keeper, conscience, in the
+party with Tamsin; the others waiting), `hostile` (Nine and Ash gone, the verdict refused, the register catalogued, no
+ally's need met, the Concern refused with the hook on, the mast's groundwork undone, `none` at the night, Sarr dead), and
+`choir | guild | ledger | truce | none` (a middling Acts 1–2 closed on that side). `over`: `alliance`, `band` (strong | mixed |
+thin, as B5d's dawn leaves Openfield), `companions` (per companion: never | met | party | waiting | left | gone, and
+Tamsin's inside | home; or the sets `everyone` | `nobody` | `estranged`), `approval`, `b4b` (true for the preset's own
+arcology outcomes, or an object of `hc_*` over them), `flags`, `knows`, `items`, `tolls`, `skills`, `attrs`, `origin`,
+`standing`, `rep`, `trust`, `members`, `at`, `point` (eve | open | read: Act 2 closed, the post come, the order read —
+the default), `host` (to catch events such as the title card). `saveAndLoad(g)` writes through `SaveManager(MemoryBackend)`
+and returns the loaded copy with a fresh `QuestEngine`. The B5 tests' helpers are exported (`talk`, `view`, `options`,
+`waitFor`, `hour`, `at`, `conclude`, `fire`, `placed`, `trigger`, `skills`, `has`, `stage`, `status`). Settled Act 1–2
+events (Tribute Day, the Sink's spring, the night's call and dusk, Tamsin's walk-up when met) are marked resolved, so
+only Act 3's own event fires when the fixture opens the act.
 
 ## Defaults taken for the open questions (coordinator, 2026-11-17; the owner may override)
 1. After the ending: epilogue, credits, then the title screen; the named autosave at the point of no return stays

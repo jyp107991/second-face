@@ -285,6 +285,20 @@ name (the stranger is Hollis Dray — the shared first name is deliberate: Crane
 Maud, Linnet, Dace, Corin, and Tamsin's voice at the Grille; the Ledger has the PC's face from Tollmen toll cards; the
 opening is a day of chores that teach, the stranger's night, and the outriders' reprisal (§18); origins reframed as
 Knock's trades; Tamsin becomes the one who steps out of the Cistern for the first time.
+**15 (B6 plan, 2026-11-17; Act 3 and the endings, `story/B6_NOTES_SECRET.md` §12):** (1) no soft timer: the fourth order
+executes only on the designate's attendance, as the chair's first act, so the column waits at Knock; (2) MOTHER's sealed
+message is the Ledger's first letter to its designate, withheld as "addressed to a title, not a resident"; (3) ending A
+has a refused form (A2): walk away, and the Plan reroutes to another face; (4) the epilogue ends on R49, the PC's own face
+at ~44; (5) ending C needs the sash; (6) D's price is a readiness count of eight acts giving three prices; (7) Pell's unfit
+certificate reads `prec_unrecorded` (with a trap); (8) every key of every ending has an Act 3 alternate, so no Act 1–2
+choice locks an ending out; (9) Ada's keystone gets "Sheriff's Last Ride" on the road home; (10) Signal Hill gets its own
+quest; (11) the Unwritten's Act 3 aim (burn the reserve's count and MOTHER) can be turned toward the core; (12) a
+relocated reserve can still walk free at Carrick; (13) the vault opens after the steps, sash worn or not; (14) Tamsin dies
+at the door only if it is forced while she stands in it; (15) "Halcyon burned" defined, and reachable without B4b; (16)
+two Act 3 Court cases are precedents, and the amendment's clauses come from the player's own rulings (at most three);
+(17) the steps reopen at R30, with the Ledger's reason by alliance. B6a as built (the Long Night's real flags behind the
+aliases, the first letter dated by the PC's first toll card, the tracker without named ways to finish): the plan's "As
+built".
 
 ## 17. Questions for the owner (ask spoiler-free, only when needed)
 - None open. (Engine choice is a tech question, asked in docs/TECH_EVALUATION.md.)

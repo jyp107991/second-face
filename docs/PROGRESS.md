@@ -2002,6 +2002,16 @@ mid-range Android phone; deployed to Pages.
             merchants. The flags B6 reads are listed in the notes. `tests/b5d.test.ts` (32: the places, every end of every
             Ashlands line, and the alliance played strong, mixed, thin, as a truce, failed and as none). No engine change.
 - [ ] B6 **Act 3 + endings**: return, lockdown, Spire, finale, endings A–E + modifiers, epilogue slides.
+      - [x] B6a **Act 3's groundwork** DONE 2026-11-17 (content; no engine change; not exported): `world/a3_conds.ts` (the
+            shared conditions every Act 3 slice reads: the Long Night read only through aliases, now reconciled to the flags
+            B5d writes; the arcology slice's flags read only here, each with an Act 3 alternate; the five gates and their
+            keys; seven modifiers with `modValue()`; the muster's needs, the readiness acts, the clauses; the registry of
+            Act 3's flags), `quests/a3.ts` (10 quest skeletons, 4 critical with routes, build coverage at level 24),
+            `items/story_a3.ts` (6), `world/a3_events.ts` (3 world events, each armed by a flag and waiting for its hour,
+            none on a date), `dialogue/a3_order.ts` (1 read tree: every node with a return line, all seven companions
+            speak). The shared fixture `tests/a3_fixture.ts` (`actThree(preset, over)`: 7 presets, the night's three bands,
+            8 companion states and 3 company sets, the arcology hook on or off, three points into the act, save and load
+            through the real codec, the B5 tests' headless helpers). `tests/b6a.test.ts` (40). Next: B6b.
 - [ ] B7 **Systemic depth + presentation**: ruins templates, bounty/gig templates, rare encounters, music
       and ambience, title art, menus, credits, settings, tips.
 - [ ] B8 **Balance, performance, deploy**: economy sim pass, difficulty, accessibility, Android perf
@@ -2020,7 +2030,7 @@ mid-range Android phone; deployed to Pages.
 | Meridian | 13/14 | 142/145 | 250/255 | 32/33 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward, the Crown, the Archive Spire (the close and landing ninety-one), the Court of Accounts and the Dead Ring written; the Docks across the dry river written (B5b, Carrick: the Line's end, the tide boat's and the barges' landing, the district's line and two side lines); the Loop joins six stops (one outside the Wall), stairs the Sink, the chain Bridgeward, the invitation car the Crown, a lane the Spire close, the gate road the Ring, the river road and the quay tram the Docks, and every board answers NO BRIDGE. Loose ends: Unity sites for the Spire close, the Ring and the Docks (P10 place build); vehicle travel reading the buggy flag (P12); the Spire beat's end now opens beat 16 (B4a) |
 | Halcyon/Skirts | 2/6 | 22/40 | 40/55 | 6/12 | the Skirts written (B4a): the town under the arcology and a gallery under its pit; the Line's last stop; beat 16 opened; the seventh companion joins here. The arcology itself is B4b |
 | Act 2 wilds | 28/28 | 137/137 | 322/322 | 28/28 | Ninebridge, Openfield, the Sump and Cistern 4 playable; the Rail Corridor written (B5a): Four Ways, both halts, Yard Nine and Kettle Cut, the Line ridden from every stop, the rail bandits' line and four side lines; the Drowned Shore written (B5b): Gull Stilts, the Rigs, Blackcap and the dike road, the tide boat, the shore's line, two side lines and the dives in three bands; the Teeth mines and the Northern Wet written (B5c): Number Four and its old level, Sawtown, Ashby Dam and its gallery, Low Landing, two roadside maps, the barges from every river stop, the north track, the ropeway, the mines' line and the Wet's line and three side lines, activities in bands; the Ashlands and the Long Night written (B5d): Spindle, Kelso and its hall, Pemberton, Saddleback and a roadside map, the remnant machines on the glass, the Ashlands' line and two side lines, picking runs in bands, the act's alliance at Openfield and a side line on the Line. Act 2's wilds complete in content (counts approximate; Meridian's Docks are counted under Meridian) |
-| Act 3/endings | 0/4 | — | 0/10 | 0/5 | — |
+| Act 3/endings | 0/1 (+5 reused) | — | 1/~50 | 10/10 skeletons | B6a: the act's groundwork (shared conditions, quest skeletons, papers, events, the shared test fixture); scenes from B6b |
 | Companions | — | 7/7 | 0/7 arcs | 0/7 | Tamsin, Wren, Ilya, Odile, Ash, Nine can join; Kes joins in the Skirts (B4a, with her arc and quest); arcs later |
 | Factions joinable | — | — | — | 0/9 | design pending |
 

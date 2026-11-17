@@ -1,0 +1,380 @@
+import type { GameState } from '../../engine/core/state';
+import { test, type Cond } from '../../engine/world/logic';
+
+/**
+ * Act 3 and the endings (B6): the conditions every Act 3 slice shares. The Long Night (B5d) and the arcology slice (B4b,
+ * parked off main) are read ONLY through this file: no other B6 file names one of their flags. Then the Act 3 state
+ * the slices pass to each other, the gates of the five endings, the modifiers the epilogue reads (`modValue`), the
+ * muster's needs, the readiness acts, the amendment's clauses, and at the end the registry of Act 3's flags (each with its
+ * values, so the next slice reads without guessing). Nothing here sums good and evil: every gate reads local state (flags,
+ * a settlement's standing, a faction's respect, a person's trust, a companion's approval).
+ * Story notes: story/B6_NOTES_SECRET.md (§1 the reads, §4 the gates, §5 the modifiers; "As built" for the B5d mapping).
+ */
+
+const F = (flag: string, eq?: string | number | boolean): Cond => (eq === undefined ? { flag } : { flag, eq });
+const ANY = (...c: Cond[]): Cond => ({ any: c });
+const ALL = (...c: Cond[]): Cond => ({ all: c });
+const NOT = (c: Cond): Cond => ({ not: c });
+
+// ---------------------------------------------------------------- the companions
+
+export const TAMSIN = 'npc_c9_03', WREN = 'npc_rd_03', ILYA = 'npc_sh_17', ODILE = 'npc_nb_03', ASH = 'npc_of_03', NINE = 'npc_md_nine', KES = 'npc_hs_01';
+export type CompanionKey = 'tamsin' | 'wren' | 'ilya' | 'odile' | 'ash' | 'nine' | 'kes';
+
+/** Each companion's own flags (U8): the join, the leaving (any `<c>_left` value; a won-back companion has it cleared to
+ * false), and what puts them out of the story for good (gone home, gone for good, dead). */
+export const COMPANIONS: Record<CompanionKey, { id: string; joined: string; left: string; gone?: Cond }> = {
+  tamsin: { id: TAMSIN, joined: 'tam_joined', left: 'tam_left', gone: ANY(F('tam_home'), F('a3_tamsin_dead')) },
+  wren: { id: WREN, joined: 'wren_joined', left: 'wren_left', gone: F('wren_hanged') },
+  ilya: { id: ILYA, joined: 'ilya_recruited', left: 'ilya_left' },
+  odile: { id: ODILE, joined: 'odile_joined', left: 'odile_left', gone: F('odile_gone') },
+  ash: { id: ASH, joined: 'ash_joined', left: 'ash_left', gone: ANY(F('ash_gone'), F('a3_ash', 'self')) },
+  nine: { id: NINE, joined: 'nine_joined', left: 'nine_left', gone: ANY(F('nine_gone'), F('nine_disposed'), F('a3_nine_struck')) },
+  kes: { id: KES, joined: 'kes_joined', left: 'kes_left' },
+};
+export const COMPANION_KEYS = Object.keys(COMPANIONS) as CompanionKey[];
+/** On the player's side: joined, not left, not gone. Travelling (`inParty`) or waiting somewhere; these gather at the
+ * Spire's close in Act 3 (21a). */
+export const ON_SIDE = (c: CompanionKey): Cond => {
+  const d = COMPANIONS[c];
+  return ALL(F(d.joined), NOT(F(d.left)), ...(d.gone ? [NOT(d.gone)] : []));
+};
+export const IN = (id: string): Cond => ({ inParty: id });
+
+// ---------------------------------------------------------------- §1.1 the Long Night (B5d), reconciled to its real flags
+
+/** Act 2 is closed: the Long Night's dawn has come and the alliance is decided. Act 3 opens on it. */
+export const LN_DONE: Cond = F('ln_done');
+/** The Long Night's alliance (`ln_alliance`). B5d adds a fifth side, `none` (the player stood with nobody and the forecast
+ * was kept). With `ln_done` but no alliance (a hand-made state), the alliance reads as `truce`: the safe default. */
+export type Side = 'choir' | 'guild' | 'ledger' | 'truce' | 'none';
+export const SIDES: Side[] = ['choir', 'guild', 'ledger', 'truce', 'none'];
+export const LN = (side: Side): Cond => (side === 'truce' ? ANY(F('ln_alliance', 'truce'), ALL(LN_DONE, NOT(F('ln_alliance')))) : F('ln_alliance', side));
+/** How the night came out for the side chosen (`ln_band`: strong ≥ 4, mixed 2–3, thin ≤ 1; a truce and none have their own). */
+export type Band = 'strong' | 'mixed' | 'thin' | 'truce' | 'none';
+export const LN_BAND = (b: Band): Cond => F('ln_band', b);
+/** What Openfield is at the dawn (`ln_openfield`). */
+export const OPENFIELD = (v: 'stands' | 'scorched' | 'guild' | 'evicted' | 'burned'): Cond => F('ln_openfield', v);
+/** Keystone 8 as the plan's alias names it: Openfield burned in the Long Night. */
+export const MASON_BURNED: Cond = OPENFIELD('burned');
+/** Keystone 8 itself (`ks_mason` = lives | dead | exiled). Unset reads as alive. `MASON_SCARRED`: pulled out of the burning
+ * door alive. */
+export const MASON_DEAD: Cond = F('ks_mason', 'dead');
+export const MASON_EXILED: Cond = F('ks_mason', 'exiled');
+export const MASON_LIVES: Cond = NOT(MASON_DEAD);
+export const MASON_SCARRED: Cond = F('ln_mason_burned');
+/** Keystone 7 (`ks_calla` = free | imprisoned; `ln_calla` = freed | taken). B5d never kills her: `CALLA_DEAD` reads only her
+ * own body (a later fight). With the night over and nothing set, she reads as held (the safe default). */
+export const CALLA_DEAD: Cond = { dead: 'npc_sh_05' };
+export const CALLA_FREE: Cond = ALL(NOT(CALLA_DEAD), ANY(F('ks_calla', 'free'), F('ln_calla', 'freed')));
+export const CALLA_HELD: Cond = ALL(NOT(CALLA_DEAD), NOT(CALLA_FREE), ANY(F('ks_calla', 'imprisoned'), ALL(LN_DONE, NOT(F('ks_calla')))));
+/** Keystone 9 touched in the Long Night (`ks_sarr` = dead, `ln_sarr` = lives | dead), or her body. Unset reads as alive. */
+export const SARR_DEAD: Cond = ANY(F('ks_sarr', 'dead'), F('ln_sarr', 'dead'), { dead: 'npc_nb_01' });
+export const SARR_ALIVE: Cond = NOT(SARR_DEAD);
+/** Kennel Seven, the Ashlands' reserve (`an_reserve` = concern | sealed | player | leaderless). The plan's three aliases,
+ * plus B5d's fourth state: the command unit broken, the reserve nobody's (`HOUNDS_FERAL`). Unset or sealed: asleep. */
+export const HOUNDS_PLAYER: Cond = F('an_reserve', 'player');
+export const HOUNDS_CONCERN: Cond = F('an_reserve', 'concern');
+export const HOUNDS_FERAL: Cond = F('an_reserve', 'leaderless');
+export const HOUNDS_ASLEEP: Cond = NOT(ANY(HOUNDS_PLAYER, HOUNDS_CONCERN, HOUNDS_FERAL));
+/** The guild's hounds made to lie down with the core at the Long Night. */
+export const HOUNDS_LAID_DOWN: Cond = F('ln_hounds', 'stood_down');
+/** Ash's red line crossed on the night (`ash_redline` = longnight); B6 reads only that he is gone. */
+export const ASH_LN_REDLINE: Cond = F('ash_redline', 'longnight');
+export const ASH_GONE: Cond = F('ash_gone');
+/** Ash's orders refused: before the night, or at the knife itself (`refused_late`). */
+export const ASH_REFUSED: Cond = ANY(F('ash_orders', 'refused'), F('ash_orders', 'refused_late'));
+/** The city's unit as the night leaves it (a real U8 flag; the night only reads it). */
+export const NINE_CONSCIENCE: Cond = F('nine_stance', 'conscience');
+export const NINE_DEPUTY: Cond = F('nine_stance', 'deputy');
+export const NINE_BACK: Cond = F('ln_nine_back');
+/** The night's other leavings Act 3 reads. */
+export const LN_PEOPLE = (v: 'heard' | 'outside' | 'removed' | 'relocated'): Cond => F('ln_people', v);
+export const LN_STORES = (v: 'choir' | 'guild' | 'half' | 'precinct' | 'split' | 'shore' | 'north' | 'lost'): Cond => F('ln_stores', v);
+export const LN_OWED: Cond = F('ln_owed');
+export const LN_CITY_WARRANT: Cond = F('ln_city_warrant');
+export const LN_FORECAST_KEPT: Cond = F('ln_forecast_kept');
+export const LN_LEASH_SPREADS: Cond = F('ln_leash', 'spreads');
+/** A pre-Scald board with nobody in it, for the mast (19b B): the shore's pump controller, the digger's, or the army's
+ * shunter board out of Kelso's shed, still carried. */
+export const MAST_BOARD: Cond = ANY({ item: 'j_controller' }, { item: 'j_tm_controller' }, { item: 'k_an_board' });
+
+// ---------------------------------------------------------------- §1.2 the arcology slice (B4b, parked): its flags, read only here
+
+export const B4B = {
+  inside: F('hc_inside'),
+  done: F('a2_halcyon_done'),
+  sotoMet: F('hc_soto_met'),
+  offer: (v: 'accepted' | 'refused' | 'feigned'): Cond => F('hc_offer', v),
+  contract: (v: 'citizen' | 'infiltrator' | 'guest'): Cond => F('hc_contract', v),
+  leash: (v: 'cut' | 'sold' | 'seized' | 'left'): Cond => F('hc_leash', v),
+  longlived: (v: 'exposed' | 'soto' | 'kept'): Cond => F('hc_longlived', v),
+  reserve: F('hc_reserve'),
+  clinic: F('hc_clinic'),
+  kesContract: F('hc_kes_contract'),
+  garden: (v: 'skirts' | 'openfield' | 'sold' | 'caught'): Cond => F('hc_garden', v),
+  funicular: (v: 'down' | 'stayed' | 'reported'): Cond => F('hc_funicular', v),
+};
+/** Every flag the arcology slice's draft writes (for tests "with and without B4b"). */
+export const B4B_FLAGS = ['hc_inside', 'a2_halcyon_done', 'hc_soto_met', 'hc_offer', 'hc_contract', 'hc_leash', 'hc_longlived', 'hc_reserve', 'hc_clinic', 'hc_kes_contract', 'hc_garden', 'hc_funicular'];
+/** A buyer for what is under the Spire, from the arcology. Every B4b-fed key has an Act 3 alternate (C_BUYER below). */
+export const C_BUYER_B4B: Cond = ANY(B4B.offer('accepted'), B4B.offer('feigned'));
+/** Kes's lineage spoken; heard by the arcology's Chair only with B4b. */
+export const KES_LINEAGE: Cond = F('kes_lineage', 'speak');
+export const KES_LINEAGE_HEARD: Cond = ALL(KES_LINEAGE, B4B.inside);
+/** The Skirts' strike still unsettled. B6 never arms its break (that would resolve it behind the player's back). */
+export const STRIKE_OUT: Cond = NOT(F('hs_shift'));
+
+// ---------------------------------------------------------------- Act 3's own state, shared between slices
+
+export const A3_OPEN: Cond = F('a3_open');
+export const ORDER_READ: Cond = F('a3_order_read');
+/** The Sallow's places (19: `q_a3_return` reaches the Sallow at any of them, or by the road scenes' own flag). */
+export const SALLOW_MAPS = ['c9_mouth', 'shale', 'drywells', 'overpass', 'tollhouse', 'signalhill', 'saltpan', 'orchard', 'wheel', 'windpumps', 'wild:sallow'];
+export const IN_SALLOW: Cond = ANY(F('a3_in_sallow'), ...SALLOW_MAPS.map((m): Cond => ({ at: m })));
+export const AT_KNOCK: Cond = F('a3_at_knock');
+/** The guild at Knock (20a): the Long Night's guild side, a buyer from the arcology, or the guild holding the Line or the
+ * kennel boards. B6f sets `a3_guild_in` from this; hounds on leads come with it when the guild has hounds to bring. */
+export const GUILD_IN_PLAY: Cond = ANY(LN('guild'), C_BUYER_B4B, F('rc_line', 'guild'), F('nw_controllers', 'guild'));
+export const HOUNDS_IN_PLAY: Cond = ALL(GUILD_IN_PLAY, ANY(F('nw_controllers', 'guild'), LN('guild'), HOUNDS_CONCERN));
+/** Who leads the column: Lowe, or his sergeant if he is dead. Who leads the Unwritten: Petra, or `npc_a3_u1`. */
+export const LOWE = 'npc_md_01', REYES = 'npc_md_12', PETRA = 'npc_of_02', HALE = 'npc_kn_out_lead', QUILL = 'npc_cr_11';
+export const LOWE_DEAD: Cond = { dead: LOWE };
+export const PETRA_DEAD: Cond = { dead: PETRA };
+export const HALE_ALIVE: Cond = NOT({ dead: HALE });
+/** The reserve's case at the Court won by a principle (20e: −30 to Lowe's stand-down). */
+export const RESERVE_STAYED: Cond = ANY(F('ca_reserve', 'stayed'), F('ca_reserve', 'attendance'));
+
+// ---------------------------------------------------------------- §4.1 the gates of the five endings
+
+export const SASH_WORN: Cond = F('a3_sash', 'worn');
+export const SASH_REFUSED: Cond = F('a3_sash', 'refused');
+/** The steps are done and the vault is open, the sash worn or not. */
+export const AT_VAULT: Cond = ALL(F('a3_pnr'), F('a3_sash'));
+
+/** A: the Plan. Always open at the vault; worn → A1 (sign what must be signed), refused → A2 (walk out). */
+export const A: Cond = AT_VAULT;
+export const A1: Cond = ALL(A, SASH_WORN);
+export const A2: Cond = ALL(A, SASH_REFUSED);
+
+/** B: the forecasting core destroyed. */
+export const B_MEANS: Cond = ANY(
+  F('a3_unwritten', 'with_you'),
+  LN('choir'),
+  ALL(IN(ASH), ASH_REFUSED),
+  { item: 'k_a3_charge' },
+  ALL(F('a3_bram_cut'), { skill: 'mechanics', gte: 50 }),
+);
+export const B: Cond = ALL(AT_VAULT, B_MEANS);
+
+/** C: the core signed over to the Concern through the guild (the Board wanted the Magistrate's signature, so the sash). */
+export const C_BUYER: Cond = ANY(C_BUYER_B4B, LN('guild'), F('a3_concern_terms', 'accepted'));
+export const C: Cond = ALL(AT_VAULT, SASH_WORN, C_BUYER, { item: 'k_a3_transfer' });
+
+/** D: every forecast read out to everyone through the relay chain to Signal Hill. */
+export const D_VOICE: Cond = F('a3_mast', 'raised');
+export const D_READER: Cond = ANY(
+  ALL(IN(NINE), ANY(NINE_CONSCIENCE, F('nine_log_given'))),
+  ALL(F('a3_ally_seventeen'), F('nw_dam', 'truth')),
+  ALL(F('a3_ally_saints'), F('bw_static', 'kept')),
+  { origin: 'archive_clerk' },
+  { skill: 'science', gte: 65 },
+);
+export const D_PEOPLE: Cond = ANY(
+  LN('choir'), { member: 'choir', rank: 'sibling' }, { standing: { settlement: 'openfield', gte: 20 } },
+  F('a3_unwritten', 'with_you'), CALLA_FREE, F('a3_ally_choir'),
+  F('a3_ally_wheel'), ALL(F('a3_c9', 'opened'), { standing: { settlement: 'cistern9', gte: 20 } }),
+);
+export const D_ARCHIVE: Cond = ANY(F('a3_archive', 'open'), F('a3_c9', 'opened'), ALL({ item: 'k_ar_refusals' }, F('tam_why')));
+export const D: Cond = ALL(AT_VAULT, D_VOICE, D_READER, D_PEOPLE, D_ARCHIVE);
+
+/** E: the Magistrate's Amendment: the sash taken and the law rewritten from inside, in the Court's own register. An
+ * uncatalogued register is in the Court's keeping, so `E_REG` holds on a state that never touched it. */
+export const E_FILE: Cond = ANY(F('ar_verdict', 'contested'), F('ar_verdict', 'agreed'), F('a3_file', 'contested'));
+export const E_PREC: Cond = { flag: 'ca_precedents', gte: 2 };
+export const E_REG: Cond = ANY(NOT(F('prec_register', 'catalogued')), F('a3_register_back'));
+export const E: Cond = ALL(AT_VAULT, SASH_WORN, E_FILE, E_PREC, E_REG);
+
+/** The five ends by their `a3_end` value, each with its gate (the vault's choice offers all five with `showLocked`). */
+export type End = 'plan' | 'unwritten' | 'concern' | 'opensky' | 'amendment';
+export const ENDS: Record<End, Cond> = { plan: A, unwritten: B, concern: C, opensky: D, amendment: E };
+/** Every key of every gate, by name (for tests and the slices; the player never sees these names: the tracker
+ * `q_a3_hold` lists allies, things carried and standing instead). */
+export const KEYS: Record<string, Cond> = { B_MEANS, C_BUYER, D_VOICE, D_READER, D_PEOPLE, D_ARCHIVE, E_FILE, E_PREC, E_REG };
+
+/** E's clauses (§4.2): the chair amends one to three in its first season, each from a precedent the player holds. */
+export const CLAUSES: { id: string; needs: Cond }[] = [
+  { id: 'fines', needs: F('prec_forecast_fine', 'void') },
+  { id: 'living', needs: F('prec_unrecorded', 'yields') },
+  { id: 'keeper', needs: ANY(F('prec_unit_keeper', 'self'), F('prec_recall', 'keeper')) },
+  { id: 'refuse', needs: F('prec_refuse_benefit') },
+  { id: 'reserve', needs: F('prec_reserve') },
+  { id: 'passenger', needs: F('dk_prec_passenger') },
+  { id: 'speech', needs: F('prec_sedition') },
+];
+
+// ---------------------------------------------------------------- §2.3 the muster and §5 the readiness acts
+
+/** The allies called home by letter (B6c writes the letters; each needs its owed flag or local standing). */
+export type Ally = 'shale' | 'dogs' | 'choir' | 'wheel' | 'shift' | 'stand' | 'boats' | 'barges' | 'gangs' | 'saints' | 'seventeen';
+export const ALLY_NEEDS: Record<Ally, Cond> = {
+  shale: ANY({ standing: { settlement: 'shale', gte: 15 } }, { member: 'shale_militia' }),
+  dogs: ANY(F('wren_exodus'), { rep: { faction: 'rust_dogs', respect: 15 } }),
+  choir: ANY(F('sky_rite'), { standing: { settlement: 'openfield', gte: 15 } }, LN('choir')),
+  wheel: ANY({ member: 'wheel' }, { standing: { settlement: 'wheel', gte: 15 } }),
+  shift: ANY(F('hs_shift', 'won'), F('hs_shift', 'revolt')),
+  stand: F('dk_stand_owed'),
+  boats: F('ds_boats_owed'),
+  barges: F('nw_barges_owed'),
+  gangs: ANY(F('bw_turf', 'peace'), F('bw_three_crews')),
+  saints: F('bw_static', 'kept'),
+  seventeen: F('nw_dam', 'truth'),
+};
+export const ALLY = (a: Ally): Cond => F(`a3_ally_${a}`);
+/** Where each ally counts: at Knock's door (20e), and at the close for the readiness count (M7). */
+export const ALLIES_AT_KNOCK: Ally[] = ['shale', 'dogs', 'choir', 'wheel'];
+export const ALLIES_AT_CLOSE: Ally[] = ['choir', 'wheel', 'stand', 'gangs', 'saints'];
+
+/** The readiness hub's eight acts at the close (`d_a3_ready`, B6m): each adds 1 to `a3_ready`, once (`a3_ready_<id>`). */
+export const READY_ACTS: { id: string; needs: Cond }[] = [
+  { id: 'choir', needs: ALLY('choir') },
+  { id: 'stand', needs: ALLY('stand') },
+  { id: 'gangs', needs: ALLY('gangs') },
+  { id: 'wheel', needs: ALLY('wheel') },
+  { id: 'lowe', needs: F('a3_lowe', 'stood_down') },
+  { id: 'saints', needs: ALLY('saints') },
+  { id: 'nine', needs: ANY(F('nine_log_given'), NINE_CONSCIENCE) },
+  { id: 'warned', needs: { flag: 'a3_warned', gte: 3 } },
+];
+
+// ---------------------------------------------------------------- §5 the modifiers (ordered; first match wins; the last is the default)
+
+export interface Mod { id: string; values: { id: string; if?: Cond }[] }
+
+/** The value a modifier takes on this state: its first value whose condition holds (the last has none). */
+export function modValue(g: GameState, m: Mod): string {
+  for (const v of m.values) if (!v.if || test(v.if, g)) return v.id;
+  return m.values[m.values.length - 1].id;
+}
+
+const END_IS = (e: End): Cond => F('a3_end', e);
+
+/** M1 the Leash. Without B4b it stays the Concern's unless the core goes to it too. */
+export const M1_LEASH: Mod = { id: 'leash', values: [
+  { id: 'cut', if: B4B.leash('cut') },
+  { id: 'yours', if: B4B.leash('seized') },
+  { id: 'sold', if: B4B.leash('sold') },
+  { id: 'spread', if: END_IS('concern') },
+  { id: 'theirs' },
+] };
+/** M2 the Sink. */
+export const M2_SINK: Mod = { id: 'sink', values: [
+  { id: 'lost', if: ALL(END_IS('unwritten'), NOT(F('sk_pumps', 'seized'))) },
+  { id: 'held', if: ALL(END_IS('unwritten'), F('sk_pumps', 'seized')) },
+  { id: 'saved', if: F('sk_saved') },
+  { id: 'relieved', if: ALL(F('sk_flooded'), F('nw_sink_relief')) },
+  { id: 'flooded' },
+] };
+/** M3 Halcyon. "Burned" works without B4b: the Shift armed, Maren alive, and the reserve held by the player. */
+export const M3_HALCYON: Mod = { id: 'halcyon', values: [
+  { id: 'opened', if: B4B.longlived('exposed') },
+  { id: 'burned', if: ALL(ANY(F('hs_shift', 'won'), F('hs_shift', 'revolt')), F('ks_maren', 'lives'), ANY(B4B.leash('cut'), HOUNDS_PLAYER), NOT(END_IS('concern'))) },
+  { id: 'risen', if: END_IS('concern') },
+  { id: 'reformed', if: B4B.longlived('soto') },
+  { id: 'stands' },
+] };
+/** M4 the Cistern. MOTHER (`a3_mother`) is a line inside every value. A sealed reserve is relocated by the chair's first
+ * signed act under A1, C, or E without the reserve clause, unless the Court stayed the order on consent. */
+export const M4_CISTERN: Mod = { id: 'cistern', values: [
+  { id: 'opened', if: F('a3_c9', 'opened') },
+  { id: 'walked', if: ALL(F('a3_c9', 'relocated'), F('a3_c9_after', 'walked')) },
+  { id: 'sold', if: F('a3_c9_how', 'sold') },
+  { id: 'relocated', if: ANY(F('a3_c9', 'relocated'), ALL(F('a3_c9', 'sealed'), SASH_WORN,
+    ANY(END_IS('plan'), END_IS('concern'), ALL(END_IS('amendment'), NOT(F('a3_amend_reserve')))), NOT(F('ca_reserve', 'stayed')))) },
+  { id: 'struck', if: F('a3_c9_how', 'struck') },
+  { id: 'sealed' },
+] };
+/** M5 Kennel Seven. B5d's fourth state (the command unit broken: the reserve nobody's) is `feral`. */
+export const M5_HOUNDS: Mod = { id: 'hounds', values: [
+  { id: 'yours', if: HOUNDS_PLAYER },
+  { id: 'woken', if: ANY(END_IS('concern'), HOUNDS_CONCERN, F('a3_hounds_in')) },
+  { id: 'feral', if: HOUNDS_FERAL },
+  { id: 'dormant' },
+] };
+/** M6 the sash. */
+export const M6_SASH: Mod = { id: 'sash', values: [{ id: 'amended', if: END_IS('amendment') }, { id: 'worn', if: SASH_WORN }, { id: 'refused' }] };
+/** M7 the sky (D only): the price of reading everything aloud, by the readiness count. */
+export const M7_SKY: Mod = { id: 'sky', values: [{ id: 'held', if: { flag: 'a3_ready', gte: 5 } }, { id: 'hard', if: { flag: 'a3_ready', gte: 2 } }, { id: 'burning' }] };
+/** M9 a place's own standing, by band (local reputation, never karma). */
+export const M9_STANDING = (settlement: string): Mod => ({ id: `standing_${settlement}`, values: [
+  { id: 'loved', if: { standing: { settlement, gte: 25 } } },
+  { id: 'liked', if: { standing: { settlement, gte: 10 } } },
+  { id: 'hated', if: { standing: { settlement, lte: -15 } } },
+  { id: 'none' },
+] });
+export const MODS: Mod[] = [M1_LEASH, M2_SINK, M3_HALCYON, M4_CISTERN, M5_HOUNDS, M6_SASH, M7_SKY];
+/** M8 the clauses (E only): the `a3_amend_<id>` the chair chose. */
+export const CLAUSES_CHOSEN = (g: GameState): string[] => CLAUSES.filter((c) => test(F(`a3_amend_${c.id}`), g)).map((c) => c.id);
+
+/** R49's home (slide 27, `ep_home`; B6v): the chair under A1, C and E; otherwise wherever the player's life is. */
+export const EP_HOME: Mod = { id: 'home', values: [
+  { id: 'city', if: ALL(SASH_WORN, ANY(END_IS('plan'), END_IS('concern'), END_IS('amendment'))) },
+  { id: 'knock', if: ANY(F('a3_c9', 'opened'), { standing: { settlement: 'cistern9', gte: 10 } }) },
+  { id: 'shale', if: ALL(F('a3_shale', 'free'), { standing: { settlement: 'shale', gte: 10 } }) },
+  { id: 'road', if: ANY({ member: 'wheel' }, F('wren_after', 'road'), F('kes_after', 'road')) },
+  { id: 'nowhere' },
+] };
+
+/** The epilogue's slides in play order (§6.2; `ep_<slide>` holds the variant shown). The coordinator's default: only
+ * the slides whose subject the player met are shown (B6s–B6v give each slide its `applies`). */
+export const EP_SLIDES = ['steps', 'ledger', 'cistern', 'knock', 'shale', 'dogs', 'guild', 'choir', 'precinct', 'sink', 'crown', 'edges', 'skirts', 'line', 'shore', 'teeth', 'wet', 'wheel', 'ashlands', 'tamsin', 'wren', 'ilya', 'odile', 'ash', 'nine', 'kes', 'r49'];
+
+/*
+ * ---------------------------------------------------------------- the Act 3 flag registry
+ * Every Act 3 flag, its values and the slice that sets it. Each slice adds its own lines here as it lands.
+ *
+ * B6a (built):
+ *   a3_open                  true            the order has come (world event a3_order); Act 3 is open
+ *   a3_order_read            true            the fourth order read in the pack (d_a3_order_read); starts q_a3_return
+ *   a3_summoned              true            the Ledger's card has come (world event a3_summons); starts q_a3_spire and q_a3_hold
+ *   a3_recall_due            true            the recall notice for Unit 9 has come (the order's fourth sheet, or a3_recall_notice)
+ *   ev_armed_a3_*            number          the engine's own arming time for each a3 world event
+ * Planned (the slice named sets it; values as the plan fixes them):
+ *   a3_recall                declined | stayed | handed | court | bought | hidden | fought | taken          B6b
+ *   nine_disposed            true                                                                        B6b
+ *   ca_recall / prec_recall  kept | returned / keeper                                                    B6b (court)
+ *   ca_reserve               stayed | attendance | privilege | upheld                                    B6b (court)
+ *   prec_reserve             consent | attendance                                                        B6b (court)
+ *   a3_route_home            column | first | carts | line | wheel | buggy | foot                        B6c
+ *   a3_in_sallow             true (the road home reached the Sallow)                                     B6c
+ *   a3_at_knock              true                                                                        B6c / B6f (Knock's trigger)
+ *   a3_ally_<ally>           true, one per ALLY_NEEDS key                                                B6c
+ *   a3_archive_promise       true                                                                        B6c
+ *   a3_mast                  raised | narrow;  a3_mast_how  x | c | b | t | v | k;  a3_mast_keeper  hollow | wheel | knock   B6d
+ *   a3_aerial_found          true (the aerial's top section found in the gully: q_a3_mast's objective)    B6d
+ *   ks_ada                   stays | resigns | dead;  a3_shale  free | company | dogs | abandoned        B6e
+ *   a3_pike                  exposed | paid | robbed | put_off | signed                                   B6e
+ *   a3_guild_in / a3_hounds_in  true (from GUILD_IN_PLAY / HOUNDS_IN_PLAY)                               B6f
+ *   a3_lowe_heard, a3_maud_secret  true;  a3_maud / a3_corin / a3_dace  (by B6f)                          B6f
+ *   a3_linnet                column | dogs | shale | knock                                               B6f
+ *   a3_unwritten             with_you | gone | stopped | burning                                         B6g
+ *   a3_guild                 paper_held | refused;  a3_hale  answered | gone | dead                       B6g
+ *   a3_inside, a3_faces, a3_letter_read  true;  a3_in_how  hatch | shaft | door | tamsin | bram           B6h
+ *   a3_archive               open | sealed | burned                                                      B6h / B6g
+ *   a3_tam_card, a3_bram_cut  true;  a3_ines  opens | seals | falls;  a3_pell  unfit | fit | refused       B6i
+ *   a3_ring                  sealed | open | city                                                        B6i
+ *   a3_c9                    sealed | opened | relocated                                                 B6j
+ *   a3_c9_how                lowe | welded | struck | fought | ines | sold | order | forced              B6j
+ *   a3_lowe                  stood_down | yielded | dead | carried                                       B6j
+ *   a3_tam_door, a3_tamsin_dead, a3_nine_struck, a3_door_fight  true                                     B6j
+ *   a3_mother                kept | knock | asleep | burned                                              B6g / B6i / B6j
+ *   a3_c9_after              walked | held                                                               B6k
+ *   a3_concern_terms         accepted | refused;  a3_register_back  true;  ca_calla, prec_sedition       B6l
+ *   a3_ready (count), a3_ready_<act>  true;  a3_warned (count);  a3_pnr  true                            B6m
+ *   a3_<c>_last              together | apart | none   (tamsin, wren, ilya, kes, odile, ash, nine)       B6n / B6o
+ *   a3_kes_numbed            true                                                                        B6j / B6n
+ *   a3_sash                  worn | refused;  a3_file  contested | failed;  a3_ash  between | faced | struck | self | away   B6p
+ *   a3_end                   plan | unwritten | concern | opensky | amendment                            B6q
+ *   a3_amend_<clause>        true, one per CLAUSES id;  a3_vault_fight  true                              B6r
+ *   ep_<slide>               the variant id shown, one per EP_SLIDES entry;  ep_home  (EP_HOME)          B6s–B6v
+ */

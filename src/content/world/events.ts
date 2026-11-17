@@ -3,6 +3,7 @@ import { DS_EVENTS } from './ds_shore';
 import { DK_EVENTS } from './md_docks';
 import { B5C_EVENTS } from './b5c_wilds';
 import { B5D_EVENTS } from './b5d_ashlands';
+import { A3_EVENTS } from './a3_events';
 
 /**
  * Scheduled world events. There are no day limits in this game: an event waits for the player (it fires at its
@@ -147,3 +148,5 @@ Object.assign(WORLD_EVENTS, DK_EVENTS);
 Object.assign(WORLD_EVENTS, B5C_EVENTS);
 // the Ashlands' and the Long Night's events (B5d) live in b5d_ashlands.ts
 Object.assign(WORLD_EVENTS, B5D_EVENTS);
+// Act 3's events (B6) live in a3_events.ts; the shared conditions they read in a3_conds.ts
+Object.assign(WORLD_EVENTS, A3_EVENTS);
