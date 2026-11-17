@@ -22,6 +22,12 @@ Sessions can be cut off at any moment by usage limits. Work is structured so not
 4. Never keep important plans only in chat — write them into PROGRESS.md / DESIGN.md / story files.
 5. Push retries on network failure: 2s, 4s, 8s, 16s.
 
+6. **An interrupt means "read my message", never "stop the work"** (owner, 2026-11-17, binding). When the owner interrupts
+   a turn: read the message, answer it, and carry on. Then, at once and every time, check every background agent
+   and job (ListAgents, `ps`, Unity) and relaunch any the interrupt stopped, from where they stood. The owner
+   authorises this in advance, for good: never ask first, never stop to wait. Never report a stopped job as running;
+   every status report says what actually ran since the last one and the time of the last real progress.
+
 ## 1. SPOILER RULE (absolute)
 The owner wants to play unspoiled.
 - Story truth lives ONLY in `story/` (`STORY_SECRET.md` = owner's original; `STORY_PLAN_SECRET.md` =
