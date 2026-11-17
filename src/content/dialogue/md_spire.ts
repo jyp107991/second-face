@@ -383,7 +383,7 @@ const KEEPER_TOPICS = (sfx: string): OptionDef[] => [
 ];
 
 export const d_ar_keeper: DialogueDef = {
-  id: 'd_ar_keeper', owner: 'npc_ar_03', start: [{ if: { flag: 'md_fight' }, node: 'shut' }, { if: { knows: 'ar_keeper_met' }, node: 'again' }, { node: 'intro' }],
+  id: 'd_ar_keeper', owner: 'npc_ar_03', start: [{ if: { knows: 'ar_keeper_met' }, node: 'again' }, { node: 'intro' }],
   nodes: {
     intro: {
       text: 'A small woman behind the catalogue counter with grey hair dragged back into a braid that has given up, reading glasses pushed up into it, and ink on the side of her right hand from forty years of the same habit. "Keeper Marwood. The catalogue." She does not stop writing in the index. "Everything written in this city is written once and kept here. Kept is not the same as read. That is what I am for."',
@@ -436,7 +436,6 @@ export const d_ar_keeper: DialogueDef = {
     },
     book_no: { text: 'She takes her hands off the cover. "No," she agrees. "It\'s hers." She goes back to the index. "If she ever wants it kept somewhere safer than a back room, tell her the catalogue has a shelf. It wouldn\'t be the same. I know that."', again: 'She has gone back to the index. The offer of a shelf stands, unrepeated.', effects: [{ learn: 'ca_keeper_declined' }], options: [bye] },
     ...MARWOOD_BACK_NODES,
-    shut: { text: 'Nothing.', again: 'The catalogue counter is shut, the keeper gone behind it. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 
@@ -476,7 +475,7 @@ const STAIR_ROUTES = (sfx: string): OptionDef[] => [
 
 export const d_ar_stair: DialogueDef = {
   id: 'd_ar_stair', owner: 'npc_ar_05',
-  start: [{ if: { flag: 'md_fight' }, node: 'shut' }, { if: { flag: 'ar_up' }, node: 'open' }, { if: NIGHT, node: 'night' }, { node: 'day' }],
+  start: [{ if: { flag: 'ar_up' }, node: 'open' }, { if: NIGHT, node: 'night' }, { node: 'day' }],
   nodes: {
     day: {
       text: '"Slip, or the lens." The porter at the desk at the foot of the stair is a big man with lamp-black worked into the creases of his fingers, and behind him the stair goes up into a dark that a lamp on every landing does nothing about. A lens on a post at his elbow; a lift beside it with its cage rusted shut. "Hemant. I light the landings. All ninety-one."',
@@ -514,7 +513,6 @@ export const d_ar_stair: DialogueDef = {
       again: 'The porter holds the lamp out, and waits.',
       options: [{ id: 'stair.climb', text: '(Climb.)', effects: [GOTO_TOP], exit: true, repeat: true }, { text: '(Not now.)', exit: true }],
     },
-    shut: { text: 'Nothing.', again: 'The stair door is chained and the porter gone. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
   },
 };
 

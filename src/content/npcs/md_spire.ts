@@ -2,11 +2,12 @@ import type { NpcDef } from '../../engine/npc/defs';
 
 /**
  * Meridian, the Archive Spire and the Court of Accounts (Act 2, B3.11). The close is the Precinct's own ground: wardens in
- * grey keep it and turn only if the Precinct does (`md_fight`). The assessor on the bench is a municipal unit, not a
- * person; the voice at the top of the stair is never placed (the def exists for the speaker's name, like MOTHER's).
+ * grey keep it and do not turn (the stair wardens of Act 3's vault are their own, in `npcs/a3.ts`). The assessor on the
+ * bench is a municipal unit, not a person; the voice at the top of the stair is never placed (the def exists for the
+ * speaker's name, like MOTHER's).
  */
 const SP = { team: 'wardens', settlement: 'meridian', faction: 'wardens' } as const;
-const warden = { ...SP, role: 'guard' as const, hostileIf: { flag: 'md_fight' }, courage: 70 };
+const warden = { ...SP, role: 'guard' as const, courage: 70 };
 const sleep = (spot: string, from = 22, to = 6) => ({ from, to, spot, activity: 'sleep' as const });
 
 export const SPIRE_NPCS: NpcDef[] = [

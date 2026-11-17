@@ -685,7 +685,9 @@ describe('The Sink: high water, the clinic, the Pale', () => {
     g.world.knowledge.sk_schedule_known = true;
     talk('d_sk_dray', g, q, ['The pumps. Spring. You want them.', 'With me in front. Now.', '(Go.)']);
     expect(g.flags.sk_fight_pumps).toBe(true);
-    expect(cond({ hostileIf: { any: [{ flag: 'md_fight' }, { flag: 'sk_fight_pumps' }] } } as never, g)).toBe(false);
+    // the pump house's two wardens turn on the walk to the pumps, and only they: the Precinct's other wardens do not
+    for (const w of ['npc_sk_w1', 'npc_sk_w2']) expect(cond(NPCS[w].hostileIf!, g), w).toBe(true);
+    expect(NPCS.npc_md_01.hostileIf && cond(NPCS.npc_md_01.hostileIf, g)).toBeFalsy();
     g.npcs['md_sink/npc_sk_w1'] = { dead: true } as never;
     g.npcs['md_sink/npc_sk_w2'] = { dead: true } as never;
     talk('d_sk_dray', g, q, ['(Leave them to it.)']);

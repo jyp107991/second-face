@@ -6,10 +6,11 @@ import * as CONDS from '../src/content/world/a3_conds';
 import {
   A1, A2, B_MEANS, C_BUYER, CLAUSES, D_ARCHIVE, D_PEOPLE, D_READER, D_VOICE, E_FILE, E_PREC, E_REG, KEYS, READ_NINE, READ_SELF, READ_SEVENTEEN, READ_VERITY, TERMS_WORSE,
 } from '../src/content/world/a3_conds';
+import { newGameState } from '../src/engine/core/state';
 import { DialogueRunner, type DialogueDef } from '../src/engine/dialogue/dialogue';
 import { QuestEngine } from '../src/engine/quest/quest';
 import { test as cond } from '../src/engine/world/logic';
-import { actThree, hour, type G, type Over, type Preset } from './a3_fixture';
+import { actThree, hour, waitFor, type G, type Over, type Preset } from './a3_fixture';
 import {
   archive, atDesk, charge, court, desk, door, down, drive, earliest, eff, epilogue, finish, fork, goUp, has, holds, home, mast, muster, officer, readOrder, register,
   SASH_FOR, summons, talk, train, WAYS, type Game, type Way,
@@ -232,11 +233,13 @@ describe('B6w: no lockout, §3\'s table row by row, from the hostile game', () =
     expect(n.g.flags.ca_precedents).toBe(1);
   });
 
-  /** The one history B6w found where §3's promise does not hold: Sister Calla freed at the Long Night (no case for her), Nine gone
-   * (no recall), the Act 2 cases heard and lost or never opened (squatter lost, no fines contested, no deed): the reserve's case is
-   * the only precedent Act 3 can give, and E needs two. Reported, not fixed: a new precedent is a design decision (B6_NOTES §3). */
+  /** The one history B6w found where the Court's bench alone does not keep §3's promise: Sister Calla freed at the Long Night (no
+   * case for her), Nine gone (no recall), the Act 2 cases heard and lost or never opened (squatter lost, no fines contested, no deed):
+   * the reserve's case is the only precedent the Court gives in Act 3, and E needs two. The coordinator's fix (after B6w): the Harbour
+   * court's finding that a person landed on Carrick's quay is a passenger (`dk_prec_passenger`) counts as a precedent wherever E
+   * counts them (`E_PREC`), once, when the game made it; in this history it is won at the buffer (B6k). */
   const SPENT: Over = { flags: { ks_calla: 'free', ln_calla: 'freed', ca_squatter: 'lost', ca_cases_heard: 1 } };
-  it('E_PREC\'s gap, pinned: with Calla free, Nine gone and the Act 2 cases spent, every case on the bench in Act 3 heard and won gives one precedent', async () => {
+  it('E_PREC in that history: every case on the Court\'s bench in Act 3 heard and won gives one precedent, and the bench is then empty', async () => {
     const a = await atKnock(SPENT);
     court(a);
     expect(a.g.flags.ca_reserve).toBe('stayed');
@@ -244,12 +247,43 @@ describe('B6w: no lockout, §3\'s table row by row, from the hostile game', () =
     // nothing else on the bench: no recall (Nine gone), no Calla (free), the squatter's case closed, no fines contested, no deed
     a.g.locationId = 'md_spire';
     expect(talk(a, 'd_ca_court').r.view()!.options.filter((o) => !o.locked && /^ca\.\w+\.call/.test(o.id)).map((o) => o.text)).toEqual([]);
-    expect(holds(a.g, E_PREC)).toBe(false);
+    expect([a.g.flags.dk_prec_passenger, holds(a.g, E_PREC)]).toEqual([undefined, false]);
   });
-  it.fails('E_PREC, §3\'s promise for that history (fails: reported)', async () => {
-    const a = await atKnock(SPENT);
+  it('E_PREC, §3\'s promise for that history: the Harbour court\'s passenger finding at Carrick\'s buffer is the second; the page says so, the desk offers the amendment and the register takes its clause', async () => {
+    // Tamsin waits elsewhere: at the door she would stand in it at the word, which is then forced over her or withdrawn (B6j)
+    const a = await atKnock({ ...SPENT, companions: { tamsin: 'waiting' } });
     court(a);
+    register(a);
+    expect([a.g.flags.ca_precedents, holds(a.g, E_PREC)]).toEqual([1, false]);
+    // the word at the door: Reserve 9 carried west, held at the buffer for the designate's word; the slip comes at seven
+    door(a, ['Carry on, Captain.']);
+    expect(a.g.flags).toMatchObject({ a3_c9: 'relocated', a3_c9_how: 'order' });
+    expect(waitFor(a.g, a.q, a.g.locationId, 7)).toContain('a3_buffer_post');
+    a.g.locationId = 'md_docks';
+    drive(a, 'd_a3_platform', ['(Take it to the Harbour court at six']);
+    expect(a.g.flags).toMatchObject({ dk_prec_passenger: true, a3_c9_after: 'walked', a3_buffer_how: 'court' });
+    // the Court's own count is unchanged; the finding counts once beside it
+    expect(a.g.flags.ca_precedents).toBe(1);
     expect(holds(a.g, E_PREC)).toBe(true);
+    expect(a.q.journal().find((j) => j.id === 'q_a3_hold')!.objectives.map((o) => o.text)).toContain('Two rulings or more in the city\'s courts are yours');
+    summons(a);
+    const won = await down(goUp(fork(a.g)), 'worn');
+    expect(won.g.flags.a3_file).toBe('contested');
+    expect(desk(won)).toContain('amend');
+    // the clause picker reads the same two rulings: the reserve's (the Court's) and the passenger's (the Harbour court's)
+    const s = atDesk(won, 'amend').pick('(Carry it up to the steps');
+    expect(s.node).toBe('e_write');
+    expect(s.options().filter((t) => t.startsWith('(Write:'))).toEqual(['(Write: A reserve is kept by its own consent.)', '(Write: A person is a passenger, never cargo.)']);
+  });
+  it('E_PREC counts the passenger finding once, only when it was made, and never in place of both', () => {
+    const g = (flags: G['flags']): G => Object.assign(newGameState('openfield', 0, 0), { flags });
+    expect(holds(g({ dk_prec_passenger: true }), E_PREC)).toBe(false);
+    expect(holds(g({ ca_precedents: 1 }), E_PREC)).toBe(false);
+    expect(holds(g({ ca_precedents: 1, dk_prec_passenger: true }), E_PREC)).toBe(true);
+    expect(holds(g({ ca_precedents: 1, dk_prec_passenger: false }), E_PREC)).toBe(false);
+    expect(holds(g({ ca_precedents: 2 }), E_PREC)).toBe(true);
+    // the clause picker's passenger clause reads the very same finding
+    expect(cond(CLAUSES.find((c) => c.id === 'passenger')!.needs, g({ dk_prec_passenger: true }))).toBe(true);
   });
 
   it('E_REG: the register Marwood catalogued is bought back for two hundred, or lifted from the acquisitions drawer at night', async () => {
@@ -478,12 +512,9 @@ describe('B6w: all of Act 3, checked whole', () => {
     });
     // written by the runtime, not by content: where the player has been, and the camp
     const RUNTIME = /^(visited_|at_camp$)/;
-    // Act 2's switch for the city at war with the player (every Meridian warden's hostileIf since B3; Act 3's recall wardens keep
-    // the convention); nothing in Acts 1–3 starts that war, so it is never written. Not Act 3's to settle: reported.
-    const DORMANT = ['md_fight'];
     const bad: string[] = [];
     for (const [f, vs] of reads) {
-      if (RUNTIME.test(f) || DORMANT.includes(f)) continue;
+      if (RUNTIME.test(f)) continue;
       const w = writes.get(f);
       if (!w) { bad.push(f); continue; }
       for (const v of vs) {
@@ -494,10 +525,32 @@ describe('B6w: all of Act 3, checked whole', () => {
     expect(bad).toEqual([]);
     expect([...knows].filter((k) => !learned.has(k))).toEqual([]);
     expect(reads.size).toBeGreaterThan(600);
-    // and the dormant switch really is the only one, and really is unwritten (if something comes to write it, drop it from the list)
-    for (const f of DORMANT) expect(writes.has(f), f).toBe(false);
+    // no exemption: the old switch for a city-wide war on the player (`md_fight`) was read and never written, and its reads are gone
+    expect(reads.has('md_fight')).toBe(false);
     // the gate keys, the modifiers and the clauses are among what was checked
     for (const f of ['a3_end', 'a3_sash', 'a3_mast', 'a3_unwritten', 'ca_precedents', 'a3_ready', 'ep_sky', 'a3_amend_fines', 'prec_reserve', 'a3_c9']) expect(reads.has(f), f).toBe(true);
     expect(CLAUSES.every((c) => writes.has(`a3_amend_${c.id}`))).toBe(true);
+  });
+
+  it('no war with the whole city: nothing reads or writes `md_fight`; each warden fight turns only the wardens in it, and the Precinct\'s doors stay open', () => {
+    // nothing in the content ever turned every warden of the city at once, and nothing offered a way to end it, so its reads are gone
+    expect(JSON.stringify([DIALOGUES, QUESTS, MAPS, CONTENT.NPCS, CONTENT.WORLD_EVENTS, CONTENT.LETTERS, CONTENT.ROAD_ENCOUNTERS])).not.toContain('md_fight');
+    const g = (flags: G['flags']): G => Object.assign(newGameState('md_precinct', 0, 0), { flags });
+    const wardens = Object.values(CONTENT.NPCS).filter((n) => n.team === 'wardens');
+    const turned = (flags: G['flags']) => wardens.filter((n) => n.hostileIf && cond(n.hostileIf, g(flags))).map((n) => n.id).sort();
+    expect(turned({})).toEqual([]);
+    expect(turned({ a3_recall_fight: true })).toEqual(['npc_a3_g1', 'npc_a3_g2']);
+    expect(turned({ a3_door_fight: true })).toEqual(['npc_a3_g3', 'npc_a3_g4', 'npc_a3_g5', 'npc_a3_g6', 'npc_md_01', 'npc_md_12']);
+    expect(turned({ a3_door_fight: true, a3_c9: 'sealed' })).toEqual([]);
+    expect(turned({ sk_fight_pumps: true })).toEqual(['npc_sk_w1', 'npc_sk_w2']);
+    expect(turned({ ln_escort_fight: true, ln_city_warrant: true })).toEqual(['npc_ln_e1', 'npc_ln_e2']);
+    // after every scoped fight at once, the gate, the captain, the Court, the catalogue and the stair still open on their own words
+    const after = g({ a3_recall_fight: true, a3_door_fight: true, a3_c9: 'sealed', sk_fight_pumps: true, cr_fight_wardens: true, ln_wardens_fight: true, ln_escort_fight: true, ln_city_warrant: true });
+    for (const id of ['d_md_gate', 'd_md_lowe', 'd_ca_court', 'd_ar_keeper', 'd_ar_stair']) {
+      const gc = structuredClone(after);
+      const r = new DialogueRunner(DIALOGUES[id], gc, new QuestEngine(QUESTS, gc, { event: () => undefined }));
+      expect(r.view()!.text, id).not.toBe('Nothing.');
+      expect(r.view()!.options.some((o) => !o.locked && o.text !== '(Nothing.)'), id).toBe(true);
+    }
   });
 });

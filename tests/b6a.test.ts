@@ -253,7 +253,7 @@ describe('B6a: Act 3\'s quests as skeletons', () => {
     // B6m filled the page with what is held toward the gates' keys (`key_*`), named as the thing held, never as a way to finish
     expect(lines()).toEqual([
       'Nine walks with you, and reads the record as it is written', 'You can read the city\'s record yourself, every line of it', 'Openfield would walk out under any sky behind you',
-      'Sister Calla is free', 'MOTHER\'s replies and Tamsin\'s count, side by side', 'The Ledger wrote CONTESTED on your file', 'Two rulings or more in the Court\'s register are yours',
+      'Sister Calla is free', 'MOTHER\'s replies and Tamsin\'s count, side by side', 'The Ledger wrote CONTESTED on your file', 'Two rulings or more in the city\'s courts are yours',
       'The Court\'s register is in the Court\'s keeping',
       'The copy of the Cistern\'s replies', 'The designate\'s warrant', 'Knock thinks well of you', 'Shale thinks well of you', 'Openfield thinks well of you', 'Climb the steps when you are ready',
     ]);

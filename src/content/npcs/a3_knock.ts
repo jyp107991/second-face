@@ -6,8 +6,7 @@ import type { NpcDef } from '../../engine/npc/defs';
  *
  * - The column's four wardens (`npc_a3_g3..g6`), camped on the toll road opposite the stand under Captain Lowe (or his
  *   sergeant): the Precinct's grey, pressed and worn soft at the elbows, faces bare, polite because the order says the
- *   residents are not to be frightened. Hostile only if the door comes to a fight (`a3_door_fight`, B6j) or the whole
- *   Precinct already has (`md_fight`).
+ *   residents are not to be frightened. Hostile only if the door comes to a fight (`a3_door_fight`, B6j).
  * - The guild's two hound handlers (`npc_a3_g11/g12`), with the guild's party when it brought hounds on leads
  *   (`a3_hounds_in`): oilskin over the guild's green, gauntlets to the elbow. The hounds themselves are the runtime's (a
  *   stand-in until a live hound exists); here they are in the handlers' mouths.
@@ -15,9 +14,9 @@ import type { NpcDef } from '../../engine/npc/defs';
  *   dead: the Choir's undyed homespun gone grey on the road, hoods down, faces bare to the lamp (they keep no likeness by
  *   refusing lenses and portraits, never by masking). What they came to do, and their trees, are B6g's (`dialogue/a3_forces.ts`).
  */
-/** B6j: hostile while the door comes to a fight (`a3_door_fight`, until the map's after-triggers settle it), or the Precinct's. */
+/** B6j: hostile while the door comes to a fight (`a3_door_fight`, until the map's after-triggers settle it). */
 const DOOR_FIGHTING = { all: [{ flag: 'a3_door_fight' }, { not: { flag: 'a3_c9' } }] };
-const COLUMN = { team: 'wardens', faction: 'wardens', settlement: 'meridian', role: 'guard' as const, courage: 70, hostileIf: { any: [DOOR_FIGHTING, { flag: 'md_fight' }] } };
+const COLUMN = { team: 'wardens', faction: 'wardens', settlement: 'meridian', role: 'guard' as const, courage: 70, hostileIf: DOOR_FIGHTING };
 /** B6j: the allies the muster called to Knock's slope (Shale's militia, the Dogs), who fight beside the player at the door. */
 const SLOPE_SHALE = { team: 'shale', faction: 'shale_militia', settlement: 'shale', role: 'guard' as const, courage: 70, ally: DOOR_FIGHTING };
 const SLOPE_DOGS = { team: 'rustdogs', faction: 'rust_dogs', settlement: 'rustdogs', role: 'raider' as const, courage: 60, ally: DOOR_FIGHTING };

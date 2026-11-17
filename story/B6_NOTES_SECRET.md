@@ -404,7 +404,7 @@ can be completed before the PNR, whatever happened earlier:
 | `D_PEOPLE` | the Unwritten turned · the Choir, the Wheel or Knock (by letter or standing) |
 | `D_ARCHIVE` | the Archive opened at the council · or the copies (`k_ar_refusals` and `tam_why`) · or the reserve opened |
 | `E_FILE` | the second hearing on the steps (`a3_file`) |
-| `E_PREC` | the Act 3 cases `reserve` (consent or attendance) and `recall` (kept) are each a precedent; with Calla held [B5d?], case `calla` is a third |
+| `E_PREC` | the Act 3 cases `reserve` (consent or attendance) and `recall` (kept) are each a precedent; with Calla held [B5d?], case `calla` is a third; the Harbour court's passenger finding (`dk_prec_passenger`: Act 2's docks, Calla's fare, or the court at Carrick's buffer when the reserve is carried west) counts once beside them (after B6w) |
 | `E_REG` | Marwood sells the register back (`a3_register_back`: 200 Tolls, or Speech 50 with Comfort's word) |
 
 The PNR save is therefore always a "save before the point of no return" from which each ending whose keys are held can be
@@ -2948,6 +2948,7 @@ carried, which the Long Night writes only with Ash gone (unreachable in play; th
 everyone-present games for that reason).
 
 **For later:** the coordinator's decision on E_PREC (above); the runtime asks are B6r's, unchanged, plus the `b_stair` beat's goto.
+**Fixed after B6w (coordinator's calls):** E_PREC's gap is closed: the Harbour court's passenger finding (`dk_prec_passenger`, `PREC_HARBOUR`) now counts as one precedent beside `ca_precedents` wherever E counts them (`E_PREC`; the hold page's line, now "in the city's courts", and the clause picker read the same finding; the vault's and the register's lines say "the city's courts"), so that history wins its second at Carrick's buffer (the `it.fails` is a passing route test). `md_fight` had no writer and no moment in the content that turns the whole city (every warden fight is scoped by its own flag, and nothing offered a way to end a war with the Precinct), so its dormant reads were removed (the Meridian, Market, Ring, Spire, Sink, recall and column wardens' `hostileIf`, and the gate's, Lowe's, the Court's, the keeper's and the stair's dead-end start nodes); the B6w flag check has no exemption left.
 
 ## Defaults taken for the open questions (coordinator, 2026-11-17; the owner may override)
 1. After the ending: epilogue, credits, then the title screen; the named autosave at the point of no return stays

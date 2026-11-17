@@ -391,7 +391,7 @@ const KEY_LINES: { id: string; text: string; done: Cond }[] = [
   // the file, the rulings, the register
   { id: 'key_contested', text: 'The Ledger wrote CONTESTED on your file', done: F('ar_verdict', 'contested') },
   { id: 'key_agreed', text: 'The Ledger wrote AGREED on your file', done: F('ar_verdict', 'agreed') },
-  { id: 'key_precedents', text: 'Two rulings or more in the Court\'s register are yours', done: { flag: 'ca_precedents', gte: 2 } },
+  { id: 'key_precedents', text: 'Two rulings or more in the city\'s courts are yours', done: E_PREC },
   { id: 'key_register', text: 'The Court\'s register is in the Court\'s keeping', done: { not: F('prec_register', 'catalogued') } },
   { id: 'key_register_back', text: 'The Court\'s register is back on its desk under the bench', done: F('a3_register_back') },
 ];

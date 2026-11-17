@@ -228,7 +228,12 @@ export const D: Cond = ALL(AT_VAULT, D_VOICE, D_READER, D_PEOPLE, D_ARCHIVE);
 /** E: the Magistrate's Amendment: the sash taken and the law rewritten from inside, in the Court's own register. An
  * uncatalogued register is in the Court's keeping, so `E_REG` holds on a state that never touched it. */
 export const E_FILE: Cond = ANY(F('ar_verdict', 'contested'), F('ar_verdict', 'agreed'), F('a3_file', 'contested'));
-export const E_PREC: Cond = { flag: 'ca_precedents', gte: 2 };
+/** The Harbour court's finding that a person landed on Carrick's quay is a passenger (`dk_prec_passenger`): the player's precedent
+ * wherever the game made it (Act 2's docks, Sister Calla's fare at the Long Night, the court at the buffer), counted once. */
+export const PREC_HARBOUR: Cond = F('dk_prec_passenger');
+/** E's precedents: the Court of Accounts' own as it counts them (`ca_precedents`), and the Harbour court's finding when it was made
+ * (coordinator, after B6w: it closes §3's one gap). The page of what you hold reads this; the clause picker reads the same finding. */
+export const E_PREC: Cond = ANY({ flag: 'ca_precedents', gte: 2 }, ALL({ flag: 'ca_precedents', gte: 1 }, PREC_HARBOUR));
 export const E_REG: Cond = ANY(NOT(F('prec_register', 'catalogued')), F('a3_register_back'));
 export const E: Cond = ALL(AT_VAULT, SASH_WORN, E_FILE, E_PREC, E_REG);
 
@@ -246,7 +251,7 @@ export const CLAUSES: { id: string; needs: Cond }[] = [
   { id: 'keeper', needs: ANY(F('prec_unit_keeper', 'self'), F('prec_recall', 'keeper')) },
   { id: 'refuse', needs: F('prec_refuse_benefit') },
   { id: 'reserve', needs: F('prec_reserve') },
-  { id: 'passenger', needs: F('dk_prec_passenger') },
+  { id: 'passenger', needs: PREC_HARBOUR },
   { id: 'speech', needs: F('prec_sedition') },
 ];
 
@@ -1033,8 +1038,9 @@ export const AMENDS_FULL: Cond = { flag: 'a3_amends', gte: 3 };
  *   a3_buffer_found          true            the Harbour court found the passenger ruling at the buffer for the first time
  *   a3_buffer_court          adjourned       the court's argument failed: spent; the other ways stay
  *   a3_buffer_watched        true            the cradle's night tried and caught: spent
- *   dk_prec_passenger        true            (B5b's flag) also set by the court at the buffer: E's clause `passenger`
- *   a3_mast_handle           amos            Signal Hill's switch handle given to Amos Crofts of Knock, who keeps the hill (only with
+ *   dk_prec_passenger        true            (B5b's flag) also set by the court at the buffer: E's clause `passenger`, and one of
+ *                                            E's precedents (`PREC_HARBOUR` in `E_PREC`, with `ca_precedents`; after B6w)
+ *   a3_mast_handle          amos            Signal Hill's switch handle given to Amos Crofts of Knock, who keeps the hill (only with
  *                                            a3_mast_keeper = knock, after the door; B6r: who throws the switch)
  *   a3_summoned              true            (B6a) the Ledger's card, at the next seven o'clock anywhere once a3_c9 is set, whatever
  *                                            the door; the same morning as the receipt slip (world event a3_buffer_post) when the

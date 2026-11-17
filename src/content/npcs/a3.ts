@@ -8,8 +8,8 @@ import type { NpcDef } from '../../engine/npc/defs';
  * buttoned to the throat. Faces bare. Story notes: story/B6_NOTES_SECRET.md §2.3 (18, 18b).
  */
 const PRECINCT = { team: 'wardens', settlement: 'meridian', faction: 'wardens' } as const;
-/** The recall wardens: hostile only if drawn on over the unit (or in a fight with the whole Precinct). */
-const recall = { ...PRECINCT, role: 'guard' as const, hostileIf: { any: [{ flag: 'a3_recall_fight' }, { flag: 'md_fight' }] }, courage: 70, dialogue: 'd_a3_recall' };
+/** The recall wardens: hostile only if drawn on over the unit (the rest of the Precinct is not turned). */
+const recall = { ...PRECINCT, role: 'guard' as const, hostileIf: { flag: 'a3_recall_fight' }, courage: 70, dialogue: 'd_a3_recall' };
 /** B6r: the Spire's stair wardens in the vault (hostile once drawn on, until the climax settles the way out), and a Crown house's
  * men on the close at the dawn after the reading (hostile once drawn on, until the night's price is settled). Both lose forward. */
 const stair = { ...PRECINCT, role: 'guard' as const, courage: 75, hostileIf: { all: [{ flag: 'a3_vault_fight' }, { not: { flag: 'a3_vault_out' } }] }, beaten: [{ set: 'a3_vault_beaten' }] };

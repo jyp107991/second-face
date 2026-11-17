@@ -324,7 +324,7 @@ const BENCH_TOPICS = (sfx: string): OptionDef[] => [
 
 export const d_ca_court: DialogueDef = {
   id: 'd_ca_court', owner: THREE,
-  start: [{ if: { flag: 'md_fight' }, node: 'shut' }, { if: { knows: 'ca_three_met' }, node: 'bench' }, { node: 'intro' }],
+  start: [{ if: { knows: 'ca_three_met' }, node: 'bench' }, { node: 'intro' }],
   nodes: {
     intro: {
       text: 'The unit on the bench has Nine\'s pattern without Nine\'s wear: grey plating, a brass plate polished to a mirror, a lens with no crack in it at all. It does not turn its head; the lens turns. "Assessor Three. Accounts." Two ledgers on the bench, squared to its edge. "The Court sits when a case is called. Fines, titles, petitions, debts. The Court reads what is on the rail, and nothing else."',
@@ -356,7 +356,6 @@ export const d_ca_court: DialogueDef = {
       effects: [{ learn: 'ca_clause12' }],
       options: [{ text: '(Back to the bench.)', next: 'bench' }],
     },
-    shut: { text: 'Nothing.', again: 'The bench is empty and the hall\'s doors are shut on the wardens\' side. Nobody is talking.', options: [{ text: '(Nothing.)', exit: true }] },
     ...FINES.nodes,
     ...SQUATTER.nodes,
     ...DEED.nodes,

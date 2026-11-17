@@ -422,7 +422,9 @@ describe('B6q: the choice at the desk offers exactly the ways the player\'s hold
       ['read', 'nobody to carry it', (a) => { a.g.world.news = a.g.world.news.filter((n) => n.origin !== 'openfield'); for (const f of ['ln_calla', 'a3_unwritten']) delete a.g.flags[f]; a.g.flags.ks_calla = 'imprisoned'; }],
       ['read', 'nothing the Cistern kept', (a) => { apply([{ take: 'k_ar_refusals' }], a.g); }],
       ['amend', 'no file', (a) => { a.g.flags.ar_verdict = 'refused'; }],
-      ['amend', 'one ruling short', (a) => { a.g.flags.ca_precedents = 1; }],
+      // E's rulings: the Court's own (`ca_precedents`) and the Harbour court's passenger finding (`dk_prec_passenger`, counted once)
+      ['amend', 'one ruling short', (a) => { a.g.flags.ca_precedents = 1; delete a.g.flags.dk_prec_passenger; }],
+      ['amend', 'the Harbour court\'s finding alone', (a) => { a.g.flags.ca_precedents = 0; }],
       ['amend', 'the register sold', (a) => { a.g.flags.prec_register = 'catalogued'; }],
     ];
     for (const [way, why, take] of without) {

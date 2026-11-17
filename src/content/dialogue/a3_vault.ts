@@ -462,7 +462,7 @@ const LEDGER_NODES: Record<string, NodeDef> = {
   },
   cost_amend: {
     speaker: VOICE,
-    text: '"Then you become the forecast, by choice." Level. "You sit in the chair, as the photograph says you will, and you change what the chair keeps: in your first season, up to three clauses, each on a ruling my own Court has already made in your name. The charter allows three. I will hold you to three." A pause. "Everything you do not amend stands as it stands. The lines on my list your clauses do not reach fall due. The Unwritten\'s sky is still owed, and they know who owes it. And you will be the Magistrate for life. Nobody has ever left the chair any other way." Another pause, and then, as level as all the rest: "I would agree to this. I want you to know that before you decide, in case it is a reason not to."',
+    text: '"Then you become the forecast, by choice." Level. "You sit in the chair, as the photograph says you will, and you change what the chair keeps: in your first season, up to three clauses, each on a ruling one of my courts has already made in your name. The charter allows three. I will hold you to three." A pause. "Everything you do not amend stands as it stands. The lines on my list your clauses do not reach fall due. The Unwritten\'s sky is still owed, and they know who owes it. And you will be the Magistrate for life. Nobody has ever left the chair any other way." Another pause, and then, as level as all the rest: "I would agree to this. I want you to know that before you decide, in case it is a reason not to."',
     again: 'It has forecast the chair amended.',
     passives: [
       ...RULINGS,
