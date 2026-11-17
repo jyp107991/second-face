@@ -723,7 +723,7 @@ The default shared files touched by a content slice are the registries: `quests/
 - **Tests**: every route; the keeper choice; no route without its requirement.
 - **Estimate** 1 h.
 
-### B6e — Sheriff's last ride (Shale)
+### B6e — Sheriff's last ride (Shale) — BUILT 2026-11-17 (deviations under "As built")
 - **Create** `dialogue/a3_shale.ts` (`d_a3_ada`, `d_a3_pike`, `d_a3_mags`, the guild's hands at the office, the militia's
   muster) · NPC defs for Pike's two hands (`npc_a3_g7/g8`) in `npcs/a3.ts`.
 - **Touch** `tools/maps/gen_shale.py` → `maps/shale.ts` (Act 3 instances `npc_sh_01_a3`, `npc_sh_04_a3`, `npc_sh_03_a3`, the
@@ -1306,6 +1306,62 @@ extra option on Femi's Line window `d_dk_line`), `openfield.ts` (`d_of_doria`: a
   `a3_riders_fight`, tollmen −10); a Hollow trader (Teodor Brann) with the station's news, who starts `q_a3_mast` as B6d asked.
   The plan's "the guild's riders let the designate ride the Line" is not wired into the Line's own boards (B5a's); the halts'
   pilots are in the first class's ride.
+
+### B6e (built 2026-11-17, alongside B6c)
+**Done, all of the slice:** `dialogue/a3_shale.ts` (10 trees: `d_a3_notice` (the sheriff's door), `d_a3_ada`, `d_a3_pike`,
+`d_a3_mags` (Teo speaks in it), `d_a3_hands` (Pike's two hands), `d_a3_street` (the street after a fight), `d_a3_militia`
+(Issa), `d_a3_jonah`, `d_a3_safe` (the guild's strongbox), `d_a3_dogs`) · `npcs/a3.ts` (+ `npc_a3_g7` Esko Harth and `npc_a3_g8`
+Tamar Quaid, Pike's hands; `npc_a3_g13` "Rust Dog (Flint)" and `npc_a3_g14` "Rust Dog (Tack)" for a Dogs' town: **g9/g10 were
+taken by B6c's riders**, so the Dogs are g13/g14) · `items/story_a3.ts` (+ `k_a3_contract`) · `tools/maps/gen_shale.py` →
+`maps/shale.ts` (the generator first brought in line with the committed map: the room locker's `yoursIf`, hand-set on one
+line; then confirmed byte-identical; then the Act 3 additions) · `tests/b6e.test.ts` (21). No engine change. `npm run check`
+green (people gate red/stale as before).
+**Shared touches (small, local):** `quests/a3.ts` (`q_a3_ride` only: routes as built, the investigation's objectives, two
+more end stages `dogs` and `abandoned`; bare `ks_ada` values still end it, as B6a's test asks) · `a3_conds.ts` (the registry's
+B6e block only) · the dialogue index · `npcs/shale.ts` (Issa's and Benno Strand's `ally` also on `a3_sh_fight`, so the militia
+fight beside the player; Ada and Jonah deliberately not combatants, so neither can die by chance).
+
+**How it plays (and where it differs from §2.3 19c):**
+- **No world event.** The buyout comes due on Shale's road triggers (`a3_arrive_w/e/c`, the west, east and centre of the main
+  street) or the first Act 3 word with anyone in it (every Act 3 tree's entry node, and the door, apply `a3_buyout` + start the
+  quest). A world event `where: 'shale'` would also fire in any later slice's waits in Shale (B6d's test asserts an exact list
+  there), and a trigger is the B6d pattern (`a3_arrive`). Both wait for the player; nothing resolves without them. The Act 3
+  instances replace the Act 1 placements on `a3_open` (Ada, Jonah, Issa, Mags, Pike: `npc_sh_0N_a3`; their Act 1 trees carried
+  whole after the Act 3 entries, tested identical before Act 3). **Pike or Ada dead before Act 3: no buyout at all** (no
+  notice, no hands; `ks_ada` stays unset).
+- **Why she waits** (the no-time-limit reason, said in her `wait` topic): she told Pike she would sign when she had heard from
+  the player, "who has been where the paper comes from".
+- **The investigation:** Ada (why: by the rifles, the deputy and the water Acts 1–2 left her; what the paper says; why she
+  waits) · Pike (three hundred Tolls of the town's paper: the Dry Well's loan, water on credit, protection since the spring
+  if Jonah died; valued against Odile's sheet SHALE — FAILS — two springs off; "brought forward the morning after Openfield's
+  night" by the sheet's holder, whom the floor does not name: a passive with `odile_counterparty` sees the even hand; his broker
+  at Barter 45, −15 with the Dry Well's second book read) · Mags (her hand: the brokerage settles the Dry Well's account; she did
+  it so Ada would live, "two sheriffs in the yard behind the pump house", and for her bar) · Teo (if freed: a living town owes
+  150; a withering one owes the 300, "a fair price") · Issa (says out loud when she cannot keep Ada standing: the warning for
+  ADA_FALLS, so the death is foreseeable and preventable by drilling the militia first, which still works in Act 3).
+- **Routes as built (7):** T Speech 50 (the plan's five mods; added: −5 her fear heard, −5 the pumps run, −5 a militia member,
+  +5 the town withering; "the town broke" reads `shale_broke` or `jonah_dead`) · B pay 300; or 150 with Odile in the party, or
+  with Teo's figures and Barter 50 (−10 the pumps run); free when `odile_sheet` = torn (Pike checks the floor's list: unwound)
+  · K the sheet torn at the counter: the player's (`odile_sheet` player), Odile's own (kept, in party: +10), or read out of
+  Nine's second ledger (`nine`, Nine in party); **these rewrite `odile_sheet` to torn** (B6o/B6v read it: Odile's `shale`
+  end) · K the Tollhouse page: in the pack (Pike writes WITHDRAWN; the player keeps the page), or Ada's own
+  (`ledger_shown_ada`: she walks it across herself) · S the strongbox behind Pike's counter (a new `locker` prop, talk
+  `d_a3_safe`) at night (22–8, Pike away), Security 50, then the copy (`k_a3_contract`) on Ada's blotter: she burns it · F
+  counted off: the militia called out (Issa alive, or the player a militia member); nine rifles that shoot leave without a shot,
+  four need Presence 7 (−2 Ilya, −1 the Dogs who walked down with Wren, −1 Shale's hound) · F fought: `a3_sh_fight`, combat;
+  Ada is "out in the street" (not placed) until the street is told (trigger `a3_street_after` once both hands are down, or
+  Issa) · or **she signs**: "a sheriff rides out" on the caravan post's grey, forty yards to Pike's door.
+- **`a3_pike`** gained two values: `refused` (T) and `void` (the sheet unwound or torn). **`a3_mags`** is new: told | exposed |
+  kept | runs. **`a3_shale`** follows the plan: gone (resigned or dead) → abandoned if `shale_withers`, else dogs if `rd_coup`,
+  else company / free. Resigned Ada sits on her step as a pensioner only in a company town; under dogs or abandoned she rides
+  west. Visible: a guild hand at her desk and a tin plate on her door (company), two Dogs on her bench and a dog's head burned
+  into the door (dogs; "ASK KADE" while Vasha lives), a plank and GONE EAST (abandoned), black cloth and SHE STOOD IN THE
+  STREET (dead), four empty nails (free).
+- **For later slices.** **B6s (slide 5):** read `a3_shale` × `ks_ada` × `a3_mags` (Mags runs the company town; told/exposed:
+  Ada knows; kept: nobody does); `ks_ada` unset means the buyout never came due (or is still open). **B6v:** Tamsin's `deputy`
+  end has its seed in Ada's `kept` node ("Ask me again in a year"). **B6c/B6j:** Shale's muster letter already reads
+  `ks_ada` (resigns | dead); a militia that fought the guild (`a3_sh_fight`) could be read at Knock. Ada's Act 3 death is
+  `ks_ada` = dead, never an NPC death: read the flag.
 
 ## Defaults taken for the open questions (coordinator, 2026-11-17; the owner may override)
 1. After the ending: epilogue, credits, then the title screen; the named autosave at the point of no return stays

@@ -424,6 +424,25 @@ export const EP_SLIDES = ['steps', 'ledger', 'cistern', 'knock', 'shale', 'dogs'
  *                            a designate who says no), a3_column_seen, a3_trader_news, a3_first_folder (Orme's folder),
  *                            a3_wheel_ride;  memory npc_c9_01 player_wrote_refusals (the copy sent home)
  *                            (Linnet drives the column's car when kn_linnet_will_run: B6f reads a3_route_home = column with it)
+ * B6e (built; dialogue/a3_shale.ts, map shale via tools/maps/gen_shale.py, npcs npc_a3_g7/g8 (Pike's hands), g13/g14 (Dogs)):
+ *   a3_buyout                true            the buyout came due in front of the player (Shale's road triggers, or the first Act 3
+ *                                            word in the town); starts q_a3_ride. Open while RIDE_OPEN (a3_shale.ts): Ada and Pike alive
+ *   ks_ada                   stays | resigns | dead   keystone 3; dead only in the street fight, and only under ADA_FALLS (the
+ *                                            militia never drilled and Jonah dead); unset = the ride never came due (or still open)
+ *   a3_shale                 free | company | dogs | abandoned   Ada stays → free; gone (resigned or dead) → abandoned if
+ *                                            shale_withers, else dogs if rd_coup, else company (resigned) or free (dead)
+ *   a3_pike                  refused | paid | void | exposed | robbed | put_off | signed   how the contract ended (refused: Ada
+ *                                            talked round; void: Odile's sheet unwound or torn at the counter; exposed: the Tollhouse page)
+ *   a3_mags                  told | exposed | kept | runs   Mags's brokerage: she told Ada herself, the player told Ada, the player
+ *                                            kept it, or the company town is hers to run (set with a3_shale = company); unset = never found
+ *   a3_sh_fight              true            the hands drawn on (their hostileIf; Issa's and Benno's ally);  a3_sh_after  true  the
+ *                                            street told how it ended (trigger a3_street_after → d_a3_street, or Issa)
+ *   a3_sh_safe               true            the guild's copy out of Pike's strongbox at night (item k_a3_contract until Ada burns it)
+ *   odile_sheet              torn            U8's flag, rewritten only when the sheet is torn at Pike's counter (from player | kept)
+ *   knowledge: a3_buyout_notice, a3_buyout_why, a3_buyout_read (Ada's account), a3_ada_waits, a3_buyout_terms (Pike's three
+ *                            hundred), a3_buyout_sheet (the price rests on Odile's sheet), a3_buyout_forward (brought forward the
+ *                            morning after Openfield), a3_buyout_clause, a3_mags_hand, a3_buyout_priced / a3_buyout_fair (Teo's
+ *                            reading), a3_buyout_street (Issa's warning)
  * Planned (the slice named sets it; values as the plan fixes them):
  *   a3_recall                declined | stayed | handed | court | bought | hidden | fought | taken          B6b
  *   nine_disposed            true                                                                        B6b

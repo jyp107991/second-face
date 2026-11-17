@@ -123,7 +123,7 @@ const STAY_CHECK: CheckDef = { skill: 'speech', dc: 50, mods: [
   { if: { knows: 'a3_buyout_why' }, dc: -5, why: 'you let her say what she is afraid of' },
   { if: WATER, dc: -5, why: 'the pumps run' },
   { if: { member: 'shale_militia' }, dc: -5, why: 'you are one of her militia' },
-  { if: F('shale_broke'), dc: 10, why: 'the town broke when Jonah died' },
+  { if: ANY(F('shale_broke'), F('jonah_dead')), dc: 10, why: 'the town broke when Jonah died' },
   { if: WITHERS, dc: 5, why: 'the town is drying up under her' },
 ] };
 /** Pike names his broker only to someone who has earned it at the rate. */
@@ -144,7 +144,7 @@ const REPRICE_CHECK: CheckDef = { skill: 'barter', dc: 50, mods: [{ if: WATER, d
 /** The hands counted off by an undrilled militia. */
 const COUNT_CHECK: CheckDef = { attr: 'presence', dc: 7, mods: [
   { if: IN(ILYA), dc: -2, why: 'Ilya Strand is standing behind you with his rifle' },
-  { if: F('wren_exodus'), dc: -1, why: 'Calloway\'s people have come out of the tannery to watch' },
+  { if: F('wren_exodus'), dc: -1, why: 'the Dogs who walked down with Calloway have come out to watch' },
   { if: F('hound_outcome', 'shale'), dc: -1, why: 'the machine in the sheriff\'s yard has turned its head to look at them' },
 ] };
 const SAFE_CHECK: CheckDef = { skill: 'security', dc: 50 };
@@ -216,7 +216,7 @@ export const d_a3_notice: DialogueDef = {
 
 const ADA_DESK = mix([
   [{ if: NOT(JONAH_ALIVE), t: ' The deputy\'s chair against the wall has a coat over it that nobody has moved since spring.' }, { t: '' }],
-], (dep) => `Ada Vey is at her desk with the guild's paper on the blotter in front of her and a pen beside it, uncapped, as if she put it down a moment ago and has been putting it down all morning.${dep} She looks up. "{name}." Not "you": she has never used your name before. "You'll have read my door."`);
+], (dep) => `Ada Vey is at her desk with the guild's paper on the blotter in front of her and a pen beside it, uncapped, as if she put it down a moment ago and has been putting it down all morning.${dep} She looks up. "{name}." It is the first time she has called you by your name. "You'll have read my door."`);
 
 const WHY_TEXT = mix([
   [{ if: DRILLED, t: 'Nine rifles that shoot, and Issa the only one who\'s ever shot at a man.' }, { t: 'Four rifles that shoot, and five that point the right way.' }],
@@ -357,7 +357,8 @@ export const d_a3_ada: DialogueDef = {
         { if: F('a3_pike', 'void'), text: '"Pike came over himself," Ada says. "Hat in his hand. Said the thing the price rested on had been unwound, and a contract that can\'t be valued can\'t be executed, as per, and he was very sorry for my trouble, as per." She almost smiles. "I\'ve never seen a man so relieved to lose."' },
         { if: F('a3_pike', 'exposed'), text: '"He still wants his page back," Ada says, and touches her shirt. "He isn\'t getting it."' },
         { if: F('a3_pike', 'robbed'), text: '"Nobody\'s asked me where the guild\'s copy went," Ada says, "and I\'ve not told anybody I don\'t know." She does not look at you while she says it.' },
-        { if: F('a3_pike', 'put_off'), text: '"Issa says you stood in the street with them," Ada says. "So did I, by the end." She looks at the door. "Noted."' },
+        { if: ALL(F('a3_pike', 'put_off'), F('a3_sh_fight')), text: '"Issa says you stood in the street with them," Ada says. "So did I, by the end." She looks at the door. "Noted."' },
+        { if: F('a3_pike', 'put_off'), text: '"Issa says you called the militia out and the guild\'s people counted them," Ada says. "Nine years I\'ve wanted to see Pike\'s people count something that wasn\'t money." She looks at the door. "Noted."' },
         { text: '"Still here," Ada says. "Pike sends his compliments, as per, and says the offer doesn\'t expire. I told him neither do I."' },
       ],
       again: '"Sheriff\'s office," Ada says. "Still."',
@@ -450,7 +451,7 @@ export const d_a3_pike: DialogueDef = {
       options: [{ text: '(Go on.)', next: 'counter' }],
     },
     broker: {
-      text: '"A party in Shale." He lets that stand exactly as long as a courtesy, and then, because you have earned it at the rate, he turns one page back. The Dry Well\'s account: the loan, the interest, the deed bought out, and a line in red ink across all of it: SETTLED — AS BROKERAGE — SHALE CONTRACT. "Brokers are paid on completion, as per," he says. "Mrs Durrow is not yet paid."',
+      text: '"A party in Shale." He lets that stand exactly as long as a courtesy, and then, because you have earned it at the rate, he turns one page back. The Dry Well\'s account: the loan, the interest, the deed bought out, and a line in red ink across all of it: SETTLED — AS BROKERAGE — SHALE CONTRACT. "Brokers are paid on completion, as per," he says. "The Dry Well\'s proprietor is not yet paid."',
       again: '"Not yet paid," Pike says.',
       effects: [{ learn: 'a3_mags_hand' }],
       options: [{ text: '(Go on.)', next: 'counter' }],
@@ -690,7 +691,7 @@ const MUSTER_TEXT = mix([
   [{ if: DRILLED, t: 'Issa Lind comes out of the yard at a walk with the militia behind her in pairs, nine of them, rifles at the port, and spreads them along the street without a word, and every one of them is looking at the guild\'s two hands and at nothing else.' },
     { t: 'Issa Lind comes out of the yard with what the militia has: four who shoot and five who hold a rifle the right way round, and she puts the four in front.' }],
   [{ if: JONAH_ALIVE, t: ' Jonah Reese comes last, and stands at the sheriff\'s door with his hand on the frame, the way a man stands who has decided where he is going to be.' }, { t: '' }],
-  [{ if: F('wren_exodus'), t: ' Up the street, Calloway\'s people come out of the tannery to watch, and do not go back in.' }, { t: '' }],
+  [{ if: F('wren_exodus'), t: ' Up the street the Dogs who walked down with Wren Calloway come out of their doors to watch, and do not go back in.' }, { t: '' }],
 ], (militia, jonah, wren) => `${militia}${jonah}${wren} Harth looks at them all, one at a time, the way his factor reads a ledger.`);
 
 export const d_a3_hands: DialogueDef = {

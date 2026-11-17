@@ -232,7 +232,7 @@ knock = {
         {'id': 'outriders_seen', 'x': 18, 'y': 12, 'w': 20, 'h': 14, 'once': True, 'if': {'all': [{'flag': 'kn_outriders'}, {'not': {'flag': 'kn_outriders_met'}}]}, 'effects': [{'event': 'talk', 'data': {'npc': 'npc_kn_out_lead'}}]},
     ],
     'extras': [
-        {'count': 5, 'roles': ['settler', 'settler', 'labourer', 'drifter'], 'life': 'hard', 'area': {'x': 17, 'y': 19, 'w': 20, 'h': 8}, 'hours': {'from': 7, 'to': 18}, 'barks': ['Hatch day. Wool for water, same as my mother did.', 'MOTHER says thank you. MOTHER always says thank you.', 'Get your goats off the apron, Hesper!']},
+        {'count': 5, 'roles': ['settler', 'settler', 'labourer', 'drifter'], 'life': 'hard', 'area': {'x': 17, 'y': 19, 'w': 20, 'h': 8}, 'hours': {'from': 7, 'to': 18}, 'barks': ['Hatch day. Wool for water, same as my mother did.', 'MOTHER says thank you. MOTHER always says thank you.', 'Get your goats off the apron, Afua!']},
         {'count': 2, 'roles': ['settler'], 'ages': [8, 13], 'area': {'x': 12, 'y': 26, 'w': 16, 'h': 10}, 'hours': {'from': 8, 'to': 18}, 'barks': ['I put my ear to the door. It hums.', 'Linnet says she\'s going to the city.', 'Race you to the tank!']},
     ],
     'ambience': {'indoor': False, 'fogColor': 'hex:0xcdb48c', 'fogDensity': 0.012, 'dust': 0.6, 'grade': 0.75, 'mood': 'peaceful', 'sound': 'wind'},
