@@ -34,20 +34,23 @@ namespace SecondFace.Game.Play
         /// <summary>Turns to face a point and raises the weapon (A3, A4: aim; the placeholder only turns).</summary>
         IEnumerator OnAim(Vector3 at);
         /// <summary>One round fired at a point (A3: muzzle flash, recoil, shell, tracer); <paramref name="hit"/> whether it
-        /// struck its mark.</summary>
-        IEnumerator OnFire(Vector3 at, bool hit, int round);
+        /// struck its mark; <paramref name="round"/> of <paramref name="rounds"/> (a burst's rounds come one call each).</summary>
+        IEnumerator OnFire(Vector3 at, bool hit, int round, int rounds = 1);
         /// <summary>A blow struck (A4: wind-up, strike, follow-through).</summary>
         IEnumerator OnStrike(Vector3 at, bool hit);
         /// <summary>Struck (A5): from which way, where (head, torso, armL..., legL...), how hard (graze, hit, crit).</summary>
         void OnHit(Vector3 from, string zone, string kind);
+        /// <summary>Missed (A5): a blow blocked or slipped (<paramref name="melee"/>), a shot flinched from.</summary>
+        void OnMiss(Vector3 from, bool melee);
         /// <summary>Goes down (A8: the ragdoll), pushed away from <paramref name="from"/>.</summary>
         void OnFall(Vector3 from);
         /// <summary>Gets back up (A8).</summary>
         void OnRise();
         /// <summary>Takes a stance (A6, C2: stand, crouch, prone).</summary>
         void OnStance(string stance);
-        /// <summary>Throws along an arc (A7; the arc's points from the hand to where it lands).</summary>
-        IEnumerator OnThrow(IReadOnlyList<Vector3> arc);
+        /// <summary>Throws along an arc (A7; the arc's points from the hand to where it lands); <paramref name="item"/>: what
+        /// is thrown (an item id; null: the active weapon).</summary>
+        IEnumerator OnThrow(IReadOnlyList<Vector3> arc, string item = null);
         /// <summary>Reloads (A3).</summary>
         IEnumerator OnReload();
         /// <summary>Holds a shot (overwatch, cover fire, a suppression, a guard).</summary>
@@ -56,6 +59,9 @@ namespace SecondFace.Game.Play
         void OnYield();
         /// <summary>Put back at once where a walk began (an undo).</summary>
         void Place(Vector3 at, Quaternion facing);
+        /// <summary>The fight is over (A1: the weapon back in its holster or sling, the body back to the people's own
+        /// motion; the dead stay where they fell).</summary>
+        void OnEnd();
     }
 
     /// <summary>The fight's flashes and lines (a tracer, a muzzle flash, a throw's arc in the air), shared by the views:
@@ -99,6 +105,54 @@ namespace SecondFace.Game.Play
             _tracer.enabled = false;
             _flash.enabled = false;
             yield return Wait(after);
+        }
+
+        private readonly Queue<GameObject> _shells = new();
+        private Material _brass;
+
+        /// <summary>A round's muzzle flash at a muzzle (the light for a few frames: A3).</summary>
+        public void Flash(Vector3 muzzle)
+        {
+            if (_flash == null)
+            {
+                _flash = new GameObject("muzzle").AddComponent<Light>();
+                _flash.transform.SetParent(_parent, false);
+                _flash.type = LightType.Point; _flash.range = 5f; _flash.intensity = 3f; _flash.color = new Color(1f, 0.8f, 0.5f);
+                _flash.enabled = false;
+            }
+            _flash.transform.position = muzzle;
+            _flash.enabled = true;
+        }
+
+        public void FlashOff() { if (_flash != null) _flash.enabled = false; }
+
+        /// <summary>A spent case thrown out to the right of the breech (A3), on the ground a moment, then gone (pooled: at most
+        /// a dozen at once).</summary>
+        public void Shell(Vector3 at, Vector3 right)
+        {
+            GameObject s;
+            if (_shells.Count >= 12) { s = _shells.Dequeue(); }
+            else
+            {
+                s = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                s.name = "shell";
+                s.transform.SetParent(_parent, false);
+                s.transform.localScale = new Vector3(0.012f, 0.014f, 0.012f);
+                if (_brass == null)
+                {
+                    var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+                    _brass = new Material(shader) { color = new Color(0.72f, 0.55f, 0.25f) };
+                }
+                s.GetComponent<Renderer>().sharedMaterial = _brass;
+                s.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                s.AddComponent<Rigidbody>().mass = 0.01f;
+            }
+            _shells.Enqueue(s);
+            s.SetActive(true);
+            s.transform.position = at;
+            var rb = s.GetComponent<Rigidbody>();
+            rb.linearVelocity = right * 2.2f + Vector3.up * 1.6f + Random.insideUnitSphere * 0.3f;
+            rb.angularVelocity = Random.insideUnitSphere * 20f;
         }
 
         /// <summary>Something thrown flying along an arc (a short bright segment travelling it).</summary>
@@ -215,7 +269,7 @@ namespace SecondFace.Game.Play
             if (Body != null) Body.rotation = goal;
         }
 
-        public IEnumerator OnFire(Vector3 at, bool hit, int round)
+        public IEnumerator OnFire(Vector3 at, bool hit, int round, int rounds = 1)
         {
             if (Body == null) yield break;
             yield return _fx.Tracer(Body.position + Vector3.up * 1.35f + Body.forward * 0.4f, at, Mathf.Max(0.04f, Pace.Seconds(0.07f, Theirs)), Pace.Seconds(0.12f, Theirs));
@@ -232,6 +286,10 @@ namespace SecondFace.Game.Play
             var amb = Body.GetComponentInChildren<Ambient>();
             if (amb != null) amb.Gesture("wave");
         }
+
+        public void OnMiss(Vector3 from, bool melee) { }
+
+        public void OnEnd() { }
 
         public void OnFall(Vector3 from)
         {
@@ -256,7 +314,7 @@ namespace SecondFace.Game.Play
 
         public void OnStance(string stance) { }
 
-        public IEnumerator OnThrow(IReadOnlyList<Vector3> arc)
+        public IEnumerator OnThrow(IReadOnlyList<Vector3> arc, string item = null)
         {
             if (arc == null || arc.Count < 2) yield break;
             yield return OnAim(arc[arc.Count - 1]);

@@ -47,7 +47,11 @@ namespace SecondFace.Tests
                     if (!File.Exists(Path.Combine(Dir(), clip + ".json"))) wrong.Add($"{s.Name}: {clip}.json not staged");
                 }
             Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
+            // one Animator state per clip: the names, and the women's takes' "_f" names, are unique
+            var anim = CombatMotion.States.SelectMany(s => new[] { s.AnimName(false), s.AnimName(true) }).Distinct().ToList();
+            Assert.That(anim.Count, Is.EqualTo(CombatMotion.States.Length + CombatMotion.States.Count(s => s.ClipF != null && s.ClipF != s.Clip)), "Animator state names are unique");
             Assert.That(CombatMotion.States.Select(s => s.Name).Distinct().Count(), Is.EqualTo(CombatMotion.States.Length), "state names are unique");
+            Assert.That(CombatMotion.States.All(s => !s.Name.Contains(".")), Is.True, "no dots in state names (an Animator's paths use them)");
         }
 
         [Test]
@@ -128,10 +132,11 @@ namespace SecondFace.Tests
                 if (!loop && root && c.XZ != RootXZ.Apply) wrong.Add($"{c.Name}: travels {travel:0.00} m (root: true) but is baked in place");
                 if (!root && c.XZ == RootXZ.Apply) wrong.Add($"{c.Name}: applied, but its sidecar says it stays within 15 cm");
                 if (c.Turn && c.XZ != RootXZ.Apply) wrong.Add($"{c.Name}: a turn applied without its travel");
+                if (c.Turn && c.DropTurn) wrong.Add($"{c.Name}: its turn both applied and dropped");
             }
             Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
             // the long cover transitions are cut at their first stride
-            foreach (var s in CombatMotion.States.Where(s => s.Name == "cover.leave" || s.Name == "hit.shove"))
+            foreach (var s in CombatMotion.States.Where(s => s.Name == "cover_leave" || s.Name == "hit_shove"))
                 Assert.That(s.Cut, Is.LessThanOrEqualTo(0.35f), s.Name + " is cut");
         }
 
@@ -150,7 +155,7 @@ namespace SecondFace.Tests
                     if (s.Only == (female ? "m" : "f")) continue;
                     var clip = s.ClipFor(female);
                     var set = Side(clip).Value<string>("set") ?? "both";
-                    if (female && set == "m" && flagged.Contains(clip) && !s.Name.StartsWith("melee.") && !s.Name.EndsWith(".idle") && s.Name != "unarmed.relax") wrong.Add($"{s.Name}: {clip} is flagged only for the guard and the slash");
+                    if (female && set == "m" && flagged.Contains(clip) && !s.Name.StartsWith("melee_") && !s.Name.EndsWith("_idle") && s.Name != "unarmed_relax") wrong.Add($"{s.Name}: {clip} is flagged only for the guard and the slash");
                     if (female && set == "m" && !flagged.Contains(clip)) wrong.Add($"{s.Name}: a man's take ({clip}) on women");
                     if (!female && set == "f") wrong.Add($"{s.Name}: a woman's take ({clip}) on men");
                 }
@@ -177,7 +182,7 @@ namespace SecondFace.Tests
                     var side = Side(clip);
                     var frames = side.Value<int>("frames");
                     var ev = side["events"] as JObject;
-                    string need = s.Gate == "strike" && !s.Name.Contains("block") ? "impact" : s.Gate == "throw" ? "release" : s.Name is "rifle.fire" or "rifle.burst" ? "fire" : null;
+                    string need = s.Gate == "strike" && !s.Name.Contains("block") ? "impact" : s.Gate == "throw" ? "release" : s.Name is "rifle_fire" or "rifle_burst" ? "fire" : null;
                     if (need == null) continue;
                     Assert.That(ev?[need], Is.Not.Null, $"{s.Name}: {clip} has no {need} frame");
                     foreach (var fr in ev[need].Values<int>())

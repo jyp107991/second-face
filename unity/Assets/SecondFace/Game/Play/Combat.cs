@@ -379,6 +379,8 @@ namespace SecondFace.Game.Play
             yield return new WaitForSeconds(outcome == "defeat" || outcome == "beaten" ? 2.5f : 1.6f);
             // (beaten, the player gets up off the ground and the story goes on: left lying, the walker stayed a ragdoll)
             if (outcome == "beaten" && _player != null) ViewOf(_player)?.OnRise();
+            // (A1: the weapons back in their holsters and slings, the living back to their own motion)
+            foreach (var u in _battle.Units) if (_views.TryGetValue(u, out var ev)) ev.OnEnd();
             ShowBar(false);
             _battle = null;
             Walkabout.Quests.Update();
@@ -399,6 +401,7 @@ namespace SecondFace.Game.Play
             _hud?.Summary(Strings.Get(result == "won" ? "combat.pit_won" : result == "lost" ? "combat.pit_lost" : "combat.pit_called"), null);
             yield return new WaitForSeconds(result == "lost" ? 2f : 1f);
             foreach (var u in _battle.Units) ViewOf(u)?.OnRise();
+            foreach (var u in _battle.Units) if (_views.TryGetValue(u, out var ev)) ev.OnEnd();
             foreach (var p in _people.Values) if (p != null) p.Held = false;
             ShowBar(false);
             _battle = null;

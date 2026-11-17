@@ -167,7 +167,7 @@ namespace SecondFace.Game.Play
                 if (_overlay != null) land.y = _overlay.GroundY(land.x, land.z, from.y);
                 PlaceholderUnitView.ArcPoints(from + Vector3.up * 1.5f, land, _arc);
                 _camera?.Frame(from, land, theirs);
-                yield return v.OnThrow(_arc);
+                yield return v.OnThrow(_arc, a.Item);
                 _events.Clear(); Floats.FromThrow(r.Throw, _events, Strings.Get); Floats_(_events, shown);
                 _camera?.Release();
             }
@@ -178,7 +178,7 @@ namespace SecondFace.Game.Play
                 _camera?.Frame(v.Body.position, d.position, theirs);
                 yield return v.OnAim(d.position);
                 var rounds = Mathf.Max(1, h.Result?.RoundsFired ?? 1);
-                for (var i = 0; i < rounds; i++) yield return v.OnFire(d.position + Vector3.up * 1.1f + Random.insideUnitSphere * (h.Kind == "suppress" ? 1.2f : 0.2f), h.Kind != "suppress", i);
+                for (var i = 0; i < rounds; i++) yield return v.OnFire(d.position + Vector3.up * 1.1f + Random.insideUnitSphere * (h.Kind == "suppress" ? 1.2f : 0.2f), h.Kind != "suppress", i, rounds);
                 _events.Clear(); Floats.FromHit(h, _events, Strings.Get); Floats_(_events, shown);
                 _camera?.Release();
             }
@@ -303,11 +303,12 @@ namespace SecondFace.Game.Play
                     var h = i < hit.Result.Hits.Count ? hit.Result.Hits[i] : null;
                     var struck = h != null && h.Hit;
                     var at = d.position + Vector3.up * 1.1f + (struck ? Vector3.zero : Random.insideUnitSphere * 0.9f);
-                    if (!melee) yield return av.OnFire(at, struck, i);
+                    if (!melee) yield return av.OnFire(at, struck, i, rounds);
                     else yield return av.OnStrike(at, struck);
                     if (h == null) continue;
                     var kind = !h.Hit ? "miss" : h.Crit ? "crit" : h.Damage <= Floats.Graze ? "graze" : "hit";
                     if (h.Hit) dv.OnHit(a.position, h.Part, kind);
+                    else dv.OnMiss(a.position, melee);
                     var text = kind == "miss" ? Strings.Get("combat.float.miss") : kind == "crit" ? Strings.Get("combat.float.crit", h.Damage) : kind == "graze" ? Strings.Get("combat.float.graze", h.Damage) : Strings.Get("combat.float.damage", h.Damage);
                     FloatOver(def, text, kind);
                     if (h.Hit) shown[def] = (shown.TryGetValue(def, out var s) ? s : 0) + h.Damage;
@@ -346,7 +347,7 @@ namespace SecondFace.Game.Play
             if (h != null)
             {
                 var rounds = Mathf.Max(1, h.Result?.RoundsFired ?? 3);
-                for (var i = 0; i < rounds; i++) yield return av.OnFire(d.position + Vector3.up * 1.0f + Random.insideUnitSphere * 1.2f, false, i);
+                for (var i = 0; i < rounds; i++) yield return av.OnFire(d.position + Vector3.up * 1.0f + Random.insideUnitSphere * 1.2f, false, i, rounds);
                 av.OnHold("suppress");
             }
             ShowChanges(pic, null);
@@ -367,7 +368,7 @@ namespace SecondFace.Game.Play
             var land = new Vector3((float)t.X, at.y, (float)t.Z);
             if (_overlay != null) land.y = _overlay.GroundY(land.x, land.z, at.y);
             PlaceholderUnitView.ArcPoints(from + Vector3.up * 1.5f, land, _arc);
-            yield return v.OnThrow(_arc);
+            yield return v.OnThrow(_arc, item);
             var shown = new Dictionary<BattleUnit, int>();
             _events.Clear(); Floats.FromThrow(t, _events, Strings.Get); Floats_(_events, shown);
             ShowChanges(pic, shown);

@@ -92,6 +92,10 @@ namespace SecondFace.Game.Play
 
         /// <summary>The body of a fighter in the fight on now (null when it has none).</summary>
         public Transform BodyOf(BattleUnit u) => u != null && _bodies.TryGetValue(u, out var b) ? b : null;
+        /// <summary>Under the player's hand (the player and the companions fighting beside them): not the other side's beats.</summary>
+        public bool UnderPlayer(BattleUnit u) => u != null && _controlled.Contains(u);
+        /// <summary>The view of a fighter (made on first asking).</summary>
+        public IUnitView ViewFor(BattleUnit u) => ViewOf(u);
 
         // ---- the turn ------------------------------------------------------------------------------------------------
 
