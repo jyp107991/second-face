@@ -22,6 +22,10 @@ def ts(obj):
 
 g = [['c'] * W for _ in range(H)]
 
+# Act 3 (B6b): Unit 9's recall is open (src/content/world/a3_conds.ts RECALL_OPEN: the notice come, unanswered, Nine on
+# the player's side: joined, not left, not gone)
+RECALL_OPEN = {'all': [{'flag': 'a3_recall_due'}, {'not': {'flag': 'a3_recall'}}, {'all': [{'flag': 'nine_joined'}, {'not': {'flag': 'nine_left'}}, {'not': {'any': [{'flag': 'nine_gone'}, {'flag': 'nine_disposed'}, {'flag': 'a3_nine_struck'}]}}]}]}
+
 
 def fill(x0, y0, x1, y1, ch):
     for y in range(y0, y1 + 1):
@@ -195,6 +199,8 @@ md_precinct = {
         'square_lean': {'x': 38, 'y': 38}, 'square_sit': {'x': 36, 'y': 46}, 'avenue_pair_a': {'x': 30, 'y': 29}, 'avenue_pair_b': {'x': 31, 'y': 29}, 'avenue_e': {'x': 52, 'y': 30}, 'avenue_w': {'x': 26, 'y': 30},
         'platform': {'x': 63, 'y': 22}, 'platform_sit': {'x': 61, 'y': 22}, 'patrol_a': {'x': 40, 'y': 28}, 'patrol_b': {'x': 56, 'y': 31},
         'lane': {'x': 30, 'y': 50},
+        # Act 3 (B6b): the recall wardens just inside the gate, the courier at the mouth of the lane to the Spire
+        'recall_a': {'x': 14, 'y': 28}, 'recall_b': {'x': 14, 'y': 31}, 'courier_post': {'x': 57, 'y': 12},
     },
     'npcs': [
         {'def': 'npc_md_01', 'x': 20, 'y': 14, 'facing': 0},
@@ -211,6 +217,11 @@ md_precinct = {
         {'def': 'npc_ar_04', 'id': 'npc_ar_04_line', 'x': 4, 'y': 46, 'facing': 1, 'schedule': [], 'if': {'flag': 'ca_squatter', 'eq': 'lost'}},
         # Leven's keeper, in the line outside the Wall after the tower burned (B3.12)
         {'def': 'npc_dr_05', 'id': 'npc_dr_05_line', 'x': 6, 'y': 38, 'facing': 1, 'schedule': [], 'if': {'flag': 'dr_leven_burned'}},
+        # Act 3 (B6b): the courier who carries the Ledger's paper, once the order has come; the two recall wardens while
+        # Unit 9's recall is open (and through a fight over it)
+        {'def': 'npc_a3_01', 'x': 57, 'y': 12, 'facing': 2, 'if': {'flag': 'a3_open'}},
+        {'def': 'npc_a3_g1', 'x': 14, 'y': 28, 'facing': 3, 'if': {'any': [RECALL_OPEN, {'flag': 'a3_recall_fight'}]}},
+        {'def': 'npc_a3_g2', 'x': 14, 'y': 31, 'facing': 3, 'if': {'any': [RECALL_OPEN, {'flag': 'a3_recall_fight'}]}},
     ],
     'triggers': [
         {'id': 'arrive', 'x': 1, 'y': 25, 'w': 8, 'h': 10, 'text': 'Meridian. Towers first, miles off, grey against grey; then the Wall, poured concrete five storeys high, running out of sight both ways; then, when the road reaches it, a gate the size of a door, a booth, a lamp, and a line of people who have been waiting since before you came over the last rise.', 'effects': [{'learn': 'seen_meridian'}, {'learn': 'loc_meridian'}]},
@@ -220,6 +231,8 @@ md_precinct = {
         {'id': 'square', 'x': 36, 'y': 36, 'w': 4, 'h': 13, 'text': 'A square between the tenements with a standpipe, a bell on a post, and a notice board under glass. Everything that happens here has been posted first.', 'effects': [{'learn': 'seen_square'}]},
         {'id': 'platform', 'x': 58, 'y': 18, 'w': 13, 'h': 8, 'text': 'The Loop\'s Precinct platform: a raised deck, a shelter, a tram on the rail with its doors open and nobody in it, and a board of district names with a fare beside each.', 'effects': [{'learn': 'seen_loop'}]},
         {'id': 'cells', 'x': 15, 'y': 12, 'w': 2, 'h': 2, 'once': False, 'if': {'all': [{'flag': 'md_detained'}, {'not': {'flag': 'md_status'}}]}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_md_cell', 'name': 'The cell'}}]},
+        # Act 3 (B6b): Nine comes through the gate with the player while its recall is open and not before the Court
+        {'id': 'a3_recall', 'x': 12, 'y': 27, 'w': 1, 'h': 6, 'once': False, 'if': {'all': [{'inParty': 'npc_md_nine'}, RECALL_OPEN, {'not': {'flag': 'a3_recall_stay'}}]}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_recall', 'name': 'Recall wardens'}}]},
     ],
     'extras': [
         {'count': 5, 'roles': ['settler', 'corp', 'trader', 'tech'], 'faction': 'wardens', 'area': {'x': 22, 'y': 27, 'w': 36, 'h': 6}, 'spots': ['avenue_pair_a', 'avenue_pair_b', 'avenue_e', 'avenue_w', 'square_lean', 'square_sit', 'platform_sit'], 'hours': {'from': 6, 'to': 21}, 'barks': ['Curfew\'s at nine. The bell\'s never late.', 'Mind the camera; it minds you.', 'Water\'s rationed since the Sallow business. Point eight.', 'The schedule holds.']},

@@ -18,6 +18,19 @@ def ts(obj):
 
 g = [['R'] * W for _ in range(H)]
 
+# Act 3 (B6d, Every Dead Radio): the act open, and who keeps the mast once it is raised
+A3 = {'flag': 'a3_open'}
+GONE = {'flag': 'a3_hollow_gone'}
+
+
+def KEPT(keeper):
+    return {'all': [{'flag': 'a3_mast', 'eq': 'raised'}, {'flag': 'a3_mast_keeper', 'eq': keeper}]}
+
+
+def ALIVE(npc):
+    # dead in any of their placements on this hill (Act 1, Act 3, at the mast)
+    return [{'not': {'dead': f'signalhill/{npc}'}}, {'not': {'dead': f'{npc}_a3'}}, {'not': {'dead': f'{npc}_mast'}}]
+
 
 def fill(x0, y0, x1, y1, ch):
     for y in range(y0, y1 + 1):
@@ -70,6 +83,8 @@ props = [
     {'kind': 'rock_small', 'x': 14, 'y': 22}, {'kind': 'debris', 'x': 18, 'y': 16},
     # the gully
     {'kind': 'rock_small', 'x': 5, 'y': 38}, {'kind': 'debris', 'x': 5, 'y': 27}, {'kind': 'rock_small', 'x': 6, 'y': 22},
+    # the mast's crown, let down the crack by the city long ago (B6d: the top section the Act 3 mast needs)
+    {'kind': 'debris', 'x': 5, 'y': 32, 'id': 'mast_crown'},
     # the top
     {'kind': 'sandbags', 'x': 23, 'y': 13}, {'kind': 'sandbags', 'x': 27, 'y': 13}, {'kind': 'barrel_rust', 'x': 33, 'y': 10}, {'kind': 'barrel_rust', 'x': 34, 'y': 11},
     {'kind': 'pipe_h', 'x': 33, 'y': 6}, {'kind': 'pipe_h', 'x': 36, 'y': 9}, {'kind': 'machine', 'x': 37, 'y': 6, 'rot': 3, 'id': 'mast_base'}, {'kind': 'debris', 'x': 12, 'y': 8}, {'kind': 'rock', 'x': 11, 'y': 12},
@@ -105,8 +120,9 @@ signalhill = {
     ],
     'talk': {
         'relay_term': {'dialogue': 'd_sg_relay', 'name': 'The relay'},
-        'speaker': {'dialogue': 'd_sg_speaker', 'name': 'The speaker'},
-        'mast_base': {'dialogue': 'd_sg_mast', 'name': 'The mast'},
+        'speaker': {'dialogue': 'd_a3_station', 'name': 'The speaker'},
+        'mast_base': {'dialogue': 'd_a3_mast', 'name': 'The mast'},
+        'mast_crown': {'dialogue': 'd_a3_aerial', 'name': 'Old lattice'},
         'station_cot': {'dialogue': 'd_sg_cot', 'name': 'The cot'},
     },
     'containers': {
@@ -115,16 +131,31 @@ signalhill = {
     },
     'spots': {
         'camp_fire': {'x': 20, 'y': 30}, 'camp_watch': {'x': 31, 'y': 33}, 'camp_pipes': {'x': 20, 'y': 32}, 'camp_tent_a': {'x': 17, 'y': 28}, 'camp_tent_b': {'x': 17, 'y': 31},
+        # Act 3: the keepers' places once the mast is raised
+        'hill_watch': {'x': 20, 'y': 15}, 'mast_feed': {'x': 36, 'y': 7}, 'station_bed': {'x': 23, 'y': 10},
     },
     'npcs': [
-        {'def': 'npc_sg_01', 'x': 22, 'y': 30, 'facing': 2, 'if': {'not': {'dead': 'signalhill/npc_sg_01'}}},
-        {'def': 'npc_sg_02', 'x': 31, 'y': 33, 'facing': 2, 'if': {'not': {'dead': 'signalhill/npc_sg_02'}}},
-        {'def': 'npc_sg_03', 'x': 19, 'y': 32, 'facing': 1, 'if': {'not': {'dead': 'signalhill/npc_sg_03'}}},
+        {'def': 'npc_sg_01', 'x': 22, 'y': 30, 'facing': 2, 'if': {'all': [{'not': {'dead': 'signalhill/npc_sg_01'}}, {'not': A3}]}},
+        {'def': 'npc_sg_02', 'x': 31, 'y': 33, 'facing': 2, 'if': {'all': [{'not': {'dead': 'signalhill/npc_sg_02'}}, {'not': A3}]}},
+        {'def': 'npc_sg_03', 'x': 19, 'y': 32, 'facing': 1, 'if': {'all': [{'not': {'dead': 'signalhill/npc_sg_03'}}, {'not': A3}]}},
+        # Act 3 (B6d): the Hollow with Tally's Act 3 tree; once the mast is theirs Brick watches the track and Thanh sits at the
+        # switch (outside: he does not go in the station); the hill given to Knock, they walk west; given to the Wheel, Sefa's
+        # son keeps the station from the day after
+        {'def': 'npc_sg_01', 'id': 'npc_sg_01_a3', 'x': 22, 'y': 30, 'facing': 2, 'dialogue': 'd_a3_hollow', 'if': {'all': [A3, *ALIVE('npc_sg_01'), {'not': GONE}]}},
+        {'def': 'npc_sg_02', 'id': 'npc_sg_02_a3', 'x': 31, 'y': 33, 'facing': 2, 'if': {'all': [A3, *ALIVE('npc_sg_02'), {'not': GONE}, {'not': KEPT('hollow')}]}},
+        {'def': 'npc_sg_03', 'id': 'npc_sg_03_a3', 'x': 19, 'y': 32, 'facing': 1, 'if': {'all': [A3, *ALIVE('npc_sg_03'), {'not': GONE}, {'not': KEPT('hollow')}]}},
+        {'def': 'npc_sg_02', 'id': 'npc_sg_02_mast', 'x': 20, 'y': 15, 'facing': 2, 'schedule': [{'from': 6, 'to': 22, 'spot': 'hill_watch', 'activity': 'patrol'}, {'from': 22, 'to': 6, 'spot': 'camp_tent_b', 'activity': 'sleep'}],
+         'if': {'all': [KEPT('hollow'), *ALIVE('npc_sg_02'), {'not': GONE}]}},
+        {'def': 'npc_sg_03', 'id': 'npc_sg_03_mast', 'x': 36, 'y': 7, 'facing': 2, 'schedule': [{'from': 7, 'to': 22, 'spot': 'mast_feed', 'activity': 'work'}, {'from': 22, 'to': 7, 'spot': 'camp_tent_b', 'activity': 'sleep'}],
+         'if': {'all': [KEPT('hollow'), *ALIVE('npc_sg_03'), {'not': GONE}]}},
+        {'def': 'npc_wh_02', 'id': 'npc_wh_02_sg', 'x': 36, 'y': 7, 'facing': 2, 'dialogue': 'd_a3_keeper', 'schedule': [{'from': 6, 'to': 21, 'spot': 'mast_feed', 'activity': 'idle'}, {'from': 21, 'to': 6, 'spot': 'station_bed', 'activity': 'sleep'}],
+         'if': {'all': [KEPT('wheel'), {'flag': 'a3_wheel_up'}, {'not': {'dead': 'npc_wh_02'}}, {'not': {'dead': 'npc_wh_02_sg'}}]}},
     ],
     'triggers': [
         {'id': 'arrive', 'x': 14, 'y': 48, 'w': 21, 'h': 7, 'text': 'Signal Hill. A mast on the skyline with a red light that still blinks, slow as a pulse, and a track that goes up to it in switchbacks cut by somebody who meant them to last.', 'effects': [{'learn': 'seen_signalhill'}]},
         {'id': 'camp', 'x': 30, 'y': 34, 'w': 7, 'h': 4, 'once': False, 'if': {'not': {'flag': 'sg_camp_passed'}}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_sg_camp', 'name': 'The camp'}}]},
         {'id': 'gully', 'x': 4, 'y': 42, 'w': 3, 'h': 4, 'once': False, 'if': {'not': {'flag': 'sg_camp_passed'}}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_sg_gully', 'name': 'The gully'}}]},
+        {'id': 'a3_arrive', 'x': 14, 'y': 48, 'w': 21, 'h': 7, 'if': A3, 'text': 'Signal Hill again. The red lamp on the skyline still blinks, slow as a pulse, and on the wind from the top, very faint, a voice is reading something.', 'effects': [{'quest': 'q_a3_mast', 'start': True}]},
         {'id': 'top', 'x': 8, 'y': 3, 'w': 33, 'h': 12, 'text': 'The top of Signal Hill. The Sallow lies under you like a map of itself: the highway, the salt pans, a line of dead windpumps to the south-east, and far west a grey smear that is Shale.', 'effects': [{'set': 'sg_station'}, {'learn': 'loc_lm_sallow_02'}, {'learn': 'loc_drywells'}, {'lead': 'l_windpumps'}]},
     ],
     'ambience': {'indoor': False, 'fogColor': 'hex:0xb0a090', 'fogDensity': 0.016, 'dust': 0.5, 'grade': 0.7, 'mood': 'haze', 'sound': 'wind'},

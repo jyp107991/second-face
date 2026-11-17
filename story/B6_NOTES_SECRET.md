@@ -684,7 +684,7 @@ The default shared files touched by a content slice are the registries: `quests/
   coverage pass with the skeletons.
 - **Estimate** 1 h.
 
-### B6b — The fourth order, Nine's recall, Reserve 9 at the Court
+### B6b — The fourth order, Nine's recall, Reserve 9 at the Court — BUILT 2026-11-17 (deviations under "As built")
 - **Create** the rest of `dialogue/a3_order.ts` (the courier `d_a3_courier`, `d_a3_recall` at the Precinct gate, the
   wardens' scene, the hiding routes at Clover and the cradle) · `npcs/a3.ts` (`npc_a3_01` the courier, `npc_a3_g1/g2` the
   recall wardens; looks per the pipeline).
@@ -712,7 +712,7 @@ The default shared files touched by a content slice are the registries: `quests/
   Archive promise is reachable in Act 2 and Act 3.
 - **Estimate** 1 h.
 
-### B6d — Every dead radio (Signal Hill)
+### B6d — Every dead radio (Signal Hill) — BUILT 2026-11-17 (deviations under "As built")
 - **Create** `dialogue/a3_mast.ts` (`d_a3_hollow` for the Hollow at the camp, `d_a3_mast` for the mast and the aerial,
   `d_a3_station` for the voice in Act 3).
 - **Touch** `tools/maps/gen_signalhill.py` → `maps/signalhill.ts` (Act 3 placements with `dialogue` overrides on the camp
@@ -1103,6 +1103,138 @@ and returns the loaded copy with a fresh `QuestEngine`. The B5 tests' helpers ar
 `waitFor`, `hour`, `at`, `conclude`, `fire`, `placed`, `trigger`, `skills`, `has`, `stage`, `status`). Settled Act 1–2
 events (Tribute Day, the Sink's spring, the night's call and dusk, Tamsin's walk-up when met) are marked resolved, so
 only Act 3's own event fires when the fixture opens the act.
+
+### B6b (built 2026-11-17)
+**Done, all of the slice:** `dialogue/a3_order.ts` (+ `d_a3_courier`, `d_a3_recall`, `d_a3_nine_hid`; the order's text now
+carries the city's foot line OBJECTIONS LIE TO THE COURT OF ACCOUNTS, in the read and its return) · `dialogue/a3_court.ts`
+(the two cases as `courtCase()` specs) · `npcs/a3.ts` (`npc_a3_01` Selma Ruud, the courier; `npc_a3_g1/g2`, the recall
+wardens, both "Warden": the older woman and the young man) · placements via the generators (re-run, additions only):
+`md_precinct` (the courier `if: a3_open` at the lane to the Spire, spot `courier_post`; the wardens inside the gate, spots
+`recall_a/b`, `if: RECALL_OPEN ∨ a3_recall_fight`; trigger `a3_recall` on the gate's inner column: Nine in the party ∧
+RECALL_OPEN ∧ ¬`a3_recall_stay` → `d_a3_recall`), `md_ring` (`npc_md_nine_clover` on Clover's halt bench), `md_docks`
+(`npc_md_nine_hulls` in the north hull's forward hold) · `tests/b6b.test.ts` (32). No engine change. `npm run check` green
+(people gate red/stale as before).
+**Shared touches (small, local):** `md_court.ts` (an import; `RESERVE`/`RECALL` built after `DEED`; both `open()`s on the
+bench's CALLS; their nodes spread into `d_ca_court`) · `a3_conds.ts` (`NINE_KEEPER_SELF/PLAYER/CITY`, `NINE_REGISTERED`,
+`RECALL_OPEN`, mod `NINE_DEED`; the registry's B6b block) · `quests/a3.ts` (`q_a3_recall`: an optional "hear the recall
+wardens out at the gate" objective; the `court` and `hidden` journals) · content index (`A3_NPCS`) · `tests/b6a.test.ts`
+(`ca_deed` added to its LATER exception: courtCase writes `ca_<case>` through a template, so the flag is real but not
+literal).
+
+**Deviations and choices:**
+- **No import cycle.** The case specs are functions of `onRail` (`reserveCase(onRail)`, `recallCase(onRail)`) in their own
+  file, importing only types from `md_court.ts`; `md_court.ts` builds them on its bench. Case ids `reserve` and `recall`, so
+  the rulings are `ca_reserve` and `ca_recall` as planned; nodes `reserve*` / `recall*` in `d_ca_court`.
+- **Whose unit it is** (`NINE_KEEPER_*`): an Act 3 outcome first (`a3_nine_keeper`), then the Court's registration
+  (`ca_deed` self | irregular → self, citizen → player, returned | voided → city), then an unregistered deed **witnessed or
+  bought** (the plan said "registered or witnessed"; a desk sale at assessed value is a recorded transfer, so it counts),
+  else the city (its own deed, an unregistered forgery, a voided one, none). **U8's `nine_deed` is never rewritten**: the
+  title bought at the gate writes `a3_nine_keeper` = player; the Court's keeper ground writes `a3_nine_keeper` = self.
+  **B6j (Nine's break at the door) and B6v (its slide) read `NINE_KEEPER_*` / `NINE_DEED`, not `nine_deed`.**
+- **Where it plays.** At the gate when Nine comes through with the player (the scene); the wardens can also be talked to
+  with Nine away (only the answers that need no unit present: refuse, buy, the Court); by post through the courier (a self
+  keeper's "declines" in Nine's hand, a citizen keeper's "refuses"); at the Court (the case is callable whenever the recall
+  is open, before or after the gate). "Not today." changes nothing and the wardens wait, days on (no time limit). Nine never
+  met, left or gone: no recall, no wardens.
+- **Answers and outcomes.** `declined` (self; Nine +10) · `stayed` (citizen keeper refuses) · `handed` (citizen keeper,
+  confirmed by Nine's "Is that an instruction from my keeper?") · `court` (the stay at the gate sets `a3_recall_stay`: the
+  wardens stand aside for the ruling and stop nobody; or the case called directly) · `bought` (121 Tolls, the city's unit
+  only) · `hidden` (Stealth 40, −10 after dark; one try: a failure sets `a3_recall_watched` and the young warden blocks the
+  gate, every other answer still offered) · `fought` (a real fight: both wardens `hostileIf: a3_recall_fight ∨ md_fight`;
+  wardens respect −20, fear +5; Nine −5; the rest of the Precinct is not turned) · `taken` (let go, confirmed; a deputy
+  Nine says the order is lawful, a conscience one asks that its non-consent be entered).
+- **Hidden.** Clover always (north along the Wall; the lenses face in); the Hulls only with `CRADLE_RUNS` ∧ ¬`dk_hulls` =
+  cleared ∧ the cradle or the Hulls known. Nine leaves the party, waits at its hideout (placement `if: a3_nine_hid` ∧ not in
+  the party ∧ ¬`a3_nine_fetched` ∧ not left/gone/disposed/struck), is entered NOT FOUND and written off (clause 22): the city
+  does not look again, and walking it back through the gate later is safe. It stays `ON_SIDE` and rejoins when fetched
+  (`d_a3_nine_hid`, `a3_nine_fetched`). **B6l:** a hidden, unfetched Nine is on the player's side; decide whether the summons
+  brings it to the close on its own (suggested: yes, written off, it walks in).
+- **Disposed** (`handed`, `taken`, or the Court's `returned`): `nine_disposed` + `leave`; no placement of `npc_md_nine` on
+  any map evaluates true afterwards (tested at four hours), and `ON_SIDE('nine')` is false.
+- **Case `recall`** (available on `RECALL_OPEN`). Evidence: the deed (`nine_deed_made`; read by its registration), the log
+  (`nine_log_given`, or Nine at the rail reading its own count), the register's heading (`prec_unit_keeper`), the census note
+  (knows `ar_census_seen`). Grounds: `held` (no check, when the register already holds `prec_unit_keeper` = self) · `keeper`
+  (Speech 50: a non-city deed on the rail −10, the log −15, the register −10, the census −10, Nine at the rail −5, a voided
+  deed +10) · `register` (Science 45, only with `NINE_REGISTERED`; the deed on the rail −10). `kept` → `prec_recall` =
+  keeper, `a3_recall` = court, a precedent; `returned` → `a3_recall` = taken, `nine_disposed`.
+- **Case `reserve`** (available on `a3_order_read` ∧ ¬`a3_c9`). Evidence: the replies copy, the census (`tam_why`, the
+  census seen, or Tamsin at the rail, who reads the count and does not name the one), MOTHER's slip, Nine's "I did not
+  escalate it" (in the party), the register's `prec_unrecorded` = yields and `prec_refuse_benefit`. Consent: Speech 50 with
+  exactly the plan's five modifiers (DC 15 with all of them). **Attendance: Science 45, with −10 for the refused-benefit
+  heading on the rail** (added: the plan listed that evidence without a ground to use it); an `archive_clerk` gets the
+  separate no-check ground `clerk`. Privilege: no check, xp 40, wardens respect +3, not a precedent; Tamsin −5, Ash −5
+  (interjections). Any failed ground → `upheld`.
+- **Discoverability.** The order's foot line, the courier (the Court; starts `q_ca_court`, which tracks the cases), and the
+  wardens' stay all point to the Court. The courier also seeds the couriers' slot at the Spire's foot (`a3_drop_heard`) for
+  B6r's escape by the drop.
+- **Precedents.** A player with none from Act 2 (the hostile fixture with Nine brought back into the party) reaches
+  `E_PREC` from these two cases alone (tested).
+
+### B6d (built 2026-11-17, alongside B6b and ahead of B6c)
+**Done, all of the slice:** `dialogue/a3_mast.ts` (5 trees: `d_a3_station`, `d_a3_mast`, `d_a3_aerial`, `d_a3_hollow`,
+`d_a3_keeper`) · `tools/maps/gen_signalhill.py` → `maps/signalhill.ts` (confirmed byte-identical before the change) ·
+`tests/b6d.test.ts` (24). No engine change. `npm run check` green (people gate red/stale as before).
+**Shared touches (small, local):** `a3_conds.ts` (`MAST_BOARDS`, the boards one by one with what each settles; the registry's
+B6d block) · `quests/a3.ts` (`q_a3_mast` only: routes c, b, v declare their real needs; the hook journal; objectives for the
+Hollow's price, "able to speak" and the keeper; three keeper stages before `raised`, which stays for a bare `a3_mast` =
+raised) · `a3_events.ts` (`a3_verity_band`) · the dialogue index · `quests/b5d_ashlands.ts` (`q_an_board` ends at `mast`) ·
+`tools/maps/gen_wheel.py` → `maps/wheel.ts` (the generator first corrected to the map's committed name, "Wheel", so it
+reproduces the map byte for byte; then one condition on Dario's placement).
+
+**How it plays (and where it differs from §2.3 19b):**
+- **The hook.** The station's voice reads its twelve lines, now with the designate's at the top: "— the Spire. The
+  designate. Year thirty. Magistrate. —" (the same year as the order's corrected steps). Three texts by Act 1's speaker: cut
+  (the voice small in the cut stub, still going west), on the mast (the whole Sallow hearing it), neither (a room and a pump
+  station). Arriving in Act 3 (trigger `a3_arrive`), hearing the voice, the mast's foot, the crown or Tally each start
+  `q_a3_mast`. **B6c:** the Hollow trader's road encounter should start it too (`{ quest: 'q_a3_mast', start: true }`).
+- **Why it was narrow, made concrete.** The rack has three circuits: the speaker, the line west to DW-4, and BROADCAST — ALL
+  BANDS with a city tie through its terminals, tagged ISOLATED BY ORDER. The mast's head is a stub with four empty plates; the
+  **crown** (the broadcast array, the plan's "top section") was let down the gully on ropes by city men long ago, so it could
+  go back up. Two independent ways to make it speak wide, each a whole route: **make the stub shout** (X, C, K, B: a wide
+  band on the link, or a board with nobody in it in the head box) or **put the crown back** (V, T). Every route ends with the
+  same visible sign: a white lamp beside the red at the head, and a **knife switch** at the foot, down: it speaks wide only
+  when the switch is thrown. That keeps the nightly twelve on their narrow line (no early ending D) and gives the keeper a job.
+- **Investigation:** the rack (Science 35; −15 an archive clerk, Nine, or Kes; a player who read the Act 1 log sees the
+  circuit with no check: `a3_broadcast_seen`, `relay_log_read`) · the mast's foot (the live meter, free: `mast_powered`) ·
+  Tally (where the crown lies: `a3_crown_told`) · the gully's new prop `mast_crown` (a "debris" prop at 5,32, "Old lattice";
+  dig it out and run a line up the crack: `a3_aerial_found`, no check, 50 minutes). The prop exists in Act 1 too, with a
+  plain look (old lattice let down on purpose): props have no conditions.
+- **The turn** is Tally's (`a3_hollow_price`): the loudest hill between here and the city, the city's wardens, guild riders
+  and the Concern ("who don't use tracks") will come; sixty for water and cartridges to stand on a target, or leave it be.
+  Without the Hollow, the keeper node at the mast says the same turn in narration.
+- **Routes as built:** X Science 50 (−10 `relay_log_read`) · C a neural port (**the Gridjack or the Lattice Port**: both are
+  ports the city's grid answers; plan named only the Gridjack): the grid files REQUEST FROM THE DESIGNATE and answers
+  GRANTED (`a3_ledger_granted`: the Ledger wants to be heard; **B6q may have it remember this**); or Kes in the party with
+  her link not cut (a cut link is grid-blind, U8): no check, Kes +3 · K Verity's letter (`a3_verity_band`, world event: armed
+  by the quest active ∧ `bw_static` = kept ∧ Verity alive; the post at the next seven o'clock anywhere): the hiss band the wire
+  wakes on, which every radio hears; no check, Saints +5 · V only once the crown is dug out: Survival 45 or Reflex 7 (two
+  options) · B at the Hollow's fire, after the turn: one option per board held, each with sixty Tolls; the shunter's board sets
+  `an_board` = mast (B5d's quest ends there) · T at the fire, after the turn: Speech 45, −10 `broadcast_silenced`, +10
+  `broadcast_amplified` (the plan's), **plus −5 Tally's trust ≥ 10 and −5 Wren in the party** (added: Act 1's board and
+  Wren's name); the Hollow raise it themselves (the crown up the gully on Brick's back, Thanh up the lattice, Tally's copper
+  put back), six hours, keeper hollow at once.
+- **Raised = kept.** A route sets `a3_mast_how`; `a3_mast` = raised is set only with `a3_mast_keeper` (D_VOICE stays false
+  between). A save in between keeps it waiting (start entries go straight to the keeper question). Keepers: **hollow** (asked
+  at the fire: the sixty, paid now or already by B, or Speech 45 with T's modifiers; Brick moves to watch the track, Thanh to
+  the switch, outside: his Act 1 bark "I don't go in now" stays true) · **wheel** (`a3_ally_wheel` ∨ the Wheel's own need:
+  member or standing 15): **Dario Oduya** ("I want a door. One that shuts") comes up the day after (timer `a3_wheel_up`,
+  1440 min) with `d_a3_keeper`, and leaves the Wheel's camp map; the Hollow stay on their camp under the Wheel · **knock**
+  (always offered, so a keeper always exists): KNOCK chalked on the cabinet, the switch's handle with the player. Over the
+  Hollow's heads it costs them the hill: they walk west by morning (timer `a3_hollow_leave`, 480 min → `a3_hollow_gone`),
+  Wren −5, Tally −10. **B6f/B6k may send someone up from Knock after the door** (suggested: Amos Crofts, who never went down
+  the road again). News by keeper (the Tollhouse, the Wheel, Knock), Nine +3, Odile +2, Ash +2 on any raise.
+- **Narrow** is final and offered at the mast, at Tally's asking (trust +10, Wren +3: "a fire here, any night") or after a
+  route (pulled out again). Nine −3, Odile −2. The quest ends `narrow`.
+- **The Hollow fought in Act 1** (`sg_fight`): their Act 3 placements are hostile if alive, Tally's tree says nobody is
+  talking, and their routes and their keeping are never offered; X, C, K, V and the Wheel or Knock still are.
+- **One prop, both acts.** The map's mast and speaker now open `d_a3_mast` / `d_a3_station`, which carry `d_sg_mast` /
+  `d_sg_speaker`'s nodes and start entries whole after their own Act 3 entries (tested identical before Act 3). Act 3 does not
+  offer the Act 1 speaker's cut or amplify (it would move T's modifiers in Act 3).
+- **For later slices.** **B6r (D's climax):** the keeper throws the switch when the reading comes up the relay (hollow:
+  Thanh; wheel: Dario; knock: whoever has the handle, which is the player's to give). **B6u/B6v:** slide 18 reads
+  `a3_mast_keeper` = wheel (Dario at the station); the Hollow have no slide (suggested: a line in the wheel or knock slide by
+  keeper). **Runtime (§9.5):** the white lamp at the head once `a3_mast_how` is set; the crown on its plates when how = t | v;
+  KNOCK chalked on the cabinet when keeper = knock.
 
 ## Defaults taken for the open questions (coordinator, 2026-11-17; the owner may override)
 1. After the ending: epilogue, credits, then the title screen; the named autosave at the point of no return stays

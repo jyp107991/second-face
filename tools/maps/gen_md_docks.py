@@ -278,6 +278,9 @@ npcs = [
     {'def': 'npc_sh_05', 'id': 'ln_calla_dk', 'x': 61, 'y': 9, 'facing': 3, 'schedule': [], 'dialogue': 'd_ln_carrick', 'if': ALL(F('ln_car', 'carrick'), NOT(F('ln_calla')))},
     {'def': 'npc_ln_e1', 'x': 62, 'y': 10, 'facing': 3, 'if': ALL(F('ln_car', 'carrick'), NOT(F('ln_calla')))},
     {'def': 'npc_ln_e2', 'x': 64, 'y': 9, 'facing': 3, 'if': ALL(F('ln_car', 'carrick'), NOT(F('ln_calla')))},
+    # Act 3 (B6b): Nine hidden from its recall in the forward hold of the north hull, the cradle's people keeping it, until fetched
+    {'def': 'npc_md_nine', 'id': 'npc_md_nine_hulls', 'x': 10, 'y': 5, 'facing': 1, 'schedule': [], 'dialogue': 'd_a3_nine_hid',
+     'if': ALL(F('a3_nine_hid', 'hulls'), NOT({'inParty': 'npc_md_nine'}), NOT(F('a3_nine_fetched')), NOT(ANY(F('nine_left'), F('nine_gone'), F('nine_disposed'), F('a3_nine_struck'))))},
 ]
 
 spawns = [

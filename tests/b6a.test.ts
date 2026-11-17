@@ -373,8 +373,9 @@ describe('B6a: the Long Night read through the plan\'s aliases, reconciled to th
   /** A flag some file writes, and (for each value) a file that writes the flag holds that value: literally, or as an
    * argument to the helper that sets it (B5d's dawn sets `ks_mason` and `ln_openfield` through one function). */
   const writes = (flag: string, v?: string) => FILES.some((f) => new RegExp(`(set|inc): '${flag}'`).test(f) && (v === undefined || f.includes(`'${v}'`)));
-  /** Act 3's own flags and the slices still to come, and the arcology slice's (not on main). */
-  const LATER = /^(a3_|ep_|ev_armed_)|^(ks_ada|ca_reserve|ca_recall|prec_reserve|prec_recall|prec_sedition|nine_disposed)$/;
+  /** Act 3's own flags and the slices still to come, and the arcology slice's (not on main). `ca_deed` is real: courtCase()
+   * writes every case's ruling as `ca_<case>` (B6b reads the deed's registration). */
+  const LATER = /^(a3_|ep_|ev_armed_)|^(ks_ada|ca_reserve|ca_recall|prec_reserve|prec_recall|prec_sedition|nine_disposed|ca_deed)$/;
 
   it('every flag the shared conditions, the quests and the events read is one some content really writes (or Act 3\'s own, or the arcology\'s)', () => {
     const read = new Set<string>();

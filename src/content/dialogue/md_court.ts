@@ -1,5 +1,6 @@
 import type { CheckDef, DialogueDef, NodeDef, OptionDef, Text } from '../../engine/dialogue/dialogue';
 import type { Cond, Effect } from '../../engine/world/logic';
+import { recallCase, reserveCase } from './a3_court';
 
 /**
  * The Court of Accounts, at the foot of the Archive Spire (B3.11). One tree, owned by Assessor Three on the bench, holds
@@ -303,9 +304,14 @@ const DEED = courtCase({
   },
 });
 
+// ---------------------------------------------------------------- Act 3 (B6b): Reserve 9 against the fourth order; Unit 9's recall (specs: a3_court.ts)
+
+const RESERVE = courtCase(reserveCase(onRail));
+const RECALL = courtCase(recallCase(onRail));
+
 // ---------------------------------------------------------------- the bench
 
-const CALLS = (sfx: string) => [FINES.open(sfx), SQUATTER.open(sfx), DEED.open(sfx)];
+const CALLS = (sfx: string) => [FINES.open(sfx), SQUATTER.open(sfx), DEED.open(sfx), RESERVE.open(sfx), RECALL.open(sfx)];
 const NOT_SEEN = (id: string): Cond => ({ not: { any: [{ seen: id }, { seen: `${id}.again` }] } });
 const BENCH_TOPICS = (sfx: string): OptionDef[] => [
   { id: `three.chair${sfx}`, text: 'The chair behind you. Who sits in it?', if: NOT_SEEN('three.chair'), next: 'chair' },
@@ -351,6 +357,8 @@ export const d_ca_court: DialogueDef = {
     ...FINES.nodes,
     ...SQUATTER.nodes,
     ...DEED.nodes,
+    ...RESERVE.nodes,
+    ...RECALL.nodes,
   },
 };
 

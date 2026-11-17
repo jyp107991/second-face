@@ -79,7 +79,7 @@ spots.update({
 })
 
 wheel = {
-    'id': 'wheel', 'name': 'The Wheel', 'seed': 77, 'settlement': 'wheel',
+    'id': 'wheel', 'name': 'Wheel', 'seed': 77, 'settlement': 'wheel',
     'layout': rows,
     'legend': {
         '.': {'floor': 'sand'}, ',': {'floor': 'dirt'}, 's': {'floor': 'rubble'},
@@ -99,7 +99,8 @@ wheel = {
     'hunting': 0.3,
     'npcs': [
         {'def': 'npc_wh_01', 'x': CX - 2, 'y': CY + 2},
-        {'def': 'npc_wh_02', 'x': CX + 7, 'y': CY - 1},
+        # Act 3 (B6d): Sefa's son leaves for Signal Hill once the Wheel keep its mast (a3_wheel_up, the day after)
+        {'def': 'npc_wh_02', 'x': CX + 7, 'y': CY - 1, 'if': {'not': {'flag': 'a3_wheel_up'}}},
         {'def': 'npc_wh_03', 'x': 38, 'y': 14},
         {'def': 'npc_wh_04', 'x': 27, 'y': 26},
     ],

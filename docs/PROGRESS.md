@@ -2012,6 +2012,18 @@ mid-range Android phone; deployed to Pages.
             speak). The shared fixture `tests/a3_fixture.ts` (`actThree(preset, over)`: 7 presets, the night's three bands,
             8 companion states and 3 company sets, the arcology hook on or off, three points into the act, save and load
             through the real codec, the B5 tests' headless helpers). `tests/b6a.test.ts` (40). Next: B6b.
+      - [x] B6b **the Precinct and the Court in Act 3** DONE 2026-11-17 (content; no engine change; not exported):
+            `npcs/a3.ts` (3: a courier, two wardens), `dialogue/a3_order.ts` (+3 trees: 27 nodes, every one with a return
+            line), `dialogue/a3_court.ts` (2 cases on the Court's existing bench, built by `courtCase()`: 7 grounds, 6
+            rulings), placements and a gate trigger in the Precinct, one placement each at the Ring and the Docks
+            (generators re-run: additions only). A side quest with eight answers (most need no check, one is a fight),
+            playable at the gate, by post or at the Court. `tests/b6b.test.ts` (32). Next: B6c.
+      - [x] B6d **Signal Hill in Act 3** DONE 2026-11-17 (content; no engine change; not exported; built alongside B6b,
+            ahead of B6c): `dialogue/a3_mast.ts` (5 trees, every node with a return line, all seven companions speak; the
+            hill's two props keep their Act 1 scenes before Act 3), Signal Hill's map (Act 3 placements for the camp, a new
+            prop, an arrival trigger; generator re-run), the Wheel's map (one placement condition; its generator first made
+            to reproduce the committed map), one world event (a letter by post, armed by a flag, on no date). A side quest
+            with six routes (none violent, three with no check), four ends. `tests/b6d.test.ts` (24). Next: B6c, then B6e.
 - [ ] B7 **Systemic depth + presentation**: ruins templates, bounty/gig templates, rare encounters, music
       and ambience, title art, menus, credits, settings, tips.
 - [ ] B8 **Balance, performance, deploy**: economy sim pass, difficulty, accessibility, Android perf
@@ -2030,7 +2042,7 @@ mid-range Android phone; deployed to Pages.
 | Meridian | 13/14 | 142/145 | 250/255 | 32/33 | the gate, the Precinct, Old Market, the Sink, Lantern Row, the Stacks (three floors), Bridgeward, the Crown, the Archive Spire (the close and landing ninety-one), the Court of Accounts and the Dead Ring written; the Docks across the dry river written (B5b, Carrick: the Line's end, the tide boat's and the barges' landing, the district's line and two side lines); the Loop joins six stops (one outside the Wall), stairs the Sink, the chain Bridgeward, the invitation car the Crown, a lane the Spire close, the gate road the Ring, the river road and the quay tram the Docks, and every board answers NO BRIDGE. Loose ends: Unity sites for the Spire close, the Ring and the Docks (P10 place build); vehicle travel reading the buggy flag (P12); the Spire beat's end now opens beat 16 (B4a) |
 | Halcyon/Skirts | 2/6 | 22/40 | 40/55 | 6/12 | the Skirts written (B4a): the town under the arcology and a gallery under its pit; the Line's last stop; beat 16 opened; the seventh companion joins here. The arcology itself is B4b |
 | Act 2 wilds | 28/28 | 137/137 | 322/322 | 28/28 | Ninebridge, Openfield, the Sump and Cistern 4 playable; the Rail Corridor written (B5a): Four Ways, both halts, Yard Nine and Kettle Cut, the Line ridden from every stop, the rail bandits' line and four side lines; the Drowned Shore written (B5b): Gull Stilts, the Rigs, Blackcap and the dike road, the tide boat, the shore's line, two side lines and the dives in three bands; the Teeth mines and the Northern Wet written (B5c): Number Four and its old level, Sawtown, Ashby Dam and its gallery, Low Landing, two roadside maps, the barges from every river stop, the north track, the ropeway, the mines' line and the Wet's line and three side lines, activities in bands; the Ashlands and the Long Night written (B5d): Spindle, Kelso and its hall, Pemberton, Saddleback and a roadside map, the remnant machines on the glass, the Ashlands' line and two side lines, picking runs in bands, the act's alliance at Openfield and a side line on the Line. Act 2's wilds complete in content (counts approximate; Meridian's Docks are counted under Meridian) |
-| Act 3/endings | 0/1 (+5 reused) | — | 1/~50 | 10/10 skeletons | B6a: the act's groundwork (shared conditions, quest skeletons, papers, events, the shared test fixture); scenes from B6b |
+| Act 3/endings | 0/1 (+5 reused; +4 with Act 3 placements) | 3 | 9/~50 (+2 Court cases) | 10/10 skeletons (2 side quests playable) | B6a: the act's groundwork (shared conditions, quest skeletons, papers, events, the shared test fixture); B6b: the Precinct and the Court in Act 3 (a courier, two wardens, a side quest with eight answers, two Court cases); B6d: Signal Hill in Act 3 (a side quest with six routes and four ends, a letter by post) |
 | Companions | — | 7/7 | 0/7 arcs | 0/7 | Tamsin, Wren, Ilya, Odile, Ash, Nine can join; Kes joins in the Skirts (B4a, with her arc and quest); arcs later |
 | Factions joinable | — | — | — | 0/9 | design pending |
 

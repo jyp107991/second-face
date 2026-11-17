@@ -36,6 +36,15 @@ export const A3_EVENTS: Record<string, WorldEventDef> = {
       { set: 'a3_recall_due' }, { quest: 'q_a3_recall', start: true },
     ],
   },
+  /** 19b (B6d): with the Saints' girl kept, the wire carries Signal Hill's name once the player has taken up the mast, and
+   * Verity's letter with the band comes at the next seven o'clock, wherever the player is (the K route at the mast's foot). */
+  a3_verity_band: {
+    id: 'a3_verity_band', at: { hour: 7 }, armedIf: { all: [{ quest: 'q_a3_mast', status: 'active' }, F('bw_static', 'kept'), { not: { dead: 'npc_bw_04' } }] },
+    effects: [
+      { post: { from: 'npc_bw_04', text: 'Heard you on the wire, which is not a thing I say lightly. The girl says Signal Hill, and your name beside it, and that you want it loud. Then put it where we listen: the hiss band, midnight to two, the one the wire wakes on. Every radio in the Reach hears that band, even the ones with no backs on, because it is where the city\'s own wire leaks, and nobody ever built a radio that can\'t. The figures are under this, in her hand. Swear it on the hiss you won\'t use it to sell anything. — V.' } },
+      { learn: 'a3_verity_band' },
+    ],
+  },
   /** 21a: once the Cistern's door is settled, the Ledger's card comes at the next seven o'clock, wherever the player is: the
    * close, and the tracker of what the player holds. */
   a3_summons: {

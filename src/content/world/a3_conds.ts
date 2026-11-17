@@ -98,6 +98,11 @@ export const LN_LEASH_SPREADS: Cond = F('ln_leash', 'spreads');
 /** A pre-Scald board with nobody in it, for the mast (19b B): the shore's pump controller, the digger's, or the army's
  * shunter board out of Kelso's shed, still carried. */
 export const MAST_BOARD: Cond = ANY({ item: 'j_controller' }, { item: 'j_tm_controller' }, { item: 'k_an_board' });
+/** The same boards one by one (B6d hands one to the Hollow), each with what giving it away settles: the shunter's board is
+ * B5d's `q_an_board`, which ends at the mast as it ends at Yard Nine or Spindle. */
+export const MAST_BOARDS: { item: string; settles: { set: string; value: string }[] }[] = [
+  { item: 'j_controller', settles: [] }, { item: 'j_tm_controller', settles: [] }, { item: 'k_an_board', settles: [{ set: 'an_board', value: 'mast' }] },
+];
 
 // ---------------------------------------------------------------- §1.2 the arcology slice (B4b, parked): its flags, read only here
 
@@ -144,6 +149,20 @@ export const PETRA_DEAD: Cond = { dead: PETRA };
 export const HALE_ALIVE: Cond = NOT({ dead: HALE });
 /** The reserve's case at the Court won by a principle (20e: −30 to Lowe's stand-down). */
 export const RESERVE_STAYED: Cond = ANY(F('ca_reserve', 'stayed'), F('ca_reserve', 'attendance'));
+
+/** B6b: who holds Unit 9's title when the city recalls it ("the schedule reads the register"). An Act 3 outcome first
+ * (`a3_nine_keeper`: the title bought at the gate, or the Court holding the unit its own keeper); then the Court's
+ * registration (`ca_deed`); then an unregistered deed that was lawfully made (witnessed by a captain, or bought at the
+ * desk); otherwise the city's (its own deed, a voided or unregistered forgery, or none). Later slices read these, never
+ * `nine_deed` alone (Nine's break at the door, its epilogue slide). */
+const DEED_UNREGISTERED_LAWFUL: Cond = ALL(NOT(F('ca_deed')), NOT(F('nine_deed_void')), ANY(F('nine_deed_how', 'witnessed'), F('nine_deed_how', 'bought')));
+export const NINE_KEEPER_SELF: Cond = ANY(F('a3_nine_keeper', 'self'), ALL(NOT(F('a3_nine_keeper')), ANY(F('ca_deed', 'self'), F('ca_deed', 'irregular'), ALL(DEED_UNREGISTERED_LAWFUL, F('nine_deed', 'self')))));
+export const NINE_KEEPER_PLAYER: Cond = ANY(F('a3_nine_keeper', 'player'), ALL(NOT(F('a3_nine_keeper')), ANY(F('ca_deed', 'citizen'), ALL(DEED_UNREGISTERED_LAWFUL, F('nine_deed', 'player')))));
+export const NINE_KEEPER_CITY: Cond = NOT(ANY(NINE_KEEPER_SELF, NINE_KEEPER_PLAYER));
+/** The title on the Court's register with a keeper who is not the city. */
+export const NINE_REGISTERED: Cond = ANY(F('ca_deed', 'self'), F('ca_deed', 'citizen'), F('ca_deed', 'irregular'));
+/** The recall is open: the notice has come, nothing has answered it, and Nine is still on the player's side. */
+export const RECALL_OPEN: Cond = ALL(F('a3_recall_due'), NOT(F('a3_recall')), ON_SIDE('nine'));
 
 // ---------------------------------------------------------------- §4.1 the gates of the five endings
 
@@ -324,6 +343,8 @@ export const EP_HOME: Mod = { id: 'home', values: [
   { id: 'road', if: ANY({ member: 'wheel' }, F('wren_after', 'road'), F('kes_after', 'road')) },
   { id: 'nowhere' },
 ] };
+/** B6b: Unit 9's deed as the end reads it (its slide's `× nine_deed`): the keeper the recall found. */
+export const NINE_DEED: Mod = { id: 'nine_deed', values: [{ id: 'self', if: NINE_KEEPER_SELF }, { id: 'player', if: NINE_KEEPER_PLAYER }, { id: 'city' }] };
 
 /** The epilogue's slides in play order (§6.2; `ep_<slide>` holds the variant shown). The coordinator's default: only
  * the slides whose subject the player met are shown (B6s–B6v give each slide its `applies`). */
@@ -339,6 +360,35 @@ export const EP_SLIDES = ['steps', 'ledger', 'cistern', 'knock', 'shale', 'dogs'
  *   a3_summoned              true            the Ledger's card has come (world event a3_summons); starts q_a3_spire and q_a3_hold
  *   a3_recall_due            true            the recall notice for Unit 9 has come (the order's fourth sheet, or a3_recall_notice)
  *   ev_armed_a3_*            number          the engine's own arming time for each a3 world event
+ * B6b (built; dialogue/a3_order.ts, dialogue/a3_court.ts on the Court's bench, npcs/a3.ts, maps md_precinct/md_ring/md_docks):
+ *   a3_recall                declined | stayed | handed | court | bought | hidden | fought | taken   the recall answered: at the
+ *                            Precinct gate (d_a3_recall), by post (d_a3_courier: declined | stayed), or by the Court (court | taken)
+ *   a3_recall_met            true            the recall wardens have stopped Nine at the gate once
+ *   a3_recall_stay           true            the recall put before the Court; the wardens wait at the gate on the ruling
+ *   a3_recall_watched        true            a slip past the wardens failed; the sneak is not offered again
+ *   a3_recall_fight          true            the recall wardens drawn on (their hostileIf; a3_recall = fought)
+ *   a3_nine_hid              clover | hulls  where a hidden Nine waits (placements md_ring/npc_md_nine_clover,
+ *                                            md_docks/npc_md_nine_hulls, tree d_a3_nine_hid);  a3_nine_fetched  true once it rejoins
+ *   a3_nine_keeper           self | player   Nine's keeper as Act 3 settled it (the Court's keeper ground; the title bought at the
+ *                                            gate). U8's nine_deed is never rewritten: read NINE_KEEPER_* / NINE_DEED instead
+ *   nine_disposed            true            handed, taken, or returned by the Court; Nine leaves the party and is never placed again
+ *   ca_recall                kept | returned (courtCase);  prec_recall  keeper (a precedent: ca_precedents +1)
+ *   ca_reserve               stayed | attendance | privilege | upheld (courtCase);  prec_reserve  consent | attendance
+ *                            (each a precedent; privilege is a courtesy, not a precedent; upheld: the Court endorsed the order)
+ *   knowledge: a3_courier_met, a3_court_heard (objections lie to the Court; also starts q_ca_court), a3_drop_heard (the
+ *                            couriers' slot at the Spire's foot, for B6r's drop)
+ * B6d (built; dialogue/a3_mast.ts, map signalhill via tools/maps/gen_signalhill.py, map wheel, world event a3_verity_band):
+ *   a3_mast                  raised | narrow   settled for good either way; raised only with a keeper (D_VOICE reads raised)
+ *   a3_mast_how              x | c | b | t | v | k   the route that let it speak wide (set first; t sets keeper hollow with it)
+ *   a3_mast_keeper           hollow | wheel | knock   who holds the hill and the knife switch at the foot until the player's word
+ *                            comes up the wire (B6r: the keeper throws it); knock: the switch's handle is with the player
+ *   a3_aerial_found          true            the crown (the mast's top section) dug out of the gully, a line up the crack
+ *   a3_hollow_heard          true            Tally's Act 3 greeting heard;  a3_hollow_paid  true  the Hollow's sixty paid
+ *   a3_hollow_gone           true            the Hollow walked west (timer a3_hollow_leave, 8 h after the hill went to Knock)
+ *   a3_wheel_up              true            the Wheel's keeper (Dario Oduya) is on the hill (timer a3_wheel_up, a day after)
+ *   an_board                 mast            B5d's flag, written through MAST_BOARDS: the shunter's board went into the head box
+ *   knowledge: a3_list_heard, a3_broadcast_seen (the rack's isolated circuit; also relay_log_read), a3_crown_told,
+ *                            a3_hollow_price, a3_verity_band (Verity's letter), a3_ledger_granted (the grid said GRANTED)
  * Planned (the slice named sets it; values as the plan fixes them):
  *   a3_recall                declined | stayed | handed | court | bought | hidden | fought | taken          B6b
  *   nine_disposed            true                                                                        B6b

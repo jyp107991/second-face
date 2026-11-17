@@ -43,7 +43,10 @@ export const q_a3_recall: QuestDef = {
   stages: {
     notice: {
       journal: 'A Precinct notice for Nine, in the city\'s post: DISPOSAL — AS SCHEDULED — R31 BROUGHT FORWARD. The city wants its unit back before the year it had written down.',
-      objectives: [{ id: 'answer', text: 'Answer the city\'s recall of Unit 9', done: F('a3_recall') }],
+      objectives: [
+        { id: 'gate', text: 'Hear the recall wardens out at the Precinct gate', done: { any: [F('a3_recall_met'), F('a3_recall')] }, optional: true },
+        { id: 'answer', text: 'Answer the city\'s recall of Unit 9', done: F('a3_recall') },
+      ],
       next: [
         { if: RECALL('declined'), stage: 'declined' }, { if: RECALL('stayed'), stage: 'stayed' }, { if: RECALL('court'), stage: 'court' },
         { if: RECALL('bought'), stage: 'bought' }, { if: RECALL('hidden'), stage: 'hidden' }, { if: RECALL('fought'), stage: 'fought' },
@@ -52,9 +55,9 @@ export const q_a3_recall: QuestDef = {
     },
     declined: { journal: 'Nine declined its own recall, as its own keeper. The city has had its first refusal from one of its units.', end: 'done' },
     stayed: { journal: 'The city asked me for its unit, and I said no. Nine stays with me.', end: 'done' },
-    court: { journal: 'The Court of Accounts heard the recall and kept Nine its own keeper.', end: 'done' },
+    court: { journal: 'The Court of Accounts heard the recall and struck the disposal. Nine is kept, on the Court\'s own register.', end: 'done' },
     bought: { journal: 'I bought Nine\'s title at its assessed value under clause 9(b). It is paid for, and nobody else\'s.', end: 'done' },
-    hidden: { journal: 'Nine is outside the Wall where the city\'s lenses cannot find it, until the city stops looking.', end: 'done' },
+    hidden: { journal: 'Nine is outside the Wall, where the city\'s lenses do not look. Not presented at the gate, the recall is entered NOT FOUND, and an asset not found is written off. It waits for me where I left it.', end: 'done' },
     fought: { journal: 'The recall wardens went back to the Precinct without Nine. The wardens will remember it.', end: 'done' },
     handed: { journal: 'I handed Nine over to the city. It went, because a lawful owner told it to, and said so.', end: 'failed' },
     taken: { journal: 'The city took Nine back and disposed of it, as scheduled.', end: 'failed' },
@@ -92,30 +95,40 @@ export const q_a3_return: QuestDef = {
   },
 };
 
-// ---------------------------------------------------------------- 19b the mast (side; Signal Hill)
+// ---------------------------------------------------------------- 19b the mast (side; Signal Hill; built in B6d: dialogue/a3_mast.ts)
 
 const MAST = (v: string): Cond => F('a3_mast', v);
+const KEPT_BY = (k: string): Cond => ({ all: [MAST('raised'), F('a3_mast_keeper', k)] });
 export const q_a3_mast: QuestDef = {
   id: 'q_a3_mast', title: 'Every Dead Radio', act: 'a3', start: 'list', xp: 300,
   routes: [
     { id: 'x', kind: 'tech', label: 'Rebuild the relay\'s band for every receiver', requires: { skill: 'science', gte: 50 } },
-    { id: 'c', kind: 'chrome', label: 'Talk to the grid through a neural port, or through Kes' },
-    { id: 'b', kind: 'barter', label: 'A pre-Scald board and the Hollow\'s price for the climb', requires: { item: 'tolls', count: 60 } },
+    { id: 'c', kind: 'chrome', label: 'Talk to the grid through a neural port, or through Kes', requires: { any: [{ chrome: 'ch_neural_link' }, { chrome: 'ch_neural_lattice' }, { inParty: 'npc_hs_01' }] } },
+    { id: 'b', kind: 'barter', label: 'A pre-Scald board and the Hollow\'s price for the climb', requires: { all: [{ any: [{ item: 'j_controller' }, { item: 'j_tm_controller' }, { item: 'k_an_board' }] }, { item: 'tolls', count: 60 }] } },
     { id: 't', kind: 'talk', label: 'Persuade the Hollow to keep the mast as theirs', requires: { skill: 'speech', gte: 45 } },
-    { id: 'v', kind: 'survival', label: 'Re-rig the aerial\'s top section from the gully', requires: { skill: 'survival', gte: 45 } },
+    { id: 'v', kind: 'survival', label: 'Re-rig the aerial\'s top section from the gully', requires: { any: [{ skill: 'survival', gte: 45 }, { attr: 'reflex', gte: 7 }] } },
     { id: 'k', kind: 'knowledge', label: 'The band from Verity\'s letter', requires: F('bw_static', 'kept') },
   ],
   stages: {
     list: {
-      journal: 'Every night the station on Signal Hill still reads its list. It speaks on a narrow band that reaches only the places the city chose. Raised, its mast could reach every radio in the Reach.',
+      journal: 'Every night the station on Signal Hill reads its list, and lately my line is at the top of it, with the city\'s new year for the steps. It reads to a room and a pump station and nobody else. Raised, its mast could reach every radio in the Reach.',
       objectives: [
         { id: 'power', text: 'Find out what powers the relay', done: { knows: 'mast_powered' }, optional: true },
         { id: 'band', text: 'Find out why the band is narrow', done: { knows: 'relay_log_read' }, optional: true },
         { id: 'top', text: 'Find the aerial\'s top section', done: F('a3_aerial_found'), optional: true },
+        { id: 'price', text: 'Hear what the Hollow want for standing on a target', done: { knows: 'a3_hollow_price' }, optional: true, hidden: true },
+        { id: 'speak', text: 'Make the mast able to speak to everyone', done: { any: [F('a3_mast_how'), MAST('raised')] }, optional: true },
+        { id: 'keeper', text: 'Find someone to keep the hill', done: F('a3_mast_keeper'), optional: true },
         { id: 'raise', text: 'Raise the mast, or leave it as it is', done: F('a3_mast') },
       ],
-      next: [{ if: MAST('raised'), stage: 'raised' }, { if: MAST('narrow'), stage: 'narrow' }],
+      next: [
+        { if: KEPT_BY('hollow'), stage: 'hollow' }, { if: KEPT_BY('wheel'), stage: 'wheel' }, { if: KEPT_BY('knock'), stage: 'knock' },
+        { if: MAST('raised'), stage: 'raised' }, { if: MAST('narrow'), stage: 'narrow' },
+      ],
     },
+    hollow: { journal: 'Signal Hill\'s mast can speak to every radio in the Reach, and the Hollow keep it as theirs, the switch held down at its foot. It will say nothing wide until I send word.', end: 'done' },
+    wheel: { journal: 'Signal Hill\'s mast can speak to every radio in the Reach, and the Wheel keep the hill for me, the switch held down. It will say nothing wide until I send word.', end: 'done' },
+    knock: { journal: 'Signal Hill\'s mast can speak to every radio in the Reach, and it is Knock\'s: KNOCK chalked on the cabinet door, and the switch\'s handle with me. It will say nothing wide until I send word.', end: 'done' },
     raised: { journal: 'Signal Hill\'s mast stands at its full height again, and the relay can reach every receiver in the Reach.', end: 'done' },
     narrow: { journal: 'I left Signal Hill\'s mast as the city built it, speaking only to the places it chose.', end: 'done' },
   },

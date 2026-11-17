@@ -2150,6 +2150,51 @@ export const md_docks: MapDef = {
           }
         ]
       }
+    },
+    {
+      def: "npc_md_nine",
+      id: "npc_md_nine_hulls",
+      x: 10,
+      y: 5,
+      facing: 1,
+      schedule: [],
+      dialogue: "d_a3_nine_hid",
+      if: {
+        all: [
+          {
+            flag: "a3_nine_hid",
+            eq: "hulls"
+          },
+          {
+            not: {
+              inParty: "npc_md_nine"
+            }
+          },
+          {
+            not: {
+              flag: "a3_nine_fetched"
+            }
+          },
+          {
+            not: {
+              any: [
+                {
+                  flag: "nine_left"
+                },
+                {
+                  flag: "nine_gone"
+                },
+                {
+                  flag: "nine_disposed"
+                },
+                {
+                  flag: "a3_nine_struck"
+                }
+              ]
+            }
+          }
+        ]
+      }
     }
   ],
   triggers: [

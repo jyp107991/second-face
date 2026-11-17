@@ -79,7 +79,7 @@ export const q_an_kite: QuestDef = {
   },
 };
 
-const BOARD_ENDS = [{ if: B('ida'), stage: 'ida' }, { if: B('sold'), stage: 'sold' }, { if: B('spindle'), stage: 'spindle' }];
+const BOARD_ENDS = [{ if: B('ida'), stage: 'ida' }, { if: B('sold'), stage: 'sold' }, { if: B('spindle'), stage: 'spindle' }, { if: B('mast'), stage: 'mast' }];
 
 export const q_an_board: QuestDef = {
   id: 'q_an_board', title: 'A Board for Dorcas', act: 'a2', start: 'shed', xp: 150,
@@ -100,6 +100,8 @@ export const q_an_board: QuestDef = {
     ida: { journal: 'Dorcas runs on an army board out of Kelso\'s shed, with no channel in it. Four Ways keeps its last spare.', end: 'done' },
     sold: { journal: 'I sold the army board out of Kelso\'s shed to the Concern\'s contractor, who will keep it in a drawer.', end: 'done' },
     spindle: { journal: 'Spindle\'s well pump runs on the army board out of Kelso\'s shed. The water there comes up clean.', end: 'done' },
+    // Act 3 (B6d): the board can go into the head box of Signal Hill's mast instead
+    mast: { journal: 'The army board out of Kelso\'s shed went into the head box of Signal Hill\'s mast, in place of the city\'s controller. Dorcas is still cold on her pit.', end: 'done' },
   },
 };
 

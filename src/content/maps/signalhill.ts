@@ -202,6 +202,12 @@ export const signalhill: MapDef = {
       y: 22
     },
     {
+      kind: "debris",
+      x: 5,
+      y: 32,
+      id: "mast_crown"
+    },
+    {
       kind: "sandbags",
       x: 23,
       y: 13
@@ -397,12 +403,16 @@ export const signalhill: MapDef = {
       name: "The relay"
     },
     speaker: {
-      dialogue: "d_sg_speaker",
+      dialogue: "d_a3_station",
       name: "The speaker"
     },
     mast_base: {
-      dialogue: "d_sg_mast",
+      dialogue: "d_a3_mast",
       name: "The mast"
+    },
+    mast_crown: {
+      dialogue: "d_a3_aerial",
+      name: "Old lattice"
     },
     station_cot: {
       dialogue: "d_sg_cot",
@@ -467,6 +477,18 @@ export const signalhill: MapDef = {
     camp_tent_b: {
       x: 17,
       y: 31
+    },
+    hill_watch: {
+      x: 20,
+      y: 15
+    },
+    mast_feed: {
+      x: 36,
+      y: 7
+    },
+    station_bed: {
+      x: 23,
+      y: 10
     }
   },
   npcs: [
@@ -476,9 +498,18 @@ export const signalhill: MapDef = {
       y: 30,
       facing: 2,
       if: {
-        not: {
-          dead: "signalhill/npc_sg_01"
-        }
+        all: [
+          {
+            not: {
+              dead: "signalhill/npc_sg_01"
+            }
+          },
+          {
+            not: {
+              flag: "a3_open"
+            }
+          }
+        ]
       }
     },
     {
@@ -487,9 +518,18 @@ export const signalhill: MapDef = {
       y: 33,
       facing: 2,
       if: {
-        not: {
-          dead: "signalhill/npc_sg_02"
-        }
+        all: [
+          {
+            not: {
+              dead: "signalhill/npc_sg_02"
+            }
+          },
+          {
+            not: {
+              flag: "a3_open"
+            }
+          }
+        ]
       }
     },
     {
@@ -498,9 +538,314 @@ export const signalhill: MapDef = {
       y: 32,
       facing: 1,
       if: {
-        not: {
-          dead: "signalhill/npc_sg_03"
+        all: [
+          {
+            not: {
+              dead: "signalhill/npc_sg_03"
+            }
+          },
+          {
+            not: {
+              flag: "a3_open"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_sg_01",
+      id: "npc_sg_01_a3",
+      x: 22,
+      y: 30,
+      facing: 2,
+      dialogue: "d_a3_hollow",
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              dead: "signalhill/npc_sg_01"
+            }
+          },
+          {
+            not: {
+              dead: "npc_sg_01_a3"
+            }
+          },
+          {
+            not: {
+              dead: "npc_sg_01_mast"
+            }
+          },
+          {
+            not: {
+              flag: "a3_hollow_gone"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_sg_02",
+      id: "npc_sg_02_a3",
+      x: 31,
+      y: 33,
+      facing: 2,
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              dead: "signalhill/npc_sg_02"
+            }
+          },
+          {
+            not: {
+              dead: "npc_sg_02_a3"
+            }
+          },
+          {
+            not: {
+              dead: "npc_sg_02_mast"
+            }
+          },
+          {
+            not: {
+              flag: "a3_hollow_gone"
+            }
+          },
+          {
+            not: {
+              all: [
+                {
+                  flag: "a3_mast",
+                  eq: "raised"
+                },
+                {
+                  flag: "a3_mast_keeper",
+                  eq: "hollow"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_sg_03",
+      id: "npc_sg_03_a3",
+      x: 19,
+      y: 32,
+      facing: 1,
+      if: {
+        all: [
+          {
+            flag: "a3_open"
+          },
+          {
+            not: {
+              dead: "signalhill/npc_sg_03"
+            }
+          },
+          {
+            not: {
+              dead: "npc_sg_03_a3"
+            }
+          },
+          {
+            not: {
+              dead: "npc_sg_03_mast"
+            }
+          },
+          {
+            not: {
+              flag: "a3_hollow_gone"
+            }
+          },
+          {
+            not: {
+              all: [
+                {
+                  flag: "a3_mast",
+                  eq: "raised"
+                },
+                {
+                  flag: "a3_mast_keeper",
+                  eq: "hollow"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_sg_02",
+      id: "npc_sg_02_mast",
+      x: 20,
+      y: 15,
+      facing: 2,
+      schedule: [
+        {
+          from: 6,
+          to: 22,
+          spot: "hill_watch",
+          activity: "patrol"
+        },
+        {
+          from: 22,
+          to: 6,
+          spot: "camp_tent_b",
+          activity: "sleep"
         }
+      ],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_mast",
+                eq: "raised"
+              },
+              {
+                flag: "a3_mast_keeper",
+                eq: "hollow"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "signalhill/npc_sg_02"
+            }
+          },
+          {
+            not: {
+              dead: "npc_sg_02_a3"
+            }
+          },
+          {
+            not: {
+              dead: "npc_sg_02_mast"
+            }
+          },
+          {
+            not: {
+              flag: "a3_hollow_gone"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_sg_03",
+      id: "npc_sg_03_mast",
+      x: 36,
+      y: 7,
+      facing: 2,
+      schedule: [
+        {
+          from: 7,
+          to: 22,
+          spot: "mast_feed",
+          activity: "work"
+        },
+        {
+          from: 22,
+          to: 7,
+          spot: "camp_tent_b",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_mast",
+                eq: "raised"
+              },
+              {
+                flag: "a3_mast_keeper",
+                eq: "hollow"
+              }
+            ]
+          },
+          {
+            not: {
+              dead: "signalhill/npc_sg_03"
+            }
+          },
+          {
+            not: {
+              dead: "npc_sg_03_a3"
+            }
+          },
+          {
+            not: {
+              dead: "npc_sg_03_mast"
+            }
+          },
+          {
+            not: {
+              flag: "a3_hollow_gone"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_wh_02",
+      id: "npc_wh_02_sg",
+      x: 36,
+      y: 7,
+      facing: 2,
+      dialogue: "d_a3_keeper",
+      schedule: [
+        {
+          from: 6,
+          to: 21,
+          spot: "mast_feed",
+          activity: "idle"
+        },
+        {
+          from: 21,
+          to: 6,
+          spot: "station_bed",
+          activity: "sleep"
+        }
+      ],
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_mast",
+                eq: "raised"
+              },
+              {
+                flag: "a3_mast_keeper",
+                eq: "wheel"
+              }
+            ]
+          },
+          {
+            flag: "a3_wheel_up"
+          },
+          {
+            not: {
+              dead: "npc_wh_02"
+            }
+          },
+          {
+            not: {
+              dead: "npc_wh_02_sg"
+            }
+          }
+        ]
       }
     }
   ],
@@ -559,6 +904,23 @@ export const signalhill: MapDef = {
             tree: "d_sg_gully",
             name: "The gully"
           }
+        }
+      ]
+    },
+    {
+      id: "a3_arrive",
+      x: 14,
+      y: 48,
+      w: 21,
+      h: 7,
+      if: {
+        flag: "a3_open"
+      },
+      text: "Signal Hill again. The red lamp on the skyline still blinks, slow as a pulse, and on the wind from the top, very faint, a voice is reading something.",
+      effects: [
+        {
+          quest: "q_a3_mast",
+          start: true
         }
       ]
     },

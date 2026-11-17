@@ -442,7 +442,12 @@ export const wheel: MapDef = {
     {
       def: "npc_wh_02",
       x: 29,
-      y: 18
+      y: 18,
+      if: {
+        not: {
+          flag: "a3_wheel_up"
+        }
+      }
     },
     {
       def: "npc_wh_03",
