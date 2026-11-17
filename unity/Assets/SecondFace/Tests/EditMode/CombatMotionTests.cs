@@ -253,6 +253,64 @@ namespace SecondFace.Tests
             }
         }
 
+        /// <summary>The ready holds (HandsIk.Hold: a long gun's low ready standing and crouched, a two-handed club's) on bodies of
+        /// real proportions (shoulder joints 0.31-0.40 m apart, shoulder-to-palm reach 0.55-0.68 m, the support shoulder level
+        /// with the main one or 4 cm higher or lower; the frame is the shoulders' own, so neither stands ahead of the other in
+        /// it) with every staged weapon of that kind (its sidecar's grip_off and butt): the off hand within the off arm's reach
+        /// (WG2 can hold), the main elbow bent as a real hold bends it (80-120°, never the stopgap's straight arm), the support
+        /// elbow 20-100° on a long gun (to 125° with both hands together on a club's handle), and a long gun clear of the
+        /// trunk: no point from its butt to its fore-end less than 6 cm ahead of the shoulders' plane over the trunk's breadth
+        /// (the shoulder joint sits about mid-depth of the upper chest: a stock resting in the shoulder's pocket lies 6-10 cm
+        /// ahead of it).</summary>
+        [Test]
+        public void TheReadyHoldsReachAndBendOnEveryBody()
+        {
+            var weapons = Path.Combine(Path.GetDirectoryName(Dir()), "Weapons");
+            (double X, double Y, double Z) P(JObject pts, string k) { var a = pts[k].Values<double>().ToArray(); return (a[0], a[1], a[2]); }
+            static double Elbow(double d, double reach)
+            {
+                // a two-bone arm: the upper arm 47 % of the reach, the forearm to the palm 53 %
+                double a = 0.47 * reach, b = 0.53 * reach;
+                var c = System.Math.Max(-1.0, System.Math.Min(1.0, (a * a + b * b - d * d) / (2 * a * b)));
+                return 180.0 - System.Math.Acos(c) * 180.0 / System.Math.PI;
+            }
+            static double Dist((double X, double Y, double Z) a, (double X, double Y, double Z) b) => System.Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y) + (a.Z - b.Z) * (a.Z - b.Z));
+            var wrong = new List<string>();
+            foreach (var (arms, crouched, models) in new[] { (Arms.Rifle, false, new[] { "rifle_auto", "rifle_bolt", "shotgun_sawn" }), (Arms.Rifle, true, new[] { "rifle_auto", "rifle_bolt", "shotgun_sawn" }), (Arms.Club2, false, new[] { "bat" }) })
+                foreach (var m in models)
+                {
+                    var hold = CombatMotion.Hold(arms, crouched).Value;
+                    var pts = (JObject)JObject.Parse(File.ReadAllText(Path.Combine(weapons, m, m + ".json")))["points_unity"];
+                    var off = P(pts, "grip_off");
+                    foreach (var width in new[] { 0.31, 0.36, 0.40 })
+                        foreach (var reach in new[] { 0.55, 0.62, 0.68 })
+                            foreach (var rise in new[] { -0.04, 0.0, 0.04 })
+                            {
+                                var offShoulder = (-width, rise, 0.0);
+                                var (grip, line) = CombatMotion.PlaceHold(hold, offShoulder, reach, reach, off);
+                                var offAt = Add(grip, CombatMotion.HoldTurn(line, off));
+                                var who = $"{arms}{(crouched ? " crouched" : "")} {m}, shoulders {width} m, reach {reach} m, the off shoulder {rise:+0.00;-0.00} m";
+                                var dOff = Dist(offAt, offShoulder);
+                                if (dOff > 0.97 * reach) wrong.Add($"{who}: grip_off {dOff:0.00} m from the off shoulder (reach {reach})");
+                                var eMain = Elbow(Dist(grip, (0, 0, 0)), reach); var eOff = Elbow(dOff, reach);
+                                if (eMain < 80 || eMain > 120) wrong.Add($"{who}: the main elbow {eMain:0}°");
+                                if (eOff < 20 || eOff > (arms == Arms.Club2 ? 125 : 100)) wrong.Add($"{who}: the off elbow {eOff:0}°");
+                                if (arms != Arms.Rifle) continue;
+                                var butt = P(pts, "butt");
+                                for (var t = 0.0; t <= 1.0001; t += 0.1)
+                                {
+                                    var along = (butt.X + (off.X - butt.X) * t, butt.Y + (off.Y - butt.Y) * t, butt.Z + (off.Z - butt.Z) * t);
+                                    var at = Add(grip, CombatMotion.HoldTurn(line, along));
+                                    if (at.X > -width - 0.05 && at.X < 0.05 && at.Y > -0.62 && at.Y < 0.08 && at.Z < 0.06)
+                                    { wrong.Add($"{who}: the gun {at.Z * 100:0} cm ahead of the shoulders over the trunk at {t:0.0} of butt to fore-end"); break; }
+                                }
+                            }
+                }
+            Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
+        }
+
+        private static (double X, double Y, double Z) Add((double X, double Y, double Z) a, (double X, double Y, double Z) b) => (a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+
         [Test]
         public void TheFightsPaceKeepsMotionHuman()
         {

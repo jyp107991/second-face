@@ -147,29 +147,36 @@ its sidecar, and that the sidecar records the source's frame rate (a source read
 `stretch` at double speed, found 2026-11-17). K1 applies to the clips themselves as well as to the game: an idle whose
 own actor stands with the straighter knee past 8° is not used as an idle (`tools/unity/motion/clip_qa.py`, at staging).
 
-**The clips in use (motion set v5 but the walks, 2026-11-17; each person plays their own sex's captures, and their own gait
-set among them by a hash of who they are, `Pace.MenSets` / `WomenSets`; each clip played at the rate its own stride on that
-body needs, `Pace.StrideMen` / `StrideWomen`, measured by `PaceCalibrationTests`):** men's walks `walk_slow`, `walk_slow_b`,
-`walk_d`, `walk`, `walk_b`, `walk_brisk_b` (set v4's cut: v5's open-loop walks put a stance foot 2.7-3.1 cm up on two men,
-W6, and slid three of seven women's walks, W1 6-7 % of frames, on a 14-person pick); jogs `jog` (CMU 35_17) and `jog_b`
-(CMU 16_35), v5's open loops (W1 and W6 0 on the pick; set v1's `jog_v1` retired for men); runs `run`, `run_c`; men's idles
-`idle_m`, `idle_m_b` (ACCAD Male2, Male1 standing); women's walk `walk_f_b` (v4's cut; the player's 1.4 m/s plays it at about
-1.2, a brisk 120 steps a minute: game speed never depends on sex); women's jog `jog_f` (CMU 141_02, a woman's capture, v5),
-with `jog_v1` only for a woman whose legs would play `jog_f` past `RateMax` (P1); women's idles `idle_f`, `idle_f_c`; women's
+**The clips in use (motion set v6.1, 2026-11-17; each person plays their own sex's captures, and their own gait set among
+them by a hash of who they are, `Pace.MenSets` / `WomenSets`; each clip played at the rate its own stride on that body needs,
+`Pace.StrideMen` / `StrideWomen`, measured by `PaceCalibrationTests`; each clip retargeted against an avatar configuration
+built from its own file's T-pose (the converters' `t_pose_key`), rebuilt whenever the file's bytes change, with the
+Humanoid hand on the hand bone itself and the wrist-twist bone an in-between, `MotionImportPostprocessor`, checked by
+`MotionImportTests`: until v6.1 each clip kept the configuration of its first export's first key, every limb as captured
+(Neck2 6-45° off, two clips of one skeleton 90-160° apart, a jog retargeted from its touchdown), and the CMU clips' hands
+lost the captured wrist turn, up to 150° in `wave`, docs/MOTION_ROOT_CAUSE.md §7):** every gait's stance foot planted in the converter (the sole's contact
+point held still from the key after touchdown to toe-off) and its speed the one at which that point stands still; men's
+walks `walk_slow`, `walk_slow_b`, `walk_d`, `walk`, `walk_b`, `walk_brisk_b` (closed loops, set v4's convention: v5's
+open-loop walks put a stance foot 2.7-3.1 cm up on two men, W6, and slid three of seven women's walks); jogs `jog` (CMU
+35_17) and `jog_b` (CMU 16_35) and runs `run`, `run_c` (open loops); men's idles `idle_m`, `idle_m_b` (ACCAD Male2, Male1
+standing); women's walk `walk_f_b` (the player's 1.4 m/s plays it at about 1.2, a brisk 120 steps a minute: game speed
+never depends on sex); women's jog `jog_f` (CMU 141_02, a woman's capture), with `jog` (v6's plant of CMU 35_17, which
+retires set v1's `jog_v1`) only for a woman whose legs would play `jog_f` past `RateMax` (P1); women's idles `idle_f`, `idle_f_c`; women's
 `stretch`, `yawn`, `yawn_b`, `sit`; everyone's talk, argue, drink, wave, carry, sneak, pickup, sits. Every standing idle
 carries the helper's knee-solve correction (the captures' knee centres read 8-24° on straight legs; K1 ≤ 5° after, the feet
-kept) and a level head; every v5 clip holds Neck2 at its rest bend and the Neck aimed at the captured head (Unity reports no
-in-between warning on any of them). **Out:** `jog_f_b` (CMU 141_03: its stance foot creeps 0.4-0.8 m/s through stance in the
+kept) and a level head; every clip holds Neck2 and the wrist-twist bones at rest (Unity reports no rig error or in-between
+warning on any of them; the clip QA's `configuration` and `mapping` checks read the project's metas). **Out:** `jog_f_b` (CMU 141_03: its stance foot creeps 0.4-0.8 m/s through stance in the
 clip itself, so its stride on a woman's body is 0.70 of its speed and the jog would play at a rate of 1.59, P1), `walk_brisk`
 (138 steps/min, past real walkers), `walk_c` (walk ratio), `walk_f_n` (its planted feet slide), `jog_c`, `run_b` (CMU 104's
 solver turns the feet over 60-160° between frames), `run_f` (no clean loop), the women's slower walks `walk_f`, `walk_f_c`,
 `walk_f_long` (they would be played past a natural cadence at the townsfolk's pace), and the old idles `idle`, `idle_b`,
-`idle_c`, `idle_d`, `idle_f_b` (their actors' knees bent 20-24°, heads down to −58°). **Open:** the jogs' touchdown: in the
-clips and in their sources alike the stance foot's joints run 0.5-2 m/s at the key it lands and 0.1-0.6 m/s for two to four
-keys after (a joint centre rolling over the heel; CMU 141's solver creeping through stance), and `FootPlant`'s swing clearance
-(the foot held 3 cm up while it still moves fast, then set down) keeps those frames off the ground: without it W1 failed 14
-of 18 jogs on a pick (2026-11-17). The clearance is retired once the converter plants each stance foot's contact point
-(motion set v6). No woman's run yet; `stretch_m` (CMU 143_30, a man's stretch and yawn) is imported but not played: its
+`idle_c`, `idle_d`, `idle_f_b` (their actors' knees bent 20-24°, heads down to −58°). **Open:** the jogs' touchdown. v6.1
+holds the contact point still from the key after touchdown, but the touchdown key itself carries the swing's arrival (`jog`
+2.79, 1.60, 0.00 m/s key by key), so the game's frame between it and the next key reads 0.4-0.7 m/s on the ground; without
+`FootPlant`'s swing clearance (the foot held 3 cm up while it still moves fast, then set down) W1 failed 14 jogs of 13 of
+14 people on a pick (5-7 % of frames over 15 cm/s) and three women's sneaks (6-12 %), 2026-11-17. Real CMU 35_17 at 120 Hz shows 0.3-0.45 m/s at +17 ms, and W1 has no
+calibration on real joggers: W1 is measured on at least three real joggers' captures at their native rate, the limit or the
+clip decided from that, and only then the clearance retired (docs/MOTION_ROOT_CAUSE.md §7). No woman's run yet; `stretch_m` (CMU 143_30, a man's stretch and yawn) is imported but not played: its
 actor raises the shoulders 24°, past S1's 20 for a stretch, on every man measured.
 
 ### 2.5 Two people talking
@@ -239,7 +246,10 @@ Which limits each state is held to (`HumanMotionGateTests.CombatLimits`), and C1
 
 While the fight's own stance plays, the standing systems that hold quiet standing's own limits give way to the fight's, as the
 foot plant gives way to a fall: the foot plant (it keeps quiet standing's stance width and straight bearing leg) is paused and
-the fighter keeps the clip's stance on the ground under each foot, a planted foot held where it was put down; the gaze clamps
+the fighter keeps the clip's stance on the ground: the lower foot's lowest sole point on its ground through the hips and a foot
+the clip has down on its own ground by the leg (the clips as retargeted stand 2.5-4 cm up), the clip's own planted foot
+followed as it creeps (held, a straight standing knee bent 14-22° on a centimetre), and a foot a crossfade between two stances
+would slide stepped to its new place, one foot at a time (COMBAT.md, WP2 review, 2026-11-17); the gaze clamps
 the head within the stance's own limits (real fighters' p98, a little less); the arms are still kept out of the body
 (`ArmClearance`, told the arms hold something: neither rested at the side nor swung); idle gestures wait. The weapon walk
 (`combat:carry`) is the people's own locomotion with the fight's arms over it. The gate's captures add the fight at the game

@@ -14,6 +14,7 @@
     "unity/Assets/SecondFace/Editor/Build/LocomotionBuild.cs",
     "unity/Assets/SecondFace/Editor/Build/MotionImportPostprocessor.cs",
     "unity/Assets/SecondFace/Motion/*.fbx",
+    "unity/Assets/SecondFace/Motion/*.fbx.meta",
     "unity/Assets/SecondFace/Motion/*.json",
     "unity/Assets/SecondFace/People/Locomotion.controller",
     "unity/Assets/SecondFace/People/Rocketbox/*/*.prefab",
