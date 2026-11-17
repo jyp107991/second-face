@@ -18,9 +18,9 @@ face and a tracer line, a hit plays a wave gesture, no weapon is held, and the c
 ## A. Animation (smooth, captured, weapons in hands)
 | # | Item | Benchmark | Status |
 |---|---|---|---|
-| A1 | Weapons held: rifle (two hands, IK on the off hand), pistol, melee (blade, club), fists; holstered out of a fight | all | **built (game, WP2; tests and gate states written, to run in the editor)**: each weapon's grip matched palm frame to weapon frame (Core `CombatMotion` grips: pistol grip, hammer grip; the off hand under a fore-end, on a club's handle, wrapping a pistol), the off hand held on `grip_off` by two-bone IK (the fix for the 7 `use_with_ik` rifle and club takes), the fingers closed round each grip, fists in the guard; holstered on the right thigh (pistols), slung across the back (long guns, two-handed clubs), at the left hip (one-handed); drawn as a fight begins, holstered as it ends, dropped on a fall or hands up; both lore paints (by who holds it); every content weapon mapped by its `held` key (stand-ins flagged: spear, sledge, sub-gun, pump gun, zip and arc pistols); `Game/Fighting/Fighter.cs`, `Limbs.cs`; tests `CombatMotionPlayTests.WeaponsStayInHandAndTheOffHandOnItsGrip`, `CombatMotionTests`, `CombatBuildTests` |
+| A1 | Weapons held: rifle (two hands, IK on the off hand), pistol, melee (blade, club), fists; holstered out of a fight | all | **built (game, WP2; tests and gate states written, to run in the editor)**: each weapon's grip matched palm frame to weapon frame (Core `CombatMotion` grips: pistol grip, hammer grip; the off hand under a fore-end, on a club's handle, wrapping a pistol), the off hand held on `grip_off` by two-bone IK (the fix for the 7 `use_with_ik` rifle and club takes), a long gun's and a two-handed club's ready hold made for each body (`HandsIk.Hold`: WP2 review), each model laid in its sidecar's frame by its own nulls, the fingers closed round each grip, fists in the guard; holstered on the right thigh (pistols), slung across the back (long guns, two-handed clubs), at the left hip (one-handed); drawn as a fight begins, holstered as it ends, dropped on a fall or hands up; both lore paints (by who holds it); every content weapon mapped by its `held` key (stand-ins flagged: spear, sledge, sub-gun, pump gun, zip and arc pistols); `Game/Fighting/Fighter.cs`, `Limbs.cs`; tests `CombatMotionPlayTests.WeaponsStayInHandAndTheOffHandOnItsGrip`, `CombatMotionTests`, `CombatBuildTests` |
 | A2 | Combat locomotion: combat-ready idle, walk/jog with weapon, stop, turn in place; no sliding (the gate's W-measures) | BG3, XCOM | **built (game, WP2; tests and gate states written, to run in the editor)**: the weapon's ready stance per weapon (the captured guard `fist_guard_accad`; pistol and long-gun low ready, hand-keyed stopgaps), the weapon carried over the people's own captured walk and jog on an arms-only layer (`CombatArms`), crouched moves as the locomotion's captured sneak (README v3 §2 (a)), turns to face by stepping (wide turns on the foot plant), planted feet held through the fight's crossfades; gate states `combat:ready:*`, `combat:carry:rifle` |
-| A3 | Aim → fire → recover per weapon (single, burst), muzzle flash, recoil, shell, tracer; reload | XCOM, W3 | **built (game, WP2; tests and gate states written, to run in the editor)**: long gun: raise (`rifle_raise_cmu`'s second half) → hold (`rifle_aim_b_cmu`) → single or burst (`rifle_fire/burst_cmu`, each round at the clip's own fire frame) → lower; the gun's line against the bladed chest learnt and turned onto the target, the wrist correcting ≤ 12°; pistol: the aim by IK on `rifle_aim_b_cmu`'s captured legs and torso, both hands on the eye-to-target line, a spring recoil; muzzle flash at the muzzle, a spent case, the tracer from the muzzle; reloads (`rifle_reload_ual`, `pistol_reload_ual`); gate states `combat:aim:*`, `combat:aim_pistol:*`, `combat:reload:*` |
+| A3 | Aim → fire → recover per weapon (single, burst), muzzle flash, recoil, shell, tracer; reload | XCOM, W3 | **built (game, WP2; tests and gate states written, to run in the editor)**: long gun: raise (`rifle_raise_cmu`'s second half) → hold (`rifle_aim_b_cmu`) → single or burst (fired on the hold with author.py's recoil at run time, `Fighter.Recoil`; the authored `rifle_fire/burst_cmu` were another actor's stance: WP2 review) → lower; the gun's line against the bladed chest learnt and turned onto the target, the wrist correcting ≤ 12°; pistol: the aim by IK on `rifle_aim_b_cmu`'s captured legs and torso, both hands on the eye-to-target line, a spring recoil; muzzle flash at the muzzle, a spent case, the tracer from the muzzle; reloads (`rifle_reload_ual`, `pistol_reload_ual`); gate states `combat:aim:*`, `combat:aim_pistol:*`, `combat:reload:*` |
 | A4 | Melee: wind-up, strike, follow-through per weapon; unarmed strikes | BG3, DOS2 | **built (game, WP2; tests and gate states written, to run in the editor)**: unarmed blows by sex (men: ACCAD Male2's jab, cross, hooks, uppercuts; women: CMU 144's jab, CMU 113's cross), the high block; one-handed: the slash on `fist_hook_r_accad`'s captured body with the weapon hand IK'd along an arc (README v3 §2 (c)), `melee_strike_ual` (stopgap); two-handed: `club_overhead(_b)_cmu` with the off hand by IK; the target struck at each clip's impact frame (read off its own curves); gate states `combat:guard:*`, `combat:strike:*` |
 | A5 | Hit reactions by direction and zone (head, torso, legs), stagger, knockback; graze vs crit | all | **built (game, WP2; tests and gate states written, to run in the editor)**: a procedural directional hit on every hit (a spring-damped turn of the spine, chest and head away from it, by zone and graze/hit/crit); crits stagger (from behind `stagger_fwd_cmu`, cut; from the front a woman's `stagger_cmu`, a man's `hit_chest/head_ual` stopgaps: no man's stagger is captured); a blow that misses blocked or slipped (men's captured dodges, women's duck), a shot that misses flinched from (new hook `OnMiss`); gate state `combat:hit:rifle` |
 | A6 | Cover: step into half cover (crouch) and full cover (lean), peek to fire, back | XCOM | **built (game, WP2; tests and gate states written, to run in the editor)**: down into half cover (`crouch_down(_f)_accad`, its travel applied), the crouch held (`crouch_rifle_ual` with two hands on a long gun or club, the captured wary `ready_crouch_cmu` otherwise), stepping out to fire as a crossfade to the aim hold and back, out of cover at a run (`crouch_to_run(_f)_accad` cut at its first stride, crossfading into the walk); full cover's lean not built (no capture); gate state `combat:crouch:rifle` |
@@ -225,3 +225,79 @@ hand-keyed and IK'd parts. (6) Stopgaps (hand-keyed, passing clip QA): the pisto
 strike, the men's throw and heavy front hits, the long-gun crouch; men's takes on women: the guard and the slash's body. (7)
 No capture for prone, a crawl or full cover's lean. (8) `Fighter` writes no "Sex": a body's sex comes from its Rocketbox person
 or base or the player's look (main's `Pace.SetSex` will carry it too).
+
+
+## WP2 review after the first measure in game (2026-11-17, `side/combat`)
+Gate: red. The first measure of the fight's states (a 10-person pick in the main project with `side/combat` merged) gave 833
+failures (F1 196, A2 84, C1 76, K1 74, F4 64, H1 60, A1 60, WG2 53, H2 50, Kb 44, F3w 34, H3 30, F2 8); CombatMotionPlayTests
+failed 3 of 5 and CombatBuildTests 1. Each cause below was found on the evidence (the gate's per-state numbers, the clips'
+own skeletons read from their FBX, the sidecars); each fix removes the cause. Nothing here has run in Unity yet.
+
+**Causes and fixes.**
+1. *The off hand 20-46 cm from grip_off (WG2 in ready, carry, crouch; the PlayMode grip test).* Not the IK, and nothing moves
+   the body: in the aim states it reaches (p50 0). The ready, carried and crouched long-gun states play the authored
+   stopgaps `rifle_idle_ual` and `crouch_rifle_ual`, whose arms stand straight (elbow 0-21°, clip QA; 0° on the left) at the
+   end of IK targets they never reached. On the clip's own rig, with the game's grip convention, the right hand turns a gun
+   on it 54° across the chest and 35° down, and grip_off falls 71 cm from the left shoulder against a 61 cm arm: out of
+   reach on every body. **Fix:** a ready hold made for each body (`HandsIk.Hold`; Core `CombatMotion.ReadyHold`, `PlaceHold`;
+   `Fighter.ReadyHold`): in the frame of the body's own shoulders, the main grip at a share of the main arm's reach, the gun
+   at the low ready across the body (40° down, 65° across; crouched 25°, 60°), turned up to 15° further across where a
+   body's shoulders stand wide for its arms, the main hand on its grip and the off hand on grip_off by IK; the two-handed
+   club's ready raised 60° before the main shoulder. Sized on a grid over every long gun's sidecar on bodies of real
+   proportions: the main elbow ~105°, the support 40-65° with the hand on the fore-end, the gun clear of the trunk
+   (`CombatMotionTests.TheReadyHoldsReachAndBendOnEveryBody`). The stopgap's legs, trunk and head stay.
+2. *The weapon model lies a quarter turn off its frame (CombatBuildTests: bat's grip_off 12.8 cm from the sidecar's).* Each
+   weapon FBX has a single root carrying the exporter's axis turn (Blender's -90° about X with Unity's conversion); placed by
+   its root, every model lay turned against the frame the hands, holsters, muzzle and grip_off are in (the test stopped at
+   the first weapon, the bat). **Fix:** the model fitted into the sidecar's frame by its own nulls at the build
+   (`CombatSet.Weapon.Fit`, `ModelRot`, `ModelPos`) and made inside a holder in that frame (`Spawn`); the build test checks
+   every weapon's nulls in the frame the game holds it in, and that each model lies along its frame.
+3. *"Every one-shot left hanging" (NoStateIsLeftHanging, both bodies, every state "still playing 0.0 s on").* The
+   transitions and exit times are right; the test timed each state from the frame its crossfade was asked, before the
+   Animator had taken it, saw it "not playing", then found it playing 0.3 s later. **Fix:** the test waits for the state to
+   begin. Ported from the main tree: the off hand's null guard (the NullReferenceException) and the bat's material remap.
+4. *Floating soles (F1 2.5-4.4 cm in every standing fight state).* The clips' own feet are planted (clip QA: the ready
+   0.0, the guard 0.75 cm/s); as retargeted onto these bodies they stand 2.5-4 cm over the floor, which the standing foot
+   plant corrects and which is paused in a fight. **Fix:** `Fighter.Feet` puts the lower foot's lowest sole point (BodySkin's
+   mesh soles, else the bind's heel and ball) on its ground through the hips, and a foot the clip has down onto its own
+   ground by the leg.
+5. *Straight knees bent in the aim (K1 9-18° against the actors' 1.2-1.7; Kb 23).* The fight's feet held each foot where it
+   came down while the clip swayed; on a straight standing leg a centimetre bends the knee 15-20°. **Fix:** the clip's own
+   creep is followed (at most 2 cm/s, inside F4).
+6. *Feet sliding at 130-208 cm/s into cover and hands up (F4).* A crossfade between two stances slides the planted feet
+   along the floor (the old lock held them, then let go at 14 cm and blended back in 0.12 s). **Fix:** a foot the clip
+   slides fast stays and steps to its new place once 7 cm away (lifted on an arc, one foot at a time); one left more than
+   2.5 cm off when the clip is still re-plants with a short step.
+7. *A long gun's shots crossfade between two actors (F4, K1 22 in the shots).* The hold is CMU 80_03; the shots
+   (`rifle_fire_cmu`, `rifle_burst_cmu`) are CMU 79_96 with an authored recoil, a stance 9 cm wider: every shot slid the
+   feet out and back. **Fix:** the rounds are fired on the hold itself with author.py's recoil at run time
+   (`Fighter.Recoil`: the chest kicked back 2.6° + 0.6° a round, the head counter-turned 0.6×, the stock's shoulder pushed
+   back 1.2×, settling as exp(-t/0.1 s)). The two shot states stay built, unplayed.
+
+**What is not a game-side cause (for the gate's owner; no limit was changed).**
+- *F1 in strikes (p98 7-10 cm).* F1 adds each foot's heel height whenever its ball is down; a strike's limits allow the
+  heel 13.2 cm over the ball (F2, real fighters: `fist_cross_f_cmu`'s own actor lifts it 14.4). A fighter pivoting on the
+  ball reads as a floating foot under F1 and a real one under F2. The sinking part (F1 down to -5 cm) is the soles' fix
+  above.
+- *A1 and A2 in club and blade strikes (A1 to 136°, A2 to 2°).* The strike limits come from punches and blocks; a
+  two-handed overhead chop raises the arms past them in its own capture (`club_overhead_cmu`: A1 to 127.6°). No club or
+  blade strikes have been measured on real people.
+- *The guard's A2 (83-97° against 112.8-146.9).* The staged guard (`fist_guard_accad`, ACCAD Male2) holds the hands lower
+  than the frames the calibration counts as a guard (both wrists within 30 cm under the head): the staged clip is a real
+  fighter's guard outside the calibrated state's definition. A guard cut from frames that meet it needs the converter.
+- *The aim's head (H2 0-1, H3 0-1.4 in game against the clip's own 6-14 and 11-14).* Something straightens the captured
+  head in game (the gaze's look-at on the base layer, or the retarget of CMU's head segment, whose per-subject offset
+  reads 20-26° down and 17-31° turned at rest); an editor trace with the gaze off in the aim settles which.
+- *The provisional aim limits.* No better evidence exists in CMU or ACCAD: CMU's only gun takes are 79_96 and 80_03 (the two
+  measured) and 139_05 ("pulling a gun", 120 fps), measured here: a draw from a crouched stance (knees 47-60°) that never
+  brings the gun up (the hands 24-58 cm under the head, the upper arms 15-75° from hanging): no aim. ACCAD's free takes have
+  no aiming. The provisional limits stay.
+
+**For the editor owner, on merge** (replaces the list above where they differ): (1) merge `side/combat`; (2) let Unity import;
+run `Second Face/Build the fight's motion and weapons` (CombatMotion.Version 2: the set gains each weapon's fitted model and
+butt point; the console warns of any weapon whose nulls fit its sidecar by more than 1 mm) and `Second Face/Build
+localization` (CombatQolTests' two failures are "No translation found" for `combat.move.act` and `combat.card.chance`, which
+are in `ui.tsv`); commit what they write; (3) EditMode `CombatMotionTests` (10), `CombatBuildTests` (6); (4) PlayMode
+`CombatMotionPlayTests` (7: two new, `TheReadyHoldsHaveBothHandsOnTheWeapon`, `TheFightsFeetStandOnTheGroundAndStepBetweenStances`),
+`CombatQolTests`; (5) the gate's combat pick, then the whole cast; (6) look at the long gun's ready, carry and crouch, a shot
+and a burst, and a stance change at the game camera: the gun now lies in the hands' frame (before, a quarter turn off).

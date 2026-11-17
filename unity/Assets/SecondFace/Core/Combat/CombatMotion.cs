@@ -36,6 +36,14 @@ namespace SecondFace.Core.Combat
         Arc = 3,
         /// <summary>No weapon in the hands (a reload's off hand at the magazine, a throw's empty off hand, hands up).</summary>
         Free = 4,
+        /// <summary>A two-handed weapon's ready hold made for the body (<see cref="CombatMotion.ReadyHold"/>): the weapon's
+        /// line set in the chest's frame, its main grip placed where both arms reach it with their elbows bent as a real
+        /// hold bends them, the main hand on its grip and the off hand on <c>grip_off</c> by IK. The fix for the authored
+        /// low-ready stopgaps (rifle_idle_ual, crouch_rifle_ual), whose arms stand straight (elbow 0-21°, clip QA) at the end
+        /// of IK targets they never reached, the right hand turned so a gun on it points 54° across the chest and its
+        /// grip_off 71 cm from the left shoulder against an arm of 61 cm on the clip's own skeleton: in game the off hand
+        /// stood 26-46 cm from its grip (WG2, 2026-11-17).</summary>
+        Hold = 5,
     }
 
     /// <summary>A clip's root (COMBAT_ASSETS doubt 4; the travel table of combat v2's README §2).</summary>
@@ -122,7 +130,7 @@ namespace SecondFace.Core.Combat
     {
         /// <summary>Bump when the states or their clips change: the editor rebuilds the layers (the controller carries
         /// "combat_v&lt;Version&gt;").</summary>
-        public const int Version = 1;
+        public const int Version = 2;
         public const string FullLayer = "Combat", ArmsLayer = "CombatArms";
         public const string ArmsParam = "CombatArms", CrouchParam = "CombatCrouch", RateParam = "CombatRate", SexParam = "Sex";
         public const string None = "none";
@@ -211,13 +219,16 @@ namespace SecondFace.Core.Combat
                 l.Add(s);
                 return s;
             }
-            // idles (the fight's ready stance, per weapon; the women's guard is a man's take until a woman's is captured)
+            // idles (the fight's ready stance, per weapon; the women's guard is a man's take until a woman's is captured; a long
+            // gun's and a two-handed club's ready hold made for each body on the stopgap's legs and trunk: HandsIk.Hold)
             S("unarmed_idle", "fist_guard_accad", loop: true, fade: 0.35f, gate: "guard");
             S("pistol_idle", "pistol_idle_ual", loop: true, fade: 0.35f, gate: "ready");
-            S("rifle_idle", "rifle_idle_ual", loop: true, fade: 0.35f, hands: HandsIk.OffHand, gate: "ready");
+            S("rifle_idle", "rifle_idle_ual", loop: true, fade: 0.35f, hands: HandsIk.Hold, gate: "ready");
             S("melee_idle", "fist_guard_accad", loop: true, fade: 0.35f, gate: "guard");
-            S("club2_idle", "rifle_idle_ual", loop: true, fade: 0.35f, hands: HandsIk.OffHand, gate: "ready");
-            // the long gun: up to the shoulder, the hold, single and burst, down; the reload
+            S("club2_idle", "rifle_idle_ual", loop: true, fade: 0.35f, hands: HandsIk.Hold, gate: "ready");
+            // the long gun: up to the shoulder, the hold, down; the reload. Its rounds are fired on the hold itself with their
+            // recoil at run time (Fighter.Recoil): rifle_fire and rifle_burst (CMU 79's aim with an authored recoil, a stance
+            // 9 cm wider than the hold's CMU 80) stay built for a later pass on one actor, unplayed by the view
             S("rifle_raise", "rifle_raise_cmu", then: "rifle_aim", from: 0.42f, speed: 1.5f, cut: 0.95f, fade: 0.15f, hands: HandsIk.OffHand, gate: "aim");
             S("rifle_aim", "rifle_aim_b_cmu", loop: true, fade: 0.2f, hands: HandsIk.OffHand, gate: "aim");
             S("rifle_fire", "rifle_fire_cmu", then: "rifle_aim", cut: 0.9f, fade: 0.1f, hands: HandsIk.OffHand, gate: "aim");
@@ -251,7 +262,7 @@ namespace SecondFace.Core.Combat
             // run out cut at its first stride, crossfading into the locomotion)
             S("cover_down", "crouch_down_accad", "crouch_down_f_accad", then: ToCover, cut: 0.92f, fade: 0.15f, gate: "crouch");
             S("cover_hold", "ready_crouch_cmu", loop: true, fade: 0.3f, gate: "crouch");
-            S("cover_hold_long", "crouch_rifle_ual", loop: true, fade: 0.3f, hands: HandsIk.OffHand, gate: "crouch");
+            S("cover_hold_long", "crouch_rifle_ual", loop: true, fade: 0.3f, hands: HandsIk.Hold, gate: "crouch");
             S("cover_leave", "crouch_to_run_accad", "crouch_to_run_f_accad", then: ToIdle, cut: 0.3f, fade: 0.15f, gate: "crouch");
             // heavy hits (with the procedural directional hit on every hit): shoved from behind; from the front a woman's
             // captured stagger, a man's hand-keyed stopgaps (no man's stagger is captured)
@@ -275,7 +286,7 @@ namespace SecondFace.Core.Combat
             S("yield_hold", "surrender_idle_ual", loop: true, fade: 0.2f, hands: HandsIk.Free, gate: "yield");
             // the weapon carried while walking or jogging (arms only, over the locomotion's legs)
             S("carry_pistol", "pistol_idle_ual", loop: true, fade: 0.25f, gate: "carry", layer: ArmsLayer);
-            S("carry_long", "rifle_idle_ual", loop: true, fade: 0.25f, hands: HandsIk.OffHand, gate: "carry", layer: ArmsLayer);
+            S("carry_long", "rifle_idle_ual", loop: true, fade: 0.25f, hands: HandsIk.Hold, gate: "carry", layer: ArmsLayer);
             return l.ToArray();
         }
 
@@ -503,20 +514,94 @@ namespace SecondFace.Core.Combat
         /// <summary>A fist (the guard, a blow).</summary>
         public static readonly Grip Fist = new((0, 1, 0), (-1, 0, 0), 92, 100, 70, 92, 50);
 
+        /// <summary>A long gun's model (a stock and a fore-end: two hands, a butt for the shoulder).</summary>
+        public static bool LongGun(string model) => model is "rifle_auto" or "rifle_bolt" or "shotgun_sawn";
+
         /// <summary>The main hand's grip for a model.</summary>
-        public static Grip MainGrip(string model) => model switch
-        {
-            "pistol" or "revolver" or "rifle_auto" or "rifle_bolt" or "shotgun_sawn" => PistolGrip,
-            _ => HammerGrip,
-        };
+        public static Grip MainGrip(string model) => model is "pistol" or "revolver" || LongGun(model) ? PistolGrip : HammerGrip;
 
         /// <summary>The off hand's grip on a model's <c>grip_off</c> (the pistol has none: the support hand wraps the grip).</summary>
-        public static Grip OffGrip(string model) => model switch
+        public static Grip OffGrip(string model) => LongGun(model) ? ForeEnd : model is "pistol" or "revolver" ? PistolSupport : OffHammer;
+
+        // ------------------------------------------------------------------------------------------- the ready hold
+
+        /// <summary>
+        /// A two-handed weapon's ready hold (<see cref="HandsIk.Hold"/>), made for each body each frame from its own shoulders
+        /// and arms, in the shoulders' frame (origin the main shoulder's joint, +X along the shoulders to the main side, +Y up,
+        /// +Z ahead of them): the main grip at <see cref="Grip"/> (shares of the main arm's reach, shoulder joint to palm), the
+        /// weapon's line tipped <see cref="Pitch"/> below level and turned <see cref="Across"/> across the body toward the
+        /// support side, the off hand on grip_off wherever that falls (<see cref="PlaceHold"/> keeps it in the off arm's reach).
+        /// Sized by the arms themselves, so the elbows bend as a real hold bends them on every body (a hold made for one rig
+        /// puts the hands out of reach on another: the authored stopgap's, on its own rig).
+        /// </summary>
+        public readonly struct ReadyHold
         {
-            "rifle_auto" or "rifle_bolt" or "shotgun_sawn" => ForeEnd,
-            "pistol" or "revolver" => PistolSupport,
-            _ => OffHammer,
+            /// <summary>Degrees the weapon's +Z (barrel, blade, head) is tipped below level (negative: raised).</summary>
+            public readonly double Pitch;
+            /// <summary>Degrees it is turned across the body toward the support (left) side (negative: to the main side).</summary>
+            public readonly double Across;
+            /// <summary>The main grip from the main shoulder's joint, in shares of the main arm's reach (shoulders' frame).</summary>
+            public readonly (double X, double Y, double Z) Grip;
+            public ReadyHold(double pitch, double across, (double, double, double) grip) { Pitch = pitch; Across = across; Grip = grip; }
+        }
+
+        /// <summary>A long gun at the low ready, standing (a patrol ready: the gun across the body, the muzzle 40° below level
+        /// and 65° across toward the support side, the main hand on the grip before the lower chest, a little inside the main
+        /// shoulder). Sized (tools: a grid over the hold on a body with real proportions, every long gun's sidecar) so the main
+        /// elbow bends about 100°, the support elbow 40-65° with its hand on the fore-end, and no part of the gun from the butt
+        /// to the fore-end passes within 9 cm of the shoulders' plane in front of the trunk.</summary>
+        public static readonly ReadyHold LongGunReady = new(40, 65, (-0.34, -0.36, 0.34));
+        /// <summary>A long gun held crouched behind cover: flatter (25° down, its muzzle clear of the knees), further ahead.</summary>
+        public static readonly ReadyHold LongGunCrouched = new(25, 60, (-0.34, -0.30, 0.42));
+        /// <summary>A two-handed club ready to swing: raised 60° before the main shoulder, both hands together on the handle in
+        /// front of the lower chest.</summary>
+        public static readonly ReadyHold ClubReady = new(-60, -20, (-0.25, -0.48, 0.40));
+
+        /// <summary>The ready hold for a weapon and stance (null: the clip's own hands).</summary>
+        public static ReadyHold? Hold(Arms a, bool crouched) => a switch
+        {
+            Arms.Rifle => crouched ? LongGunCrouched : LongGunReady,
+            Arms.Club2 => ClubReady,
+            _ => null,
         };
+
+        /// <summary>A direction in the weapon's frame turned into the shoulders' frame by a hold's line (Unity's turns:
+        /// across about +Y toward -X, then the pitch about +X tipping +Z down).</summary>
+        public static (double X, double Y, double Z) HoldTurn(ReadyHold h, (double X, double Y, double Z) v)
+        {
+            double p = h.Pitch * Math.PI / 180.0, a = -h.Across * Math.PI / 180.0;
+            // about X by the pitch: y' = c y - s z, z' = s y + c z
+            var y1 = Math.Cos(p) * v.Y - Math.Sin(p) * v.Z; var z1 = Math.Sin(p) * v.Y + Math.Cos(p) * v.Z;
+            // about Y by the turn: x' = c x + s z, z' = -s x + c z
+            return (Math.Cos(a) * v.X + Math.Sin(a) * z1, y1, -Math.Sin(a) * v.X + Math.Cos(a) * z1);
+        }
+
+        /// <summary>Where a hold puts the main grip on a body (shoulders' frame, m), and the line it holds the weapon on: its
+        /// <see cref="ReadyHold.Grip"/> on this body's main arm; where grip_off falls beyond 0.95 of the off arm's reach (a body
+        /// whose shoulders stand wide for its arms, a long gun), the weapon turned further across the body, 5° at a time up to
+        /// 15° (the fore-end comes in toward the off shoulder, the main hand keeps its bend), and only then moved (with its
+        /// grip) just as far as brings grip_off into reach.</summary>
+        public static ((double X, double Y, double Z) Grip, ReadyHold Line) PlaceHold(ReadyHold h, (double X, double Y, double Z) offShoulder,
+            double mainReach, double offReach, (double X, double Y, double Z) gripOff)
+        {
+            var grip = Mul(h.Grip, mainReach);
+            var most = 0.95 * offReach;
+            var line = h;
+            for (var extra = 0; extra <= 15; extra += 5)
+            {
+                line = new ReadyHold(h.Pitch, h.Across + extra, h.Grip);
+                if (Len(Sub(Add(grip, HoldTurn(line, gripOff)), offShoulder)) <= most) return (grip, line);
+            }
+            var gap = Sub(Add(grip, HoldTurn(line, gripOff)), offShoulder);
+            var d = Len(gap);
+            return (Add(grip, Mul(gap, (most - d) / d)), line);
+        }
+
+        private static (double X, double Y, double Z) Add((double X, double Y, double Z) a, (double X, double Y, double Z) b) => (a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+        private static (double X, double Y, double Z) Sub((double X, double Y, double Z) a, (double X, double Y, double Z) b) => (a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+        private static (double X, double Y, double Z) Mul((double X, double Y, double Z) a, double k) => (a.X * k, a.Y * k, a.Z * k);
+        private static double Dot((double X, double Y, double Z) a, (double X, double Y, double Z) b) => a.X * b.X + a.Y * b.Y + a.Z * b.Z;
+        private static double Len((double X, double Y, double Z) a) => Math.Sqrt(Dot(a, a));
 
         /// <summary>Where the support hand's palm sits on a pistol (no <c>grip_off</c> staged): against the grip's left side,
         /// a little below and behind the shooting hand's palm (m, weapon frame).</summary>

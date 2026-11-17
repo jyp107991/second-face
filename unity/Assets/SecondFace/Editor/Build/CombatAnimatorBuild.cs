@@ -23,8 +23,8 @@ namespace SecondFace.EditorTools
     /// the import of the rebuilt controller puts these back (CombatImportPostprocessor).</item>
     /// <item>The weapons: each staged model's materials (URP Lit from its BaseColor, Normal and Mask: R metallic, G occlusion,
     /// A smoothness; the bottle's glass transparent, premultiplied) in both lore paints, remapped onto the model by name.</item>
-    /// <item>The set (Combat/CombatSet.asset): the controller, the weapons with their grip, muzzle and tip points (the
-    /// sidecars' <c>points_unity</c>), each clip's length and beats (impact, release, fire, the magazine) as normalized
+    /// <item>The set (Combat/CombatSet.asset): the controller, the weapons with their grip, muzzle, tip and butt points (the
+    /// sidecars' <c>points_unity</c>) and the model's place in that frame fitted from its own nulls, each clip's length and beats (impact, release, fire, the magazine) as normalized
     /// times; given to WorldAssets.Combat so the game's fights use it.</item>
     /// </list>
     /// </summary>
@@ -254,7 +254,10 @@ namespace SecondFace.EditorTools
                 {
                     Id = id, HasOff = pts?["grip_off"] != null, HasMuzzle = pts?["muzzle"] != null,
                     GripOff = P("grip_off"), Muzzle = P("muzzle"), Tip = pts?["tip"] != null ? P("tip") : P("muzzle"),
+                    HasButt = pts?["butt"] != null, Butt = P("butt"),
+                    PointNames = pts != null ? pts.Properties().Select(x => x.Name).ToArray() : new string[0],
                 };
+                w.PointsAt = w.PointNames.Select(P).ToArray();
                 var size = j["size_m"] is JArray sz ? sz[2].Value<float>() : 0.4f;
                 w.Length = Mathf.Max(size, Mathf.Max(Mathf.Abs(w.Tip.z), Mathf.Abs(w.Muzzle.z)));
                 // both paints, the first on the model by name
@@ -285,6 +288,15 @@ namespace SecondFace.EditorTools
                 w.Prefab = AssetDatabase.LoadAssetAtPath<GameObject>(fbx);
                 w.Paint1 = paint1.ToArray(); w.Paint2 = paint2.ToArray();
                 l.Add(w);
+            }
+            // each model laid in its weapon's frame by its own nulls (the FBX root carries the exporter's axis turn); a weapon
+            // whose points lie on one line takes its twist from one whose points fix it (one exporter, one import)
+            Quaternion? like = null;
+            foreach (var w in l) { w.Fit(); if (w.FittedFull && like == null) like = w.ModelRot; }
+            foreach (var w in l)
+            {
+                var fit = w.FittedFull ? w.Fit() : w.Fit(like);
+                if (fit > 0.001f) Debug.LogWarning($"CombatAnimatorBuild: {w.Id}: its nulls fit the sidecar's points within {fit * 100f:0.0} cm only");
             }
             return l.ToArray();
         }

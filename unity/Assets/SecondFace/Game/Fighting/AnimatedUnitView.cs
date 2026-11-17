@@ -230,16 +230,14 @@ namespace SecondFace.Game.Fighting
             _quietFor = 0f;
             if (Fighter.Arms == Arms.Rifle && Fighter.InHand)
             {
-                var burst = rounds >= 2 && Fighter.Set != null && Fighter.Set.Beats("rifle_burst", Fighter.Female, "fire") > 0;
-                var state = burst ? "rifle_burst" : "rifle_fire";
-                var per = Mathf.Max(1, Fighter.Set != null ? Fighter.Set.Beats(state, Fighter.Female, "fire") : 1);
-                var k = round % per;
-                var first = Fighter.Set != null ? Fighter.Set.Beat(state, Fighter.Female, "fire", 0) : 0.2f;
-                // the clip from its start for the first round; again from just before its first shot for a long burst's next
-                if (k == 0) Fighter.Play(state, round == 0 ? null : 0.05f, restart: true, from: round == 0 ? (float?)null : Mathf.Max(0f, first - 0.04f));
-                var beat = Fighter.Set != null ? Fighter.Set.Beat(state, Fighter.Female, "fire", k) : 0.25f;
-                if (beat < 0f) beat = first >= 0f ? first : 0.25f;
-                yield return Fighter.Until(state, beat, 1.2f);
+                // every round on the hold itself (rifle_aim: CMU 80_03), its recoil at run time (Fighter.Recoil): the authored
+                // shot takes (rifle_fire/burst_cmu) are CMU 79's, a stance 9 cm wider, and every shot crossfaded the feet
+                // between the two actors' stances and back (F4 in the shots, 2026-11-17)
+                if (!Fighter.Is("rifle_aim")) { Fighter.Play("rifle_aim", 0.12f); yield return Wait(Mathf.Max(0.1f, Secs(0.2f))); }
+                // (a burst's rounds 0.1 s apart, as the authored burst's frames 7, 10 and 13 at 30 fps; the kick climbs a
+                // little a round)
+                if (round > 0) yield return Wait(Mathf.Max(0.05f, Secs(0.1f)));
+                Fighter.Recoil(2.6f + 0.6f * Mathf.Min(round, 4));
                 Shot(at, 1f);
                 yield return Wait(Mathf.Max(0.03f, Secs(0.05f)));
                 _fx.FlashOff();
@@ -271,7 +269,7 @@ namespace SecondFace.Game.Fighting
             else muzzle = Body.position + Vector3.up * 1.35f + Body.forward * 0.4f;
             _fx.Flash(muzzle);
             if (w != null) _fx.Shell(w.position + w.up * 0.06f, w.right);
-            if (Fighter.Arms == Arms.Rifle) Fighter.Kick(0.6f * kick);
+            // (a long gun's kick is its recoil, given with the round: Fighter.Recoil)
             _host.StartCoroutine(_fx.Tracer(muzzle, at, Mathf.Max(0.04f, Secs(0.07f)), 0f));
         }
 
