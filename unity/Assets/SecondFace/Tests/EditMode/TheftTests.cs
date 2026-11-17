@@ -19,7 +19,7 @@ namespace SecondFace.Tests
             var plan = PlacePlan.Build(map);
             var owners = Owners.Of(map, plan);
             TestContext.WriteLine(string.Join(", ", owners.Select(kv => $"{kv.Key}: {kv.Value}")));
-            var residents = map.Npcs.Where(p => p.If == null).Select(p => p.Def).ToHashSet();
+            var residents = map.Npcs.Where(p => Owners.Resides(map, p)).Select(p => p.Def).ToHashSet();
             Assert.That(owners.Count, Is.GreaterThanOrEqualTo(3), "the town's rooms have keepers");
             foreach (var (id, who) in owners) Assert.That(residents.Contains(who), Is.True, $"{id}: {who} lives here");
             Assert.That(owners["bar_shelf"], Is.EqualTo("npc_sh_03"), "the bar's shelf is the barkeep's");
@@ -29,6 +29,9 @@ namespace SecondFace.Tests
             g.SetFlag("shale_room", true);
             Assert.That(Owners.Now(g, map, "room_locker", owners), Is.Null, "until the room is rented: then it is yours");
             Assert.That(plan.Markers.Any(m => m.Kind == "container" && !owners.ContainsKey(m.Id)), Is.True, "some things are nobody's");
+            // in a game a keeper keeps their rooms only while their placement stands: in every act they stand in
+            var now = Owners.Of(map, plan, States.NewGame("shale", 0, 0));
+            Assert.That(now["bar_shelf"], Is.EqualTo("npc_sh_03"), "in a game begun, the barkeep keeps the bar");
         }
 
         [Test]

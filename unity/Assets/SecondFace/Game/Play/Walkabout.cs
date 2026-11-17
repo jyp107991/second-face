@@ -873,15 +873,16 @@ namespace SecondFace.Game.Play
             return Loot;
         }
 
-        private readonly System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, string>> _owners = new();
+        private readonly System.Collections.Generic.Dictionary<string, PlacePlan> _plans = new();
 
-        /// <summary>Whose each of a map's containers is (Core <see cref="Owners"/>; worked out once a map).</summary>
+        /// <summary>Whose each of a map's containers is now (Core <see cref="Owners"/>: the map's rooms worked out once, their
+        /// keepers by who stands there in this game).</summary>
         private System.Collections.Generic.Dictionary<string, string> OwnersOf(MapDef map)
         {
             if (map == null) return null;
             // (rooms as the place is built: a city district's border is its map's edge, not a wall round one room)
-            if (!_owners.TryGetValue(map.Id, out var o)) _owners[map.Id] = o = Owners.Of(map, PlacePlan.Build(CityKit.Prepare(map)));
-            return o;
+            if (!_plans.TryGetValue(map.Id, out var plan)) _plans[map.Id] = plan = PlacePlan.Build(CityKit.Prepare(map));
+            return Owners.Of(map, plan, Game);
         }
 
         /// <summary>A person's name as the content has it (their id when it has none).</summary>

@@ -11,11 +11,26 @@ namespace SecondFace.Core.World
     /// <summary>
     /// Whose things are whose (P6.3): a container belongs to whoever keeps the room it stands in, the one who sleeps
     /// there first, else the one who works or trades there, else the one placed there; in the open, or in a room nobody
-    /// keeps, it is nobody's (salvage). Visitors (placements with a condition) keep nothing.
+    /// keeps, it is nobody's (salvage). Visitors (placements with a condition and no routine of their own on the map) keep
+    /// nothing; a resident whose placement holds only for part of the story (a keeper standing in one act, again in the
+    /// next under another placement) keeps their rooms, and in a game only while their placement stands
+    /// (given a game; none: every resident).
     /// </summary>
     public static class Owners
     {
-        public static Dictionary<string, string> Of(MapDef map, PlacePlan plan)
+        /// <summary>Someone placed on the map lives there: placed without a condition, or with a routine of their own on
+        /// the map's spots (a visitor stands where placed and keeps nothing).</summary>
+        public static bool Resides(MapDef map, NpcPlacement p)
+        {
+            if (p == null) return false;
+            if (p.If == null) return true;
+            if (map?.Spots == null || !Registry.Npcs.TryGetValue(p.Def, out var def)) return false;
+            foreach (var e in Routine.Of(p, def) ?? new List<ScheduleEntry>())
+                if (e.Spot != null && map.Spots.ContainsKey(e.Spot)) return true;
+            return false;
+        }
+
+        public static Dictionary<string, string> Of(MapDef map, PlacePlan plan, GameState g = null)
         {
             var keeps = new Dictionary<int, (string Who, int Rank)>();
             void Keep(int room, string who, int rank)
@@ -25,7 +40,8 @@ namespace SecondFace.Core.World
             }
             foreach (var p in map.Npcs ?? new List<NpcPlacement>())
             {
-                if (p.If != null || !Registry.Npcs.TryGetValue(p.Def, out var def)) continue;
+                if (!Resides(map, p) || (g != null && p.If != null && !Logic.Test(p.If, g))) continue;
+                if (!Registry.Npcs.TryGetValue(p.Def, out var def)) continue;
                 foreach (var e in Routine.Of(p, def) ?? new List<ScheduleEntry>())
                 {
                     if (e.Spot == null || map.Spots == null || !map.Spots.TryGetValue(e.Spot, out var t)) continue;
