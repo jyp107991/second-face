@@ -287,7 +287,9 @@ namespace SecondFace.Tests
                             foreach (var rise in new[] { -0.04, 0.0, 0.04 })
                             {
                                 var offShoulder = (-width, rise, 0.0);
-                                var (grip, line) = CombatMotion.PlaceHold(hold, offShoulder, reach, reach, off);
+                                // (the palm model the holds were sized on: the palm the end of a straight arm; the chain the game
+                                // solves is TheReadyHoldsBendTheOffElbowOnTheIkChain)
+                                var (grip, line) = CombatMotion.PlaceHold(hold, offShoulder, reach, reach, off, (0, 0, 0));
                                 var offAt = Add(grip, CombatMotion.HoldTurn(line, off));
                                 var who = $"{arms}{(crouched ? " crouched" : "")} {m}, shoulders {width} m, reach {reach} m, the off shoulder {rise:+0.00;-0.00} m";
                                 var dOff = Dist(offAt, offShoulder);
@@ -307,6 +309,83 @@ namespace SecondFace.Tests
                             }
                 }
             Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
+        }
+
+        /// <summary>The ready holds on the arm the game's IK solves (Limbs.cs: TwoBone from the shoulder to the wrist, the hand
+        /// turned to the grip's frame, the palm's centre CombatMotion.PalmAlong/PalmOut of the hand's length off the wrist):
+        /// on the same bodies (shoulders 0.31-0.40 m apart, reach 0.55-0.68 m, the support shoulder ±4 cm), with arms of real
+        /// proportions (upper arm 0.186, forearm 0.146, wrist to the middle knuckle 0.045-0.055 of stature: segment norms),
+        /// every staged weapon: the off hand's wrist within 0.95 of its arm and its elbow bent 20-100° (125° on a club), the main
+        /// elbow bent at least 80°.
+        /// (PlaceHold kept grip_off within 0.95 of the palm's reach on a straight wrist; a fore-end's grip holds the hand across
+        /// the line from the shoulder, so on this chain the off wrist fell at 0.99-1.03 of the arm on 28-33 of the 81 long-gun
+        /// bodies and the IK straightened the arm, 2°: the off elbows CombatMotionPlayTests measured at 2°, 2026-11-17.)</summary>
+        [Test]
+        public void TheReadyHoldsBendTheOffElbowOnTheIkChain()
+        {
+            var weapons = Path.Combine(Path.GetDirectoryName(Dir()), "Weapons");
+            (double X, double Y, double Z) P(JObject pts, string k) { var a = pts[k].Values<double>().ToArray(); return (a[0], a[1], a[2]); }
+            static (double X, double Y, double Z) Sub((double X, double Y, double Z) a, (double X, double Y, double Z) b) => (a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+            static double Len((double X, double Y, double Z) a) => System.Math.Sqrt(a.X * a.X + a.Y * a.Y + a.Z * a.Z);
+            static double Elbow(double d, double upper, double fore)
+            {
+                // TwoBone.Solve: the chain's end clamped into its reach, the elbow's bend from straight
+                d = System.Math.Min(System.Math.Max(d, System.Math.Abs(upper - fore) + 1e-4), upper + fore - 1e-4);
+                var c = System.Math.Max(-1.0, System.Math.Min(1.0, (upper * upper + fore * fore - d * d) / (2 * upper * fore)));
+                return 180.0 - System.Math.Acos(c) * 180.0 / System.Math.PI;
+            }
+            var wrong = new List<string>();
+            foreach (var (arms, crouched, models) in new[] { (Arms.Rifle, false, new[] { "rifle_auto", "rifle_bolt", "shotgun_sawn" }), (Arms.Rifle, true, new[] { "rifle_auto", "rifle_bolt", "shotgun_sawn" }), (Arms.Club2, false, new[] { "bat" }) })
+                foreach (var m in models)
+                {
+                    var hold = CombatMotion.Hold(arms, crouched).Value;
+                    var pts = (JObject)JObject.Parse(File.ReadAllText(Path.Combine(weapons, m, m + ".json")))["points_unity"];
+                    var off = P(pts, "grip_off");
+                    foreach (var handShare in new[] { 0.045, 0.055 })
+                        foreach (var width in new[] { 0.31, 0.36, 0.40 })
+                            foreach (var reach in new[] { 0.55, 0.62, 0.68 })
+                                foreach (var rise in new[] { -0.04, 0.0, 0.04 })
+                                {
+                                    // reach = upper + fore + PalmAlong · hand (Limbs.cs Hand.Reach)
+                                    var k = reach / (0.186 + 0.146 + CombatMotion.PalmAlong * handShare);
+                                    double upper = 0.186 * k, fore = 0.146 * k, hand = handShare * k;
+                                    var offShoulder = (-width, rise, 0.0);
+                                    var offPalm = CombatMotion.PalmFromWrist(CombatMotion.OffGrip(m), true, hand);
+                                    var mainPalm = CombatMotion.PalmFromWrist(CombatMotion.MainGrip(m), false, hand);
+                                    var (grip, line) = CombatMotion.PlaceHold(hold, offShoulder, reach, upper + fore, off, offPalm);
+                                    var offWrist = Add(grip, CombatMotion.HoldTurn(line, Sub(off, offPalm)));
+                                    var mainWrist = Sub(grip, CombatMotion.HoldTurn(line, mainPalm));
+                                    var who = $"{arms}{(crouched ? " crouched" : "")} {m}, shoulders {width} m, reach {reach} m (hand {handShare} of stature), the off shoulder {rise:+0.00;-0.00} m";
+                                    var dOff = Len(Sub(offWrist, offShoulder));
+                                    if (dOff > 0.95 * (upper + fore) + 1e-6) wrong.Add($"{who}: the off wrist at {dOff / (upper + fore):0.000} of its arm");
+                                    var eOff = Elbow(dOff, upper, fore);
+                                    if (eOff < 20 || eOff > (arms == Arms.Club2 ? 125 : 100)) wrong.Add($"{who}: the off elbow {eOff:0}° on the chain the IK solves");
+                                    var eMain = Elbow(Len(mainWrist), upper, fore);
+                                    if (eMain < 80) wrong.Add($"{who}: the main elbow {eMain:0}° on the chain the IK solves");
+                                }
+                }
+            Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
+        }
+
+        /// <summary>A two-handed weapon (a long gun, a two-handed club) stays in both hands from its ready stance down into cover
+        /// and in the crouch held there: every state of the way down holds it (HandsIk.Hold). (The way down played its
+        /// unarmed capture's hands: the off hand let go for the whole crouch and the hold ramped back in once crouched,
+        /// 2026-11-17.)</summary>
+        [Test]
+        public void ATwoHandedWeaponStaysInBothHandsIntoCover()
+        {
+            foreach (var a in new[] { Arms.Rifle, Arms.Club2 })
+            {
+                Assert.That(CombatMotion.Hold(a, false), Is.Not.Null, $"{a}: a ready hold");
+                var ready = CombatMotion.State(CombatMotion.Idle(a));
+                Assert.That(ready.Hands, Is.EqualTo(HandsIk.Hold), $"{a}: {ready.Name}");
+                var down = CombatMotion.State("cover_down");
+                Assert.That(down.Hands, Is.EqualTo(HandsIk.Hold), $"{a}: {down.Name}, the way down from {ready.Name}");
+                var held = CombatMotion.State(CombatMotion.Next(down, a, true));
+                Assert.That(held, Is.Not.Null, $"{a}: where {down.Name} goes");
+                Assert.That(held.Name, Is.EqualTo(CombatMotion.Cover(a)), $"{a}: {down.Name} goes to the crouch held");
+                Assert.That(held.Hands, Is.EqualTo(HandsIk.Hold), $"{a}: {held.Name}");
+            }
         }
 
         private static (double X, double Y, double Z) Add((double X, double Y, double Z) a, (double X, double Y, double Z) b) => (a.X + b.X, a.Y + b.Y, a.Z + b.Z);

@@ -152,6 +152,9 @@ namespace SecondFace.Game.Fighting
             if (a == null || !a.isHuman || set == null || !HasLayers(a)) return null;
             var f = a.GetComponent<Fighter>();
             if (f == null) f = a.gameObject.AddComponent<Fighter>();
+            // (a new fight's view takes the body: the last fight's hand-back, still waiting on a get-up or a relax, stops here,
+            // or it would let go of the new fight's stance when it finished)
+            f.StopHandBack();
             f.Set = set; f.Female = female; f.Body = body != null ? body : a.transform; f.Who = who;
             f.Bind();
             return f;
@@ -366,9 +369,12 @@ namespace SecondFace.Game.Fighting
             var length = Set != null ? Set.Length(state, Female) : 1f;
             _a.CrossFadeInFixedTime(s.AnimName(Female), f, layer, (from ?? s.From) * length);
             Bring(layer, f);
-            if (layer == _full) Current = state; else Carrying = state;
+            if (layer == _full) { Current = state; _askedFull = Time.frameCount; } else { Carrying = state; _askedArms = Time.frameCount; }
             return true;
         }
+
+        // the frame a crossfade was last asked on each layer (the Animator takes it at its next update)
+        private int _askedFull = -1, _askedArms = -1;
 
         /// <summary>Plays a state at once, its first frame written now (after a fall: the get-up from where the body lies).</summary>
         public void PlayNow(string state)
@@ -433,8 +439,24 @@ namespace SecondFace.Game.Fighting
 
         public void SetRate(float rate) { Rate = rate; if (_a != null && _a.runtimeAnimatorController != null) _a.SetFloat(RateId, rate); }
 
-        /// <summary>Whether the whole-body (or carry) layer is in this state or crossfading into it.</summary>
-        public bool Is(string state) => Progress(state) >= 0f;
+        /// <summary>Whether the whole-body (or carry) layer is in this state or crossfading into it: where the layer is going,
+        /// never a state it is crossfading out of (that one is being left: a gun being lowered is not aimed, and a loop being
+        /// left is crossfaded back into by <see cref="Play"/>, not kept). A crossfade asked this frame counts at once (the
+        /// Animator takes it at its next update; until then its current state is the one being left).
+        /// (Counting the state being left, a shot asked while the gun was being lowered found it "aimed", raised nothing and
+        /// fired on the lowering gun, and asking for the hold again was ignored: CombatMotionPlayTests, 2026-11-17.)</summary>
+        public bool Is(string state)
+        {
+            if (_a == null || !_a.isActiveAndEnabled) return false;
+            var s = CombatMotion.State(state);
+            if (s == null) return false;
+            var arms = s.Layer == CombatMotion.ArmsLayer;
+            var layer = arms ? _armsLayer : _full;
+            if (layer < 0) return false;
+            if ((arms ? _askedArms : _askedFull) == Time.frameCount) return (arms ? Carrying : Current) == state;
+            var info = _a.IsInTransition(layer) ? _a.GetNextAnimatorStateInfo(layer) : _a.GetCurrentAnimatorStateInfo(layer);
+            return info.shortNameHash == Animator.StringToHash(s.AnimName(Female));
+        }
 
         /// <summary>A state's normalized time now (its own layer's current state, or the one being crossfaded into); -1: not playing.</summary>
         public float Progress(string state)
@@ -520,6 +542,7 @@ namespace SecondFace.Game.Fighting
         private void Update()
         {
             if (!Ready || _a == null || !_a.enabled) return;
+            if (_sheatheDue) { _sheatheDue = false; if (_fullWant < 0.5f) Sheathe(); }
             var dt = Time.deltaTime;
             _fullW = Mathf.MoveTowards(_fullW, _fullWant, _fullRate * dt);
             _armsW = Mathf.MoveTowards(_armsW, _armsWant, _armsRate * dt);
@@ -775,8 +798,10 @@ namespace SecondFace.Game.Fighting
             var weapon = InHand && _weapon != null && _w != null;
             var step = dt / 0.15f;
             // a long gun's or a two-handed club's ready hold, made for this body (CombatMotion.ReadyHold): both hands on it
-            _holdW = Mathf.MoveTowards(_holdW, weapon && _w.HasOff && CombatMotion.Hold(Held.Arms, false) != null ? Want(HandsIk.Hold) : 0f, step);
-            _offW = Mathf.MoveTowards(_offW, weapon && (_w.HasOff || Held.Arms == Arms.Pistol) ? Mathf.Max(Want(HandsIk.OffHand), Want(HandsIk.Hold)) : 0f, step);
+            // (a state that holds is a two-handed weapon's hold: with any other weapon its hands are the clip's)
+            var holds = weapon && _w.HasOff && CombatMotion.Hold(Held.Arms, false) != null;
+            _holdW = Mathf.MoveTowards(_holdW, holds ? Want(HandsIk.Hold) : 0f, step);
+            _offW = Mathf.MoveTowards(_offW, weapon && (_w.HasOff || Held.Arms == Arms.Pistol) ? Mathf.Max(Want(HandsIk.OffHand), holds ? Want(HandsIk.Hold) : 0f) : 0f, step);
             _pistolW = Mathf.MoveTowards(_pistolW, weapon && _haveAim ? Want(HandsIk.PistolAim) : 0f, step);
             _arcW = Mathf.MoveTowards(_arcW, weapon && Current == "melee_slash" ? Smooth(_fullW) : 0f, step);
             _fixW = Mathf.MoveTowards(_fixW, weapon && _haveAim && Held.Arms == Arms.Rifle && full != null && full.Gate == "aim" ? Smooth(_fullW) : 0f, step);
@@ -827,7 +852,8 @@ namespace SecondFace.Game.Fighting
         /// <summary>A long gun's or a two-handed club's ready hold made for this body (Core <see cref="CombatMotion.ReadyHold"/>,
         /// <see cref="HandsIk.Hold"/>), in the frame of its own shoulders as the clip has them now (the line from the off
         /// shoulder's joint to the main one, level; up the world's): the main grip at the hold's share of this arm's reach
-        /// (Core <see cref="CombatMotion.PlaceHold"/>, which keeps grip_off within the off arm's reach), the weapon's line
+        /// (Core <see cref="CombatMotion.PlaceHold"/>, which keeps the off hand's wrist, its palm on grip_off, within 0.95 of
+        /// the off arm's chain to the wrist, the chain this IK solves), the weapon's line
         /// tipped and turned by the hold, the main hand put on its grip with the elbow bent down and out; the off hand goes to
         /// grip_off after (<see cref="OffHand"/>).</summary>
         private void ReadyHold(float w, bool crouched)
@@ -841,7 +867,9 @@ namespace SecondFace.Game.Fighting
             var fwd = Vector3.Cross(across.normalized, Vector3.up);
             var frame = Quaternion.LookRotation(fwd, Vector3.up);
             var inv = Quaternion.Inverse(frame);
-            var (local, line) = CombatMotion.PlaceHold(hold, T(inv * (sL - sR)), _right.Reach, _left.Reach, T(_w.GripOff));
+            // (the off hand's wrist, where its IK chain ends, from its palm on grip_off: the palm in the off grip's frame)
+            var offPalm = Quaternion.LookRotation(Hand.V(CombatMotion.OffGrip(Held.Model).Across), Hand.V(CombatMotion.OffGrip(Held.Model).Palm)) * _left.PalmFromWrist;
+            var (local, line) = CombatMotion.PlaceHold(hold, T(inv * (sL - sR)), _right.Reach, _left.Arm, T(_w.GripOff), T(offPalm));
             var grip = sR + frame * Hand.V(local);
             var weapon = frame * Quaternion.Euler(0f, -(float)line.Across, 0f) * Quaternion.Euler((float)line.Pitch, 0f, 0f);
             HoldGrip = grip;
@@ -927,7 +955,36 @@ namespace SecondFace.Game.Fighting
             Release(fade);
             ClearAim();
             if (_hasSneak && _a != null) _a.SetBool(SneakId, false);
-            StartCoroutine(SheatheLater(fade * 0.5f));
+            if (isActiveAndEnabled) _sheathing = StartCoroutine(SheatheLater(fade * 0.5f));
+            else Sheathe();
+        }
+
+        private Coroutine _handBack, _sheathing;
+        private bool _handingBack, _sheatheDue;
+
+        /// <summary>A fight's hand-back of this body (its view's end: the get-up waited for, the guard relaxed, the weapon put
+        /// away, the layers let go), run on the body itself: a body destroyed while it runs takes it with it, a later fight's
+        /// view taking the body stops it (<see cref="Ensure"/>), and a body put away (inactive) is let go at once
+        /// (<see cref="OnDisable"/>), so the fight's layers are never left on a body that leaves the fight.</summary>
+        public void HandBack(IEnumerator steps)
+        {
+            StopHandBack();
+            if (!isActiveAndEnabled) { End(0f); return; }
+            _handingBack = true;
+            _handBack = StartCoroutine(HandingBack(steps));
+        }
+
+        private IEnumerator HandingBack(IEnumerator steps)
+        {
+            yield return steps;
+            _handingBack = false;
+        }
+
+        private void StopHandBack()
+        {
+            _handingBack = false; _sheatheDue = false;
+            if (_handBack != null) { StopCoroutine(_handBack); _handBack = null; }
+            if (_sheathing != null) { StopCoroutine(_sheathing); _sheathing = null; }
         }
 
         private IEnumerator SheatheLater(float after)
@@ -939,6 +996,9 @@ namespace SecondFace.Game.Fighting
 
         private void OnDisable()
         {
+            // (put away during its hand-back, which stops with it: the layers let go at once, the weapon put away in the first
+            // frame it is back; the hierarchy cannot be changed while it is being deactivated)
+            if (_handingBack) { StopHandBack(); Release(0.05f); ClearAim(); _sheatheDue = true; }
             if (_pausedPlant && _plant != null) { _plant.enabled = _plantWasOn; _pausedPlant = false; }
             if (_pausedAmbient && _ambient != null) { _ambient.enabled = _ambientWasOn; _pausedAmbient = false; }
             if (_clear != null) _clear.Holding = false;

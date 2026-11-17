@@ -217,6 +217,71 @@ frame rates), `/home/user/second-face-staging/motion/README.md` (clip QA, clips 
   not raised); idles whose actors stand straight (K1) and hold the head level (the game's `idle` looks 35-42° down: H1);
   the staged clips' remaining seams and slides.
 
+- **Found in the editor: Unity fills a clip's avatar configuration from the take's first key, not from the rest pose
+  (2026-11-17, editor owner).** With the take imported, Unity poses the model at the take's first key and builds the
+  configuration from it with every limb as captured (only the hips are turned to face +Z and the shoulders and upper arms
+  levelled); the converters' T-pose (`t_pose_key`, the FBX's default values) is read only when the model is imported without
+  its take. So each clip was retargeted from wherever its cut began: between clips of one CMU skeleton the stored limbs
+  stood 90-160° apart (upper arms 86-126°, `jog`'s right foot 106°, `idle_m`'s thigh 159° against `wave`'s). When v6.1's
+  fresh metas put each clip on its own first key (in place of its first export's), every jogger's stance sole rose (W6 mean
+  p98 on the jogs 0.50 → 1.78 cm and 0.88 → 1.75 on the whole cast's first ten, Business_Female_01 2.6 > 2.5) and the CMU
+  gaits' strides moved 2-7 %, the motion unchanged: the reference is part of the retarget. **Fix (coordinator's decision):**
+  `MotionImportPostprocessor` (version 12) keeps the SHA-256 of each clip's file in the importer's userData; when it changes,
+  the first import reads the model without its take, so Unity fills the emptied description from the T-pose, and the second
+  (`Configure`, `ConfigureAll`) puts the explicit mapping over it (22 bones by their own names; the hands `LeftHand`/
+  `RightHand`; Neck2, the wrist-twist bones and the hip joints in-between) and imports the take. `MotionImportTests`
+  (EditMode) holds it: each clip stamped with its file's hash, the mapping, a valid Humanoid avatar, every configured bone the
+  file's T-pose within 0.5° and 1 mm but the five Unity's setup normalises (the hips; the shoulders and upper arms, levelled
+  within 4.6° of the horizontal), and across clips of one skeleton the configured segments pointing one way (legs 0.0°, arms
+  within 6.0°, spine, neck and feet within 24.9°: each subject's own spine curve and foot). The helper's clip QA against the
+  project's metas (`--project`): no configuration or mapping failure on the 38. On the clips' own avatars (Unity's retarget
+  against the same file sampled raw, in the hips' frame, p98): the hands' turn within 5.4° of the capture, their position
+  within 3.1 cm, the forearm's direction within 4.7°, the forearm's roll about the twist share (`wave` left 69° against half
+  its 142°; with the first-key configuration 153°); the turn the old mapping dropped was `wave` 150/106°, `argue` 84/62°,
+  `talk` 62/47°, `walk` 38/37° (left/right). Strides re-measured on the T-pose (`PaceCalibrationTests`, Business_Female_01,
+  Female_Adult_07, Construction_Male_02, Male_Adult_11): men `walk_slow` 1.128, `walk_slow_b` 1.157, `walk_d` 1.025, `walk`
+  1.140, `walk_b` 1.131, `walk_brisk_b` 1.029, `jog` 1.130, `jog_b` 1.145, `run` 1.176, `run_c` 1.015; women `walk_f_b` 1.028,
+  `jog_f` 1.106, `jog` 1.087. The fight's clips get the same reference from the combat track.
+- **The v6.1 batch's picks (14 people, against the same people in dfc732a4, the states measured before: 4 there).** v6 with
+  the old metas and the lift-and-drop removed: 25 (W1 0 → 17, W3 2 → 6). v6.1 on first-key configurations, lift-and-drop
+  removed: 23 (W1 0 → 17: 14 jogs of 13 people at 5-7 % of frames over 15 cm/s and three women's sneaks at 6-12 %; W6 0 → 5;
+  A4 1 → 0, C1 1 → 0, W3 2 → 1). v6.1 on the T-pose configuration (FootPlant as committed, the fight's layers in, T-pose `Pace`): **87** (A1 0 → 55, W6 0 → 16, W3 2 → 7, A4 1 → 3, C1 1 → 2, F3s 0 → 2, W1 0 → 2; Medical_Male_02's look135 A4 6.2 → 3.4 and Medical_Male_03's wave C1 3.3 → 0.0 fixed): the men's idles and looks hold the arms out (cap_Military_Male_03n idle0 A1 p50 12.5 → 17.0, Medical_Male_02 13.8 → 19.5, Construction_Male_02 look135 p98 17.2 → 22.6), the jogs' and sneaks' stance soles sink (Sports_Male_04 jog W6 p2 −0.2 → −3.3; Medical_Female_01 p50 −0.3 → −1.5), the walks swing wider (W3 cap_Police_Male_03n 34.7 → 41.9). The lift-and-drop stays as committed (the open item below). **No whole cast:** stopped at its first ten on the first-key configurations (W6 0 → 2, Business_Female_01's jog 2.6 > 2.5), not run on the T-pose (the pick already worse); nothing of the batch is committed (WIP on `wip/gate-batch`, 5e87de78).
+- **Open: the jog's touchdown (coordinator, 2026-11-17).** Motion set v6.1 holds each stance's contact point still from the
+  key *after* touchdown; the touchdown key itself carries the swing's arrival speed (`jog` key by key from the one before
+  touchdown: 2.79, 1.60, 0.00 m/s). In the game, at 60 frames a second, the frame between the touchdown key and the next
+  reads 0.37-0.46 m/s at the heel and 0.41-0.72 m/s at the ball with the sole down (Business_Female_01 on `jog`, the left foot,
+  once a loop, where the loop's seam sits on its touchdown: the sole 3.5, 3.0, 1.4 cm up at 3.9, 3.4, 2.0 m/s, then down at
+  1.8-1.9 m/s, then that frame, then 0.00; `unity/test-results/pick_v61_nolift/`), which W1 counts while the foot's slowest
+  point is under 0.5 m/s. Real CMU 35_17 at 120 Hz runs 0.3-0.45 m/s at +17 ms after contact on its actor's own skeleton, and
+  W1 has no calibration on real joggers (`docs/qa/motion_calibration.md` §4: the skate needs a mesh calibration). **Next:**
+  measure W1 as the gate defines it on at least three real joggers' captures at their native rate, then decide between the
+  limit and the clip from that evidence; `FootPlant`'s touchdown lift-and-drop is retired only after that.
+- **The fight's clips** share the import faults (22 of 73 map the twist bone as the hand; `CombatImportPostprocessor` keeps
+  the first import's first-key configuration): an input for the combat track (`docs/COMBAT.md`, inputs for the combat
+  track), which ships its metas on the same T-pose reference.
+- **The bare retarget, measured at its source (2026-11-17, editor owner; `BareRetargetProbeTests`, EditMode, a diagnostic
+  not committed).** Each clip with Unity's retarget alone (the Animator, no FootPlant, ArmClearance, Gaze or Pace; "down" the
+  body's own head-to-hips): (a) on its own avatar (the capture), (b) on a body from the T-pose configuration, (c) on the same
+  body from the committed metas. *A1, `idle_m`*, p50 left/right: (a) 16.4/12.7, (b) Construction_Male_02 17.1/12.5, (c)
+  18.1/14.3 (cap_Military_Male_03n the same): **the T-pose reference reproduces the capture within 0.7°**, the committed one
+  is 1.6-1.7° out. **The capture itself is asymmetric** (left 16.4, right 12.7): a left-right difference is the person, not a
+  fault; no gate limit assumes symmetry (each arm is measured on its own). *`jog_f` on Medical_Female_01*: A1 (a) 24.9/28.6,
+  (b) 27.9/39.2, (c) 35.3/46.8; the skin's lowest point over the ground p50 (b) +2.3 cm, (c) +7.1 cm. *`jog` on Sports_Male_04
+  and Medical_Female_01*: the skin's lowest point p50 (b) −4.9 and −4.2 cm, (c) −6.0 and −5.4 (p2 (b) −9.5, (c) −13.8): the
+  bare retarget of CMU 35_17 sinks into the floor on these bodies whichever the reference; with Unity's Foot IK on, deeper
+  still ((b) −6.5, (c) −9.9 p50), so Foot IK is not the answer for it. *Idles*: the soles 1.7-2.6 cm up in both. So the
+  in-game regressions are the runtime's compensations, tuned against the old reference: (1) **ArmClearance's push is
+  legitimate on the broad men**: in the game's trace (Construction_Male_02, idle0) the left arm arrives at 17.0° (the bare
+  retarget's) with the hand 3.9 cm inside the hip's skin (look135 4.0; the right 2.8), and the clearance turns it out to
+  20.0-22.6° (+1.1 at the shoulder, +1.9 for the remainder); the committed reference held the arms 1.6° further out and hid
+  that depth. That is the T4 item (the hand resting on the thigh with the flesh and cloth giving 0.3-1 cm, not a 4 cm push),
+  per body with its depth, not a looser A1. (2) **FootPlant's moving ground rule is a flat-foot proxy**: it sets the hips by
+  the stride's lowest *ankle* over a flat sole's height, so a foot that comes down pitched differently (the T-pose
+  reference's) leaves the sole itself 0.6-1.5 cm in the ground at its stance; the rule is re-derived on the soles' own
+  points (the BodySkin heel/ball the gate measures), next. (3) The canonical arms (the converters' `t_pose_key` keying the
+  arms exactly level, so Unity's levelling moves 0°, and the same on the bodies' avatars) are a rigour item, held: (b)
+  matches (a) within 0.7° without it.
+
 ## 8. T3 design: the contact-preserving retarget, baked per body (editor owner, 2026-11-17)
 **What is solved.** For each base body (79) and clip (28; 4,254 frames at 30 fps, about 4,400 with the idle at its true
 speed), every frame once: the clip as Mecanim retargets it to the body (sampled offline on the body's own avatar, muscle

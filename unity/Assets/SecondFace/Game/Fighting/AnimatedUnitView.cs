@@ -39,7 +39,7 @@ namespace SecondFace.Game.Fighting
         public bool Down => _down;
 
         private bool _down, _yielded, _holding, _aiming, _rising, _ended, _walking;
-        private float _quietFor;   // since the last shot or aim (s), for lowering the weapon
+        private float _quietFor;   // the aim held with nothing done (s): since it was reached or the last round; lowers the weapon
         private int _blows, _misses, _moves;
         private string _stance = "stand";
         private string _heldItem;
@@ -99,7 +99,12 @@ namespace SecondFace.Game.Fighting
                     }
                     if (_walking && !_walk.Moving) { _walking = false; Fighter.Locomote(false, _stance == "crouch"); }
                     if (_holding && Unit.Watch == null) { _holding = false; _quietFor = 99f; }
-                    _quietFor += Time.deltaTime;
+                    // the quiet that lowers a raised weapon counts only while the aim is held: from the moment it is reached
+                    // (and from each round), never through the raise, the turn and the facing learnt before it. Counted from
+                    // the aim's start, a first long-gun aim (the raise 0.94 s, the crossfade, the facing 0.2 s) was past the
+                    // delay as it was reached and came down at once; the shot that followed fired on the lowering gun
+                    // (CombatMotionPlayTests: "a shot played rifle_lower", 2026-11-17)
+                    _quietFor = _aiming ? _quietFor + Time.deltaTime : 0f;
                     if (_aiming && !_holding && _quietFor > Mathf.Max(0.6f, Secs(1.1f))) Lower();
                 }
                 yield return null;
@@ -258,6 +263,8 @@ namespace SecondFace.Game.Fighting
                 yield break;
             }
             yield return Wait(Secs(round + 1 < rounds ? 0.02f : 0.18f));
+            // (the quiet before the weapon comes down counts from the round, not from the start of its beat)
+            _quietFor = 0f;
         }
 
         /// <summary>A round leaves the muzzle: its flash, a spent case, the kick, the tracer to where it went.</summary>
@@ -322,8 +329,10 @@ namespace SecondFace.Game.Fighting
 
         public void OnRise()
         {
-            if (Body == null || !_down || _rising) return;
-            _host.StartCoroutine(Rise());
+            if (Body == null || !_down || _rising || Fighter == null || !Fighter.isActiveAndEnabled) return;
+            // (on the body, as the hand-back: a get-up waits up to 14 s and then takes the weapon up; on the fight's host it
+            // would do so on a body destroyed meanwhile)
+            Fighter.StartCoroutine(Rise());
         }
 
         /// <summary>Back up from the ground: the ragdoll hands the body back, the captured get-up for the side it lies on is
@@ -480,18 +489,22 @@ namespace SecondFace.Game.Fighting
             if (_ended) return;
             _ended = true;
             if (_tick != null && _host != null) _host.StopCoroutine(_tick);
-            if (_host != null && _host.isActiveAndEnabled) _host.StartCoroutine(End());
+            // (the hand-back runs on the body itself (Fighter.HandBack), not on the fight's host: it ends with the body, and a
+            // later fight's view on the same body stops it. Run by the host it outlived the body: a yielded fighter's end
+            // picked its weapon up on a Fighter destroyed meanwhile, MissingReferenceException at Fighter.Make, 2026-11-17)
+            if (Fighter != null) Fighter.HandBack(End());
         }
 
         /// <summary>Out of the fight: once up off the ground, the guard relaxed (a man's captured relax), the weapon back in
-        /// its holster or sling, the body to the people's own motion. The dead stay where they fell.</summary>
+        /// its holster or sling, the body to the people's own motion, at once (hands held up come down as the fight's layer
+        /// lets go: a hold of yield_hold for 1.5 s after the end kept the layer at full weight past the end and let the
+        /// body go only then, 2026-11-17). The dead stay where they fell.</summary>
         private IEnumerator End()
         {
             var w = 0f;
             while (_rising && w < 15f) { w += Time.deltaTime; yield return null; }
             if (Unit != null && !Unit.Alive) yield break;
             if (_down) yield break;
-            if (_yielded && Body != null) { Fighter.Play("yield_hold"); yield return Wait(1.5f); }
             if (!Fighter.Female && Fighter.Arms == Arms.Unarmed && _stance == "stand" && !_yielded)
             {
                 Fighter.Play("unarmed_relax");
