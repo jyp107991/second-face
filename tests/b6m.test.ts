@@ -498,7 +498,7 @@ describe('B6m: the point of no return at the foot of the steps', () => {
     const a = close('prepared', { knows: ['ar_cast_list'] }, { a3_ally_shift: true });
     expect(stage(a.g, 'q_a3_spire')).toBe('close');
     go(talk('d_a3_pnr', a.g, a.q), a, UP);
-    expect(a.events.map((e) => e.name)).toEqual(['save', 'goto']);
+    expect(a.events.map((e) => e.name)).toEqual(['save', 'goto', 'dialogue']); // B6p: the steps' scene opens after the goto
     expect(a.events[0].data).toEqual({ slot: 'steps', label: 'Before the steps' });
     expect(a.events[1].data).toEqual({ location: 'md_spire', spawn: 'steps' });
     expect(a.saved).toHaveLength(1);
@@ -539,7 +539,7 @@ describe('B6m: the point of no return at the foot of the steps', () => {
     go(trestle(f), f, ['Lucan.']);
     expect(f.g.flags.a3_ready).toBe(3);
     go(talk('d_a3_pnr', f.g, f.q), f, UP);
-    expect(f.events.map((e) => e.name)).toEqual(['save', 'goto']);
+    expect(f.events.map((e) => e.name)).toEqual(['save', 'goto', 'dialogue']);
     expect(f.saved[0].flags.a3_ready).toBe(3);
     expect(f.g.flags.a3_pnr).toBe(true);
   });

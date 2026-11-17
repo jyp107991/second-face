@@ -417,6 +417,8 @@ const GO_UP: Effect[] = [
   { set: 'a3_pnr' },
   { decision: { id: 'a3_pnr', text: 'I went up the Spire\'s steps from the lamp where the photograph was made.' } },
   { event: 'goto', data: { location: 'md_spire', spawn: 'steps' } },
+  // B6p: the steps' own scene opens where the goto leaves the player (d_a3_steps, a3_steps.ts)
+  { event: 'dialogue', data: { tree: 'd_a3_steps', name: 'The steps' } },
 ];
 const BEEN_HERE: Cond = ANY({ seen: 'a3pnr.notyet' }, { seen: 'a3pnr.notyet.warn' });
 

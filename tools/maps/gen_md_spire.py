@@ -179,6 +179,41 @@ A3_READY_TRIGGERS = [
     {'id': 'a3_pnr', 'x': 22, 'y': 16, 'w': 20, 'h': 10, 'if': AT_CLOSE, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_pnr', 'name': 'The steps'}}]},
 ]
 
+# ---------------------------------------------------------------------------------------------- Act 3 (B6p): the steps
+# Mirrors src/content/world/a3_conds.ts (B6p block: STEPS_OPEN, STEPS_WORN, ON_STEPS, THADDEUS_DEAD, BLADE_SENT) and a3_steps.ts
+# (the blade's fight); tests/b6p.test.ts checks the mirror. From the point of no return (a3_pnr) on: Three with the sash on the
+# steps (its bench placement steps aside), the ones who waited at the close on the steps round the photograph's step, the column's
+# lead at the foot, and the Unwritten's blade while the sky is owed.
+PNR = F('a3_pnr')
+STEPS_OPEN = ALL(PNR, NOT(F('a3_sash')))
+STEPS_WORN = F('a3_steps_sash', 'worn')
+def ON_STEPS(key):
+    c = WITH_YOU(key)
+    return ALL(c, ANY({'inParty': 'npc_md_nine'}, NOT(NINE_HIDDEN))) if key == 'nine' else c
+STEPS_RING = {'tamsin': (31, 25, 0), 'wren': (34, 23, 0), 'ilya': (27, 23, 0), 'odile': (33, 25, 0), 'ash': (28, 25, 0), 'nine': (29, 24, 0), 'kes': (35, 24, 0)}
+ASH_REFUSED = ANY(F('ash_orders', 'refused'), F('ash_orders', 'refused_late'))
+THADDEUS_DEAD = ANY(F('a3_uw_how', 'fought'), {'dead': 'npc_a3_u2'}, {'dead': 'npc_a3_u2_steps'})
+BLADE_SENT = ANY(F('a3_unwritten', 'with_you'), ASH_REFUSED)
+A3_STEPS_NPCS = [
+    # Assessor Three on the steps with the sash (d_a3_steps: talking to it resumes the scene)
+    {'def': 'npc_ar_01', 'id': 'npc_ar_01_steps', 'x': 31, 'y': 17, 'facing': 2, 'schedule': [], 'dialogue': 'd_a3_steps', 'if': PNR},
+    *[{'def': cid, 'id': f'{cid}_steps', 'x': STEPS_RING[k][0], 'y': STEPS_RING[k][1], 'facing': STEPS_RING[k][2], 'schedule': [],
+       'if': ALL(PNR, ON_STEPS(k), NOT({'inParty': cid}))} for k, (cid, *_rest) in COMPANION_DEFS.items()],
+    {'def': 'npc_md_01', 'id': 'npc_md_01_steps', 'x': 35, 'y': 27, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_steps_lowe', 'if': ALL(PNR, NOT(LOWE_DEAD))},
+    {'def': 'npc_md_12', 'id': 'npc_md_12_steps', 'x': 35, 'y': 27, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_steps_lowe',
+     'if': ALL(PNR, LOWE_DEAD, NOT({'dead': 'npc_md_12'}), NOT({'dead': 'npc_md_12_apron'}))},
+    # the Unwritten's blade: with the ones who came east from the card on, or out of the crowd once the sash is on and Ash burned his letter
+    {'def': 'npc_a3_u2', 'id': 'npc_a3_u2_steps', 'x': 26, 'y': 26, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_steps',
+     'if': ALL(STEPS_OPEN, NOT(THADDEUS_DEAD), NOT(F('a3_blade', 'wardens')), ANY(F('a3_unwritten', 'with_you'), ALL(BLADE_SENT, STEPS_WORN)))},
+]
+A3_STEPS_TRIGGERS = [
+    # the steps' scene, if it was ever left before the sash was answered (the point of no return's "(Go up.)" opens it first)
+    {'id': 'a3_steps', 'x': 22, 'y': 16, 'w': 20, 'h': 10, 'if': STEPS_OPEN, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_steps', 'name': 'The steps'}}]},
+    # the blade fought on the steps: the scene goes on once he is down
+    {'id': 'a3_blade_after', 'x': 20, 'y': 16, 'w': 24, 'h': 14, 'if': ALL(F('a3_blade_fight'), {'dead': 'npc_a3_u2_steps'}, NOT(F('a3_blade'))),
+     'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_steps', 'name': 'The steps'}}]},
+]
+
 md_spire = {
     'id': 'md_spire', 'name': 'Meridian — Archive Spire', 'seed': 83, 'settlement': 'meridian',
     'layout': rows,
@@ -238,7 +273,7 @@ md_spire = {
         'court_door': {'x': 18, 'y': 22}, 'lane_post': {'x': 31, 'y': 50},
     },
     'npcs': [
-        {'def': 'npc_ar_01', 'x': 8, 'y': 8, 'facing': 2},
+        {'def': 'npc_ar_01', 'x': 8, 'y': 8, 'facing': 2, 'if': NOT(F('a3_pnr'))},
         {'def': 'npc_ar_02', 'x': 13, 'y': 23, 'facing': 3},
         {'def': 'npc_ar_03', 'x': 51, 'y': 13, 'facing': 2},
         {'def': 'npc_ar_04', 'x': 6, 'y': 4, 'facing': 2, 'if': {'not': COPYIST_MOVED}},
@@ -247,14 +282,14 @@ md_spire = {
         {'def': 'npc_ar_06', 'x': 37, 'y': 21, 'facing': 2},
         {'def': 'npc_ar_07', 'x': 6, 'y': 18, 'facing': 0, 'if': {'not': {'flag': 'prec_forecast_fine', 'eq': 'void'}}},
         {'def': 'npc_ar_g1', 'x': 18, 'y': 22, 'facing': 1}, {'def': 'npc_ar_g2', 'x': 31, 'y': 50, 'facing': 2},
-    ] + A3_CLOSE_NPCS + A3_READY_NPCS,
+    ] + A3_CLOSE_NPCS + A3_READY_NPCS + A3_STEPS_NPCS,
     'triggers': [
         {'id': 'arrive', 'x': 26, 'y': 46, 'w': 12, 'h': 9, 'text': 'The Spire close. A square of clean paving behind the Precinct, lamps that work, and at its north end the Archive Spire going up into the haze until you lose it: the city\'s records, ninety-odd floors of them, its doors shut behind scaffolding. The Crown\'s glass catches the light on its shoulders. Broad steps run up to the doors, and the steps are familiar the way a word on the tip of your tongue is familiar.', 'effects': [{'learn': 'seen_spire'}, {'quest': 'q_a2_calendar', 'start': True}, {'quest': 'q_a2_spire', 'start': True}]},
         {'id': 'steps', 'x': 27, 'y': 17, 'w': 10, 'h': 5, 'if': {'item': 'k_photo'}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_ar_steps', 'name': 'The steps'}}]},
         {'id': 'court', 'x': 3, 'y': 14, 'w': 13, 'h': 12, 'text': 'The Court of Accounts. A long hall with a bench at the far end, a rail across the middle, benches for the public, and on the bench a grey unit with a brass plate and two ledgers, very still. Behind it, against the wall, a second chair, dark wood, with dust on the seat. Nobody sits in the public benches who does not have to.', 'effects': [{'learn': 'seen_court'}, {'quest': 'q_ca_court', 'start': True}]},
         {'id': 'catalogue', 'x': 48, 'y': 15, 'w': 13, 'h': 11, 'text': 'The catalogue: shelves of bound indexes to the ceiling, reading tables with green-shaded lamps, a terminal, a counter with a keeper behind it, and in the far corner a stair going up into the dark with a lens on a post at its foot and a porter at a desk beside it.', 'effects': [{'learn': 'seen_catalogue'}]},
         {'id': 'copyroom', 'x': 3, 'y': 2, 'w': 7, 'h': 4, 'text': 'A room behind the court that smells of ink and a stove. Shelves of bound copies, a desk with a lamp, a cot made with corners. Somebody lives here, and has for a long time.', 'effects': [{'learn': 'seen_copyroom'}]},
-    ] + A3_CLOSE_TRIGGERS + A3_READY_TRIGGERS,
+    ] + A3_CLOSE_TRIGGERS + A3_READY_TRIGGERS + A3_STEPS_TRIGGERS,
     'extras': [
         {'count': 4, 'roles': ['corp', 'settler', 'trader'], 'faction': 'wardens', 'area': {'x': 10, 'y': 28, 'w': 44, 'h': 20}, 'spots': ['close_pair_a', 'close_pair_b', 'close_sit', 'close_lean', 'close_e', 'close_w', 'steps_sit'], 'hours': {'from': 7, 'to': 21}, 'barks': ['The steps reopen R49. It says so on the board.', 'Don\'t stand on the scaffold. They count the planks.', 'My sister had a case. Eleven times called. Then they stopped calling.', 'Ninety-one floors. Nobody\'s been to the top that came down to say.']},
         {'count': 3, 'roles': ['settler', 'street', 'labourer'], 'life': 'hard', 'area': {'x': 3, 'y': 15, 'w': 12, 'h': 9}, 'spots': ['court_sit', 'court_pair_a', 'court_pair_b', 'court_lean'], 'hours': {'from': 8, 'to': 18}, 'barks': ['Case four hundred and something. They said today.', 'It reads everything. Bring everything.', 'Nobody speaks for you unless you bring them.']},

@@ -311,8 +311,12 @@ export const q_a3_spire: QuestDef = {
       next: [{ if: END, stage: 'ended' }, { if: SASH, stage: 'vault' }, { if: PNR, stage: 'steps' }],
     },
     steps: {
-      journal: 'The steps of the photograph, and a crowd on them, and a sash held out to me.',
-      objectives: [{ id: 'sash', text: 'Answer the sash', done: SASH }],
+      journal: 'The steps of the photograph, the city come up to the foot of them, and the Court\'s unit holding the sash out to me. Below the steps, the steel door in the Spire\'s foot.',
+      objectives: [
+        { id: 'sash', text: 'Answer the sash', done: SASH },
+        // B6p: the second hearing on the steps (E_FILE's third way), shown once it has been had
+        { id: 'file', text: 'Be heard on my file again', done: F('a3_file'), optional: true, hidden: true },
+      ],
       next: [{ if: END, stage: 'ended' }, { if: SASH, stage: 'vault' }],
     },
     vault: {

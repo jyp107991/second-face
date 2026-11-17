@@ -2196,6 +2196,17 @@ mid-range Android phone; deployed to Pages.
             in plain words, with a named save kept before it and nothing changing on "not yet". One prop, one placement and one
             trigger on the Spire close and one placement condition elsewhere (each generator first confirmed to reproduce the
             committed map). `tests/b6m.test.ts` (28). Next: B6p.
+      - [x] B6p **the final climb** DONE 2026-11-17 (content; no engine change; not exported): `dialogue/a3_steps.ts` (two
+            conversations, every node with a return line, all seven companions speak): the scene on the Spire's steps that the
+            point of no return now opens, a choice offered there, one more hearing, a question from a companion, and a
+            companion's and a stranger's beats that play out by earlier choices, each with several routes and one fight; nothing
+            resolves unasked. Placements and two triggers on the Spire close from the climb on (the generator first confirmed to
+            reproduce the committed map). `tests/b6p.test.ts` (32). Next: B6q.
+      - [x] B6s **the epilogue's builder and its first six pages** DONE 2026-11-17 (content; no engine change; no map change; not
+            exported; built alongside B6p): the closing sequence is now built from slide data (`dialogue/a3_epilogue_kit.ts`, a
+            builder later slices add pages to without engine changes; `dialogue/a3_epilogue.ts`, the assembly) and its first six
+            pages are written (`dialogue/a3_epilogue_open.ts`): each page a still in the world and a short text by what the player
+            did, shown only for subjects the player met, skippable, ending in the credits. `tests/b6s.test.ts` (15). Next: B6q.
 - [ ] B7 **Systemic depth + presentation**: ruins templates, bounty/gig templates, rare encounters, music
       and ambience, title art, menus, credits, settings, tips.
 - [ ] B8 **Balance, performance, deploy**: economy sim pass, difficulty, accessibility, Android perf

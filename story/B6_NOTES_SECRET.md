@@ -854,7 +854,7 @@ The default shared files touched by a content slice are the registries: `quests/
 - **Tests**: each scene by state; the Knock exchange once.
 - **Estimate** 1 h.
 
-### B6p — The steps
+### B6p — The steps — BUILT 2026-11-17 (deviations under "As built")
 - **Create** `dialogue/a3_steps.ts` (`d_a3_steps` with the photograph restaged (`{ event: 'photo', data: { place: 'md_spire',
   spot: 'steps_sit' } }`), the crowd, the sash (wear / refuse), the second hearing (Speech 55 with §4.1's mods: −10
   `ca_reserve` ∈ {stayed, attendance}, −5 `a3_c9` = opened, −5 `a3_recall` ∈ {court, declined}, −10 `nine_log_given`, −10
@@ -890,7 +890,7 @@ The default shared files touched by a content slice are the registries: `quests/
   prices each reachable.
 - **Estimate** 1.25 h.
 
-### B6s — The epilogue builder; slides 1–6
+### B6s — The epilogue builder; slides 1–6 — BUILT 2026-11-17 (deviations under "As built")
 - **Create** `dialogue/a3_epilogue.ts` (`epilogueTree()`, the `SlideSpec` type local to the file, slides `steps`, `ledger`,
   `cistern`, `knock`, `shale`, `dogs` with all their variants and keystone lines; the `credits` event at the end).
 - **Reads** §6.2 rows 1–6; §5 selectors through `a3_conds.ts`. **Sets** `ep_*`.
@@ -2326,6 +2326,182 @@ dialogue index · `tests/b6a.test.ts` (its exact "what you hold" list and id pat
 - **Runtime (§9.3):** the `save` event writes the named slot from the state as it is when the event fires; the title's load menu shows it
   first; loading puts the player at the foot of the steps with the dialogue closed. The trestle's chalk lines (one per act) and Rafe's
   two cases are place-build details (§9.5).
+
+### B6p (built 2026-11-17, after B6m, while B6s was built alongside)
+**Done, all of the slice:** `dialogue/a3_steps.ts` (`d_a3_steps`, 39 nodes; `d_a3_steps_lowe`, the column's lead at the foot, Lowe or
+Reyes; about 11,000 words counting every variant; every node with a return line or only exits; all seven companions speak) ·
+`tools/maps/gen_md_spire.py` → `maps/md_spire.ts` (confirmed byte-identical first; additions: the steps' placements and two triggers,
+and one condition on Three's bench placement) · `tests/b6p.test.ts` (32). No engine change, no new person. `npm run check`: typecheck,
+validate and the people gate (red/stale as before) pass; every test passes but one of B6a's (its "every flag read is written" check
+trips on B6s's in-progress `MET_SHALE`/`MET_DOGS`, which read the runtime's `visited_*`: B6s's to settle, not B6p's).
+**Shared touches (small, local):** `a3_conds.ts` (a B6p block after B6m's `PNR_OPEN`: `STEPS_OPEN`, `STEPS_WORN`, `ON_STEPS`,
+`HEARING_OPEN`, `THADDEUS`, `THADDEUS_DEAD`, `BLADE_SENT`, `BLADE_DUE`, `BLADE_FIGHTING`, mod `ASH_TARGET`, mod `ASH_MODE` with
+`ASH_MODE_IS`, `ASH_DUE`, `SIGN_FRIENDLY`, `TAM_ASKS`; the registry's B6p block) · `a3_ready.ts` (B6m's `GO_UP` ends with the steps'
+dialogue event after its goto) and `tests/b6m.test.ts` (its two event lists expect it) · `npcs/a3_knock.ts` (Thaddeus's `hostileIf`
+gains the steps' fight) · `quests/a3.ts` (`q_a3_spire`'s steps journal, and an optional hidden objective for the second hearing) ·
+`dialogue/index.ts` (registration).
+
+**How it plays (and where it differs from §2.2 21b, §7 and §8 B6p):**
+- **Opening.** B6m's "(Go up.)" now emits, after its save, `a3_pnr` and goto, `{ event: 'dialogue', data: { tree: 'd_a3_steps' } }` (the
+  B6m note's second option; a trigger alone would wait for the player's first step). The map's trigger `a3_steps` (the flight, while
+  `STEPS_OPEN`, once) reopens a scene left early, and Three's placement opens it too. The lamp and the great doors keep B6m's
+  `pnr_after` (B6m's test pins it); B6q may put its own entries before it.
+- **`a3_sash` is written once, at the end** (the option that goes down to the steel door), not when the hand answers. During the scene
+  the answer is `a3_steps_sash`, so `AT_VAULT` (= pnr ∧ a3_sash) means the steps are done and `q_a3_spire` moves to `vault` only then.
+  B6m's `climb()` helper that sets `a3_sash` directly is still a faithful shortcut. **Deviation (added): the sash can come off again,
+  once**, under Ash's gun or the blade (`a3_steps_off`; at the lamp the clasp is torn, `a3_sash_torn`): taking it off is always a route
+  out of a beat, and its cost is the worn endings.
+- **The photograph made again** (`{ event: 'photo', data: { place: 'md_spire', spot: 'steps_sit' } }`, once, on arrival): the lens in
+  the lintel clicks on the PC at their own age with no sash, and clicks again when the sash goes on ("Nineteen years early"); refused,
+  it turns away over the crowd, looking (A2's other face foreshadowed). Who is on the steps: everyone `WITH_YOU` (a hidden Nine never
+  fetched stays written off, B6l), the waiting ones as passives by name and placed round the photograph's step, the travelling ones by
+  interjection; the crowd by passives (the column, the Choir, the Wheel, the Stand, the chain, the Saints, Seventeen, the Unwritten
+  under with_you, and the towers come down to see).
+- **Three with the sash** (made concrete): grey wool, darned twice, a blue band stitched MAGISTRATE OF ACCOUNTS, a brass clasp in the
+  crest chiselled off the lintel; kept since before the Burn, "the last before" (the plinth's struck name is the register's, not
+  Three's to say: no new canon). "What does it do": the charter's reserved act (B6l) and **the vault opens either way** (§12.13: "The
+  Ledger has asked to be seen before it is judged").
+- **The second hearing** (`HEARING_OPEN`: once, before the sash is answered, not with the file already CONTESTED; agreed, noted,
+  refused, silent and never-heard each get the Ledger's own opening through the inch of light between the doors): Speech 55 with exactly
+  the plan's seven modifiers. Won → `a3_file` = contested (E_FILE's third way; "A file that went from agreed to contested" for an agreed
+  one). Lost → `failed`, spent. "(Say nothing more.)" leaves it open.
+- **Tamsin's question** (`TAM_ASKS`: the sash on, Tamsin on the steps, travelling or come up from the close; never on a refusal, never a
+  Tamsin broken, in the door, or never met): "What's the first thing you'll sign?", by her word at the fire (`a3_tamsin_word`) or the
+  romance; five answers (`a3_first_sign` = people | door | nothing | water | unsure; Tamsin +5/+3/+3/−5/+2), each answered back in her
+  voice. It decides nothing by itself; **Ash's undecided branch reads it** (and B6q/B6r may hold the player to it).
+- **Ash's orders** (`ASH_MODE`, first match, only once the sash is on and Ash is on the steps; refused at once, nothing is owed and
+  `a3_ash` stays unset):
+  - `self`: `ASH_SELF_RISK` (B6o) and the letter not burned. At the lamp with the one shell he loaded at the fire. Not a cutscene: "Ash.
+    Give me the gun." (Speech 60: −10 the nineteen names spoken, −10 the last night sat with him, −10 a friendly first sign, −5 Tamsin on
+    the steps, −5 approval ≥ 10) or tear the sash off → `faced` (`a3_ash_saved`); a failed word or silence → `self`, on the steps, never
+    off-screen (`leave`; COMPANIONS.ash.gone).
+  - `between`: the letter burned (`ASH_REFUSED`). He stands on the step below; with no blade to stand in front of, he stands there
+    "for a long time after there is any need to". **Added: undecided with a friendly first sign (people | nothing) is also `between`**:
+    he tears the letter up on the steps. `ash_orders` (U8) is never rewritten.
+  - `away`: `ash_orders` = other with a keystone who wears theirs gladly (`ASH_TARGET`: House Vane risen and Celestine alive, else Vasha
+    at the head of the Dogs, else the Grand Factor alive). He walks off across the close (`leave`, `ash_left` = orders), and **the
+    keystone's own death flag is written with `a3_ash_target`** (`cr_celestine_dead` | `vasha_dead` | `ks_sarr` = dead) so every
+    slide reads the death; B6s–B6v should read `a3_ash_target` for how. "(Shout his name.)" changes nothing: the word was given at the
+    fire. With nobody left to put it on, he comes to the face ("So it's you again").
+  - `face` (warned, or the fallbacks above; or orders known and never answered, which read as undecided; or never told, when he tells
+    it here, to the face): "Then hear what I'm wearing it for" (Speech 50: −15 approval ≥ 40, −10 the names spoken, −10 "make it clean"
+    taken back, −10 a friendly first sign, −5 the same said at the fire, −5 B's means held; +15 the player's word not to wear it, +10
+    "make it clean" never taken back) → `faced` (his shells in the player's hand, the empty gun on the bottom step); the sash off in
+    front of him → `faced`; a failed word or "Do what you came up here to do" → `struck`: the gun comes up, the vow holds his finger, he
+    hits the player once with the stock and walks off down the lane (`leave`, `ash_left` = struck). No combat with a companion.
+- **The Unwritten's blade** (`BLADE_DUE`: the sash on ∧ (`a3_unwritten` = with_you ∨ `ASH_REFUSED`) ∧ Thaddeus alive (not
+  `a3_uw_how` = fought, not dead)). **Deviation: the blade comes for Ash's refused orders too** (his brothers send another hand), not
+  only under with_you, which is how §7's "he stands between the player and the Unwritten's blade" can happen at all. With with_you,
+  Petra (or Juniper) says it first, to the face, from the foot of the steps, as she promised at the close. Routes: Ash stands between
+  and takes the cut across the face (`ash`; `a3_ash_scarred`: his `between` end) · talk (Speech 50: −10 Petra's warning heard at the
+  close, −10 B's means held, −10 a friendly first sign, −10 Ash between, −5 with_you; +10 the file AGREED in Act 2) → `talked` (he sits
+  to watch) · the wardens (`wardens`, "First thing you signed"; choir −10) · the fight (`a3_blade_fight`, `{ event: 'combat' }`;
+  Thaddeus's own `hostileIf`; his steps placement `npc_a3_u2_steps`; trigger `a3_blade_after` and the scene's start entry settle
+  `fought`) · the sash off (`off`). A failed word with Ash between is Ash's cut; without him, the fight, the wardens or the sash.
+- **The end** (`st_end`): Three steps aside; the steel door "stands open on a stair going down" — **B6q:** `d_ar_vault` needs its Act 3
+  entry (`AT_VAULT`); `d_a3_steps` after the steps opens `st_after` (Three pointing to the vault) only. The scene's last option exits.
+- **Placements** (all from `a3_pnr`; the close's end at it, B6l): Three `npc_ar_01_steps` on the steps (its bench placement steps aside,
+  so Three is in one place), the companions not travelling `<id>_steps` round the photograph's step, Lowe `npc_md_01_steps` (Reyes
+  `npc_md_12_steps` when he is dead) at the foot with `d_a3_steps_lowe`, Thaddeus `npc_a3_u2_steps` (see the registry). Petra, Juniper,
+  Rhoda and the allies' envoys are not placed on the steps (text and passives); the runtime's crowd is §9.5.
+- **No time limit, nothing unasked:** every beat is an option the player takes; days on the steps change nothing (tested); a save in the
+  middle of the steps (or of the fight) resumes at the same beat.
+
+**For later slices (what to read).**
+- **B6q (the vault):** `AT_VAULT` is now "the steps are done"; `a3_file`; `a3_first_sign` (what the player said they would sign first,
+  in public: a friendly answer then signing the core over, or the Plan, can be named by Tamsin or Ash); `a3_ash` (Ash at the vault only
+  if `faced` or `between`, alive and on the player's side; `struck`, `self`, `away` are gone); `a3_steps_off` (the sash put on and taken
+  off: the Ledger may say so). The Ledger's last conversation can recall that it was contested on the steps, in public.
+- **B6r:** `a3_blade` (Thaddeus sits at the foot to watch under `talked`: B's climax can show him there); `a3_ash_scarred`.
+- **B6s–B6v:** slide 1 (`steps`) reads `a3_sash`, `a3_steps_off`, `a3_sash_torn`, `a3_ash` (self: the lamp), `a3_blade`; slide 24 (Ash):
+  `a3_ash` (between → his `between` end, scarred with `a3_ash_scarred`; faced → his end by `ash_gully_outcome`; struck/away → `unwritten`
+  or gone; self → `self`), `a3_ash_target`; slides 2, 6, 7, 11: a keystone killed by Ash reads `a3_ash_target` (the death flag is set).
+- **Runtime (§9):** the `photo` event at `steps_sit` (the PC at their own age, no sash) and the lens's second click when the sash goes on;
+  the sash on the PC's model from `a3_steps_sash` = worn (and on Three's arm otherwise); Ash's scar (`a3_ash_scarred`).
+
+### B6s (built 2026-11-17, alongside B6p)
+**Done, all of the slice:** `dialogue/a3_epilogue_kit.ts` (the builder `epilogueTree()`, the types `SlideSpec`/`SlideVariant`/`SlideLine`/
+`SlidePerson`/`SlideData`, helpers `cat`, `modText`, `modVariants`, `standingLine`, `F/ALL/ANY/NOT`) · `dialogue/a3_epilogue_open.ts`
+(slides 1–6, `SLIDES_OPEN`: 39 pages in all, 6 + 8 + 6 + 4 + 7 + 6 variants, about 9,000 words counting every text variant and line) ·
+`dialogue/a3_epilogue.ts` (the assembly: `EP_SPECS`, `EP_CLOSE`, `d_a3_epilogue`) · `tests/b6s.test.ts` (15). No engine change, no map
+change, no world event. `npm run check` green (1164 tests in 55 files; people gate red as before, "ok").
+**Shared touches (small, local, new lines only):** `a3_conds.ts` (a B6s block after `EP_SLIDES`: `ENDED`, `ENDED_A1/A2`, `ON_SCHEDULE`,
+`EP_SKY`, the keystone conditions `JONAH_DEAD` … `MAREN_LATE`, `MET_SHALE`, `MET_DOGS`; the registry's B6s block) · `dialogue/index.ts`
+(registration).
+
+**Deviations and choices:**
+- **Three files, not one.** The plan put the builder, the type and slides 1–6 in `a3_epilogue.ts`. Later slices would then import the
+  helpers from the file that imports their slides (a cycle). So: the kit (builder, types, helpers; no slides) ← each slice's slides file
+  ← `a3_epilogue.ts`, which only assembles. **B6t–B6v:** write `dialogue/a3_epilogue_<x>.ts` exporting `SLIDES_<X>: SlideSpec[]` built
+  with the kit, and add one spread line to `EP_SPECS`. `epilogueTree()` sorts the slides by `EP_SLIDES`, so spread order does not matter,
+  and throws on a slide not in `EP_SLIDES`, a slide given twice, a non-last variant without `if`, a last variant with one, or a text
+  array without a default. Nothing else changes: no engine, no other tree.
+- **`met`, not `applies`** (the coordinator's default 2): a slide shows only if `met` holds; none = always. Slides 1–4 have none (the
+  steps, the core, the reserve and home are always met). **Met reads only flags content writes** (coordinator, mid-slice: no
+  `visited_<map>`, which only the runtimes write): `MET_SHALE` = `q_ch1_shale` done ∨ Tribute Day faced (`q_ch1_tribute` paid |
+  negotiated | sabotaged | fought; never `settled`, which passes without the player) ∨ `a3_buyout`; `MET_DOGS` = `rd_kessler_met` ∨
+  `rd_vasha_met` ∨ `rd_wren_met` ∨ `wren_joined` ∨ `q_ch1_map` done ∨ Tribute Day faced. Every preset meets both (Chapter One goes
+  through Shale and the overpass); the hiding is tested on a state with Chapter One's quests removed.
+- **The routing is the tree's own start list, not "(Next.)" options to every later variant.** §6.1 routed each "(Next.)" to the first
+  applicable variant of the next applicable slide as gated options. That needs, on every page, an option per later variant carrying
+  "every slide between is not met" and "every earlier variant fails": it grows with the square of the slides, and the export
+  (`dialogues.json`, which writes shared conditions out in full each time) would carry megabytes. Instead: one start entry per variant,
+  in slide order, each `ALL(¬ep_<slide>, met, if)`, then `end`; first match is native to the start list. **"(Next.)" is an exit with
+  `{ event: 'dialogue', data: { tree: 'd_a3_epilogue', name: 'Afterwards' } }`** (the event both runtimes already handle): the next
+  page is whatever the start list now opens on. Bonus: an epilogue interrupted by a load resumes at the first slide not yet shown.
+  "(Skip to the end.)" from the second page on (`ep_turned`) sets `ep_skip` (the start list's second entry → `end`). The tree opens on
+  a no-op page `unended` while `a3_end` is unset. `end`: `EP_CLOSE` ("That is how it went, as near as anyone can tell it."), sets
+  `ep_done`; its one option "(The end.)" fires `{ event: 'credits' }`.
+- **Lines under a page.** "Keystone lines and modifier lines are text variants inside the variant": a Text is first-match, so it cannot
+  carry eleven independent lines. A variant's `text` is its page (sub-states as first-match entries, or `cat()` products of a few
+  sentence groups); its `lines` (and the slide's) are rendered as the node's passives, each with a label and its own first-match text:
+  the twelve on slide 2, the people of a place on 4–6, a place's word on the player (M9, `standingLine`), MOTHER and the orders on 3.
+- **Specialised pages.** A slide's lines repeat on every variant node. The builder partially evaluates each page's texts, lines and
+  people against the flags its own selector fixes by equality (`a3_end`, `a3_sash`, `a3_c9`…): entries that can never show there are
+  dropped, the first that always shows becomes the default. Tested equal, page for page, to the unspecialised build over 120 states.
+  The tree is about 200 KB for six slides (about 34 KB a slide; a test holds later slices to 40 KB a slide on average). **B6t–B6v:**
+  keep selectors as top-level equalities where you can (they specialise), and keep long conditions out of lines that repeat.
+- **Slide 2's place is `md_vault` / `core`**, which B6q builds. The data test lists it as pending and fails once `MAPS.md_vault`
+  exists, so **B6q removes it from `PENDING_MAPS` in `tests/b6s.test.ts`** (and gives the map the spot `core`).
+- **Variant ids** (§6.3 exactly for slides 1–2): steps `unwritten | concern | opensky | amended | worn | refused` (the default: A2);
+  ledger `dark | sold | open_held | open_hard | open_burning | agreed | plan | rerouted` (default A2); cistern = M4's values in M4's
+  order (`modVariants`: the page shown is always `modValue(M4_CISTERN)`); knock `open | dark | emptied | kept`; shale `free | mourned |
+  company | dogs | abandoned | contracted | unasked`; dogs `fulfilled | executioner | kade | pens | exodus | kessler`.
+- **The twelve (§5), made exact:** `ON_SCHEDULE(...covers)` = A1 ∨ C ∨ (E ∧ none of the covering clauses chosen); never A2, B or D.
+  Covers: Calla held (`speech`, `fines`), Kade as executioner (`fines`: a forecast is not an act, so nobody is executed for one); Ada's
+  buyout, Kessler killed by Kade, House Vane, Maren's rope: no clause covers them. **Wren's rope follows §7 instead (A1 or C only,
+  `WREN_ROPE_LATE`: her `rope_late`), B6v must read the same.** Open means: Ada's buyout never came due with Ada and Pike alive
+  (`ADA_OPEN`); Kessler and Kade both alive and Kade never made to read why (`vasha_fate` = spared_why breaks her forecast); Vane and
+  Maren untouched; Calla held. Sarr's line is by end (Treasurer under A1 and A2, of the Concern's world under C, of nothing under B,
+  ruined in daylight under D unless warned by the player's letter (`a3_warned_sarr`: she sold first), audited under E).
+- **Lines that decide a later slide's fact (keep them):** **B6t (sink):** under B with M2 = lost, Ocho drowned on his own stair the spring
+  after the Ledger's pumps stopped (the forecast died with the core; the flood came anyway); with M2 = held, the Pale pumped by hand and
+  he kept the clinic. **B6t (choir):** Calla held under B walked out on the third day when the food stopped; under D the Precinct let her
+  go within the month; under E with `speech`/`fines` released in the first season. **B6v (R49 under A2):** the lens found "a young
+  docker about the player's age, who had walked up from Carrick": the person in the sash at R49. **B6v (Ash):** slide 1 has his `self`
+  end at the lamp (a cairn stone) and the blade's cut (`a3_blade` = ash). **B6t/B6v (Ash's target):** slide 2 says "by Brother Ash" for
+  `a3_ash_target` (vasha, sarr, vane); slides 6, 7 and 11 should agree.
+- **Shale's slide:** `free` needs `ks_ada` = stays (the first selector); `mourned` is free with Ada dead (B6e's free-after-her-death);
+  `contracted` is the buyout fulfilled on schedule; `unasked` covers an Ada or Pike dead before Act 3. **The overpass:** `fulfilled`
+  (Kade kills Kessler on schedule, then rides for the Plan unless the chair's `fines` leaves her no work), `executioner` (the coup, then
+  the Plan's), `kade`, `pens` (both dead: Perpetua's camp), `exodus` (Wren's people in Shale, Kessler keeps the rest), `kessler`.
+- **What a page holds** (§9.1): `{ event: 'slide', data: { slide, variant, place, spot, people: { npc, if? }[], pc?: { years, with? },
+  light?, weather? } }`; people's `if` is the runtime's to evaluate (who stands in the still). Slide 1's still is the PC at their age
+  now (`pc.years` 0) with Three, whoever climbed and is still beside them (`inParty` ∧ `ON_SIDE`), and under C the Concern's officer;
+  slide 2 under A1 and E has the PC at the reading desk a year on (`pc.years` 1) with Nine when Nine is on the player's side.
+
+**For B6r (the five ends), which is not built: what the epilogue expects.** Open it from each climax with `{ event: 'dialogue', data:
+{ tree: 'd_a3_epilogue', name: 'Afterwards' } }` (the plan wrote `data: { id }`; both runtimes read `tree`). Before opening: `a3_end`
+(B6q's), `a3_sash` (B6p's), every `a3_amend_<clause>` chosen (E), and optionally `ep_sky` = held | hard | burning (the night's price
+as played; without it the epilogue reads M7 from `a3_ready`). Companions who leave at the vault: `leave` and their `*_left` (`wren_left`
+/ `kes_left` = concern, `nine_left` = core) before the epilogue, so they are not on the steps' still. The tests set these flags directly.
+
+**Runtime asks (Unity track, §9), added:** (1) the epilogue presenter: on `slide`, compose the still (place/spot, the people whose `if`
+holds in their end states, the PC aged by `pc.years`, light and weather) with the page beside it; the tree **reopens itself page by
+page** (each "(Next.)" and the skip is an exit asking for `d_a3_epilogue` again), so keep the presenter up across the reopen (no
+conversation close or camera ease-out between pages); a page's passives are its lines, shown under the text with their labels. (2)
+`credits` on the closing page's option, then the title, the `steps` save kept (§9.4, unchanged). (3) The `ep_*` flags are the record a
+later "replay the epilogue" menu can read.
 
 ## Defaults taken for the open questions (coordinator, 2026-11-17; the owner may override)
 1. After the ending: epilogue, credits, then the title screen; the named autosave at the point of no return stays

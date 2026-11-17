@@ -449,6 +449,52 @@ export const CHARGE_POWDER: Cond = ANY(SHIFT_CASES, { item: 'k_hs_powder' }, { i
 export const CHARGE_OPEN: Cond = ALL(AT_CLOSE, NOT({ item: 'k_a3_charge' }), NOT(F('a3_charge_how')));
 /** B6m: the point of no return (§3) is the foot of the Spire's steps while the close gathers; going up sets `a3_pnr`. */
 export const PNR_OPEN: Cond = AT_CLOSE;
+/** B6p: the steps (21b), from the point of no return until the sash is answered. `a3_sash` is written once, when the steps are
+ * done (so AT_VAULT means the steps are behind the player); during the scene the hand's answer is `a3_steps_sash` (worn | refused),
+ * which can be taken off again once, under a blade or a friend's gun. Everyone on the player's side stands on the steps (a hidden
+ * Nine never fetched stays written off at the close). The second hearing (E_FILE's third way) is open once, before the sash is
+ * answered, unless the file already says CONTESTED. */
+export const STEPS_OPEN: Cond = ALL(F('a3_pnr'), NOT(F('a3_sash')));
+export const STEPS_WORN: Cond = F('a3_steps_sash', 'worn');
+export const ON_STEPS = (c: CompanionKey): Cond => (c === 'nine' ? ALL(WITH_YOU('nine'), ANY(IN(NINE), NOT(NINE_WALKIN))) : WITH_YOU(c));
+export const HEARING_OPEN: Cond = ALL(STEPS_OPEN, NOT(F('a3_steps_sash')), NOT(F('a3_file')), NOT(F('ar_verdict', 'contested')));
+/** The Unwritten's blade: Thaddeus Wolde (`npc_a3_u2`), dead after the fight at Knock (`a3_uw_how` = fought) or on the steps. He
+ * comes when the sash is on and the sky is owed by someone: the Unwritten came east for the book (Petra's warning at the close),
+ * or Ash refused his own orders and his brothers sent another hand. */
+export const THADDEUS = 'npc_a3_u2';
+export const THADDEUS_DEAD: Cond = ANY(F('a3_uw_how', 'fought'), { dead: THADDEUS }, { dead: `${THADDEUS}_steps` });
+export const BLADE_SENT: Cond = ANY(F('a3_unwritten', 'with_you'), ASH_REFUSED);
+export const BLADE_DUE: Cond = ALL(STEPS_OPEN, STEPS_WORN, BLADE_SENT, NOT(THADDEUS_DEAD), NOT(F('a3_blade')));
+export const BLADE_FIGHTING: Cond = ALL(F('a3_blade_fight'), NOT(F('a3_blade')));
+/** Ash's orders on the steps (§7): who would the sky fall on, if he let it fall on others (U8 S4 `other`): a keystone who wears
+ * their forecast gladly, in this order: House Vane risen, Vasha at the head of the Dogs, the Grand Factor alive. */
+export const ASH_TARGET: Mod = { id: 'ash_target', values: [
+  { id: 'vane', if: ALL(F('ks_vane', 'rises'), NOT(F('cr_celestine_dead')), NOT({ dead: 'npc_cr_01' })) },
+  { id: 'vasha', if: ALL(F('rd_coup'), NOT(F('vasha_dead')), NOT({ dead: 'npc_rd_02' })) },
+  { id: 'sarr', if: SARR_ALIVE },
+  { id: 'none' },
+] };
+const ASH_HAS_TARGET: Cond = ANY(...ASH_TARGET.values.filter((v) => v.if).map((v) => v.if!));
+/** How Ash meets the sash, once it is on (first match): the order falls on himself (low approval and "make it clean", U8 S3, not
+ * taken back at the fire; never with the letter burned) · he stands on the step below (the letter burned) · he walks away to put
+ * it on somebody else · he decides by what the player says they will sign first · he comes to the player's face. */
+export const ASH_MODE: Mod = { id: 'ash_mode', values: [
+  { id: 'self', if: ALL(ASH_SELF_RISK, NOT(ASH_REFUSED)) },
+  { id: 'between', if: ASH_REFUSED },
+  { id: 'away', if: ALL(F('ash_orders', 'other'), ASH_HAS_TARGET) },
+  { id: 'weigh', if: ANY(F('ash_orders', 'undecided'), ALL(F('ash_orders_known'), NOT(F('ash_orders')))) },
+  { id: 'face' },
+] };
+export const ASH_MODE_IS = (id: string): Cond => {
+  const i = ASH_MODE.values.findIndex((v) => v.id === id);
+  if (i < 0) throw new Error(`no ash mode ${id}`);
+  const earlier = ASH_MODE.values.slice(0, i).map((v) => v.if!);
+  return ALL(...(ASH_MODE.values[i].if ? [ASH_MODE.values[i].if!] : []), ...earlier.map(NOT));
+};
+export const ASH_DUE: Cond = ALL(STEPS_OPEN, STEPS_WORN, ON_STEPS('ash'), NOT(F('a3_ash')));
+/** What the player said they will sign first (Tamsin's question on the steps, or Ash's): the answers a friend of his can stand beside. */
+export const SIGN_FRIENDLY: Cond = ANY(F('a3_first_sign', 'people'), F('a3_first_sign', 'nothing'));
+export const TAM_ASKS: Cond = ALL(STEPS_OPEN, STEPS_WORN, ON_STEPS('tamsin'), NOT(F('a3_first_sign')));
 
 // ---------------------------------------------------------------- §5 the modifiers (ordered; first match wins; the last is the default)
 
@@ -533,6 +579,44 @@ export const NINE_DEED: Mod = { id: 'nine_deed', values: [{ id: 'self', if: NINE
 /** The epilogue's slides in play order (§6.2; `ep_<slide>` holds the variant shown). The coordinator's default: only
  * the slides whose subject the player met are shown (B6s–B6v give each slide its `applies`). */
 export const EP_SLIDES = ['steps', 'ledger', 'cistern', 'knock', 'shale', 'dogs', 'guild', 'choir', 'precinct', 'sink', 'crown', 'edges', 'skirts', 'line', 'shore', 'teeth', 'wet', 'wheel', 'ashlands', 'tamsin', 'wren', 'ilya', 'odile', 'ash', 'nine', 'kes', 'r49'];
+
+/** B6s: what the epilogue reads (slides 1–6; dialogue/a3_epilogue*.ts). The end reached at the vault (`a3_end`, B6q's choice,
+ * played out by B6r) and the Plan's two forms by the sash. */
+export const ENDED = (e: End): Cond => END_IS(e);
+export const ENDED_A1: Cond = ALL(END_IS('plan'), SASH_WORN);
+export const ENDED_A2: Cond = ALL(END_IS('plan'), NOT(SASH_WORN));
+/** §5's twelve: a keystone fate still open at the end is fulfilled on schedule under the Plan worn (A1) and the Concern (C),
+ * and under the Amendment (E) unless a clause the chair chose covers it (`covers`: CLAUSES ids); never under A2, B or D. */
+export const ON_SCHEDULE = (...covers: string[]): Cond => ANY(ENDED_A1, END_IS('concern'), ALL(END_IS('amendment'), ...covers.map((c) => NOT(F(`a3_amend_${c}`)))));
+/** The sky's price as the epilogue tells it (D): the price B6r's climax recorded (`ep_sky`), else M7 by the readiness count. */
+export const EP_SKY: Mod = { id: 'ep_sky', values: M7_SKY.values.map((v) => (v.if ? { id: v.id, if: ANY(F('ep_sky', v.id), ALL(NOT(F('ep_sky')), v.if)) } : { id: v.id })) };
+/** The list's people as the end leaves them (slide 2's lines; each has its own slide as well). Each `*_LATE` is a fate still
+ * open at the end and fulfilled on schedule. Ada's is open while the guild's buyout never came due (B6e's `ks_ada` unset) and
+ * she and Pike are alive; Kessler's while neither he nor Kade is dead; Kade is the Plan's executioner unless the booth's letter
+ * made her read why (`vasha_fate` = spared_why), and not under a chair that holds a forecast is not an act. Wren's rope follows
+ * §7 (A1 or C only, her `rope_late`). Calla held stays held unless the chair's clauses on speech or fines cover her. */
+export const JONAH_DEAD: Cond = ANY(F('jonah_dead'), { dead: 'npc_sh_02' });
+export const ADA_DEAD: Cond = ANY(F('ks_ada', 'dead'), { dead: 'npc_sh_01' });
+export const ADA_OPEN: Cond = ALL(NOT(F('ks_ada')), NOT(ADA_DEAD), NOT({ dead: 'npc_sh_04' }));
+export const ADA_LATE: Cond = ALL(ADA_OPEN, ON_SCHEDULE());
+export const KESSLER_DEAD: Cond = ANY(F('rd_coup'), { dead: 'npc_rd_01' });
+export const VASHA_DEAD: Cond = ANY(F('vasha_dead'), { dead: 'npc_rd_02' });
+export const VASHA_EXECUTIONER: Cond = ALL(NOT(VASHA_DEAD), NOT(F('vasha_fate', 'spared_why')), ON_SCHEDULE('fines'));
+export const KESSLER_LATE: Cond = ALL(NOT(KESSLER_DEAD), NOT(VASHA_DEAD), NOT(F('vasha_fate', 'spared_why')), ON_SCHEDULE());
+export const WREN_ROPE_OPEN: Cond = ALL(NOT(F('wren_rope')), NOT(F('wren_hanged')), NOT({ dead: WREN }));
+export const WREN_ROPE_LATE: Cond = ALL(WREN_ROPE_OPEN, ANY(ENDED_A1, END_IS('concern')));
+export const CALLA_KEPT: Cond = ALL(CALLA_HELD, ON_SCHEDULE('speech', 'fines'));
+export const OCHO_DROWNED: Cond = ANY(F('ks_ocho', 'drowned'), { dead: 'npc_sk_01' });
+export const VANE_DEAD: Cond = ANY(F('cr_celestine_dead'), { dead: 'npc_cr_01' });
+export const VANE_LATE: Cond = ALL(NOT(F('ks_vane')), NOT(VANE_DEAD), ON_SCHEDULE());
+export const MAREN_LATE: Cond = ALL(NOT(F('ks_maren')), NOT({ dead: 'npc_hs_02' }), ON_SCHEDULE());
+/** A slide's subject met (the coordinator's default 2), read only from what content writes: Chapter One's quests done in person
+ * (Shale's trace; the map got from Kessler; Tribute Day faced at the wells, not the `settled` stage, which passes without the
+ * player), the overpass's own first meetings, Wren joined, the buyout come due in Shale. Slides 1–4 have no condition: they are
+ * always shown. */
+const TRIBUTE_FACED: Cond = { quest: 'q_ch1_tribute', stage: ['paid', 'negotiated', 'sabotaged', 'fought'] };
+export const MET_SHALE: Cond = ANY({ quest: 'q_ch1_shale', status: 'done' }, TRIBUTE_FACED, F('a3_buyout'));
+export const MET_DOGS: Cond = ANY(F('rd_kessler_met'), F('rd_vasha_met'), F('rd_wren_met'), F('wren_joined'), { quest: 'q_ch1_map', status: 'done' }, TRIBUTE_FACED);
 
 /*
  * ---------------------------------------------------------------- the Act 3 flag registry
@@ -912,6 +996,68 @@ export const EP_SLIDES = ['steps', 'ledger', 'cistern', 'knock', 'shale', 'dogs'
  *   knowledge: a3_trestle (the trestle first seen); a3_warned_<who>;  decisions a3_ready_<act>, a3_charge, a3_pnr;
  *                            memories <keystone> a3_warned; trust +3 with whoever promised an act
  *   placements:              md_spire npc_hs_03_close (AT_CLOSE ∧ RAFE_WIRES); hs_skirts Rafe away while he is at the close
+ * B6p (built; dialogue/a3_steps.ts: the steps d_a3_steps (opened by B6m's "(Go up.)" after its goto, by the map's trigger a3_steps while
+ *      STEPS_OPEN, and by Three's placement), the column's lead at the foot d_a3_steps_lowe; map md_spire via gen_md_spire.py):
+ *   a3_sash                  worn | refused   written ONCE, as the player goes down to the steel door at the end of the steps (so
+ *                                            AT_VAULT means the steps are done; q_a3_spire moves to vault); decision a3_sash
+ *   a3_steps_sash            worn | refused   the hand's answer during the scene (STEPS_WORN); worn can become refused once, by taking
+ *                                            it off in front of Ash or the blade;  a3_steps_off  true  it was taken off again
+ *   a3_sash_torn             true            the clasp torn out to stop Ash at the lamp (the sash is refused, and torn)
+ *   a3_file                  contested | failed   the second hearing on the steps (HEARING_OPEN: once, before the sash is answered, unless
+ *                                            ar_verdict = contested); contested is E_FILE's third way. Speech 55 with the plan's mods
+ *   a3_first_sign            people | door | nothing | water | unsure   "What's the first thing you'll sign?", asked once the sash is on:
+ *                                            by Tamsin (TAM_ASKS: on the steps), else by Ash when his orders are undecided. SIGN_FRIENDLY =
+ *                                            people | nothing (B6q/B6r can hold the player to it)
+ *   a3_ash                   between | faced | struck | self | away   Ash's orders on the steps (ASH_MODE, once the sash is on; unset =
+ *                                            the sash refused at once, or Ash not on the steps): between = the letter burned (refused /
+ *                                            refused_late), or undecided and a friendly first sign (he tears it up: ash_orders is NOT
+ *                                            rewritten); faced = he came to the face and was heard (Speech 50), or the sash came off, or he
+ *                                            was talked out of his own gun at the lamp; struck = he drew, could not fire first, hit the
+ *                                            player with the stock and walked away (leave, ash_left = struck); self = the order fell on
+ *                                            himself at the lamp (only ASH_SELF_RISK ∧ letter not burned; leave; COMPANIONS.ash.gone);
+ *                                            away = ash_orders other with a keystone to put it on (leave, ash_left = orders)
+ *   a3_ash_target            vane | vasha | sarr   (away) whom he went to: ASH_TARGET, first match. The keystone's own death flag is
+ *                                            written with it: cr_celestine_dead | vasha_dead | ks_sarr = dead. Slides read a3_ash_target for how
+ *   a3_ash_scarred           true            Ash took the blade across the face standing between (his `between` end: scarred, alive)
+ *   a3_ash_saved             true            talked out of his gun, or the sash torn off, at the lamp (faced)
+ *   ash_left                 struck | orders  (U8's flag, new values) Ash walked off the steps: after striking the player / to pay the sky
+ *   a3_blade                 ash | talked | wardens | fought | off   the Unwritten's blade (Thaddeus; BLADE_DUE: the sash on ∧ BLADE_SENT
+ *                                            (a3_unwritten = with_you ∨ ASH_REFUSED) ∧ alive): Ash took the cut / talked into sitting down
+ *                                            (Speech 50) / taken by the wardens (choir −10) / killed on the steps / the sash taken off
+ *   a3_blade_fight           true            "(Draw on him.)": Thaddeus's hostileIf (npcs/a3_knock.ts) until a3_blade; the map's trigger
+ *                                            a3_blade_after (his steps placement dead) reopens the scene, which sets a3_blade = fought
+ *   a3_steps_photo           true            the photograph made again on arrival: { event: 'photo', data: { place: 'md_spire', spot:
+ *                                            'steps_sit' } }, once;  knowledge a3_steps_seen
+ *   events:                  B6m's GO_UP now ends with { event: 'dialogue', data: { tree: 'd_a3_steps' } } after its goto
+ *   placements:              md_spire (all from a3_pnr): npc_ar_01_steps (Three with the sash; its bench placement steps aside),
+ *                            <companion>_steps (ON_STEPS ∧ not travelling; a hidden Nine never fetched is not on the steps),
+ *                            npc_md_01_steps / npc_md_12_steps (the lead at the foot), npc_a3_u2_steps (the blade: STEPS_OPEN ∧ alive ∧
+ *                            not taken by the wardens ∧ (with_you ∨ (BLADE_SENT ∧ STEPS_WORN))); triggers a3_steps, a3_blade_after
+ *   decisions:               a3_sash, a3_file, a3_ash, a3_blade
+ * B6s (built; the epilogue: dialogue/a3_epilogue_kit.ts (the builder epilogueTree, SlideSpec), a3_epilogue_open.ts (slides 1–6),
+ *      a3_epilogue.ts (d_a3_epilogue, the assembly: B6t–B6v add one spread line each); no map, no world event):
+ *   ep_<slide>               the variant id shown (set on entering its page): ep_steps unwritten | concern | opensky | amended | worn
+ *                            | refused; ep_ledger dark | sold | open_held | open_hard | open_burning | agreed | plan | rerouted;
+ *                            ep_cistern = M4's value (opened | walked | sold | relocated | struck | sealed); ep_knock open | dark |
+ *                            emptied | kept; ep_shale free | mourned | company | dogs | abandoned | contracted | unasked; ep_dogs
+ *                            fulfilled | executioner | kade | pens | exodus | kessler. Unset = not shown (not met, or skipped)
+ *   ep_turned                true            a page has been turned ("(Next.)"): "(Skip to the end.)" is offered from then on
+ *   ep_skip                  true            the rest skipped: the tree opens on its closing page
+ *   ep_done                  true            the closing page reached; its option fires { event: 'credits' } (then the title)
+ *   events:                  { event: 'slide', data: SlideData } on entering each page (slide, variant, place, spot, people with their
+ *                            `if`, pc.years, light, weather: runtime ask §9.1); every "(Next.)" / skip is an exit with { event:
+ *                            'dialogue', data: { tree: 'd_a3_epilogue', name: 'Afterwards' } }: the runtime reopens the tree, whose
+ *                            start list (first match) is the router; the end's climax (B6r) opens it the same way
+ *   (read, B6q/B6r/B6p)      a3_end (the tree opens only once it is set), a3_sash (M6, ENDED_A1/A2), a3_amend_<clause> (ON_SCHEDULE's
+ *                            covers; the Cistern's reserve and passenger clauses), ep_sky held | hard | burning (EP_SKY: B6r's
+ *                            record of the night's price wins over the readiness count), a3_ash_target vane | vasha | sarr (whose
+ *                            hand, in the twelve's lines), a3_ash = self and a3_blade = fought | ash (the steps' own lines)
+ *   (read, met)              MET_SHALE: q_ch1_shale done, Tribute Day faced (q_ch1_tribute paid | negotiated | sabotaged | fought,
+ *                            never settled), a3_buyout;  MET_DOGS: rd_kessler_met, rd_vasha_met, rd_wren_met, wren_joined, q_ch1_map
+ *                            done, Tribute Day faced
+ *   conditions:              ENDED, ENDED_A1, ENDED_A2, ON_SCHEDULE(...covers), EP_SKY, JONAH_DEAD, ADA_DEAD, ADA_OPEN, ADA_LATE,
+ *                            KESSLER_DEAD, KESSLER_LATE, VASHA_DEAD, VASHA_EXECUTIONER, WREN_ROPE_OPEN, WREN_ROPE_LATE (§7: A1 or C),
+ *                            CALLA_KEPT, OCHO_DROWNED, VANE_DEAD, VANE_LATE, MAREN_LATE, MET_SHALE, MET_DOGS
  * Planned (the slice named sets it; values as the plan fixes them):
  *   a3_recall                declined | stayed | handed | court | bought | hidden | fought | taken          B6b
  *   nine_disposed            true                                                                        B6b
