@@ -468,7 +468,8 @@ namespace SecondFace.Tests
                     if (f.Arms == Arms.Rifle)
                     {
                         v.OnStance("crouch");
-                        yield return Watch("crouched behind cover", 4f, () => f.Current == CombatMotion.Cover(f.Arms));
+                        // (down into cover too: the way down holds the gun as the crouch does)
+                        yield return Watch("down into cover and crouched behind it", 4f, () => f.Current == "cover_down" || f.Current == CombatMotion.Cover(f.Arms));
                         v.OnStance("stand");
                         yield return Wait(1.5f);
                     }

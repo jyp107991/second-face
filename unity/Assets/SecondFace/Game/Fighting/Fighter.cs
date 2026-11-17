@@ -798,8 +798,10 @@ namespace SecondFace.Game.Fighting
             var weapon = InHand && _weapon != null && _w != null;
             var step = dt / 0.15f;
             // a long gun's or a two-handed club's ready hold, made for this body (CombatMotion.ReadyHold): both hands on it
-            _holdW = Mathf.MoveTowards(_holdW, weapon && _w.HasOff && CombatMotion.Hold(Held.Arms, false) != null ? Want(HandsIk.Hold) : 0f, step);
-            _offW = Mathf.MoveTowards(_offW, weapon && (_w.HasOff || Held.Arms == Arms.Pistol) ? Mathf.Max(Want(HandsIk.OffHand), Want(HandsIk.Hold)) : 0f, step);
+            // (a state that holds is a two-handed weapon's hold: with any other weapon its hands are the clip's)
+            var holds = weapon && _w.HasOff && CombatMotion.Hold(Held.Arms, false) != null;
+            _holdW = Mathf.MoveTowards(_holdW, holds ? Want(HandsIk.Hold) : 0f, step);
+            _offW = Mathf.MoveTowards(_offW, weapon && (_w.HasOff || Held.Arms == Arms.Pistol) ? Mathf.Max(Want(HandsIk.OffHand), holds ? Want(HandsIk.Hold) : 0f) : 0f, step);
             _pistolW = Mathf.MoveTowards(_pistolW, weapon && _haveAim ? Want(HandsIk.PistolAim) : 0f, step);
             _arcW = Mathf.MoveTowards(_arcW, weapon && Current == "melee_slash" ? Smooth(_fullW) : 0f, step);
             _fixW = Mathf.MoveTowards(_fixW, weapon && _haveAim && Held.Arms == Arms.Rifle && full != null && full.Gate == "aim" ? Smooth(_fullW) : 0f, step);

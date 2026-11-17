@@ -259,8 +259,12 @@ namespace SecondFace.Core.Combat
             // throws (the woman's captured; the man's a flagged hand-keyed stopgap: no man's throw is captured)
             S("throw", "throw_overhand_ual", "throw_overhand_cmu", fade: 0.15f, cut: 0.9f, hands: HandsIk.Free, gate: "throw");
             // cover: down into a crouch, held (two hands on a long gun or a club; a wary crouch otherwise), up and away (the
-            // run out cut at its first stride, crossfading into the locomotion)
-            S("cover_down", "crouch_down_accad", "crouch_down_f_accad", then: ToCover, cut: 0.92f, fade: 0.15f, gate: "crouch");
+            // run out cut at its first stride, crossfading into the locomotion). The way down holds a two-handed weapon as the
+            // stances either side of it do (HandsIk.Hold; a pistol's or a blade's hands stay the clip's): its captures are
+            // ACCAD's unarmed crouches, and with the clip's hands the off hand let go of a long gun for the whole crouch
+            // (2.4 s, a woman's 3.3 s), the gun hanging from one straight arm, the hold ramping back in once crouched (the
+            // crouched elbows CombatMotionPlayTests measured at 15-43° and 2-6°, 2026-11-17)
+            S("cover_down", "crouch_down_accad", "crouch_down_f_accad", then: ToCover, cut: 0.92f, fade: 0.15f, hands: HandsIk.Hold, gate: "crouch");
             S("cover_hold", "ready_crouch_cmu", loop: true, fade: 0.3f, gate: "crouch");
             S("cover_hold_long", "crouch_rifle_ual", loop: true, fade: 0.3f, hands: HandsIk.Hold, gate: "crouch");
             S("cover_leave", "crouch_to_run_accad", "crouch_to_run_f_accad", then: ToIdle, cut: 0.3f, fade: 0.15f, gate: "crouch");

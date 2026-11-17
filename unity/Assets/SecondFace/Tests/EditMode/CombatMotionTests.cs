@@ -367,6 +367,27 @@ namespace SecondFace.Tests
             Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
         }
 
+        /// <summary>A two-handed weapon (a long gun, a two-handed club) stays in both hands from its ready stance down into cover
+        /// and in the crouch held there: every state of the way down holds it (HandsIk.Hold). (The way down played its
+        /// unarmed capture's hands: the off hand let go for the whole crouch and the hold ramped back in once crouched,
+        /// 2026-11-17.)</summary>
+        [Test]
+        public void ATwoHandedWeaponStaysInBothHandsIntoCover()
+        {
+            foreach (var a in new[] { Arms.Rifle, Arms.Club2 })
+            {
+                Assert.That(CombatMotion.Hold(a, false), Is.Not.Null, $"{a}: a ready hold");
+                var ready = CombatMotion.State(CombatMotion.Idle(a));
+                Assert.That(ready.Hands, Is.EqualTo(HandsIk.Hold), $"{a}: {ready.Name}");
+                var down = CombatMotion.State("cover_down");
+                Assert.That(down.Hands, Is.EqualTo(HandsIk.Hold), $"{a}: {down.Name}, the way down from {ready.Name}");
+                var held = CombatMotion.State(CombatMotion.Next(down, a, true));
+                Assert.That(held, Is.Not.Null, $"{a}: where {down.Name} goes");
+                Assert.That(held.Name, Is.EqualTo(CombatMotion.Cover(a)), $"{a}: {down.Name} goes to the crouch held");
+                Assert.That(held.Hands, Is.EqualTo(HandsIk.Hold), $"{a}: {held.Name}");
+            }
+        }
+
         private static (double X, double Y, double Z) Add((double X, double Y, double Z) a, (double X, double Y, double Z) b) => (a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 
         [Test]
