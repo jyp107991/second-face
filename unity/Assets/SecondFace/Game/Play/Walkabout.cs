@@ -676,6 +676,10 @@ namespace SecondFace.Game.Play
                 case "title":
                     ShowTitle((string)data?["text"] ?? "");
                     break;
+                case "surgery":
+                    // the surgeon's table, with whoever is being talked to (a mender with a surgeon's stock)
+                    if (who != null) StartCoroutine(AfterTalk(() => OpenSurgery(who)));
+                    break;
                 default: Asked?.Invoke(name, data); break;
             }
         }
@@ -1111,6 +1115,37 @@ namespace SecondFace.Game.Play
                 Settlement = string.IsNullOrEmpty(npc.Settlement) ? "shale" : npc.Settlement, Face = face != null ? Portraits.Of(face) : null,
             }));
             return true;
+        }
+
+        /// <summary>The world's clock as the tables read it (it leads while walking), and what passing time on it does: the sky
+        /// turns now (a table may stop the world), the quests look again.</summary>
+        private double ClockNow() => Stage != null && Stage.Clock != null ? Stage.Clock.Minutes : Game.Minutes;
+
+        private void ClockTo(double minutes)
+        {
+            if (Stage != null && Stage.Clock != null) Stage.Clock.Minutes = minutes;
+            if (Stage != null && Stage.Sky != null) Stage.Sky.Apply();
+            Quests.Update();
+        }
+
+        /// <summary>Opens a surgeon's table with their face across it (null when they keep none): Game
+        /// <see cref="SurgeryScreen"/> on Core <see cref="Surgery"/>; the hours an operation takes pass on the world's clock.</summary>
+        public SurgeryScreen OpenSurgery(Interactable who)
+        {
+            var ui = UIService.Instance;
+            var npc = NpcOf(who);
+            if (ui == null || npc == null || npc.Surgeon == null) return null;
+            var face = who.GetComponentInChildren<Animator>() != null ? who.gameObject : null;
+            _with = who;
+            var screen = ui.Open(new SurgeryScreen(new SurgeryModel
+            {
+                Game = Game, SurgeonId = npc.Id, Def = npc, Name = string.IsNullOrEmpty(npc.Name) ? who.Title : npc.Name,
+                Face = face != null ? Portraits.Of(face) : null,
+                Now = ClockNow, Then = ClockTo,
+                Said = line => Said?.Invoke(line),
+            }));
+            Table = screen;
+            return screen;
         }
 
         /// <summary>Who someone in the world is: their routine's person, else the definition named by their id.</summary>

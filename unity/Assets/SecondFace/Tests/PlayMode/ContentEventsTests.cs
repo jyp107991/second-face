@@ -37,6 +37,8 @@ namespace SecondFace.Tests
             _trees.Clear();
             foreach (var (def, cond) in _hostileIf) def.HostileIf = cond;
             _hostileIf.Clear();
+            foreach (var r in _restore) r();
+            _restore.Clear();
             yield return BootTests.Clear();
         }
 
@@ -124,6 +126,83 @@ namespace SecondFace.Tests
             return walk.People.StandingPeople
                 .Where(p => p.Def != null && !p.Inside && p.GetComponent<Interactable>() != null && !walk.Game.World.Party.Contains(p.Def.Id) && p.Agent != null && p.Agent.enabled)
                 .OrderBy(p => Flat(p.transform.position, at)).FirstOrDefault();
+        }
+
+        /// <summary>Someone standing near who keeps the table the content names (the content's own when they stand, else the
+        /// nearest person lent its terms for the test, given back after).</summary>
+        private IEnumerator Keeper(Walkabout walk, string id, System.Func<SecondFace.Core.Npc.NpcDef, bool> keeps, System.Action<SecondFace.Core.Npc.NpcDef> lend, System.Action<Townsperson> done)
+        {
+            var t0 = Time.realtimeSinceStartup;
+            Townsperson who = null;
+            while (Time.realtimeSinceStartup - t0 < 20f && who == null)
+            {
+                who = walk.People.StandingPeople.FirstOrDefault(p => p.Def != null && p.Def.Id == id && !p.Inside && p.GetComponent<Interactable>() != null);
+                yield return null;
+            }
+            if (who == null)
+            {
+                who = Nearest(walk);
+                Assert.That(who, Is.Not.Null, "someone stands near");
+                if (!keeps(who.Def))
+                {
+                    var def = who.Def;
+                    var surgeon = def.Surgeon;
+                    _restore.Add(() => def.Surgeon = surgeon);
+                    lend(def);
+                }
+            }
+            done(who);
+        }
+
+        private readonly List<System.Action> _restore = new();
+
+        [UnityTest, Timeout(1200000)]
+        public IEnumerator TheSurgeonsTableOpensFromTheirWordAndFitsAPiece()
+        {
+            Bootstrap boot = null;
+            yield return Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            yield return Quiet(walk);
+            Townsperson mender = null;
+            yield return Keeper(walk, "npc_sh_08", d => d.Surgeon != null, d => d.Surgeon = Registry.Npcs["npc_sh_08"].Surgeon, p => mender = p);
+            walk.Game.Pc.Inventory.Tolls = 5000;
+            Tree("t_ev_surgery", "Lie down.", "[{\"event\":\"surgery\"}]");
+            Assert.That(walk.OpenConversation(mender.GetComponent<Interactable>(), "t_ev_surgery"), Is.True, "talking to the mender");
+            walk.Conversation.Finish();
+            walk.Conversation.Choose("t_ev_surgery.go");
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 3f && !(walk.Table is SurgeryScreen)) yield return null;
+            var table = walk.Table as SurgeryScreen;
+            Assert.That(table, Is.Not.Null, "the surgeon's table opened");
+            Assert.That(table.IsOpen, Is.True);
+            Assert.That(walk.Conversation.IsOpen, Is.False, "the conversation closed for it");
+            Assert.That(walk.Busy, Is.True, "the world's events wait while the table is open");
+            for (var i = 0; i < 3; i++) yield return null;   // (laid out)
+            var offers = table.Offers;
+            Assert.That(offers, Is.Not.Empty, "the surgeon has pieces to fit");
+            Assert.That(table.FitButtons.Count, Is.EqualTo(offers.Count));
+            Assert.That(table.FitButtons[0].resolvedStyle.height, Is.GreaterThanOrEqualTo(100f - 0.5f), "a tap target the HUD's size");
+            var o = offers[0];
+            var tolls = walk.Game.Pc.Inventory.Tolls;
+            var minutes = boot.Stage.Clock.Minutes;
+            BootTests.Press(table.FitButtons[0]);
+            Assert.That(table.Last, Is.Not.Null, "the operation ran");
+            Assert.That(new[] { "clean", "complication", "rejected" }, Does.Contain(table.Last.Outcome));
+            Assert.That(walk.Game.Pc.Inventory.Tolls, Is.EqualTo(tolls - table.Last.Paid), "paid");
+            Assert.That(boot.Stage.Clock.Minutes - minutes, Is.EqualTo(o.Hours * 60).Within(1.0), "the hours passed on the clock");
+            Assert.That(table.Note, Is.Not.Empty, "what came of it is said");
+            if (table.Last.Outcome != "rejected")
+            {
+                Assert.That(walk.Game.Pc.Sheet.Chrome[o.Def.Slot].Id, Is.EqualTo(o.Def.Id), "fitted");
+                var slot = table.Root.Q<VisualElement>("slot-" + o.Def.Slot);
+                Assert.That(slot.Query<Label>().ToList().Any(l => l.text == o.Def.Name), Is.True, "the body page shows it");
+            }
+            BootTests.Press(table.Root.Q<Button>("surgery-done"));
+            yield return null;
+            Assert.That(table.IsOpen, Is.False, "the table closed");
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 5f && walk.Busy) yield return null;
+            Assert.That(walk.Busy, Is.False, "back to the walkabout");
         }
 
         [UnityTest, Timeout(1800000)]

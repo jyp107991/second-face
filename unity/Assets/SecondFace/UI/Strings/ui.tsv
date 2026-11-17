@@ -561,3 +561,54 @@ reverie.title	A memory
 combat.pit_won	The pit is yours.
 combat.pit_lost	You wake on the pit floor.
 combat.pit_called	The bout is called off.
+surgery.body	Your body
+surgery.table	On the table
+surgery.tolls	You have {0} Tolls
+surgery.sheet	Medicine {0} · your Grit {1} · Drift {2}, {3}
+surgery.drift.steady	steady
+surgery.drift.cool	cool
+surgery.drift.cold	cold
+surgery.drift.drifting	drifting
+surgery.slot.eyes	Eyes
+surgery.slot.neural	Neural
+surgery.slot.armL	Left arm
+surgery.slot.armR	Right arm
+surgery.slot.legs	Legs
+surgery.slot.spine	Spine
+surgery.slot.skin	Skin
+surgery.slot.organs	Organs
+surgery.grade.old	old
+surgery.grade.dark	dark
+surgery.grade.concern	Concern-made
+surgery.empty	nothing fitted
+surgery.fitted	{0} · {1}%
+surgery.upkeep_due	{0} due
+surgery.upkeep_in	{0} in {1} d
+surgery.not_working	not working
+surgery.repair	Repair · {0} T
+surgery.remove	Take out · {0} T
+surgery.theirs	theirs
+surgery.yours	yours
+surgery.replaces	replaces {0}
+surgery.needs	needs {0} every {1} d
+surgery.drift_add	Drift +{0}
+surgery.terms	{0} h on the table · risk {1}% · fee {2} T
+surgery.terms_piece	{0} h on the table · risk {1}% · piece {2} T · fee {3} T
+surgery.total	{0} T
+surgery.fit	Fit
+surgery.nothing	Nothing on the table. Bring a boxed piece, or ask what they have.
+surgery.risk_note	The body may refuse a piece (the fee spent, the piece kept) or take it badly (it goes in at 60%). Grit helps; a better surgeon helps more.
+surgery.done	Done
+surgery.clean	{0} hours under the lamp. The {1} is in and it is yours.
+surgery.complication	{0} hours, and a bad half hour in the middle of them. The {1} is in, but it did not go in clean: it will need seeing to.
+surgery.rejected	{0} works for {1} hours and the body will not have it. The {2} comes out again. The fee is spent.
+surgery.boxed	The {0} comes out and goes in a box.
+surgery.cannot_pay	That is {0} Tolls, and you have {1}.
+surgery.cannot_repair	{0} Tolls for that, and you have {1}.
+surgery.cannot_remove	{0} Tolls to take it out, and you have {1}.
+surgery.repaired	{0} seen to: {1} Tolls.
+surgery.removed	{0} out and boxed: {1} Tolls.
+surgery.nothing_there	Nothing there.
+surgery.said_clean	{0}: fitted.
+surgery.said_complication	{0}: fitted, with a complication.
+surgery.said_rejected	{0}: rejected.
