@@ -42,12 +42,23 @@ namespace SecondFace.Game.Fighting
             /// and lay a quarter turn off the frame the hands hold it by (CombatBuildTests, 2026-11-17).</summary>
             public Quaternion ModelRot = Quaternion.identity;
             public Vector3 ModelPos;
-            /// <summary>Set by the build's fit (false: an older set, fitted again when the weapon is first made).</summary>
-            public bool Fitted;
+            /// <summary>Set by the build's fit (false: an older set, fitted again when the weapon is first made); whether its points
+            /// fixed the turn about its own length too (false: all on one line, a blade's or a bat's).</summary>
+            public bool Fitted, FittedFull;
+            /// <summary>Every point of the sidecar (<c>points_unity</c>), by its null's name: the fit's evidence.</summary>
+            public string[] PointNames = new string[0];
+            public Vector3[] PointsAt = new Vector3[0];
 
             /// <summary>The sidecar's points this weapon has, by the null's name in the model.</summary>
             public IEnumerable<(string Name, Vector3 At)> Points()
             {
+                if (PointNames != null && PointsAt != null && PointNames.Length > 0 && PointNames.Length == PointsAt.Length)
+                {
+                    // (grip_main first: the fit measures along the weapon from it)
+                    for (var i = 0; i < PointNames.Length; i++) if (PointNames[i] == "grip_main") yield return (PointNames[i], PointsAt[i]);
+                    for (var i = 0; i < PointNames.Length; i++) if (PointNames[i] != "grip_main") yield return (PointNames[i], PointsAt[i]);
+                    yield break;
+                }
                 yield return ("grip_main", Vector3.zero);
                 if (HasOff) yield return ("grip_off", GripOff);
                 if (HasMuzzle) yield return ("muzzle", Muzzle);
@@ -58,9 +69,10 @@ namespace SecondFace.Game.Fighting
             /// <summary>Fits <see cref="ModelRot"/> and <see cref="ModelPos"/> from the model's own nulls against the sidecar's
             /// points (the turn from the two most telling directions: along the weapon to its farthest point, and across it to the
             /// point farthest off that line; with every point on one line, as a bat's or a blade's, the least turn that lays the
-            /// line along the sidecar's, the import's own twist about it kept). Returns the largest distance left between a null
-            /// and its point (m; -1: no nulls to fit by).</summary>
-            public float Fit()
+            /// line along the sidecar's from <paramref name="like"/> (the turn a fully fitted weapon of the same export needed:
+            /// the import's twist is the same for all) or from the import's own). Returns the largest distance left between a
+            /// null and its point (m; -1: no nulls to fit by).</summary>
+            public float Fit(Quaternion? like = null)
             {
                 if (Prefab == null) return -1f;
                 var root = Prefab.transform;
@@ -88,8 +100,14 @@ namespace SecondFace.Game.Fighting
                 {
                     var cS = Vector3.ProjectOnPlane(pairs[best].Side - o.Side, aS); var cM = Vector3.ProjectOnPlane(pairs[best].Model - o.Model, aM);
                     q = Quaternion.LookRotation(aS, cS) * Quaternion.Inverse(Quaternion.LookRotation(aM, cM));
+                    FittedFull = true;
                 }
-                else q = Quaternion.FromToRotation(aM, aS);
+                else
+                {
+                    var q0 = like ?? Quaternion.identity;
+                    q = Quaternion.FromToRotation(q0 * aM, aS) * q0;
+                    FittedFull = false;
+                }
                 // where: the centroids matched (least squares for the turn found)
                 var cs = Vector3.zero; var cm = Vector3.zero;
                 foreach (var (m, sd) in pairs) { cs += sd; cm += m; }

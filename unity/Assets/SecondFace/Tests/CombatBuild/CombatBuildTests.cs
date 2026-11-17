@@ -151,9 +151,10 @@ namespace SecondFace.Tests
                     var main = Null("grip_main");
                     if (main != null && held.transform.InverseTransformPoint(main.position).magnitude > 0.001f)
                         wrong.Add($"{w.Id}: grip_main {held.transform.InverseTransformPoint(main.position).magnitude * 100f:0.0} cm from the hand's origin");
-                    foreach (var (n, p, has) in new[] { ("grip_off", w.GripOff, w.HasOff), ("muzzle", w.Muzzle, w.HasMuzzle), ("butt", w.Butt, w.HasButt) })
+                    Assert.That(w.PointNames, Is.Not.Empty, w.Id + ": its sidecar's points carried into the set");
+                    foreach (var (n, p) in w.Points())
                     {
-                        if (!has) continue;
+                        if (n == "grip_main") continue;
                         var t = Null(n);
                         if (t == null) { wrong.Add($"{w.Id}: no {n} null"); continue; }
                         var d = (held.transform.InverseTransformPoint(t.position) - p).magnitude;

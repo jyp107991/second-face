@@ -255,7 +255,9 @@ namespace SecondFace.EditorTools
                     Id = id, HasOff = pts?["grip_off"] != null, HasMuzzle = pts?["muzzle"] != null,
                     GripOff = P("grip_off"), Muzzle = P("muzzle"), Tip = pts?["tip"] != null ? P("tip") : P("muzzle"),
                     HasButt = pts?["butt"] != null, Butt = P("butt"),
+                    PointNames = pts != null ? pts.Properties().Select(x => x.Name).ToArray() : new string[0],
                 };
+                w.PointsAt = w.PointNames.Select(P).ToArray();
                 var size = j["size_m"] is JArray sz ? sz[2].Value<float>() : 0.4f;
                 w.Length = Mathf.Max(size, Mathf.Max(Mathf.Abs(w.Tip.z), Mathf.Abs(w.Muzzle.z)));
                 // both paints, the first on the model by name
@@ -285,10 +287,16 @@ namespace SecondFace.EditorTools
                 if (changed) imp.SaveAndReimport();
                 w.Prefab = AssetDatabase.LoadAssetAtPath<GameObject>(fbx);
                 w.Paint1 = paint1.ToArray(); w.Paint2 = paint2.ToArray();
-                // the model laid in the weapon's frame by its own nulls (the FBX root carries the exporter's axis turn)
-                var fit = w.Fit();
-                if (fit > 0.001f) Debug.LogWarning($"CombatAnimatorBuild: {id}: its nulls fit the sidecar's points within {fit * 100f:0.0} cm only");
                 l.Add(w);
+            }
+            // each model laid in its weapon's frame by its own nulls (the FBX root carries the exporter's axis turn); a weapon
+            // whose points lie on one line takes its twist from one whose points fix it (one exporter, one import)
+            Quaternion? like = null;
+            foreach (var w in l) { w.Fit(); if (w.FittedFull && like == null) like = w.ModelRot; }
+            foreach (var w in l)
+            {
+                var fit = w.FittedFull ? w.Fit() : w.Fit(like);
+                if (fit > 0.001f) Debug.LogWarning($"CombatAnimatorBuild: {w.Id}: its nulls fit the sidecar's points within {fit * 100f:0.0} cm only");
             }
             return l.ToArray();
         }
