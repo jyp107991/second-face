@@ -501,7 +501,8 @@ def straighten_inbetweens(arm, last):
     # 'rest' (held at its rest bend in the bind and the take, the parent aimed, the child's world kept), 'head' (held at its
     # rest bend, the child takes the turn, the parent as captured), 'share' (the parent and it each take half of their turn,
     # the child as captured). A pure twist (the wrists') goes into the hand in every mode but 'none'.
-    mode = os.environ.get('SF_INBETWEEN', 'straight')
+    # 'rest' since motion v5: the one Unity imports with neither a Rig Error nor the turn discarded (neck_test, 2026-11-17)
+    mode = os.environ.get('SF_INBETWEEN', 'rest')
     if mode == 'none': return {'mode': 'none'}
 
     def curves(name):
@@ -529,18 +530,23 @@ def straighten_inbetweens(arm, last):
         return M.to_quaternion(), M.to_translation()
 
     for b in arm.data.bones:
-        if b.name in HUMAN or b.parent is None or b.parent.name not in HUMAN or b.parent.parent is None: continue
+        if b.name in HUMAN or b.parent is None or b.parent.name not in HUMAN: continue
         kids = [c for c in b.children if c.name in HUMAN]
         if len(kids) != 1: continue
+        if b.parent.parent is None:   # under the root (lhipjoint): the capture never turns it, it stays at its rest
+            rec[b.name] = {'rest_lcl_quat': [round(v, 7) for v in rest_local(b)[0]], 'kept': 'under the root, never turned: at its rest in the bind and the take'}
+            continue
         P, H = b.parent, kids[0]
         cP, cb, cH = curves(P.name), curves(b.name), curves(H.name)
         if not (cP and cb and cH): continue
         kP, kb, kH = keys(cP), keys(cb), keys(cH)
         qbs = [read(cb, kb, f) for f in range(0, last + 1)]
-        if max(math.degrees(q.angle) for q in qbs) < 0.01:
-            rec[b.name] = {'kept': 'never turned by the take: its bind and take rotations are one'}
-            continue
         rrP, _ = rest_local(P); rrb, ob = rest_local(b); rrH, oH = rest_local(H)
+        # its rest rotation in the FBX's own terms (Lcl Rotation, Euler XYZ), for clip_qa.py's rule: every frame at rest
+        rest = {'rest_lcl_quat': [round(v, 7) for v in rrb]}
+        if max(math.degrees(q.angle) for q in qbs) < 0.01:
+            rec[b.name] = dict(rest, kept='never turned by the take: its bind and take rotations are one')
+            continue
         twist = 'Wrist' in b.name
         m = 'straight' if twist else mode
         qb_new = Quaternion() if m in ('rest', 'head') else rrb.inverted()
@@ -570,7 +576,7 @@ def straighten_inbetweens(arm, last):
             write(cP, kP, f, prev[P.name]); write(cb, kb, f, prev[b.name]); write(cH, kH, f, prev[H.name])
             turned = max(turned, math.degrees(min(S.angle, 2 * math.pi - S.angle))); moved = max(moved, abs(t.length - straight.length)) if m not in ('share', 'head') else moved
         for fc in cP + cb + cH: fc.update()
-        rec[b.name] = {'mode': m, 'into': [P.name, H.name], 'parent_swung_max_deg': round(turned, 2), 'child_joint_moved_max_mm': round(moved * 1000.0, 2)}
+        rec[b.name] = {**rest, 'mode': m, 'into': [P.name, H.name], 'parent_swung_max_deg': round(turned, 2), 'child_joint_moved_max_mm': round(moved * 1000.0, 2)}
     bpy.context.scene.frame_set(0)    # the FBX's default skeleton is the pose at the current frame: the new bind
     return rec
 

@@ -10,8 +10,9 @@ Checks, per clip (the converter's FBX + json) and per source trial (CMU ASF/AMC,
   bones     bone lengths constant (cm, largest deviation of any parent-child distance)
   sex       the source person's sex as the database records it, against the set the clip is used for
   flips     the largest rotation of any joint between two keys, from the FBX's own curves (fails above 60°)
-  inbetween each in-between bone (between two Humanoid bones: Neck2, the wrists' twist bones, the hip joints): the angle
-            between its bind rotation and the take's mean, which Unity's Humanoid loses on import (fails above 2°)
+  inbetween each in-between bone (between two Humanoid bones: Neck2, the wrists' twist bones, the hip joints) holds its rest
+            rotation (the converter's record) in the bind and every frame (fails above 0.5°); the bind-vs-mean-take angle is
+            reported only
 
     # 1. dump the clips' joints (Blender, the converter's output)
     blender -b --factory-startup --python tools/unity/motion/clip_qa.py -- dump <out_dir> <clip.fbx> [...]
@@ -222,6 +223,30 @@ def inbetween_errors(path):
         U, _, Vt = np.linalg.svd(take.sum(0)); D = np.eye(3); D[2, 2] = np.sign(np.linalg.det(U @ Vt)); mean = U @ D @ Vt
         def ang(A, B): return np.degrees(np.arccos(np.clip((np.einsum('...ij,...ij->...', A, B) - 1) / 2, -1, 1)))
         out[nm] = (float(ang(bind, mean)), float(ang(bind[None], take).max()))
+    return out
+
+
+def inbetween_rest(path, meta):
+    """Each in-between bone's largest angle (bind and every frame) from the rest rotation the converter recorded for it."""
+    np = _np()
+    names = list(inbetween_errors(path).keys())
+    objs, _ = _fbx_tree(path); bind = {}
+    for n in objs:
+        if n[0] != 'Model': continue
+        nm = n[1][1].split('\x00')[0]
+        for k in n[2]:
+            if k[0] == 'Properties70':
+                for p in k[2]:
+                    if p[0] == 'P' and p[1][0] == 'Lcl Rotation': bind[nm] = [float(v) for v in p[1][4:7]]
+    curves = fbx_rotation_curves(path); rec = (meta.get('inbetween') or {}); out = {}
+    for nm in names:
+        q = (rec.get(nm) or {}).get('rest_lcl_quat')
+        if not q: out[nm] = None; continue
+        w, x, y, z = q
+        R = np.array([[1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)], [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+                      [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)]])
+        Rs = np.concatenate([_euler_R(bind.get(nm, [0, 0, 0])), _euler_R(curves[nm]) if nm in curves else np.zeros((0, 3, 3))])
+        out[nm] = float(np.degrees(np.arccos(np.clip((np.einsum('ij,nij->n', R, Rs) - 1) / 2, -1, 1))).max())
     return out
 
 
@@ -478,10 +503,17 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False):
             # in-between bones (Neck2, the wrists' twist): Unity's Humanoid holds them at the bind rotation, and a take
             # that turns them away from it loses the turn ("Inbetween bone rotation in configuration does not match
             # rotation in animation file", 2026-11-17)
+            # Unity's rule as the editor measured it (neck_test, 2026-11-17): an in-between bone must hold its rest rotation in
+            # the bind and in every frame (held there, Unity imports it with no Rig Error and discards nothing; straightened, v4
+            # read 16-22°; turning, its turn is discarded). The rest is the converter's record (`inbetween.<bone>.rest_lcl_quat`)
+            rest = inbetween_rest(fbx, meta)
+            r['checks']['inbetween_rest_deg'] = {k: round(v, 2) if v is not None else None for k, v in sorted(rest.items())}
+            for k, v in sorted(rest.items()):
+                if v is None: fails.append(f'in-between: {k} has no recorded rest rotation (re-export: cmu2fbx.py records it)')
+                elif v > 0.5: fails.append(f'in-between: {k} leaves its rest rotation by up to {v:.1f}° (bind or a frame)')
             ib = inbetween_errors(fbx)
             r['checks']['inbetween_deg'] = {k: {'mean': round(v[0], 2), 'max': round(v[1], 2)} for k, v in sorted(ib.items())}
-            for k, v in sorted(ib.items()):
-                if v[0] > 2.0: fails.append(f'in-between: {k} holds {v[0]:.1f}° (mean; {v[1]:.1f}° at most) off its bind rotation')
+            # (the bind-vs-mean-take angle is reported, not judged: it read 0 on v4, which Unity rejected, 2026-11-17)
             if emax > 90.0 and emax > 2 * step + 30: fails.append(f'euler: {ebone}\'s angles jump {emax:.0f}° between keys (near gimbal lock)')
         if r['checks']['bones_cm'] > 0.5: fails.append('bones: lengths vary by %.1f cm' % r['checks']['bones_cm'])
         sp = float(meta.get('speed') or 0)
