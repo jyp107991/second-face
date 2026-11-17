@@ -13,7 +13,7 @@ namespace SecondFace.Core.Combat
         public bool Hostile, Fled, Surrendered, Leader, Prisoner, Escaped, Fleeing, Hidden, Stunned, MinorUsed;
         public double PX, PZ, Morale, Evasion;
         public int Ap, IdleWatches;
-        public string Stance, Archetype;
+        public string Stance, Archetype, Intent;
         public List<StatusEffect> Statuses = new();
         public List<string> Used = new();
         public WatchSave Watch;
@@ -38,7 +38,7 @@ namespace SecondFace.Core.Combat
         public int Version = CurrentVersion;
         public int Round, Index, Xp, RoundsWithoutHarm;
         public uint Rng;
-        public bool Pit, Active;
+        public bool Pit, Active, Harm;
         public string Difficulty, Current, Outcome;
         public List<string> Order = new();
         public List<BattleUnitSave> Units = new();
@@ -68,7 +68,7 @@ namespace SecondFace.Core.Combat
         {
             var s = new BattleSave
             {
-                Round = Round, Index = _idx, Xp = XpEarned, RoundsWithoutHarm = RoundsWithoutHarm, Rng = Rng.State, Pit = Pit, Active = Active,
+                Round = Round, Index = _idx, Xp = XpEarned, RoundsWithoutHarm = RoundsWithoutHarm, Rng = Rng.State, Pit = Pit, Active = Active, Harm = _harm,
                 Difficulty = _difficulty?.Id, Current = Current?.C.Id, Outcome = Outcome,
                 Order = Order.Select(u => u.C.Id).ToList(), Surfaces = Surfaces.Save(),
                 Props = Props.Select(p => new PropSave { Id = p.Id, Kind = p.Kind, X = p.X, Z = p.Z, Hp = p.Hp, Destroyed = p.Destroyed }).ToList(),
@@ -78,7 +78,7 @@ namespace SecondFace.Core.Combat
                 {
                     Id = u.C.Id, Hostile = u.Hostile, Fled = u.Fled, Surrendered = u.Surrendered, Leader = u.Leader, Prisoner = u.Prisoner, Escaped = u.Escaped,
                     Fleeing = u.Fleeing, Hidden = u.Hidden, Stunned = u.C.Stunned, MinorUsed = u.C.MinorUsed, PX = u.PX, PZ = u.PZ, Morale = u.C.Morale,
-                    Evasion = u.C.Evasion, Ap = u.C.Ap, IdleWatches = u.IdleWatches, Stance = u.C.Stance, Archetype = u.Archetype,
+                    Evasion = u.C.Evasion, Ap = u.C.Ap, IdleWatches = u.IdleWatches, Stance = u.C.Stance, Archetype = u.Archetype, Intent = u.Intent?.C.Id,
                     Statuses = u.C.Statuses.Select(x => new StatusEffect { Id = x.Id, Turns = x.Turns, Power = x.Power, From = x.From, Fresh = x.Fresh }).ToList(),
                     Used = u.C.Used.OrderBy(x => x, StringComparer.Ordinal).ToList(),
                     Watch = u.Watch == null ? null : new WatchSave { Mode = u.Watch.Mode, DirX = u.Watch.DirX, DirZ = u.Watch.DirZ, HalfAngle = u.Watch.HalfAngle, Shots = u.Watch.Shots, Target = u.Watch.Target?.C.Id, Group = u.Watch.Group, Fired = u.Watch.Fired },
@@ -107,10 +107,11 @@ namespace SecondFace.Core.Combat
             foreach (var us in s.Units)
             {
                 var u = byId[us.Id];
+                u.Intent = us.Intent != null && byId.TryGetValue(us.Intent, out var it) ? it : null;
                 u.Watch = us.Watch == null ? null : new Watch { Mode = us.Watch.Mode, DirX = us.Watch.DirX, DirZ = us.Watch.DirZ, HalfAngle = us.Watch.HalfAngle, Shots = us.Watch.Shots, Target = us.Watch.Target != null && byId.TryGetValue(us.Watch.Target, out var t) ? t : null, Group = us.Watch.Group, Fired = us.Watch.Fired };
             }
             Order = s.Order.Select(id => byId[id]).ToList();
-            Round = s.Round; _idx = s.Index; XpEarned = s.Xp; RoundsWithoutHarm = s.RoundsWithoutHarm; Rng.State = s.Rng; Pit = s.Pit; Active = s.Active; Outcome = s.Outcome;
+            Round = s.Round; _idx = s.Index; XpEarned = s.Xp; RoundsWithoutHarm = s.RoundsWithoutHarm; Rng.State = s.Rng; Pit = s.Pit; Active = s.Active; Outcome = s.Outcome; _harm = s.Harm;
             if (s.Difficulty != null) Difficulty = CombatDifficulty.For(s.Difficulty);
             Current = s.Current != null && byId.TryGetValue(s.Current, out var cur) ? cur : null;
             if (Current != null) Current.C.InTurn = true;

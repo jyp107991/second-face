@@ -76,8 +76,8 @@ namespace SecondFace.Core.Combat
     /// <summary>What an AI chose to do next (one step; the Unity side animates it, then asks again).</summary>
     public sealed class AiStep
     {
-        /// <summary>attack, burst, move, reload, heal, heal_ally, flee, surrender, wait, throw, shoot_prop, overwatch, cover,
-        /// suppress, stance, capture, shout.</summary>
+        /// <summary>attack, burst, move, reload, swap, heal, heal_ally, flee, surrender, wait, throw, shoot_prop, overwatch,
+        /// cover, suppress, stance, capture, shout.</summary>
         public string Kind;
         public BattleUnit Target;
         public double X, Z;

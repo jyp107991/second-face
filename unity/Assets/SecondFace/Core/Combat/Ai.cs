@@ -42,6 +42,8 @@ namespace SecondFace.Core.Combat
             public WeaponDef W;
             public bool Melee, Shotgun, SeenNow;
             public double Dist, ReachNext, Avg, Rounds, Shots, Flat, Sight, Range;
+            /// <summary>How far they can walk and still shoot next turn (metres).</summary>
+            public double MoveShoot;
             // ours against them
             public double MyFlat, MyAvg, MyMin, MyMax, MyCrit, MyRounds;
             public double Value;
@@ -133,6 +135,14 @@ namespace SecondFace.Core.Combat
                         }
                 }
                 var (wd, it) = CombatRules.WeaponOf(u.C);
+                // a dry gun and nothing to load: the other hand (a sidearm, a blade, or bare fists)
+                if (wd.Magazine != null && it != null && (it.Loaded ?? 0) == 0 && !HasAmmo(u.C, wd) && u.C.Ap >= CombatRules.SwapAp(u.C))
+                {
+                    var other = u.C.Inv.EquippedAt(u.C.Inv.Active == "primary" ? "secondary" : "primary");
+                    var ow = other != null && Items.Has(other.Def) ? Items.Def(other.Def).Weapon : null;
+                    var usable = ow == null || ow.Magazine == null || (other.Loaded ?? 0) > 0 || HasAmmo(u.C, ow);
+                    if (usable) acts.Add(new AiStep { Kind = "swap", Score = 30, Why = ow == null ? "fists" : other.Def });
+                }
                 if (wd.Magazine != null && it != null && u.C.Ap >= CombatRules.ReloadAp(u.C) && HasAmmo(u.C, wd))
                 {
                     if ((it.Loaded ?? 0) == 0) acts.Add(new AiStep { Kind = "reload", Score = 50 });
@@ -207,7 +217,7 @@ namespace SecondFace.Core.Combat
 
             // ---- a demand to yield, prisoners ----------------------------------------------------------------------------
             if (p.ArrestFirst && !u.C.MinorUsed && !u.C.Used.Contains("shout") && x.Foes.Any(f => f.SeenNow && !f.U.C.IsPlayer && f.Dist <= 15))
-                acts.Add(new AiStep { Kind = "shout", Score = 14 });
+                acts.Add(new AiStep { Kind = "shout", Score = 60, Why = "free" });
             var capture = Capture(u, p);
             if (capture != null) acts.Add(capture);
 
@@ -240,12 +250,33 @@ namespace SecondFace.Core.Combat
             var best = acts[0];
             if (p.Noise > 0 && acts.Count > 1 && best.Score < 100)
             {
-                var h = Hash.Hash2(Stable(u.C.Id), _b.Round * 64 + u.C.Ap, 7);
+                var h = Hash.Hash2(Stable(u.C.Id) ^ (int)_b.Rng.State, _b.Round * 64 + u.C.Ap, 7);
                 var second = acts[1];
                 if (h < p.Noise && second.Kind != "wait" && second.Score >= best.Score * 0.6) best = second;
             }
 
             // ---- the hard rules (D5) ------------------------------------------------------------------------------------
+            // never waste a turn: nothing worth doing still holds a shot ready
+            if (best.Kind == "wait" && u.C.Ap > 0 && !p.Instinct && _b.CanHold(u) && !x.Melee)
+            {
+                var hold = acts.FirstOrDefault(a => a.Kind == "overwatch" || a.Kind == "cover");
+                if (hold != null) best = hold;
+            }
+            // a walk into the open when cover is in reach only for an attack worth it from there
+            if (best.Kind == "move" && !Exempt(x) && pressure < 0.5 && Exposed(x, best.X, best.Z))
+            {
+                var safe = evals.Where(e => !e.Exposed).OrderByDescending(e => e.Score - e.Cost * 0.4).FirstOrDefault();
+                if (safe.Cost <= 0) safe = SafeAnywhere(x);
+                if (safe.Cost > 0)
+                {
+                    var cost = _b.MoveCost(u, best.X, best.Z);
+                    var after = u.C.Ap - cost;
+                    var shotAfter = after >= x.AtkAp && x.Foes.Any(f => OurChance(x, f, best.X, best.Z) >= 0.3);
+                    var there = evals.FirstOrDefault(e => Math.Abs(e.X - best.X) < 1e-6 && Math.Abs(e.Z - best.Z) < 1e-6);
+                    var margin = (there.Cost > 0 ? there.Score - there.Cost * 0.4 : double.NegativeInfinity) - (safe.Score - safe.Cost * 0.4);
+                    if (!shotAfter || margin < 8) best = new AiStep { Kind = "move", X = safe.X, Z = safe.Z, Score = best.Score, Why = "to cover" };
+                }
+            }
             // never end a turn in the open when cover is in reach (unless charging, fleeing, or an animal)
             if (EndsTurn(best) && exposedHere && !Exempt(x))
             {
@@ -291,6 +322,7 @@ namespace SecondFace.Core.Combat
                 var fd = Sheet.Derived(fu.C.Sheet);
                 f.HpFrac = fu.C.Sheet.Hp / (double)Math.Max(1, fd.MaxHp);
                 f.ReachNext = CombatRules.MaxAp(fu.C) * Battle.MetresPerAp / Stances.MoveMul(fu.C.Stance);
+                f.MoveShoot = Math.Max(0, CombatRules.MaxAp(fu.C) - CombatRules.AttackAp(fu.C)) * Battle.MetresPerAp;
                 f.Sight = fd.SightRange; f.Range = f.W.Range;
                 var (lo, hi, _) = CombatRules.DamageRange(fu.C, u.C, new AttackOpts { DmgMul = fu.Hostile ? _b.EnemyDmgMul : 1 });
                 f.Avg = (lo + hi) / 2.0;
@@ -367,7 +399,9 @@ namespace SecondFace.Core.Combat
                 return Clamp(f.Flat) * (d <= CombatRules.MeleeReach(f.W) ? 1 : 0.8);
             }
             if (!_b.SeesPoint(f.U, px, pz)) return 0;
-            var c = f.Flat - RangePen(d, f.Sight, f.Range) + (f.Shotgun && d <= 3 ? 10 : 0);
+            // (they may walk closer before they shoot: out of their range now is not out of it next turn)
+            var dEff = Math.Max(1, d - f.MoveShoot);
+            var c = f.Flat - RangePen(dEff, f.Sight, f.Range) + (f.Shotgun && dEff <= 3 ? 10 : 0);
             var cs = _b.CoverAt(f.U, f.U.PX, f.U.PZ, x.U, px, pz);
             var pen = CoverPen(cs, x.U.C.Stance, d);
             if (cs.HighGround) c += Tactics.HighGroundAim;
@@ -401,9 +435,11 @@ namespace SecondFace.Core.Combat
             double t = 0;
             foreach (var f in x.Foes)
             {
-                var c = TheirChance(x, f, px, pz, out _);
+                var c = TheirChance(x, f, px, pz, out var open);
                 if (c <= 0) continue;
-                t += c * f.Avg * f.Shots * f.Rounds * 2;
+                // (a walk first leaves them one shot)
+                var shots = Tactics.Dist(px, pz, f.U.PX, f.U.PZ) > Math.Min(f.Range, f.Sight + 4) ? 1 : f.Shots;
+                t += c * f.Avg * shots * f.Rounds * 2 + (open && !f.Melee ? 2 : 0);
             }
             return t;
         }

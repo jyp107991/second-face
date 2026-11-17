@@ -541,6 +541,7 @@ namespace SecondFace.Core.Combat
                 case "suppress": { var h = Suppress(u, a.Target); if (h != null) { r.Hits.Add(h); r.Done = true; } break; }
                 case "stance": r.Done = SetStance(u, a.Stance); break;
                 case "reload": r.Done = Reload(u); break;
+                case "swap": r.Done = Swap(u); if (r.Done) Say($"{u.C.Name} switches to {(CombatRules.WeaponOf(u.C).item is Inventory.ItemInst wi ? Items.Def(wi.Def).Name : "bare hands")}."); break;
                 case "heal": r.Done = UseItem(u, a.Item ?? HealItems(u.C).FirstOrDefault() ?? HealItem, now); break;
                 case "heal_ally": r.Done = UseItemOn(u, a.Target, a.Item ?? HealItems(u.C).FirstOrDefault(), now); break;
                 case "capture": r.Done = TakePrisoner(u, a.Target); break;
