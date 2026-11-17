@@ -703,6 +703,29 @@ export const EP_TOGETHER: Record<'tamsin' | 'wren' | 'ilya' | 'kes', Cond> = {
   ilya: ALL(EP_TOGETHER_END.ilya, EP_STAYED.ilya), kes: ALL(EP_TOGETHER_END.kes, EP_STAYED.kes),
 };
 
+/** B6r: the five ends played out (dialogue/a3_ends.ts, from the desk's "(Go on.)" to the epilogue). The maps mirror these
+ * (gen_md_vault.py, gen_md_spire.py). B: the Spire's stair wardens come down when the core is brought down (its last clause: the
+ * wardens keep the stair, then the pumps); Lowe lets the party pass only if he stood his column down at the door and trusts the
+ * player; the couriers' drop is the other way up. C: the Unwritten's blade comes for the courier with the signed paper while he
+ * lives and was not given to the wardens on the steps. D: the night's price is M7's band as the reading leaves the close at dawn
+ * (`ep_sky`); Signal Hill's switch handle still in the player's pack (Knock keeps the hill and nobody was sent up) must be sent
+ * west before the relay can carry anything. E: the clause picker writes `a3_amend_<id>` and counts `a3_amends` (at most three). */
+export const VAULT_WARDENS = ['npc_a3_g19', 'npc_a3_g20', 'npc_a3_g21', 'npc_a3_g22'];
+export const VAULT_FIGHTING: Cond = ALL(F('a3_vault_fight'), NOT(F('a3_vault_out')));
+export const VAULT_WARDENS_DOWN: Cond = ALL(...VAULT_WARDENS.map((id): Cond => ({ dead: id })));
+export const LOWE_LETS_PASS: Cond = ALL(F('a3_lowe', 'stood_down'), { trust: { npc: LOWE, gte: 25 } }, NOT(LOWE_DEAD));
+export const CRATES_BLADE: Cond = ALL(NOT(THADDEUS_DEAD), NOT(F('a3_blade', 'wardens')));
+export const THAD_CRATES = `${THADDEUS}_crates`;
+export const CRATES_FIGHTING: Cond = ALL(F('a3_crates_fight'), NOT(F('a3_crates')));
+export const SKY_GUARDS = ['npc_a3_g23', 'npc_a3_g24', 'npc_a3_g25'];
+export const SKY_HELD: Cond = M7_SKY.values[0].if!;
+export const SKY_HARD: Cond = ALL(M7_SKY.values[1].if!, NOT(SKY_HELD));
+export const SKY_BURNING: Cond = NOT(M7_SKY.values[1].if!);
+export const SKY_FIGHTING: Cond = ALL(F('a3_sky_fight'), NOT(F('ep_sky')));
+export const SKY_GUARDS_DOWN: Cond = ALL(...SKY_GUARDS.map((id): Cond => ({ dead: id })));
+export const HANDLE_IN_PACK: Cond = ALL(F('a3_mast_keeper', 'knock'), NOT(F('a3_mast_handle', 'amos')));
+export const AMENDS_FULL: Cond = { flag: 'a3_amends', gte: 3 };
+
 /*
  * ---------------------------------------------------------------- the Act 3 flag registry
  * Every Act 3 flag, its values and the slice that sets it. Each slice adds its own lines here as it lands.
@@ -1259,6 +1282,67 @@ export const EP_TOGETHER: Record<'tamsin' | 'wren' | 'ilya' | 'kes', Cond> = {
  *                            who stayed (EP_TOGETHER, EP_STAYED) are evaluated against that page's end and the sash it implies when
  *                            the slide is built (C and E worn; the Plan after the chair refused)
  *   conditions:              MET_COMPANION, CHAIR_TOOK, EP_CHAIR, EP_STAYED, EP_TOGETHER_END, EP_TOGETHER
+ * B6r (built; dialogue/a3_ends.ts: the five ends played out, one tree each, opened by the desk's "(Go on.)" (B6q's vault.go.<act>,
+ *      now carrying { event: 'dialogue', data: END_TREE[act] }) and by the racks again (v_after's vault.after.<act>): d_a3_end_plan (A1
+ *      worn / A2 refused), d_a3_end_unwritten, d_a3_end_concern, d_a3_end_opensky, d_a3_end_amendment; each a list of beats whose start
+ *      list resumes at the first beat still due; maps md_vault via gen_md_vault.py, md_spire via gen_md_spire.py; npcs npc_a3_g19..g22
+ *      (the Spire's stair wardens), npc_a3_g23..g25 (a Crown house's men); the conditions in the B6r block after EP_TOGETHER):
+ *   a3_climax_done           true            the climax played out; its last option "(Afterwards.)" sets it and opens the epilogue
+ *                                            ({ event: 'dialogue', data: { tree: 'd_a3_epilogue', name: 'Afterwards' } }); reopened, an
+ *                                            end's tree offers the epilogue again
+ *   (A1) a3_signed           true            the chair's first sheet signed (the reserve while RESERVE_UNDER_PEN, else the Sink's water);
+ *                                            decision a3_first_paper.  a3_stacked  true  the night's stack signed (passives: the open lines
+ *                                            of §5's twelve, ADA_LATE … MAREN_LATE, and Sarr).  a3_saluted  true  the column's lead (Lowe,
+ *                                            Reyes, or a warden) came down and saluted; the way into the last beat waits until six
+ *   a3_tam_walked            true            Tamsin walked away from the chair's first paper (A1 or C with the reserve under the pen and her at
+ *                                            the desk; E with the reserve clause not written and her with the player); `leave` only: her slide
+ *                                            reads CHAIR_TOOK (B6v's `chair`), so tam_left is NOT written.  Ilya under A1: `leave` only
+ *   (A2) a3_walked_up        true            up the stair onto the close (goto md_spire from_vault).  a3_child  met | passed  the docker's
+ *                                            girl the lens found: gone down to them, or away without looking; knowledge a3_child_told
+ *   (B) a3_down              true            the core brought down (b_last: the Ledger's clause 212 and the hour; xp 200; decision a3_down);
+ *                                            the charge taken from the pack when it is the means; the act waits for ten (the tower empty):
+ *                                            { until: 22 } unless the hour is already ten
+ *   nine_left                core            (U8's flag, new value) Nine's one plea at the core's door (travelling) or on the close (waiting
+ *                                            on the steps): withdrawn with its grounds attached; `leave`; decision a3_nine_core
+ *   a3_vault_fight           true            the stair wardens drawn on (their hostileIf with ¬a3_vault_out; md_vault's placements
+ *                                            npc_a3_g19..g22 `if` VAULT_FIGHTING; combat event); trigger a3_vault_after (all four dead, or
+ *                                            a3_vault_beaten) reopens the climax.  a3_vault_beaten  true  the wardens' `beaten` (lost forward)
+ *   a3_vault_out             lowe | drop | taken | fought   how the player got out of the dark: Lowe stood aside (LOWE_LETS_PASS: stood
+ *                                            down ∧ trust ≥ 25 ∧ alive), the couriers' drop (Stealth 45; failed → hands up or the fight),
+ *                                            hands up (or beaten: the card says stair and pumps, nothing about the player), the fight won.
+ *                                            decision a3_vault_out.  a3_dark  true  the dark close seen (stars).  decision a3_sash_left (worn:
+ *                                            the sash folded on the top step, slide 1's)
+ *   (C) a3_sold              true            the paper signed slowly and read back (TRANSFERRED, AS SCHEDULED BY OTHERS); k_a3_transfer taken;
+ *                                            decision a3_sold.  a3_sold_up  true  up to the close at night (goto; { until: 23 })
+ *   wren_left / kes_left     concern         (U8's flags, new value) walked out of the vault (travelling; `leave`; approval −40) or found gone
+ *                                            from the steps when the player comes up (waiting); never for a companion not on the player's side
+ *   a3_crates                talked | guards | let | fought | none   the Unwritten's blade for the courier (Selma Ruud, the signed paper
+ *                                            chained to her wrist): talked down (Speech 50), shot by the Concern's men (asked for, or past a
+ *                                            failed word), let burn a courtesy copy, fought (a3_crates_fight: Thaddeus's hostileIf,
+ *                                            placement npc_a3_u2_crates, trigger a3_crates_after), or nobody (CRATES_BLADE false: dead, or
+ *                                            given to the wardens on the steps); decision a3_crates.  placements npc_a3_01_crates (the courier),
+ *                                            npc_a3_u2_crates (CRATES_NIGHT ∧ CRATES_BLADE)
+ *   (D) a3_handle_sent       courier | wheel   Signal Hill's switch handle sent west (HANDLE_IN_PACK: Knock keeps the hill, no Amos); a
+ *                                            duration of four (courier) or three (the Wheel's rider, a3_ally_wheel) days
+ *   a3_reading / a3_read_twelve / a3_read_all   true   the reading begun at eight (MOTHER's replies first; the keeper throws the switch:
+ *                                            Thanh, Dario, Amos, or whoever carried the handle), the twelve (and the designate's line), everyone's
+ *                                            through the night until five (the player's own line among them)
+ *   a3_read                  true            the blank last sheet; the Ledger's one line: "Then everyone will have to plan."
+ *   a3_read_up               true            up to the close at dawn (goto; the night's price met there)
+ *   ep_sky                   held | hard | burning   the night's price as played (SKY_HELD / SKY_HARD / SKY_BURNING, M7's bands of
+ *                                            a3_ready): held, a quiet close; hard, a man with a knife and his own line (a3_sky_walk  read |
+ *                                            wardens | still); burning, a Crown house's three men at the plinth (npc_a3_g23..g25, placed while
+ *                                            SKY_DAWN): fought (a3_sky_fight, their hostileIf; trigger a3_sky_after; a3_sky_beaten their
+ *                                            `beaten`), held off by the wardens, or talked off (Speech 55). decision a3_sky
+ *   (E) a3_register_up       true            Three's register carried up to the steps (until nine; goto md_spire steps)
+ *   a3_amend_<clause>        true | false    one per CLAUSES id, written (true) and struck out (false) freely until the register is closed;
+ *                                            only clauses whose need holds; at most three.  a3_amends  number  how many are written
+ *   a3_amended               true            the register closed: "Agreed." (an empty page too, when no ruling held can carry a clause);
+ *                                            read back by Nine (WITH_YOU) or Three; decision a3_amended
+ *   knowledge: a3_child_told;  decisions: a3_first_paper, a3_down, a3_nine_core, a3_vault_out, a3_sash_left, a3_sold, a3_crates, a3_sky,
+ *                            a3_amended
+ *   triggers:                md_vault a3_vault_after; md_spire a3_crates_after, a3_sky_after (each reopens its end's tree)
+ *   options:                 d_a3_ledger's vault.go.<act> and vault.after.<act> open END_TREE[act]
  * Planned (the slice named sets it; values as the plan fixes them):
  *   a3_recall                declined | stayed | handed | court | bought | hidden | fought | taken          B6b
  *   nine_disposed            true                                                                        B6b

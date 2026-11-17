@@ -214,6 +214,31 @@ A3_STEPS_TRIGGERS = [
      'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_steps', 'name': 'The steps'}}]},
 ]
 
+# ---------------------------------------------------------------------------------------------- Act 3 (B6r): the close after the vault
+# Mirrors src/content/world/a3_conds.ts (B6r block: CRATES_BLADE, THAD_CRATES, CRATES_FIGHTING, SKY_GUARDS, SKY_BURNING, SKY_FIGHTING,
+# SKY_GUARDS_DOWN) and a3_ends.ts; tests/b6r.test.ts checks the mirror. The night the core is signed over: the courier at the lane's
+# mouth with the signed paper, and the Unwritten's blade coming for her while he lives and was not given to the wardens. The dawn
+# after every forecast is read out, at its worst price: a Crown house's three men at the empty plinth, waiting for the voice.
+CRATES_BLADE = ALL(NOT(THADDEUS_DEAD), NOT(F('a3_blade', 'wardens')))
+CRATES_NIGHT = ALL(F('a3_end', 'concern'), F('a3_sold_up'), NOT(F('a3_crates')))
+SKY_BURNING = NOT({'flag': 'a3_ready', 'gte': 2})
+SKY_GUARDS = [('npc_a3_g23', 30, 40, 0), ('npc_a3_g24', 32, 40, 0), ('npc_a3_g25', 31, 41, 0)]
+SKY_DAWN = ALL(F('a3_end', 'opensky'), F('a3_read_up'), SKY_BURNING, NOT(F('ep_sky')))
+A3_ENDS_NPCS = [
+    {'def': 'npc_a3_01', 'id': 'npc_a3_01_crates', 'x': 31, 'y': 47, 'facing': 0, 'schedule': [], 'dialogue': 'd_a3_end_concern', 'if': CRATES_NIGHT},
+    {'def': 'npc_a3_u2', 'id': 'npc_a3_u2_crates', 'x': 29, 'y': 44, 'facing': 1, 'schedule': [], 'dialogue': 'd_a3_end_concern', 'if': ALL(CRATES_NIGHT, CRATES_BLADE)},
+    *[{'def': d, 'x': x, 'y': y, 'facing': f, 'schedule': [], 'dialogue': 'd_a3_end_opensky', 'if': SKY_DAWN} for d, x, y, f in SKY_GUARDS],
+]
+A3_ENDS_TRIGGERS = [
+    # the blade fought on the close: the night goes on once he is down
+    {'id': 'a3_crates_after', 'x': 1, 'y': 26, 'w': 62, 'h': 28, 'if': ALL(F('a3_crates_fight'), {'dead': 'npc_a3_u2_crates'}, NOT(F('a3_crates'))),
+     'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_end_concern', 'name': 'The close'}}]},
+    # the house's men fought at dawn: the morning goes on once they are down, or once they have left the player on the steps
+    {'id': 'a3_sky_after', 'x': 1, 'y': 16, 'w': 62, 'h': 38,
+     'if': ALL(F('a3_sky_fight'), NOT(F('ep_sky')), ANY(ALL(*[{'dead': d} for d, *_ in SKY_GUARDS]), F('a3_sky_beaten'))),
+     'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_end_opensky', 'name': 'The close'}}]},
+]
+
 md_spire = {
     'id': 'md_spire', 'name': 'Meridian — Archive Spire', 'seed': 83, 'settlement': 'meridian',
     'layout': rows,
@@ -284,14 +309,14 @@ md_spire = {
         {'def': 'npc_ar_06', 'x': 37, 'y': 21, 'facing': 2},
         {'def': 'npc_ar_07', 'x': 6, 'y': 18, 'facing': 0, 'if': {'not': {'flag': 'prec_forecast_fine', 'eq': 'void'}}},
         {'def': 'npc_ar_g1', 'x': 18, 'y': 22, 'facing': 1}, {'def': 'npc_ar_g2', 'x': 31, 'y': 50, 'facing': 2},
-    ] + A3_CLOSE_NPCS + A3_READY_NPCS + A3_STEPS_NPCS,
+    ] + A3_CLOSE_NPCS + A3_READY_NPCS + A3_STEPS_NPCS + A3_ENDS_NPCS,
     'triggers': [
         {'id': 'arrive', 'x': 26, 'y': 46, 'w': 12, 'h': 9, 'text': 'The Spire close. A square of clean paving behind the Precinct, lamps that work, and at its north end the Archive Spire going up into the haze until you lose it: the city\'s records, ninety-odd floors of them, its doors shut behind scaffolding. The Crown\'s glass catches the light on its shoulders. Broad steps run up to the doors, and the steps are familiar the way a word on the tip of your tongue is familiar.', 'effects': [{'learn': 'seen_spire'}, {'quest': 'q_a2_calendar', 'start': True}, {'quest': 'q_a2_spire', 'start': True}]},
         {'id': 'steps', 'x': 27, 'y': 17, 'w': 10, 'h': 5, 'if': {'item': 'k_photo'}, 'effects': [{'event': 'dialogue', 'data': {'tree': 'd_ar_steps', 'name': 'The steps'}}]},
         {'id': 'court', 'x': 3, 'y': 14, 'w': 13, 'h': 12, 'text': 'The Court of Accounts. A long hall with a bench at the far end, a rail across the middle, benches for the public, and on the bench a grey unit with a brass plate and two ledgers, very still. Behind it, against the wall, a second chair, dark wood, with dust on the seat. Nobody sits in the public benches who does not have to.', 'effects': [{'learn': 'seen_court'}, {'quest': 'q_ca_court', 'start': True}]},
         {'id': 'catalogue', 'x': 48, 'y': 15, 'w': 13, 'h': 11, 'text': 'The catalogue: shelves of bound indexes to the ceiling, reading tables with green-shaded lamps, a terminal, a counter with a keeper behind it, and in the far corner a stair going up into the dark with a lens on a post at its foot and a porter at a desk beside it.', 'effects': [{'learn': 'seen_catalogue'}]},
         {'id': 'copyroom', 'x': 3, 'y': 2, 'w': 7, 'h': 4, 'text': 'A room behind the court that smells of ink and a stove. Shelves of bound copies, a desk with a lamp, a cot made with corners. Somebody lives here, and has for a long time.', 'effects': [{'learn': 'seen_copyroom'}]},
-    ] + A3_CLOSE_TRIGGERS + A3_READY_TRIGGERS + A3_STEPS_TRIGGERS,
+    ] + A3_CLOSE_TRIGGERS + A3_READY_TRIGGERS + A3_STEPS_TRIGGERS + A3_ENDS_TRIGGERS,
     'extras': [
         {'count': 4, 'roles': ['corp', 'settler', 'trader'], 'faction': 'wardens', 'area': {'x': 10, 'y': 28, 'w': 44, 'h': 20}, 'spots': ['close_pair_a', 'close_pair_b', 'close_sit', 'close_lean', 'close_e', 'close_w', 'steps_sit'], 'hours': {'from': 7, 'to': 21}, 'barks': ['The steps reopen R49. It says so on the board.', 'Don\'t stand on the scaffold. They count the planks.', 'My sister had a case. Eleven times called. Then they stopped calling.', 'Ninety-one floors. Nobody\'s been to the top that came down to say.']},
         {'count': 3, 'roles': ['settler', 'street', 'labourer'], 'life': 'hard', 'area': {'x': 3, 'y': 15, 'w': 12, 'h': 9}, 'spots': ['court_sit', 'court_pair_a', 'court_pair_b', 'court_lean'], 'hours': {'from': 8, 'to': 18}, 'barks': ['Case four hundred and something. They said today.', 'It reads everything. Bring everything.', 'Nobody speaks for you unless you bring them.']},

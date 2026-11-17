@@ -878,7 +878,7 @@ The default shared files touched by a content slice are the registries: `quests/
 - **Tests**: the map validates; each option is locked and unlocked by its gate; refused-sash options are A2, B and D only.
 - **Estimate** 1.25 h.
 
-### B6r — The five ends
+### B6r — The five ends — BUILT 2026-11-17 (deviations under "As built")
 - **Create** `dialogue/a3_ends.ts` (`d_a3_end_plan`, `_unwritten`, `_concern`, `_opensky`, `_amendment`; the climaxes in
   §4.3; Nine's red line; Wren and Kes leaving at the vault; the escort-out fight for D by M7; the vault fight for B with
   hostileIf on `md_vault` placements `if: a3_vault_fight`; the courier fight for C; the clause picker for E (up to three of
@@ -2775,6 +2775,101 @@ exported, one word each: the builder's own reading of what a selector fixes, reu
 **For B6r and the coordinator:** B6q's vault tells A2's cost as a child on her mother's hip whom the lens took ("I will write to her
 when she is fourteen"); slides 1 and 27 (B6s, B6v) have the young docker from Carrick, as the coordinator's brief fixes. B6r's A2 climax
 should show the docker, and the vault's line wants reconciling with it.
+
+### B6r (built 2026-11-17, after B6q, alongside B6u; B6q/B6t/B6u/B6v committed meanwhile)
+**Done, all of the slice:** `dialogue/a3_ends.ts` (5 trees, 86 nodes, about 10,500 words counting every variant: `d_a3_end_plan`
+(A1 worn / A2 refused), `d_a3_end_unwritten`, `d_a3_end_concern`, `d_a3_end_opensky`, `d_a3_end_amendment`; `END_TREE`; every node with a
+return line or only exits; all seven companions speak) · `npcs/a3.ts` (npc_a3_g19–g22, the Spire's stair wardens; npc_a3_g23–g25, a Crown
+house's men; women narrow, men broad, hair true to ancestry, each with `beaten`: losing forward) · `tools/maps/gen_md_vault.py` →
+`maps/md_vault.ts` (the four wardens `if` VAULT_FIGHTING, trigger `a3_vault_after`) · `tools/maps/gen_md_spire.py` → `maps/md_spire.ts` (the
+courier `npc_a3_01_crates` and the blade `npc_a3_u2_crates` on the close the night of the sale, the house's men at the plinth at D's worst
+dawn, triggers `a3_crates_after`, `a3_sky_after`; both generators confirmed byte-identical first) · `tests/b6r.test.ts` (32). No engine
+change, no world event, no new item. `npm run check` green (1258 tests in 60 files; people gate red/stale as before, "ok").
+**Shared touches (small, local):** `a3_conds.ts` (a B6r block after `EP_TOGETHER`: `VAULT_WARDENS`, `VAULT_FIGHTING`, `VAULT_WARDENS_DOWN`,
+`LOWE_LETS_PASS`, `CRATES_BLADE`, `THAD_CRATES`, `CRATES_FIGHTING`, `SKY_GUARDS`, `SKY_HELD`/`SKY_HARD`/`SKY_BURNING`, `SKY_FIGHTING`,
+`SKY_GUARDS_DOWN`, `HANDLE_IN_PACK`, `AMENDS_FULL`; the registry's B6r block) · `a3_vault.ts` (each `vault.go.<act>` carries the climax's
+dialogue event; `v_after` reopens the climax by end, `vault.after.<act>`, with dark and chalked variants; the steel door's dark variant once
+the core is down; A2's lines name the docker, below) · `npcs/a3_knock.ts` (Thaddeus's `hostileIf` gains the close's fight) ·
+`a3_epilogue_open.ts` (slide 1 `refused`: the girl on the docker's hip; `shale_free`'s Ada reads only `{ dead }`, the coordinator's note) ·
+`a3_epilogue_people.ts` (R49 `elsewhere`: the girl grown) · `tests/b6q.test.ts` (its "nobody placed" line now allows B6r's wardens) ·
+the dialogue index.
+
+**How it plays (and where it differs from §4.3 and §8 B6r):**
+- **Beats, not a script.** Each end is a list of beats (`beats()`): a beat is due while its condition holds and no earlier one's does, each
+  beat's own effects end it; the list is both the tree's start (a climax left, saved mid-fight or reopened from the racks resumes at the
+  first beat still due) and every "(Go on.)". Leaving and reopening: `v_after`'s `vault.after.<act>` (the racks and desk) and the after-
+  triggers. Hours a node names pass on the way in (never on a reopen): A1's dawn on the way into its last beat; D's eight and five, once.
+- **A1 (the chair).** The first sheet is the fourth order while `RESERVE_UNDER_PEN`, else the Sink's spring diversion ("the door at Knock
+  saw to it"). Tamsin, at the desk with the reserve under the pen, reads both pages and goes up the stair before the pen touches (`leave`,
+  `a3_tam_walked`; **not** `tam_left`, so her slide keeps B6v's `chair`: she hears it from a clerk on the close); "(Say her name.)" stops
+  her for a count of three. Ilya, at the desk: "Right." and the stair counted aloud (`leave`; his `chair` slide). The stack: the open lines
+  of the twelve (`ADA_LATE` … `MAREN_LATE`, Sarr) as passives, Nine reading every sheet aloud (conscience) or squaring them (deputy). **The
+  salute is Lowe's first** (B6l: he never salutes): Lowe, else Reyes in his cap, else a warden with the morning's satchel. Six o'clock: the
+  schedules down the shaft with the chair's name typed on them. Refusal: "(Put the pen down. Not tonight.)" ("A night is not long").
+- **A2 (the stair).** Up the stair (goto the close, the tree reopens there); the lens turns over the close and stops on **a girl of six on
+  the hip of a young docker from Carrick, about the player's age**; she waves at it. Go down to them (the mother: "Efua, stop waving at the
+  lamp"; tell her to keep the child off the steps, or wave back) or go away without looking. Nothing harms her. Home down the lane (Nine, if
+  travelling, stops at the Wall, as its `desk` slide says). **The coordinator's reconciliation (B6v's note):** one face throughout: the vault
+  now says the child's mother is a docker about the player's age who walked up from Carrick; slide 1's lens "stopped on a face in the
+  crowd: a girl of six on the hip of a young docker about {name}'s age"; R49's docker in the sash is "the girl the lens had found on her
+  mother's hip nineteen years before" (six then, twenty-five at R49: the player's age now, as the vault's cost says). Tested.
+- **B (down).** Nine, travelling, says the record's one plea at the core's door (U8 §4, word for word in substance; its broken word filed,
+  "not underlined", as its slide says) and withdraws (`nine_left` = core, `leave`); a Nine waiting on the steps says it on the dark close
+  (same flag). The act by `a3_down_how`: the charge (Rafe's diagram when he wired it; the charge leaves the pack), the coupling (Bram's page
+  forty-one), or fire (Petra's people, Juniper's, the Choir's; **Ash lays the fire and holds the matches out: never first**). **Added: it
+  waits for ten**, when the Spire is empty (Rafe's "don't do it with people under it", and the Unwritten's "we're not the city"): a duration,
+  and the epilogue's "a little after ten". **The Ledger's last words are its clause 212:** where it cannot schedule, the wardens keep the
+  stair, then the pumps; the Court sits at nine; the people are told the hour; "It is ten o'clock." The note stops; the lamps go out row by
+  row. **Its wardens come down because the clause says stair**: Lowe stands aside (`LOWE_LETS_PASS`, exact: stood down ∧ trust ≥ 25 ∧
+  alive; "Mind the ninth step"), the couriers' drop (Stealth 45: −10 the shaft looked up, −5 the slot known, −5 Wren, +10 smoke; failed →
+  a lamp on the rungs: hands up or the fight), **added: hands up** (they take the player up the stair; the senior warden reads the card
+  twice, stair, pumps, the Court at nine, the hour, turns it over: "There's nothing on here about you"), or the fight (four wardens,
+  `a3_vault_fight`; lost forward to the same card). The close: every lamp in Meridian out, **stars over the close**; Lowe on the bottom
+  step with his cap in his hands (broken, slide-true); Thaddeus (talked on the steps) gets up and walks into the dark; the sash, worn,
+  folded on the top step (slide 1's line, made the player's act).
+- **C (the sale).** Signed slowly; the Ledger reads the name back letter by letter, then "TRANSFERRED, AS SCHEDULED BY OTHERS" (slide 2's
+  line) and nothing more; `k_a3_transfer` leaves the pack. Tamsin (reserve under the pen, at the desk) gone up the stair before the ink is
+  dry; Wren and Kes walk out at once (`wren_left`/`kes_left` = concern, `leave`, approval −40; Kes says U8's line); waiting on the steps,
+  their places are empty when the player comes up (they saw the soft lamps go down the couriers' slot) and the same flags are written then.
+  The Concern's people come down the shaft with chalk (slide 2). **On the close at night: the Unwritten's blade (Thaddeus, `CRATES_BLADE`:
+  alive and not given to the wardens) for the courier, Selma Ruud, with the signed paper chained to her wrist**; with the Unwritten turned
+  (`with_you`), Petra watches him go ("You brought us east for this"). Talk (Speech 50: −10 he sat for you on the steps, −5 Ash; +10
+  Petra there, +10 a friendly first sign broken) · the Concern's men (shot on the stones; a failed word ends the same way) · the fight ·
+  let him (he burns the paper; "The paper was a courtesy"). Spent blade: nobody comes; "Signed for. Carried." **Deviation: Ash's attempt
+  (§4.3, "if `ash_orders` = undecided") is not written:** B6p resolves undecided orders on the steps before the vault (`weigh`), and B6v's
+  Ash slide has him leave "without a scene" in the week after; his words at the shaft are a passive.
+- **D (the reading).** Signal Hill's switch handle still in the pack (Knock keeps the hill, nobody sent): **added, it goes west first** by
+  the courier (four days) or the Wheel's rider (three, with the ally): a duration. At eight the reader turns the key (each reader's own
+  voice; the keeper throws the switch: Thanh, Dario, Amos, Selma, the rider); MOTHER's sheet and replies first ("what a reserve was for"),
+  then the twelve and the designate's line, then everyone's through the night, **the player's own line among them** (the steps, R49, the
+  sash; and the last one, which has a date in it, read in the same voice as a clerk's). The blank last sheet; "Then everyone will have to
+  plan." The close at dawn by M7's band, written as `ep_sky`: held (the Choir's lamps, rifles slung; a widow-to-be's cup of tea), hard (a
+  man with a knife and his own line: read it to me (Speech 45; −10 the Saints, −5 the warned), the wardens, or stand still; four
+  neighbours carry him off the bottom step, slide 1's line), burning (a Crown house's three men at the plinth, the Crown burning: the fight,
+  the wardens holding the steps till noon (slide 1), or Speech 55 (−10 the chain's runners)). The night's lines at dawn read each
+  `a3_ready_<act>`.
+- **E (the amendment).** Three brings the register down; **the charter wants it entered in the open where the Magistrate's face can be
+  seen, so it is written on the fourth step at nine (slide 1's `amended`)**, with the register on the empty plinth. The picker offers
+  exactly the clauses whose rulings are held, at most three, struck out and rewritten freely until closed; closing asks once more. "Agreed."
+  through the doors; Nine reads them back (with the player) or Three. Tamsin walks away (the reserve under the pen, no reserve clause, she
+  with the player; "One about the living" written or not). **Added: a game that reached E with no ruling the charter can carry** (two
+  precedents, both the city's way) closes an empty page, and the Ledger agrees to that too (ON_SCHEDULE then fulfils every open line).
+- **Every climax ends** on "(Afterwards.)": `a3_climax_done` and `{ event: 'dialogue', data: { tree: 'd_a3_epilogue', name: 'Afterwards' } }`,
+  with `a3_end`, `a3_sash`, the clauses and (D) `ep_sky` already written; the epilogue's closing page fires `credits`.
+
+**For B6w and later slices.** The scripts can drive each end from the desk with the tests' `finish()` (the first open option, never a
+refusal or a fight unless asked); the routes to cover are listed in the test names. `a3_vault_out`, `a3_crates`, `a3_sky_walk`,
+`a3_child`, `a3_tam_walked` are recorded but read by no slide yet (a later "the record" replay could).
+
+**Runtime asks (Unity track, §9), added:** (1) an exit carrying `goto` then `dialogue` (A2, B, C, D, E) loads the map and then opens the tree,
+as B6m's "(Go up.)" does; (2) after a fight ends, re-test the triggers under the player (`a3_vault_after`, `a3_crates_after`,
+`a3_sky_after`) without waiting for a step, and apply the new people's `beaten` when the player loses; (3) the clock moves inside these
+conversations (`until`, `time`): the light should follow (A2's dusk, B's ten at night, C's night, D's dawn, E's nine); (4) B's dark city:
+every lamp and window in Meridian off from `a3_down`, a star sky over the close, the racks' lamps dark, smoke under the Spire when the means
+was fire; the sash folded on the top step (decision `a3_sash_left`); (5) C: the guild's wagons and crates on the close, chalk numbers on the
+racks (`a3_sold`); (6) D: the Choir's lamps on the steps when `a3_ready_choir`, Bridgeward and the Crown burning on the skyline at `ep_sky`
+burning; (7) E: the register open on the plinth; (8) the credits on the epilogue's last page, then the title with the "Before the steps"
+save first in the load menu (§9.4, unchanged).
 
 ## Defaults taken for the open questions (coordinator, 2026-11-17; the owner may override)
 1. After the ending: epilogue, credits, then the title screen; the named autosave at the point of no return stays

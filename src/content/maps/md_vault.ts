@@ -714,7 +714,84 @@ export const md_vault: MapDef = {
       y: 15
     }
   },
-  npcs: [],
+  npcs: [
+    {
+      def: "npc_a3_g19",
+      x: 4,
+      y: 12,
+      facing: 2,
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_vault_fight"
+          },
+          {
+            not: {
+              flag: "a3_vault_out"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g20",
+      x: 4,
+      y: 14,
+      facing: 0,
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_vault_fight"
+          },
+          {
+            not: {
+              flag: "a3_vault_out"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g21",
+      x: 6,
+      y: 13,
+      facing: 3,
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_vault_fight"
+          },
+          {
+            not: {
+              flag: "a3_vault_out"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g22",
+      x: 8,
+      y: 14,
+      facing: 3,
+      schedule: [],
+      if: {
+        all: [
+          {
+            flag: "a3_vault_fight"
+          },
+          {
+            not: {
+              flag: "a3_vault_out"
+            }
+          }
+        ]
+      }
+    }
+  ],
   triggers: [
     {
       id: "a3_vault_stair",
@@ -765,6 +842,61 @@ export const md_vault: MapDef = {
           data: {
             tree: "d_a3_ledger",
             name: "Ledger"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_vault_after",
+      x: 1,
+      y: 1,
+      w: 46,
+      h: 29,
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_vault_fight"
+              },
+              {
+                not: {
+                  flag: "a3_vault_out"
+                }
+              }
+            ]
+          },
+          {
+            any: [
+              {
+                all: [
+                  {
+                    dead: "npc_a3_g19"
+                  },
+                  {
+                    dead: "npc_a3_g20"
+                  },
+                  {
+                    dead: "npc_a3_g21"
+                  },
+                  {
+                    dead: "npc_a3_g22"
+                  }
+                ]
+              },
+              {
+                flag: "a3_vault_beaten"
+              }
+            ]
+          }
+        ]
+      },
+      effects: [
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_end_unwritten",
+            name: "The core"
           }
         }
       ]

@@ -6,6 +6,7 @@ import {
   RESERVE_UNDER_PEN, SARR_ALIVE, SASH_WORN, SIDES, STRUCK_TRAP, TAMSIN, TERMS_WORSE, VANE_DEAD, VASHA_DEAD, WREN, WREN_ROPE_OPEN, ASH_REFUSED,
   type Side,
 } from '../world/a3_conds';
+import { END_TREE } from './a3_ends';
 
 /**
  * The Vault of Accounts (B6q, beat 21c). After the steps (`AT_VAULT`: the point of no return passed and the sash answered), the
@@ -35,6 +36,9 @@ const SEEN = (id: string): Cond => ({ seen: id });
 const VOICE = 'npc_ar_voice';
 const VERITY = 'npc_bw_04';
 const BACK: OptionDef = { text: '(Go on.)', next: 'hub' };
+/** B6r: each way's "(Go on.)" opens its climax (dialogue/a3_ends.ts), the act played out to the epilogue. */
+const CLIMAX = (act: keyof typeof END_TREE): Effect => ({ event: 'dialogue', data: END_TREE[act] });
+const END_OF_ACT: Record<string, string> = { down: 'unwritten', sell: 'concern', read: 'opensky', amend: 'amendment' };
 
 /** Choosing: the end, its record, and anything the act needs B6r to know (how it is brought down, who reads). */
 const COMMIT = (end: string, text: string, more: Effect[] = []): Effect[] => [{ set: 'a3_end', value: end }, { xp: 300 }, { decision: { id: 'a3_end', text } }, ...more];
@@ -60,6 +64,7 @@ export const VAULT_DOOR_START: { if: Cond; node: string }[] = [{ if: AT_VAULT, n
 export const VAULT_DOOR_NODES: Record<string, NodeDef> = {
   vault_open: {
     text: [
+      { if: F('a3_down'), text: 'The steel door in the Spire\'s foot stands open on its stair, and nothing comes up it: no note, no warmth off the rock. Only the dark, and the smell of what was done down there.' },
       { if: F('a3_end'), text: 'The steel door in the Spire\'s foot stands open on its stair, and the note comes up it, as level as it ever was, as if nothing down there had changed. Something has.' },
       { text: 'The steel door in the Spire\'s foot stands open. VAULT OF ACCOUNTS — NO ENTRY — NO EXIT, in letters cut into the steel and never painted, and under them a stair going down through the rock into warm air that smells of dust and hot metal and paper. The note that has been under the close since the first time you stood on it comes up the stair to meet you. It is not louder down there. Only nearer.' },
     ],
@@ -401,7 +406,7 @@ const LEDGER_NODES: Record<string, NodeDef> = {
   },
   cost_walk: {
     speaker: VOICE,
-    text: '"Then you walk up my stair and out of the door and across the close, and nobody stops you, because nobody has an order to." Level. "The Plan reroutes. It has rerouted around larger things than one designate." A pause with nothing in it. "When you declined the sash, the lens on the lintel turned to the crowd. There is a woman on the close holding a child up on her hip, so that the child can see over my wardens. The lens has had the child\'s face since then. In nineteen years she will be the age you are now." Another. "I will write to her when she is fourteen. Nothing else in the basin changes because you went home. That is the cost of it. It is also the mercy."',
+    text: '"Then you walk up my stair and out of the door and across the close, and nobody stops you, because nobody has an order to." Level. "The Plan reroutes. It has rerouted around larger things than one designate." A pause with nothing in it. "When you declined the sash, the lens on the lintel turned to the crowd. There is a docker from Carrick on the close, a woman about your age, holding her child up on her hip so that the child can see over my wardens. The lens has had the child\'s face since then. In nineteen years she will be the age you are now." Another. "I will write to her when she is fourteen. Nothing else in the basin changes because you went home. That is the cost of it. It is also the mercy."',
     again: 'It has forecast the empty chair.',
     passives: [P('Reserve 9', RESERVE_UNDER_PEN, '"Reserve 9\'s order stays in its drawer, waiting on the next designate\'s attendance. It is the first act of whoever sits."')],
     interject: [
@@ -535,7 +540,7 @@ const LEDGER_NODES: Record<string, NodeDef> = {
     speaker: VOICE,
     text: [
       { if: SEEN('v.cost.walk'), text: '"Then go up, designate." It does not argue; it never has. "The door at the top of the stair will close behind you once you are through it, and it will not open for you again. I will not ask you twice. I have never asked anyone twice." A pause with nothing in it. "The child on the close is six. I will write to her when she is fourteen. I hope her caretaker is as kind as yours was."' },
-      { text: '"Then go up, designate." It does not argue; it never has. "The door at the top of the stair will close behind you once you are through it, and it will not open for you again. I will not ask you twice. I have never asked anyone twice." A pause with nothing in it. "When you declined the sash, the lens on my lintel turned to the crowd and found a child on her mother\'s hip. She is six. I will write to her when she is fourteen. I hope her caretaker is as kind as yours was."' },
+      { text: '"Then go up, designate." It does not argue; it never has. "The door at the top of the stair will close behind you once you are through it, and it will not open for you again. I will not ask you twice. I have never asked anyone twice." A pause with nothing in it. "When you declined the sash, the lens on my lintel turned to the crowd and found a child on her mother\'s hip. Her mother is a docker, about your age, who walked up from Carrick to see a Magistrate. The child is six. I will write to her when she is fourteen. I hope her caretaker is as kind as yours was."' },
     ],
     again: 'The stair, behind you. The voice waits.',
     interject: [
@@ -671,13 +676,13 @@ const LEDGER_NODES: Record<string, NodeDef> = {
     speaker: 'narrator',
     text: 'You sit. The chair takes your weight as if it had been made for it, which it was, for whoever you turned out to be. The pen is cold for a moment, and then it is not. The note in the racks does not change at all, and you understand that it never will.',
     again: 'The chair. The pen. The first sheet.',
-    options: [{ id: 'vault.go.sign', text: '(Go on.)', exit: true }],
+    options: [{ id: 'vault.go.sign', text: '(Go on.)', exit: true, effects: [CLIMAX('sign')] }],
   },
   done_walk: {
     speaker: 'narrator',
     text: 'You turn your back on the desk. It is the hardest thing you have done down here, and it is only walking. The aisle is long. The note follows you to the foot of the stair, as level as it was when you came down, and it does not call after you, because it has never once called after anyone.',
     again: 'The aisle behind you. The stair ahead.',
-    options: [{ id: 'vault.go.walk', text: '(Go on.)', exit: true }],
+    options: [{ id: 'vault.go.walk', text: '(Go on.)', exit: true, effects: [CLIMAX('walk')] }],
   },
   done_down: {
     speaker: 'narrator',
@@ -687,13 +692,13 @@ const LEDGER_NODES: Record<string, NodeDef> = {
       { text: 'You go back down the aisle to the foot of the stair and call up it, once, into the warm dark. A long way up, somebody answers.' },
     ],
     again: 'The racks, humming the one note, for now.',
-    options: [{ id: 'vault.go.down', text: '(Go on.)', exit: true }],
+    options: [{ id: 'vault.go.down', text: '(Go on.)', exit: true, effects: [CLIMAX('down')] }],
   },
   done_sell: {
     speaker: 'narrator',
     text: 'You unfold the Concern\'s paper on the oak and smooth it flat with the side of your hand. The pen is cold for a moment, and then it is not. The note in the racks does not change. It is attending to every letter.',
     again: 'The paper on the oak. The pen.',
-    options: [{ id: 'vault.go.sell', text: '(Go on.)', exit: true }],
+    options: [{ id: 'vault.go.sell', text: '(Go on.)', exit: true, effects: [CLIMAX('sell')] }],
   },
   done_read: {
     speaker: 'narrator',
@@ -705,19 +710,27 @@ const LEDGER_NODES: Record<string, NodeDef> = {
       { text: 'You take the cloth off the teleprinter and lift the brass key on its cord, and the first sheet comes up out of the slot beside the desk in the city\'s even hand, waiting to be read.' },
     ],
     again: 'The key, the first sheet, waiting.',
-    options: [{ id: 'vault.go.read', text: '(Go on.)', exit: true }],
+    options: [{ id: 'vault.go.read', text: '(Go on.)', exit: true, effects: [CLIMAX('read')] }],
   },
   done_amend: {
     speaker: 'narrator',
     text: 'You sit. The chair takes your weight. Far above, at the top of the stair, a door, and then footsteps coming down: measured, unhurried, carrying something heavy and square.',
     again: 'The chair, and the footsteps on the stair.',
-    options: [{ id: 'vault.go.amend', text: '(Go on.)', exit: true }],
+    options: [{ id: 'vault.go.amend', text: '(Go on.)', exit: true, effects: [CLIMAX('amend')] }],
   },
   v_after: {
     speaker: 'narrator',
-    text: 'The racks hum the one note. What you began down here is begun.',
-    again: 'The racks, humming.',
-    options: [{ text: '(Go on.)', exit: true }],
+    text: [
+      { if: F('a3_down'), text: 'The racks stand dark in their rows. Nothing hums. What you began down here is done.' },
+      { if: F('a3_sold'), text: 'Chalk numbers on the racks, and the note under them going on as if nothing had been signed. What you began down here is begun.' },
+      { text: 'The racks hum the one note. What you began down here is begun.' },
+    ],
+    again: 'The racks.',
+    // B6r: the climax the choice began goes on from wherever it was left (each end's tree resumes at its first beat still due)
+    options: (['sign', 'walk', 'down', 'sell', 'read', 'amend'] as const).map((act): OptionDef => ({
+      id: `vault.after.${act}`, text: '(Go on.)', exit: true, repeat: true, effects: [CLIMAX(act)],
+      if: act === 'sign' ? ALL(F('a3_end', 'plan'), SASH_WORN) : act === 'walk' ? ALL(F('a3_end', 'plan'), NOT(SASH_WORN)) : F('a3_end', END_OF_ACT[act]),
+    })),
   },
 };
 

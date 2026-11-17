@@ -74,7 +74,9 @@ export const A3_KNOCK_NPCS: NpcDef[] = [
     id: 'npc_a3_u2', name: 'Thaddeus Wolde', look: { seed: 9398, frame: 'broad', age: 31, ancestry: 'east_african', over: { hair: { style: 'paint_shaved', color: 0x120e0b }, facialHair: 'stubble', weathering: 0.6 } }, ...UNWRITTEN,
     level: 7, dialogue: 'd_a3_thaddeus', attrs: { reflex: 8, brawn: 6 }, skills: { melee: 55, stealth: 50 }, equip: ['w_machete'], tolls: 2,
     // B6p: also the blade on the Spire's steps, drawn on there (a3_blade_fight) until it is settled
-    hostileIf: { any: [UNWRITTEN.hostileIf, { all: [{ flag: 'a3_blade_fight' }, { not: { flag: 'a3_blade' } }] }] },
+    hostileIf: { any: [UNWRITTEN.hostileIf, { all: [{ flag: 'a3_blade_fight' }, { not: { flag: 'a3_blade' } }] },
+      // B6r: and on the close the night the core is signed over, drawn on at the courier (a3_crates_fight) until it is settled
+      { all: [{ flag: 'a3_crates_fight' }, { not: { flag: 'a3_crates' } }] }] },
     barks: ['Not tonight.', 'Your face is on a card. Mine isn\'t.'],
   },
   {

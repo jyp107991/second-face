@@ -148,7 +148,8 @@ describe('B6q: the Vault of Accounts, under the Spire', () => {
     const steel = MAPS.md_spire.props!.find((p) => p.id === 'ar_vault')!;
     expect(Math.abs(fromVault.x - steel.x) + Math.abs(fromVault.y - steel.y)).toBe(1);
     expect(new Grid(MAPS.md_spire).passable(fromVault.x, fromVault.y)).toBe(true);
-    expect(m.npcs).toEqual([]); // the Ledger is a voice
+    // the Ledger is a voice: nobody is placed but B6r's stair wardens, who come only once drawn on after the core is brought down
+    expect(m.npcs!.filter((n) => JSON.stringify(n.if) !== JSON.stringify({ all: [{ flag: 'a3_vault_fight' }, { not: { flag: 'a3_vault_out' } }] }))).toEqual([]);
   });
 
   it('the first step into the hall opens the last conversation, once, only after the steps and before the choice', () => {

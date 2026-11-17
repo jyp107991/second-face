@@ -99,7 +99,7 @@ const SLIDE_STEPS: SlideSpec = {
     }),
     STEPS({
       id: 'refused', light: 'dusk',
-      text: '{name} came down the steps without the sash, through a crowd that had come to see a Magistrate and stood aside for a stranger. Three folded the sash over its arm and did not watch {them} go. By the time the lamp was lit the lens over the doors had turned, slowly, the way a lighthouse turns, and stopped on a face in the crowd: a young docker about {name}\'s age, who had walked up from Carrick to watch. The works finished the steps on schedule. The board was relettered. It said R49 again.',
+      text: '{name} came down the steps without the sash, through a crowd that had come to see a Magistrate and stood aside for a stranger. Three folded the sash over its arm and did not watch {them} go. By the time the lamp was lit the lens over the doors had turned, slowly, the way a lighthouse turns, and stopped on a face in the crowd: a girl of six on the hip of a young docker about {name}\'s age, who had walked up from Carrick to watch. The works finished the steps on schedule. The board was relettered. It said R49 again.',
     }),
   ],
 };
@@ -490,7 +490,7 @@ const SLIDE_SHALE: SlideSpec = {
   lines: SHALE_LINES,
   variants: [
     {
-      id: 'free', if: ALL(F('a3_shale', 'free'), F('ks_ada', 'stays')), ...OFFICE, light: 'dusk', people: WITH_ADA,
+      id: 'free', if: ALL(F('a3_shale', 'free'), F('ks_ada', 'stays')), ...OFFICE, light: 'dusk', people: [alive(ADA), ...TOWN],
       text: 'The four nails on the sheriff\'s door stayed empty: nobody\'s plate went up on them. Ada Vey rode out to Pike\'s post once more that year, to hand him back his paper in front of the whole street, and then went home and slept for most of a day. Shale stayed Shale. It was poor and loud and owed money to everybody, and it was nobody\'s company.',
     },
     {

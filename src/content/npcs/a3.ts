@@ -10,6 +10,10 @@ import type { NpcDef } from '../../engine/npc/defs';
 const PRECINCT = { team: 'wardens', settlement: 'meridian', faction: 'wardens' } as const;
 /** The recall wardens: hostile only if drawn on over the unit (or in a fight with the whole Precinct). */
 const recall = { ...PRECINCT, role: 'guard' as const, hostileIf: { any: [{ flag: 'a3_recall_fight' }, { flag: 'md_fight' }] }, courage: 70, dialogue: 'd_a3_recall' };
+/** B6r: the Spire's stair wardens in the vault (hostile once drawn on, until the climax settles the way out), and a Crown house's
+ * men on the close at the dawn after the reading (hostile once drawn on, until the night's price is settled). Both lose forward. */
+const stair = { ...PRECINCT, role: 'guard' as const, courage: 75, hostileIf: { all: [{ flag: 'a3_vault_fight' }, { not: { flag: 'a3_vault_out' } }] }, beaten: [{ set: 'a3_vault_beaten' }] };
+const house = { team: 'tenured', settlement: 'meridian', faction: 'tenured', role: 'guard' as const, courage: 65, hostileIf: { all: [{ flag: 'a3_sky_fight' }, { not: { flag: 'ep_sky' } }] }, beaten: [{ set: 'a3_sky_beaten' }] };
 
 export const A3_NPCS: NpcDef[] = [
   {
@@ -93,4 +97,32 @@ export const A3_NPCS: NpcDef[] = [
     level: 3, team: 'rustdogs', faction: 'rust_dogs', settlement: 'rustdogs', courage: 50, dialogue: 'd_a3_dogs', equip: ['w_zip38'], inventory: [['a_38', 6]],
     barks: ['Water\'s the tithe.', 'Nobody has to be shot about it.'],
   },
+  // B6r: the Spire's stair wardens (dialogue/a3_ends.ts), who come down into the vault when the core is brought down, because the
+  // clause they keep says the stair, and then the pumps. The Precinct's grey with the Spire's white piping, pressed; faces bare.
+  // Placed on md_vault only while the player has drawn on them (`a3_vault_fight`), until the climax settles how the player got
+  // out (`a3_vault_out`); beaten, they leave the player hurt on the stair and the climax goes on (`a3_vault_beaten`).
+  { id: 'npc_a3_g19', name: 'Warden', look: { seed: 9441, frame: 'narrow', age: 43, ancestry: 'north_european', over: { hair: { style: 'ponytail01', color: 0x6a5240 }, weathering: 0.45 } }, ...stair,
+    level: 7, attrs: { grit: 8, senses: 7, presence: 6 }, skills: { firearms: 55, speech: 35 }, equip: ['w_carbine556', 'r_riot'], inventory: [['a_556', 16]], tolls: 9,
+    barks: ['The stair. Then the pumps.', 'Stand where the lamp can see you, please.'] },
+  { id: 'npc_a3_g20', name: 'Warden', look: { seed: 9442, frame: 'broad', age: 29, ancestry: 'west_african', over: { hair: { style: 'paint_buzz', color: 0x120e0b }, weathering: 0.3 } }, ...stair,
+    level: 6, attrs: { reflex: 7, brawn: 7 }, skills: { firearms: 50, melee: 40 }, equip: ['w_carbine556', 'r_riot'], inventory: [['a_556', 12]], tolls: 5,
+    barks: ['It\'s gone quiet. Down there. It was never quiet.', 'Nobody told us there was a down there.'] },
+  { id: 'npc_a3_g21', name: 'Warden', look: { seed: 9443, frame: 'broad', age: 37, ancestry: 'south_asian', over: { hair: { style: 'cut_crop', color: 0x16120e }, facialHair: 'stubble_heavy', weathering: 0.4 } }, ...stair,
+    level: 6, attrs: { grit: 7, wits: 6 }, skills: { firearms: 50 }, equip: ['w_pistol9', 'r_riot'], inventory: [['a_9mm', 12]], tolls: 7,
+    barks: ['The card says stair.', 'Mind the ninth step.'] },
+  { id: 'npc_a3_g22', name: 'Warden', look: { seed: 9444, frame: 'narrow', age: 25, ancestry: 'east_asian', over: { hair: { style: 'cut_messy', color: 0x1a1410 }, weathering: 0.3 } }, ...stair,
+    level: 5, attrs: { reflex: 7, senses: 7 }, skills: { firearms: 45 }, equip: ['w_pistol9', 'r_riot'], inventory: [['a_9mm', 12]], tolls: 4,
+    barks: ['My lamp\'s the only one.', 'Is it ten? It was ten.'] },
+  // B6r: a Crown house's men on the close at the dawn after the city's book was read out (ending D at its worst price): their house
+  // heard its own line read with everyone else's, and sent them for whoever read it. The Tenured's clean grey with a lit trim at the
+  // cuff (the megacity rich's livery, on their hired hands); faces bare. Placed on md_spire only then; hostile only if drawn on.
+  { id: 'npc_a3_g23', name: 'House Guard', look: { seed: 9445, frame: 'broad', age: 34, ancestry: 'mediterranean', over: { hair: { style: 'cut_crop', color: 0x1a1410 }, weathering: 0.15 } }, ...house,
+    level: 7, minor: true, attrs: { reflex: 7, grit: 7 }, skills: { firearms: 55 }, equip: ['w_pistol9', 'r_duster'], inventory: [['a_9mm', 14]], tolls: 20,
+    barks: ['The house would like a word with the voice.', 'Stand aside. This is not about you.'] },
+  { id: 'npc_a3_g24', name: 'House Guard', look: { seed: 9446, frame: 'broad', age: 41, ancestry: 'north_european', over: { hair: { style: 'paint_shaved', color: 0x5a4a3c }, weathering: 0.2 } }, ...house,
+    level: 7, minor: true, attrs: { brawn: 7, grit: 7 }, skills: { firearms: 50, melee: 45 }, equip: ['w_pistol9', 'r_duster'], inventory: [['a_9mm', 12]], tolls: 20,
+    barks: ['Forty years of positions. One night.', 'Somebody read it. Somebody answers for it.'] },
+  { id: 'npc_a3_g25', name: 'House Guard', look: { seed: 9447, frame: 'narrow', age: 30, ancestry: 'east_african', over: { hair: { style: 'coily_twa', color: 0x120e0b }, weathering: 0.15 } }, ...house,
+    level: 6, minor: true, attrs: { reflex: 8, senses: 7 }, skills: { firearms: 55 }, equip: ['w_pistol9', 'r_duster'], inventory: [['a_9mm', 12]], tolls: 15,
+    barks: ['Don\'t make this longer than it is.', 'The Crown is burning. Did you know that?'] },
 ];

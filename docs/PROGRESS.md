@@ -2231,6 +2231,13 @@ mid-range Android phone; deployed to Pages.
             (`dialogue/a3_epilogue_people.ts`), each a still and a short text in several versions by what the player did and the
             end reached, shown only for companions the player met, with short lines for what was between them and their last
             evening. `tests/b6v.test.ts` (11). Next: B6r, B6w.
+      - [x] B6r **the ends played out** DONE 2026-11-17 (content; no engine change; not exported; not committed): what happens
+            after the last choice, for every way it can go (`dialogue/a3_ends.ts`: five conversations, every node with a return
+            line, all seven companions speak), each ending in the closing pages and the credits; three fights, each with a way
+            round it; companions leaving where the choice breaks their line; nothing resolves unasked and every beat can be
+            left and resumed. Seven new background people, placements and triggers on the last room and the square above (both
+            generators first confirmed to reproduce the committed maps); two earlier pages and one line made to agree with the
+            new scenes. `tests/b6r.test.ts` (32). Next: B6w.
 - [ ] B7 **Systemic depth + presentation**: ruins templates, bounty/gig templates, rare encounters, music
       and ambience, title art, menus, credits, settings, tips.
 - [ ] B8 **Balance, performance, deploy**: economy sim pass, difficulty, accessibility, Android perf

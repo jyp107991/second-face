@@ -11,8 +11,8 @@ forecasting core, air-gapped by Meridian's founders and fed ninety years by cour
   the desk       an oak reading desk on a wooden dais at the hall's east end, under one lamp: the chair's desk, the pen, the
                  teleprinter and its relay key
 
-Spots: `door` (the stair's foot of the steel door), `drop`, `core` (the aisle among the racks), `desk`. Nobody is placed here:
-the Ledger is a voice. The vault is a cell entered instantly from the close (world/sites.ts). The map is checked for walkability
+Spots: `door` (the stair's foot of the steel door), `drop`, `core` (the aisle among the racks), `desk`. Nobody is placed here
+but the Spire's stair wardens, and only when the player draws on them after the core is brought down (B6r): the Ledger is a voice. The vault is a cell entered instantly from the close (world/sites.ts). The map is checked for walkability
 and for reachability from every spawn, as gen_hc_halcyon.py checks its cells.
     python3 tools/maps/gen_md_vault.py
 """
@@ -109,6 +109,8 @@ def ALL(*c):
     return {'all': list(c)}
 def NOT(c):
     return {'not': c}
+def ANY(*c):
+    return {'any': list(c)}
 AT_VAULT = ALL(F('a3_pnr'), F('a3_sash'))
 
 W, H = 48, 32
@@ -152,7 +154,12 @@ exits = [
     # the stair's top: back up through the steel door to the close (md_spire spawn `from_vault`, beside the door)
     {'x': 3, 'y': 1, 'w': 3, 'h': 1, 'to': {'location': 'md_spire', 'spawn': 'from_vault'}, 'label': 'Up the stair, to the steel door'},
 ]
-npcs = []
+# Act 3 (B6r): the Spire's stair wardens, placed only once the player has drawn on them after the core is brought down (their clause:
+# the stair, then the pumps), until the climax settles how the player got out. Mirrors a3_conds.ts (B6r block: VAULT_WARDENS,
+# VAULT_FIGHTING, VAULT_WARDENS_DOWN); tests/b6r.test.ts checks the mirror.
+VAULT_FIGHTING = ALL(F('a3_vault_fight'), NOT(F('a3_vault_out')))
+VAULT_WARDENS = [('npc_a3_g19', 4, 12, 2), ('npc_a3_g20', 4, 14, 0), ('npc_a3_g21', 6, 13, 3), ('npc_a3_g22', 8, 14, 3)]
+npcs = [{'def': d, 'x': x, 'y': y, 'facing': f, 'schedule': [], 'if': VAULT_FIGHTING} for d, x, y, f in VAULT_WARDENS]
 
 md_vault = {
     'id': 'md_vault', 'name': 'Meridian — Archive Spire, Hall of Accounts', 'seed': 109, 'settlement': 'meridian', 'interior': True,
@@ -187,6 +194,10 @@ md_vault = {
         # the first step into the hall opens the last conversation (the racks and the desk reopen it)
         {'id': 'a3_vault_hall', 'x': 13, 'y': 13, 'w': 4, 'h': 6, 'if': ALL(AT_VAULT, NOT(F('a3_end')), NOT(F('a3_vault_met'))),
          'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_ledger', 'name': 'Ledger'}}]},
+        # B6r: the wardens drawn on under the dark Spire, all down (or the player beaten on the stair): the climax goes on
+        {'id': 'a3_vault_after', 'x': 1, 'y': 1, 'w': 46, 'h': 29,
+         'if': ALL(VAULT_FIGHTING, ANY(ALL(*[{'dead': d} for d, *_ in VAULT_WARDENS]), F('a3_vault_beaten'))),
+         'effects': [{'event': 'dialogue', 'data': {'tree': 'd_a3_end_unwritten', 'name': 'The core'}}]},
     ],
     'ambience': {'indoor': True, 'fogColor': 'hex:0x161a1e', 'fogDensity': 0.016, 'dust': 0.14, 'ambient': {'color': 'hex:0xa8bccc', 'intensity': 0.75}, 'grade': 0.28, 'mood': 'grim', 'sound': 'hum'},
 }

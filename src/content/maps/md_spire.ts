@@ -2559,6 +2559,176 @@ export const md_spire: MapDef = {
           }
         ]
       }
+    },
+    {
+      def: "npc_a3_01",
+      id: "npc_a3_01_crates",
+      x: 31,
+      y: 47,
+      facing: 0,
+      schedule: [],
+      dialogue: "d_a3_end_concern",
+      if: {
+        all: [
+          {
+            flag: "a3_end",
+            eq: "concern"
+          },
+          {
+            flag: "a3_sold_up"
+          },
+          {
+            not: {
+              flag: "a3_crates"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_u2",
+      id: "npc_a3_u2_crates",
+      x: 29,
+      y: 44,
+      facing: 1,
+      schedule: [],
+      dialogue: "d_a3_end_concern",
+      if: {
+        all: [
+          {
+            all: [
+              {
+                flag: "a3_end",
+                eq: "concern"
+              },
+              {
+                flag: "a3_sold_up"
+              },
+              {
+                not: {
+                  flag: "a3_crates"
+                }
+              }
+            ]
+          },
+          {
+            all: [
+              {
+                not: {
+                  any: [
+                    {
+                      flag: "a3_uw_how",
+                      eq: "fought"
+                    },
+                    {
+                      dead: "npc_a3_u2"
+                    },
+                    {
+                      dead: "npc_a3_u2_steps"
+                    }
+                  ]
+                }
+              },
+              {
+                not: {
+                  flag: "a3_blade",
+                  eq: "wardens"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g23",
+      x: 30,
+      y: 40,
+      facing: 0,
+      schedule: [],
+      dialogue: "d_a3_end_opensky",
+      if: {
+        all: [
+          {
+            flag: "a3_end",
+            eq: "opensky"
+          },
+          {
+            flag: "a3_read_up"
+          },
+          {
+            not: {
+              flag: "a3_ready",
+              gte: 2
+            }
+          },
+          {
+            not: {
+              flag: "ep_sky"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g24",
+      x: 32,
+      y: 40,
+      facing: 0,
+      schedule: [],
+      dialogue: "d_a3_end_opensky",
+      if: {
+        all: [
+          {
+            flag: "a3_end",
+            eq: "opensky"
+          },
+          {
+            flag: "a3_read_up"
+          },
+          {
+            not: {
+              flag: "a3_ready",
+              gte: 2
+            }
+          },
+          {
+            not: {
+              flag: "ep_sky"
+            }
+          }
+        ]
+      }
+    },
+    {
+      def: "npc_a3_g25",
+      x: 31,
+      y: 41,
+      facing: 0,
+      schedule: [],
+      dialogue: "d_a3_end_opensky",
+      if: {
+        all: [
+          {
+            flag: "a3_end",
+            eq: "opensky"
+          },
+          {
+            flag: "a3_read_up"
+          },
+          {
+            not: {
+              flag: "a3_ready",
+              gte: 2
+            }
+          },
+          {
+            not: {
+              flag: "ep_sky"
+            }
+          }
+        ]
+      }
     }
   ],
   triggers: [
@@ -2756,6 +2926,85 @@ export const md_spire: MapDef = {
           data: {
             tree: "d_a3_steps",
             name: "The steps"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_crates_after",
+      x: 1,
+      y: 26,
+      w: 62,
+      h: 28,
+      if: {
+        all: [
+          {
+            flag: "a3_crates_fight"
+          },
+          {
+            dead: "npc_a3_u2_crates"
+          },
+          {
+            not: {
+              flag: "a3_crates"
+            }
+          }
+        ]
+      },
+      effects: [
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_end_concern",
+            name: "The close"
+          }
+        }
+      ]
+    },
+    {
+      id: "a3_sky_after",
+      x: 1,
+      y: 16,
+      w: 62,
+      h: 38,
+      if: {
+        all: [
+          {
+            flag: "a3_sky_fight"
+          },
+          {
+            not: {
+              flag: "ep_sky"
+            }
+          },
+          {
+            any: [
+              {
+                all: [
+                  {
+                    dead: "npc_a3_g23"
+                  },
+                  {
+                    dead: "npc_a3_g24"
+                  },
+                  {
+                    dead: "npc_a3_g25"
+                  }
+                ]
+              },
+              {
+                flag: "a3_sky_beaten"
+              }
+            ]
+          }
+        ]
+      },
+      effects: [
+        {
+          event: "dialogue",
+          data: {
+            tree: "d_a3_end_opensky",
+            name: "The close"
           }
         }
       ]

@@ -606,7 +606,7 @@ const R49_LINES: SlideLine[] = [
 ];
 const AGE = 'nineteen years older than on the morning of the steps';
 const R49_INTRO: Record<'elsewhere' | 'broken' | 'known', string> = {
-  elsewhere: `On the morning of R49 a docker from Carrick, the face the lens had found in the crowd nineteen years before, sat on the fourth step of the Spire in the sash, and the lens clicked, and the photograph was exact. {name} was not there.`,
+  elsewhere: `On the morning of R49 a docker from Carrick, the girl the lens had found on her mother's hip nineteen years before, sat on the fourth step of the Spire in the sash, and the lens clicked, and the photograph was exact. {name} was not there.`,
   broken: `R49 came, and nothing marked it. The Spire's steps had never been finished: the scaffold rusted where the works had stopped on the night the lights went out, and there was no lens on the lintel, and no list.`,
   known: `On the morning of R49 people went to the Spire's steps to see whether {name} would come, because everybody in the Reach had read the forecast and nobody had believed it. {name} did not go, and was the best-known face in the basin, loved and hated in about equal measure.`,
 };
