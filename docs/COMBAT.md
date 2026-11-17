@@ -71,7 +71,7 @@ thousands of seeded turns, decision time per turn.
 
 ## Work packages (order)
 1. **Rules and AI in Core** (C1–C7, C9–C10, D1–D6): pure C#, EditMode tests and simulations. (Side worktree.)
-2. **Animation set** (A1–A8): source, retarget, weapon props, Animator states, gate states for aim/fire/melee/hit/
+2. **Animation set** (A1–A8; sourced and staged 2026-11-17: 69 clips, 13 weapons, `docs/COMBAT_ASSETS.md`): retarget, weapon props, Animator states, gate states for aim/fire/melee/hit/
    cover/throw; captures at the game camera.
 3. **Presentation and QoL** (A9, B1–B11): ground overlays, previews, icons, numbers, camera, speed, undo.
 4. **Bionic abilities** (C8) with the chrome system.
