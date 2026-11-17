@@ -740,6 +740,35 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   "the Depot" where the content has Four Ways and Yard Nine); PlaceBuilder for the new places (Meridian's districts need a
   city kit); Ninebridge's empty tiles (`V`, a gap in the bridge deck) read as flat ground: lower the pad there and put water
   below; its concrete roads read as flat grey slabs; the arrival view frames bare ground; CI's six failures above.
+- **2026-11-17, gate 89 → 55: A1's remainder was two false readings, not too little room.** Gate: red, 55 (A1 25, A4 4,
+  C1 8, W6 11, W3 3, F1/F2/F5/K1 1), committed with its verdict (full44). The diagnosis's plan (bake the flank correctives at
+  the arms' real 17°) was tried and taken back: the sweep widened to 17° added almost nothing (the 3-10° poses already
+  over-dented those points), and re-centring the correctives on each arm's own rest (the least angle at which the elbow
+  overlaps the waist by no more than 2-3 cm) left the real-contact men 0.4-1.2 cm deeper at 17°. Two new tools showed why:
+  `tools/qa/patches/push_why.py` (after `push_diag.py`: the three body points that judged each side's first push) and
+  `Editor/FlankProbe.cs` (`Run`: each arm posed as the game rests it over the idles, depth by the game's own `BodySkin.Depth`
+  at 6-17° with and without the correctives; `Moves`: torso points a corrective moves out from the spine).
+  (1) **False contacts.** All of Police_Male_06's frames past 20° (947 of 947) and most of cap_Military_Male_03n's were
+  judged by points facing front, up or down (the chest's front, the armpit's floor, a rig's lower edge), 4-6 cm away and read
+  3-4 cm "inside" within the skin's 4 cm across, while his arm at 17° cleared the side on bare skin. The corrective's smoothing
+  and seam welding had moved those up-facing points **out**, 1.6-1.9 cm toward the arm. Fix (`BodyCorrectives.OutMax`): a
+  torso point is moved at most 1 cm out from the spine's line (the outward part of a larger move taken off); 7 bodies re-baked
+  (Police_Male_06/07, rel_MA19k, Male_Adult_03/06, cap_Fire_Male_07n, cap_Military_Male_03n). Tried and taken back: the moves
+  turned in toward the spine, and every small outward part taken off too (both deepened the dents: two men's resting arms
+  0.3 cm into their sides, C1 +2 on a pick).
+  (2) **Clothes on both sides.** The real contacts (cap_Police_Male_03n's forearm by the elbow, Construction_Male_02's and
+  Business_Male_06's lower upper arm) cleared on bare skin at 17° within 0.3 cm and were held 1-2 cm off through a shirt:
+  every skin point stands out by its layers, the sleeve too, but at rest only the body's side was given. Fix
+  (`ArmClearance.SleeveGive` 0.5): the arm's own sleeve gives by the same share, in the elbow's gap and the push (C1 is skin
+  on skin).
+  Picks reproduce the whole cast's counts for the same people. **Whole cast 89 → 55, no measure worse** (A1 50 → 25:
+  Police_Male_06 17 → 0, cap_Police_Male_03n 11 → 7, cap_Police_Male_01n and cap_Security_Male_01n 2 → 0; A4 13 → 4:
+  Police_Male_06 5 → 0, cap_DM01s 7 → 3; C1 8, W6 11, W3 3, F1/F2/F5/K1 1 unchanged).
+  **Next:** A1 25: Construction_Male_02 10 (his bare lower upper arm 1-1.5 cm on the waist at the 17° cap, the idles leaning
+  the torso 3° toward that arm), cap_Police_Male_03n 7 (forearm by the elbow, still 1 cm after the sleeve's give),
+  cap_Military_Male_03n 4 (false contacts on the rig's lower edge, normals facing down: the skin's depth test, not the
+  corrective: a resting arm's contact might need one judge facing the side), Business_Male_06 2, cap_PM02m 1, Male_Adult_05 1;
+  A4 4 (cap_DM01s 3, Male_Adult_02 1); W6 11 (the women's jog); C1 8; W3 3 (cap_Police_Male_03n's walk).
 - **2026-11-16 (late), A1's remainder diagnosed.** Gate: red, 89. A pick of the six worst (Police_Male_06,
   cap_Police_Male_03n, Construction_Male_02, cap_Military_Male_03n, Business_Male_06, cap_DM01s) with the push's body
   point traced (`tools/qa/patches/push_diag.py` adds `pbH/pbOff/pbD/pbPart` to the gate trace; apply it, run a pick with
