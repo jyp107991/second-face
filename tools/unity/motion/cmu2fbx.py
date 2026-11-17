@@ -26,6 +26,12 @@ SRC_FPS, OUT_FPS = 120, 30
 # the frame rate CMU lists for each subject captured at another than 120 fps (the database's index, "framerate"): read at
 # 120, subject 77's standing idle played at twice its speed in the game (2026-11-17); set per clip below
 RATES = {'77': 60}
+# how the loop is chosen (refine_cycle, refine_seam): 'off' the legs' rhythm alone (gait_cycle) and the range's own end;
+# 'near' the best-matching ends within a tenth of a stride of it; 'wide' within half a stride. Each clip keeps the choice
+# whose loop passes clip_qa.py best (the clip's json says which: `cycle`), all of them the actor's own strides
+REFINE = os.environ.get('SF_REFINE', 'near')
+# a gait loop's seam as a share of its stride (blended with an eased weight); 0.12 unless a clip's best loop needs longer
+SEAM = float(os.environ.get('SF_SEAM', '0.12'))
 # listed at 120 but captured at 60: their own jumps fit gravity at 56-61 fps (141/106: jumps 04-06; 143: 05-06) and their runs
 # read at 120 would be 335-354 steps a minute (clip_qa.py, docs/qa/motion_calibration.md); 106 ("Female General Subject") is
 # byte for byte 141
@@ -35,17 +41,20 @@ RATES.update({'141': 60, '106': 60, '143': 60})
 SEX = {'104': 'm', '106': 'f', '141': 'f', '111': 'f', '113': 'f', '114': 'f'}
 
 CLIPS = [
-    # men's set (the old names): captures whose subjects' sex CMU does not record, and CMU 104 ("neutral Male walk")
-    {'name': 'walk', 'src': '07_01', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_b', 'src': '08_01', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_slow', 'src': '07_04', 'loop': 'gait', 'set': 'm'},
+    # men's set (the old names): captures whose subjects' sex CMU does not record, and CMU 104 ("neutral Male walk").
+    # walk_slow from 07_03 (1.02 m/s, 97 steps/min), not 07_04 (83 steps/min, a walk ratio past real people's); 104's walks
+    # at their natural cadence (104_35's 74 steps/min out); carry from 70_10 (12.5 lb, 94 steps/min), not 70_01 (75)
+    {'name': 'walk', 'src': '07_01', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_b', 'src': '08_01', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_slow', 'src': '07_03', 'loop': 'gait', 'set': 'm'},
     {'name': 'walk_brisk', 'src': '07_12', 'loop': 'gait', 'set': 'm'}, {'name': 'jog', 'src': '35_17', 'loop': 'gait', 'set': 'm'}, {'name': 'jog_b', 'src': '16_35', 'loop': 'gait', 'set': 'm'},
-    {'name': 'run', 'src': '09_01', 'loop': 'gait', 'set': 'm'}, {'name': 'carry', 'src': '70_01', 'loop': 'gait', 'set': 'both'}, {'name': 'sneak', 'src': '136_09', 'loop': 'gait', 'set': 'both'},
-    {'name': 'walk_c', 'src': '104_02', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_slow_b', 'src': '104_35', 'loop': 'gait', 'set': 'm'},
+    {'name': 'run', 'src': '09_01', 'loop': 'gait', 'set': 'm'}, {'name': 'carry', 'src': '70_10', 'loop': 'gait', 'set': 'both'}, {'name': 'sneak', 'src': '136_09', 'loop': 'gait', 'set': 'both'},
+    {'name': 'walk_c', 'src': '104_19', 'loop': 'gait', 'set': 'm'}, {'name': 'walk_slow_b', 'src': '104_02', 'loop': 'gait', 'set': 'm'},
     {'name': 'jog_c', 'src': '104_01', 'loop': 'gait', 'set': 'm'}, {'name': 'run_b', 'src': '104_37', 'loop': 'gait', 'set': 'm'},
-    # the standing idle at its real speed (77 at 60 fps: the same frames as before, now 11.2 s, not 5.6)
+    # the standing idle at its real speed (77 at 60 fps: the same frames as before, now 11.2 s, not 5.6). Both fail the
+    # clips' K1 (the actors' own knees bent 11-22°) and 77_02 holds the head 35-42° down (H1): the men's idle is now ACCAD
+    # Male2's Stand (accad2fbx.py, idle_m); these stay for reference
     {'name': 'idle', 'src': '77_02', 'loop': 'seam', 'range': (1.0, 14.6), 'seam': 2.4, 'set': 'm'}, {'name': 'idle_b', 'src': '82_08', 'loop': 'seam', 'range': (0.5, 6), 'seam': 1.2, 'set': 'm'},
     # women's captures (CMU 111/113/114: one woman, pregnant and after; 141 = 106 "Female General Subject", 60 fps): women only
     {'name': 'idle_c', 'src': '111_28', 'loop': 'seam', 'range': (2, 10), 'seam': 1.2, 'set': 'f'}, {'name': 'idle_d', 'src': '113_21', 'loop': 'seam', 'range': (2, 10), 'seam': 1.2, 'set': 'f'},
-    {'name': 'idle_f_b', 'src': '113_21', 'loop': 'seam', 'range': (5.4, 11.4), 'seam': 1.2, 'set': 'f'},
     {'name': 'walk_f_c', 'src': '113_25', 'loop': 'gait', 'set': 'f'}, {'name': 'jog_f', 'src': '141_02', 'loop': 'gait', 'set': 'f'}, {'name': 'jog_f_b', 'src': '141_03', 'loop': 'gait', 'set': 'f'},
     {'name': 'stretch', 'src': '141_13', 'loop': False, 'range': (0, 6), 'set': 'f'}, {'name': 'yawn', 'src': '111_32', 'loop': False, 'range': (0, 6.2), 'set': 'f'},
     {'name': 'yawn_b', 'src': '113_23', 'loop': False, 'range': (0, 8.4), 'set': 'f'}, {'name': 'sit', 'src': '114_05', 'loop': 'seam', 'range': (4, 14), 'seam': 1.2, 'set': 'f'},
@@ -163,7 +172,7 @@ def gait_cycle(feet_z):
     best = max(corr); P = lag0 + corr.index(best)
     for k in range(1, len(corr) - 1):
         if corr[k] > corr[k - 1] and corr[k] >= corr[k + 1] and corr[k] > best * 0.55: P = lag0 + k; break
-    seam = round(P * 0.12)
+    seam = round(P * SEAM)
     margin = max(0, min(round(0.4 * SRC_FPS), (n - P - seam - 1) // 2))
     start, top = margin, -1e9
     for i in range(margin, n - margin - P - seam):
@@ -179,8 +188,58 @@ def build_rows(bones, frames, f0, f1):
     for f in range(f0, f1):
         loc, rp = local_rotations(bones, frames[f])
         wp = world_pose(bones, loc, rp)
-        rows.append({'loc': loc, 'pos': rp, 'feet': (wp['lfoot'][2], wp['rfoot'][2]), 'rootq': wp['root'][0]})
+        rows.append({'loc': loc, 'pos': rp, 'feet': (wp['lfoot'][2], wp['rfoot'][2]), 'rootq': wp['root'][0],
+                     'key': pose_key(rp, [wp['lfoot'][2], wp['rfoot'][2], wp['lhand'][1], wp['rhand'][1], wp['head'][2]])})
     return rows
+
+def pose_key(root, points):
+    """A frame's pose for matching two moments of a take: the feet, the hands and the head relative to the root (capture
+    frame, metres)."""
+    return [c for p in points for c in (p - root)]
+
+def refine_cycle(keys, P, start, seam):
+    """The stride's own best loop near the one the legs' rhythm found: of the periods P-3..P+3 frames and the starts within
+    a tenth of a stride of the heel strike gait_cycle chose (a loop point moved to toe-off put the toes' flick across the
+    seam: walk_b, 12 cm), the pair whose two ends match best (the feet, hands and head relative to the root, and their velocity
+    over 0.1 s), so the seam blends two nearly equal moments (a mismatch slides the planted foot through the blend and pops
+    at the loop, docs/qa/motion_calibration.md, 2026-11-17)."""
+    import numpy as np
+    mode = REFINE
+    if mode == 'off': return P, start
+    K = np.asarray(keys, float); n = len(K); v = round(0.1 * SRC_FPS)
+    best = (float('inf'), P, start)
+    reach = P // 2 if mode == 'wide' else P // 10
+    for Pp in range(max(2, P - 3), P + 4):
+        for st in range(max(0, start - reach), start + reach + 1):
+            if st + Pp + seam >= n or st + Pp + v >= n: continue
+            dp = K[st] - K[st + Pp]; dv = (K[st + v] - K[st]) - (K[st + Pp + v] - K[st + Pp])
+            c = float(dp @ dp + dv @ dv)
+            if c < best[0]: best = (c, Pp, st)
+    return best[1], best[2]
+
+def refine_seam(keys, P, seam, back):
+    """A seam loop's best end: of the ends P-back..P frames, the one whose blend window (seam frames after it) matches the
+    loop's first seam frames best."""
+    import numpy as np
+    if REFINE == 'off': return P
+    K = np.asarray(keys, float)
+    best = (float('inf'), P)
+    for Pp in range(max(seam + 1, P - back), P + 1):
+        d = K[Pp:Pp + seam] - K[0:seam]
+        c = float((d * d).sum()) / seam
+        if c < best[0]: best = (c, Pp)
+    return best[1]
+
+def resample_loop(rows, fps):
+    """A loop resampled to a whole number of frames that spans it exactly (the last frame runs into the first): a loop of P
+    source frames cut into keys at a fixed step dropped up to one step at the seam (a stutter of half a frame's motion at a
+    jog) and played up to a frame shorter than its stride took, so the game's pace slid the planted foot (2026-11-17)."""
+    n = len(rows); N = max(2, round(n * fps / SRC_FPS)); out = []
+    for k in range(N):
+        t = k * n / N; i = int(t); f = t - i
+        a = rows[i]; b = rows[(i + 1) % n]
+        out.append({'loc': {q: slerp(a['loc'][q], b['loc'][q], f) for q in a['loc']}, 'pos': a['pos'].lerp(b['pos'], f)})
+    return out
 
 def canonical(rows, travel):
     """Turn the subject to face +Z (travel direction for gaits, mean facing otherwise); positions relative to the first frame."""
@@ -200,11 +259,14 @@ def canonical(rows, travel):
     return rows
 
 def cut_loop(rows, start, P, seam):
+    """One loop of P frames from `start`: its first `seam` frames blend from the frames after its end into its own, with
+    an eased weight (3t^2 - 2t^3): a straight ramp put a kink of mismatch / seam in every joint's speed at both ends of the
+    blend (a hand 60 cm from where it began swerved by 2 cm a frame at the loop, argue, 2026-11-17)."""
     out = []
     for i in range(P):
         a = rows[start + i]
         if i < seam:
-            b = rows[start + P + i]; t = (i + 1) / (seam + 1)
+            b = rows[start + P + i]; t = (i + 1) / (seam + 1); t = t * t * (3.0 - 2.0 * t)
             out.append({'loc': {k: slerp(b['loc'][k], a['loc'][k], t) for k in a['loc']}, 'pos': b['pos'].lerp(a['pos'], t)})
         else:
             out.append({'loc': a['loc'], 'pos': a['pos']})
@@ -238,6 +300,7 @@ def build_clip(d):
         # room showed only the stance width, and the stride was cut at half its length, 2026-11-06)
         feet_z = [(r['feet'][0] - r['feet'][1]).dot(travel) for r in rows]
         P, start, seam = gait_cycle(feet_z)
+        P, start = refine_cycle([r['key'] for r in rows], P, start, seam)
         a, b = rows[start]['pos'].copy(), rows[start + P]['pos'].copy()
         dv = Vector((b.x - a.x, 0.0, b.z - a.z))
         speed = dv.length / (P / SRC_FPS)
@@ -257,17 +320,22 @@ def build_clip(d):
         mx = sum(r['pos'].x for r in cyc) / len(cyc); mz = sum(r['pos'].z for r in cyc) / len(cyc)
         for r in cyc: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, r['pos'].z - mz))
         surge = max(r['pos'].z for r in cyc) - min(r['pos'].z for r in cyc); sway = max(r['pos'].x for r in cyc) - min(r['pos'].x for r in cyc)
-        print(f'  {d["name"]}: stride {dv.length:.2f} m over {P / SRC_FPS:.2f} s, off the trial line by {math.degrees(math.atan2(dv.x, dv.z)):.1f} deg, surge {surge * 100:.1f} cm, sway {sway * 100:.1f} cm')
-        out = resample(cyc, OUT_FPS)
+        out = resample_loop(cyc, OUT_FPS)
+        speed = dv.length / (len(out) / OUT_FPS)     # the pace at which the loop as played lays one stride
+        print(f'  {d["name"]}: stride {dv.length:.2f} m over {P / SRC_FPS:.3f} s ({len(out)} frames at {OUT_FPS}), off the trial line by {math.degrees(math.atan2(dv.x, dv.z)):.1f} deg, surge {surge * 100:.1f} cm, sway {sway * 100:.1f} cm')
     elif d.get('loop') == 'seam':
         seam = round(d.get('seam', 1.0) * SRC_FPS); P = len(rows) - seam
+        P = refine_seam([r['key'] for r in rows], P, seam, round(1.0 * SRC_FPS))
         cyc = cut_loop(rows, 0, P, seam)
         mx = sum(r['pos'].x for r in cyc) / len(cyc); mz = sum(r['pos'].z for r in cyc) / len(cyc)
         for r in cyc: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, r['pos'].z - mz))
-        out = resample(cyc, OUT_FPS)
+        out = resample_loop(cyc, OUT_FPS)
     else:
         if not d.get('root'):
-            for r in rows: r['pos'] = Vector((0, r['pos'].y, 0))
+            # the hips' own sway kept about its mean, as the idles keep it (pinned in place, the hips held still while the
+            # actor shifted weight in a wave or a stretch, and the planted feet slid by the sway instead: wave, 2026-11-17)
+            mx = sum(r['pos'].x for r in rows) / len(rows); mz = sum(r['pos'].z for r in rows) / len(rows)
+            for r in rows: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, r['pos'].z - mz))
         out = resample(rows, OUT_FPS)
     return bones, out, speed, hip
 
@@ -361,7 +429,8 @@ def export_clip(d, bones, rows, speed, hip):
         subj = d['src'].split('_')[0]
         json.dump({'name': d['name'], 'src': d.get('src_label', 'CMU ' + d['src']), 'loop': bool(d.get('loop')), 'speed': round(speed, 3), 'root': bool(d.get('root')), 'hip': round(hip, 4),
                    'fps': OUT_FPS, 'frames': len(rows), 'src_fps': d.get('src_fps', SRC_FPS), 'sex': d.get('sex', SEX.get(subj, 'u')), 'set': d.get('set', 'both'),
-                   'licence': d.get('licence', 'CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses')}, f)
+                   'licence': d.get('licence', 'CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses'), 'cycle': REFINE, 'seam_share': SEAM if d.get('loop') == 'gait' else None,
+                   'range': list(d['range']) if d.get('range') else None}, f)
     print(f'clip {d["name"]}: {len(rows)} frames, speed {speed:.2f} m/s')
 
 def main():

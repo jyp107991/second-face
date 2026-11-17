@@ -5,8 +5,8 @@ T-pose at frame 0. Used for the women's set (ACCAD Female1), which CMU lacks (do
     blender -b --factory-startup --python tools/unity/motion/accad2fbx.py -- <accad bvh dir> <out dir> [clip,clip]
 
 ACCAD Female1's BVH rest pose is a world-aligned T-pose (Y up, facing +Z, arms along X), as CMU's ASF is, so its joint
-rotations carry over unchanged. ACCAD Male1/Male2 keep MotionBuilder's local axes (their zero pose is not a T-pose) and
-need a re-solve onto a T-pose skeleton first: they are not converted here (docs: the staging README).
+rotations carry over unchanged. ACCAD Male1/Male2 keep MotionBuilder's local axes (their zero pose is not a T-pose): they
+are re-solved onto a T-pose skeleton first (bvh_resolve.py; every joint stays where it was captured).
 
 Licence: "Open Motion Project by ACCAD/The Ohio State University is licensed under a Creative Commons Attribution 3.0
 Unported License" (CC BY 3.0): credit in CREDITS.md; used modified (cut, looped, resampled to 30 fps, retargeted).
@@ -29,16 +29,47 @@ MECANIM = {'Hips': 'Hips', 'ToSpine': 'Spine', 'Spine': 'Chest', 'Spine1': 'Uppe
 UNIT = 0.01   # ACCAD's BVH are in centimetres
 LICENCE = 'ACCAD Open Motion Project (Ohio State University), CC BY 3.0'
 
-# the women's set: ACCAD Female1 (one woman; sex as ACCAD records it in the take's name). Ranges in seconds of the take.
-# (Female1 has no steady jog: her runs speed up or slow down throughout, and a cycle cut from them pops 7 cm at the seam;
-# the women's jogs come from CMU 141, cmu2fbx.py)
+# Ranges in seconds of the take; sex as ACCAD records it in the take's name. Female1's BVH rest pose is a world-aligned
+# T-pose; Male1/Male2's are not and are re-solved onto one (`resolve`: the subject's own Stand as the reference,
+# bvh_resolve.py). Female1 has no steady jog (her runs speed up or slow down throughout; a cycle cut from them popped 7 cm)
+# and no brisk walk (her fastest steady walking is 1.1-1.27 m/s): the women's jogs come from CMU 141 (cmu2fbx.py).
 CLIPS = [
-    {'name': 'walk_f', 'src': 'Female1_B02_WalkToStand', 'loop': 'gait', 'range': (0.0, 3.6)},      # "walk (more swing at the hips) to stand"
-    {'name': 'walk_f_b', 'src': 'Female1_B01_StandToWalk', 'loop': 'gait', 'range': (2.0, 6.3)},    # "stand to walk", the walk
+    # women (ACCAD Female1)
+    {'name': 'walk_f', 'src': 'Female1_B02_WalkToStand', 'loop': 'gait', 'range': (0.0, 3.6)},      # "walk (more swing at the hips) to stand": 0.96 m/s
+    {'name': 'walk_f_b', 'src': 'Female1_B13_WalkTurnRight45', 'loop': 'gait', 'range': (5.4, 8.3)},  # the walk after the turn: ~1.13 m/s
+    {'name': 'walk_f_n', 'src': 'Female1_B21_PutDownBoxToWalk', 'loop': 'gait', 'range': (7.4, 9.5)},  # the walk away from the box: ~1.22 m/s
     {'name': 'walk_f_long', 'src': 'Female1_B03_Walk1', 'loop': 'gait'},                             # "walk with long steps (minimal sway at the hips)"
     {'name': 'run_f', 'src': 'Female1_C03_Run', 'loop': 'gait'},                                     # "run" (1.2 s: one stride and its seam)
-    {'name': 'idle_f', 'src': 'Female1_D2_Wait', 'loop': 'seam', 'range': (33.0, 38.5), 'seam': 1.0},  # "wait", a quiet stretch
+    # her one quiet stretch with straight knees and a level head (K1 p98 7.1, H1 -4..+6): D2 "Wait" 34.5-38.5 s
+    {'name': 'idle_f', 'src': 'Female1_D2_Wait', 'loop': 'seam', 'range': (34.4, 38.6), 'seam': 1.0},
+    # and "Stand" (K1 p98 7.3-7.7, H1 -3..-1), 3 s
+    {'name': 'idle_f_c', 'src': 'Female1_A01_Stand', 'loop': 'seam', 'range': (0.1, 3.0), 'seam': 0.8},
+    # men (ACCAD Male1, Male2: re-solved onto a T-pose)
+    {'name': 'idle_m', 'src': 'Male2_A1_Stand', 'loop': 'seam', 'range': (0.2, 3.8), 'seam': 1.0, 'resolve': 'Male2_A1_Stand'},
+    {'name': 'walk_d', 'src': 'Male1_B3_Walk', 'loop': 'gait', 'range': (0.4, 6.1), 'resolve': 'Male1_A1_Stand'},       # 1.30 m/s
+    {'name': 'walk_brisk_b', 'src': 'Male2_B3_Walk', 'loop': 'gait', 'resolve': 'Male2_A1_Stand'},                      # 1.65 m/s
+    {'name': 'run_c', 'src': 'Male2_C3_Run', 'loop': 'gait', 'resolve': 'Male2_A1_Stand'},                              # ~3.7 m/s
 ]
+
+
+def load_resolved(path, ref_path):
+    """A take re-solved onto a T-pose skeleton (bvh_resolve.py), with the change of axes taken from the subject's own
+    reference take when it has the same skeleton (else from the take itself)."""
+    import numpy as np
+    import bvh_resolve as BR
+    joints, order, data, dt = skel.parse_bvh(open(path).read())
+    rj, ro, rd, _ = skel.parse_bvh(open(ref_path).read())
+    same = ro == order and all(np.allclose(np.asarray(rj[j]['offset'], float), np.asarray(joints[j]['offset'], float), atol=1e-3) for j in order if joints[j]['parent'])
+    S = BR.axes_for(rj, ro, rd) if same else BR.axes_for(joints, order, data)
+    new, local, root, _ = BR.resolve(joints, order, data, S)
+    err = BR.check(joints, order, data, new, local, root)
+    print(f'  re-solved {os.path.basename(path)} onto a T-pose ({"the reference" if same else "its own"} axes): joints within {err:.4f} cm of the capture')
+    frames = []
+    for f in range(len(data)):
+        loc = {j: Matrix([list(r) for r in local[j][f]]).to_quaternion() for j in order}
+        p = root[f]
+        frames.append({'loc': loc, 'pos': Vector((p[0] * UNIT, p[1] * UNIT, p[2] * UNIT))})
+    return new, order, frames, 1.0 / dt
 
 
 def load(path):
@@ -77,7 +108,9 @@ def world_feet(joints, order, fr):
             pw = W[J['parent']]
             P[j] = P[J['parent']] + pw @ (Vector(J['offset']) * UNIT)
             W[j] = pw @ fr['loc'][j]
-    return P['LeftFoot'], P['RightFoot'], W['Hips']
+    # the feet's ends (toe joints) and hands and head, for matching moments (cmu2fbx.pose_key)
+    key = C.pose_key(P['Hips'], [P['LeftToeBase'], P['RightToeBase'], P['LeftHand'], P['RightHand'], P['Head']])
+    return P['LeftFoot'], P['RightFoot'], W['Hips'], key
 
 
 def build(d, joints, order, frames, fps):
@@ -88,9 +121,9 @@ def build(d, joints, order, frames, fps):
     rows = []
     for f in range(f0, f1):
         fr = frames[f]
-        lf, rf, rq = world_feet(joints, order, fr)
+        lf, rf, rq, key = world_feet(joints, order, fr)
         loc = dict(fr['loc']); loc['root'] = loc.pop('Hips')
-        rows.append({'loc': loc, 'pos': fr['pos'].copy(), 'feet': (lf, rf), 'rootq': rq})
+        rows.append({'loc': loc, 'pos': fr['pos'].copy(), 'feet': (lf, rf), 'rootq': rq, 'key': key})
     a0, b0 = rows[0]['pos'], rows[-1]['pos']
     travel = Vector((b0.x - a0.x, 0.0, b0.z - a0.z))
     travel = travel.normalized() if travel.length > 1e-6 else Vector((0.0, 0.0, 1.0))
@@ -100,6 +133,7 @@ def build(d, joints, order, frames, fps):
         # as cmu2fbx.build_clip: one stride along its own heading, in place with its surge and sway kept
         feet_z = [(r['feet'][0] - r['feet'][1]).dot(travel) for r in rows]
         P, start, seam = C.gait_cycle(feet_z)
+        P, start = C.refine_cycle([r['key'] for r in rows], P, start, seam)
         a, b = rows[start]['pos'].copy(), rows[start + P]['pos'].copy()
         dv = Vector((b.x - a.x, 0.0, b.z - a.z))
         speed = dv.length / (P / fps)
@@ -113,16 +147,19 @@ def build(d, joints, order, frames, fps):
         cyc = C.cut_loop(rows, start, P, seam)
         mx = sum(r['pos'].x for r in cyc) / len(cyc); mz = sum(r['pos'].z for r in cyc) / len(cyc)
         for r in cyc: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, r['pos'].z - mz))
-        print(f'  {d["name"]}: stride {dv.length:.2f} m over {P / fps:.2f} s ({120 / (P / fps):.0f} steps/min), off the trial line by {math.degrees(math.atan2(dv.x, dv.z)):.1f} deg')
-        out = C.resample(cyc, C.OUT_FPS)
+        out = C.resample_loop(cyc, C.OUT_FPS)
+        speed = dv.length / (len(out) / C.OUT_FPS)     # the pace at which the loop as played lays one stride
+        print(f'  {d["name"]}: stride {dv.length:.2f} m over {P / fps:.3f} s ({120 / (P / fps):.0f} steps/min; {len(out)} frames), off the trial line by {math.degrees(math.atan2(dv.x, dv.z)):.1f} deg')
     elif d.get('loop') == 'seam':
         seam = round(d.get('seam', 1.0) * fps); P = len(rows) - seam
+        P = C.refine_seam([r['key'] for r in rows], P, seam, round(0.5 * fps))
         cyc = C.cut_loop(rows, 0, P, seam)
         mx = sum(r['pos'].x for r in cyc) / len(cyc); mz = sum(r['pos'].z for r in cyc) / len(cyc)
         for r in cyc: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, r['pos'].z - mz))
-        out = C.resample(cyc, C.OUT_FPS)
+        out = C.resample_loop(cyc, C.OUT_FPS)
     else:
-        for r in rows: r['pos'] = Vector((0, r['pos'].y, 0))
+        mx = sum(r['pos'].x for r in rows) / len(rows); mz = sum(r['pos'].z for r in rows) / len(rows)
+        for r in rows: r['pos'] = Vector((r['pos'].x - mx, r['pos'].y, r['pos'].z - mz))
         out = C.resample(rows, C.OUT_FPS)
     hip = (abs(joints['LeftUpLeg']['offset'][1]) + abs(joints['LeftLeg']['offset'][1]) + abs(joints['LeftFoot']['offset'][1])) * UNIT
     return out, speed, hip
@@ -177,7 +214,9 @@ def export(d, joints, order, rows, speed, hip, out_dir, src_fps):
     with open(os.path.join(out_dir, d['name'] + '.json'), 'w') as f:
         json.dump({'name': d['name'], 'src': 'ACCAD ' + d['src'], 'loop': bool(d.get('loop')), 'speed': round(speed, 3), 'root': False, 'hip': round(hip, 4),
                    'fps': C.OUT_FPS, 'frames': len(rows), 'src_fps': round(src_fps, 2), 'sex': 'f' if d['src'].startswith('Female') else 'm',
-                   'set': d.get('set', 'f' if d['src'].startswith('Female') else 'm'), 'licence': LICENCE}, f)
+                   'set': d.get('set', 'f' if d['src'].startswith('Female') else 'm'), 'licence': LICENCE,
+                   'resolved': bool(d.get('resolve')), 'cycle': C.REFINE,
+                   'seam_share': C.SEAM if d.get('loop') == 'gait' else None, 'range': list(d['range']) if d.get('range') else None}, f)
     print(f'clip {d["name"]}: {len(rows)} frames, speed {speed:.2f} m/s')
 
 
@@ -190,7 +229,7 @@ def main():
         if only and d['name'] not in only: continue
         path = os.path.join(src, d['src'] + '.bvh')
         if not os.path.exists(path): print('  skip', d['name'], '(no bvh)'); continue
-        joints, order, frames, fps = load(path)
+        joints, order, frames, fps = load_resolved(path, os.path.join(src, d['resolve'] + '.bvh')) if d.get('resolve') else load(path)
         rows, speed, hip = build(d, joints, order, frames, fps)
         export(d, joints, order, rows, speed, hip, out, fps)
     print('accad motion: done')

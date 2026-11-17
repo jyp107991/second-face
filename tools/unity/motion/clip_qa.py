@@ -107,6 +107,31 @@ def seam_pop(m):
     return worst * 100
 
 
+def seam_jerk(m):
+    """The loop's seam as a jerk (cm): the largest second difference of any joint across the seam (frames N-2, N-1, 0 and
+    N-1, 0, 1) beyond that joint's own 99th percentile inside the clip. A natural acceleration through the seam reads 0;
+    a pop reads its size. (seam_pop's first difference counts a hand speeding up through the seam as a pop.)"""
+    np = _np()
+    worst = 0.0
+    for k, p in m.P.items():
+        d2 = np.linalg.norm(p[2:] - 2 * p[1:-1] + p[:-2], axis=1)
+        if len(d2) < 4: continue
+        ref = float(np.percentile(d2, 99))
+        s1 = np.linalg.norm(p[0] - 2 * p[-1] + p[-2]); s2 = np.linalg.norm(p[1] - 2 * p[0] + p[-1])
+        worst = max(worst, max(s1, s2) - ref)
+    return worst * 100
+
+
+def stand_checks(m):
+    """An idle on its own actor's skeleton, read as the gate reads a standing person (calibration/measures.py): the straighter
+    knee (K1 p98 <= 8: Kendall's straight standing knee; docs/MOTION_ROOT_CAUSE.md §7) and the head's pitch (H1 p2 >= -15,
+    p98 <= +8), and the arms (A1 p98 <= 20)."""
+    import measures as M
+    v = M.stand_measures(m)
+    r = M.judge(v, {k: M.STAND[k] for k in ('K1', 'H1', 'A1', 'H2', 'H3')})
+    return {k: {q: round(r[k][q], 1) for q in ('p2', 'p50', 'p98')} for k in r}, [f"{k}: {r[k]['why']}" for k in r if not r[k]['pass']]
+
+
 def bone_dev(m):
     np = _np()
     pairs = [('Hips', 'Spine'), ('LeftUpperArm', 'LeftLowerArm'), ('LeftLowerArm', 'LeftHand'), ('RightUpperArm', 'RightLowerArm'), ('RightLowerArm', 'RightHand'),
@@ -199,13 +224,22 @@ def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None):
         if meta.get('src_fps') and meta['src_fps'] != true: fails.append(f"rate: read at {meta['src_fps']} fps, the subject's evidence says {true}")
         if not meta.get('src_fps') and true != 120: fails.append(f'rate: read at 120 fps (the converter before 2026-11-17), the subject was captured at {true}: plays {120 / true:.0f}x fast')
         if meta.get('loop'):
-            pop = seam_pop(m); r['checks']['seam_cm'] = round(pop, 2)
-            if pop > 1.0: fails.append(f'seam: {pop:.1f} cm jump at the loop')
+            pop = seam_pop(m); jerk = seam_jerk(m)
+            r['checks']['seam_cm'] = round(pop, 2); r['checks']['seam_jerk_cm'] = round(jerk, 2)
+            # the pop is the jerk (a discontinuity); the step (seam_cm) also counts a fast hand or foot speeding up through
+            # the seam, natural motion, and is reported, not judged
+            if jerk > 0.5: fails.append(f'seam: a {jerk:.1f} cm jerk at the loop past the clip\'s own')
+        if name.startswith('idle'):
+            vals, why = stand_checks(m); r['stand'] = vals
+            fails += [f'standing {w}' for w in why]
         r['checks']['bones_cm'] = round(bone_dev(m), 3)
         if r['checks']['bones_cm'] > 0.5: fails.append('bones: lengths vary by %.1f cm' % r['checks']['bones_cm'])
         sp = float(meta.get('speed') or 0)
         mt = travelling(m, sp) if sp > 0.3 else m
         source = load_source(src, cmu_dirs, accad_dir) if (cmu_dirs or accad_dir) else None
+        if source is not None and meta.get('range') and not sp > 0.3:
+            # a gesture or an idle against the stretch of its capture it was cut from (not the whole take)
+            source = source.slice(meta['range'][0], meta['range'][1])
         if not meta.get('root'):
             # a fixed heel or ball point of a rolling real foot moves too (and capture noise): the clip is held to its own
             # capture at the game's rate (30 fps keys, 60 Hz), not to zero
