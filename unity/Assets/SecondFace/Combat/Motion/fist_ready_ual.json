@@ -1,0 +1,62 @@
+{
+ "name": "fist_ready_ual",
+ "src": "Quaternius UAL1 Punch_Enter",
+ "loop": false,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.932,
+ "fps": 30,
+ "frames": 27,
+ "source": "https://opengameart.org/content/universal-animation-library",
+ "license": "CC0 1.0 (Quaternius, Universal Animation Library 1 Standard)",
+ "kind": "A2 into unarmed guard (transition)",
+ "weapon": "none",
+ "authoring": "hand-keyed (not captured)",
+ "travel_m": [
+  -0.013,
+  0.064
+ ],
+ "max_hip_offset_m": 0.084,
+ "root_note": "in place",
+ "notes": [],
+ "measures": {
+  "ground_m": -0.0054,
+  "F1_sole_p98_cm": 0.1,
+  "F2_heel_p98_cm": 0.0,
+  "F4_slide_mean_cms": 0.0,
+  "F4_slide_over10_share": 0.0,
+  "F5_foot_air_share": 0.0,
+  "H1_head_pitch_p2_p98": [
+   -26.0,
+   -14.5
+  ],
+  "H2_head_yaw_on_chest_p98": 12.1,
+  "H3_head_roll_p98": 8.3,
+  "A1_upper_arm_from_down_p98": 51.6,
+  "A2_elbow_bend_p2_p98": [
+   32.6,
+   128.4
+  ],
+  "K1_straighter_knee_p98": 28.5,
+  "hand_to_torso_core_min_cm": 20.8,
+  "elbow_to_torso_core_min_cm": 28.6,
+  "hips_travel_cm": 6.6,
+  "hips_height_range_cm": [
+   82.5,
+   87.7
+  ],
+  "L_hand_peak": {
+   "frame": 6,
+   "mps": 3.82
+  },
+  "R_hand_peak": {
+   "frame": 6,
+   "mps": 3.12
+  }
+ },
+ "gate_doubts": [
+  "both knees bent (straighter knee 28.5 deg; K1 limit 8, cap 12) - a ready/athletic stance; the gate has no combat-stance state yet",
+  "head pitch [-26.0, -14.5] deg (gesture cap -25..+15)"
+ ],
+ "group": "stopgap_hand_keyed"
+}

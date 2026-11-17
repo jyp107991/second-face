@@ -1,0 +1,96 @@
+{
+ "name": "rifle_reload_ual",
+ "src": "Quaternius UAL1 Pistol_Idle_Loop + authored IK (rifle_auto grips)",
+ "loop": false,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.932,
+ "fps": 30,
+ "frames": 75,
+ "source": "https://opengameart.org/content/universal-animation-library",
+ "license": "CC0 1.0 (Quaternius UAL1 body); arms authored for this project",
+ "kind": "A3 reload, rifle (magazine swap)",
+ "weapon": "rifle_auto (two hands)",
+ "authoring": "authored: hand-keyed body (UAL) + IK arms on the weapon frame; repaired offline (tools/unity/motion/combat_repair.py: retime)",
+ "events": {
+  "mag_out": [
+   23
+  ],
+  "mag_in": [
+   60
+  ]
+ },
+ "travel_m": [
+  0,
+  0
+ ],
+ "root_note": "in place",
+ "notes": [
+  "authored stopgap: no free rifle-handling capture was found; tuned to rifle_auto (AKM) grip spacing"
+ ],
+ "measures": {
+  "ground_m": -0.0054,
+  "F1_sole_p98_cm": 0.1,
+  "F2_heel_p98_cm": 0.0,
+  "F4_slide_mean_cms": 0.0,
+  "F4_slide_over10_share": 0.0,
+  "F5_foot_air_share": 0.0,
+  "H1_head_pitch_p2_p98": [
+   -22.9,
+   -18.3
+  ],
+  "H2_head_yaw_on_chest_p98": 39.2,
+  "H3_head_roll_p98": 9.4,
+  "A1_upper_arm_from_down_p98": 49.1,
+  "A2_elbow_bend_p2_p98": [
+   0.3,
+   76.6
+  ],
+  "K1_straighter_knee_p98": 14.1,
+  "hand_to_torso_core_min_cm": 18.8,
+  "elbow_to_torso_core_min_cm": 12.6,
+  "hips_travel_cm": 0.0,
+  "hips_height_range_cm": [
+   87.7,
+   87.7
+  ],
+  "L_hand_peak": {
+   "frame": 68,
+   "mps": 1.15
+  },
+  "R_hand_peak": {
+   "frame": 69,
+   "mps": 0.47
+  }
+ },
+ "gate_doubts": [],
+ "repairs": {
+  "retime": [
+   {
+    "frames": [
+     65,
+     68
+    ],
+    "limb": "Left",
+    "turn_deg": 133.1,
+    "step_max_deg": [
+     101.6,
+     44.4
+    ]
+   },
+   {
+    "frames": [
+     11,
+     14
+    ],
+    "limb": "Left",
+    "turn_deg": 123.6,
+    "step_max_deg": [
+     100.7,
+     41.2
+    ]
+   }
+  ]
+ },
+ "group": "stopgap_hand_keyed"
+}

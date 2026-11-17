@@ -1,0 +1,71 @@
+{
+ "name": "hatchet",
+ "kind": "hatchet",
+ "source": "https://polyhaven.com/a/hatchet",
+ "license": "CC0 1.0",
+ "author": "Ulan Cabanilla (model), James Ray Cock (texturing) (Poly Haven)",
+ "file": "hatchet.fbx",
+ "units": "metres",
+ "frame": "Unity: +Z forward (muzzle/tip), +Y up, +X right; origin = grip_main",
+ "triangles": {
+  "body": 1200,
+  "source_body": 5250
+ },
+ "size_m": [
+  0.026,
+  0.104,
+  0.288
+ ],
+ "points_unity": {
+  "grip_main": [
+   -0.0,
+   0.0,
+   -0.0
+  ],
+  "tip": [
+   0.0,
+   -0.0086,
+   0.2287
+  ]
+ },
+ "materials": {
+  "hatchet": {
+   "BaseColor": "hatchet_BaseColor.jpg",
+   "Normal": "hatchet_Normal.png",
+   "Mask": "hatchet_Mask.png"
+  }
+ },
+ "texture_size": 512,
+ "notes": [
+  "grip points are palm centres; the hand socket aligns its palm frame to the weapon frame (forward along the barrel/blade, up along the top/spine)",
+  "lore pass done: sun-faded safety-orange scales, hemp cord over the grip, rusted head with a honed edge; variant v2: scales brushed over in drab, black tape grip"
+ ],
+ "variants": {
+  "v1": {
+   "label": "sun-faded safety-orange scales, hemp cord over the grip, rusted head with a honed edge",
+   "materials": {
+    "hatchet": {
+     "BaseColor": "hatchet_BaseColor.jpg",
+     "Normal": "hatchet_Normal.png",
+     "Mask": "hatchet_Mask.png"
+    }
+   }
+  },
+  "v2": {
+   "label": "scales brushed over in drab, black tape grip",
+   "materials": {
+    "hatchet": {
+     "BaseColor": "hatchet_v2_BaseColor.jpg",
+     "Normal": "hatchet_v2_Normal.png",
+     "Mask": "hatchet_v2_Mask.png"
+    }
+   }
+  }
+ },
+ "lore": {
+  "pass": "2026-11-17, tools/lore/lore.py (recipes in the weapon frame; bakes by tools/lore/bake_maps.py)",
+  "originals": "raw/weapons_pre_lore/hatchet/",
+  "painted_out": "the maker's stamp on the head",
+  "mask_occlusion": "G now carries the mesh AO and cavities where the staged mask had none"
+ }
+}

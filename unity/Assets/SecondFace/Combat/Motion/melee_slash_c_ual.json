@@ -1,0 +1,78 @@
+{
+ "name": "melee_slash_c_ual",
+ "src": "Quaternius UAL2 Sword_Regular_C",
+ "loop": false,
+ "speed": 0.0,
+ "root": true,
+ "hip": 0.932,
+ "fps": 30,
+ "frames": 61,
+ "source": "https://opengameart.org/content/universal-animation-library-2",
+ "license": "CC0 1.0 (Quaternius, Universal Animation Library 2 Standard)",
+ "kind": "A4 heavy slash C (finisher)",
+ "weapon": "blade/club",
+ "authoring": "hand-keyed (not captured); repaired offline (tools/unity/motion/combat_repair.py: plant)",
+ "travel_m": [
+  -0.047,
+  1.574
+ ],
+ "max_hip_offset_m": 1.605,
+ "root_note": "root motion: the body travels 1.57 m (x -0.05, z 1.57); keep it as root motion or bake it into the pose at integration",
+ "notes": [
+  "root bone re-zeroed (started 0.72 m off the origin)"
+ ],
+ "measures": {
+  "ground_m": -0.0618,
+  "F1_sole_p98_cm": 45.4,
+  "F2_heel_p98_cm": 8.1,
+  "F4_slide_mean_cms": 409.8,
+  "F4_slide_over10_share": 1.0,
+  "F5_foot_air_share": 0.934,
+  "H1_head_pitch_p2_p98": [
+   -47.8,
+   25.2
+  ],
+  "H2_head_yaw_on_chest_p98": 90.3,
+  "H3_head_roll_p98": 26.7,
+  "A1_upper_arm_from_down_p98": 120.0,
+  "A2_elbow_bend_p2_p98": [
+   2.0,
+   92.9
+  ],
+  "K1_straighter_knee_p98": 66.9,
+  "hand_to_torso_core_min_cm": 28.2,
+  "elbow_to_torso_core_min_cm": 27.1,
+  "hips_travel_cm": 157.3,
+  "hips_height_range_cm": [
+   56.6,
+   88.2
+  ],
+  "L_hand_peak": {
+   "frame": 20,
+   "mps": 16.58
+  },
+  "R_hand_peak": {
+   "frame": 21,
+   "mps": 31.2
+  }
+ },
+ "gate_doubts": [
+  "head pitch [-47.8, 25.2] deg (gesture cap -25..+15)",
+  "head turned 90.3 deg on the chest (H2 cap 45)"
+ ],
+ "repairs": {
+  "plant": [
+   {
+    "frames_held": 40,
+    "frames_out_of_reach": 0
+   }
+  ]
+ },
+ "group": "stopgap_hand_keyed",
+ "qa_why": "slide: planted feet slide 5.1 cm/s on average (F4: 3)",
+ "events": {
+  "impact": [
+   19
+  ]
+ }
+}
