@@ -298,6 +298,13 @@ namespace SecondFace.Game.Play
             }
             Piles.Clear();
             Piles.Sync(Game);
+            // a move's map is visited (as the web game's map entry had it): a room not stamped as a place of its own, or
+            // under one, is not marked by walking in (Visit)
+            if (_arriving != null && !Game.Flags.ContainsKey("visited_" + _arriving.Map.Id))
+            {
+                Game.Flags["visited_" + _arriving.Map.Id] = true;
+                Quests.Update();
+            }
             _arriving = null;
             SetDown?.Invoke();
         }
@@ -679,6 +686,11 @@ namespace SecondFace.Game.Play
                 case "surgery":
                     // the surgeon's table, with whoever is being talked to (a mender with a surgeon's stock)
                     if (who != null) StartCoroutine(AfterTalk(() => OpenSurgery(who)));
+                    break;
+                case "dust":
+                    // a game of Dust with whoever is being talked to: a stake each, or a prize
+                    var terms = DustTerms.From(data);
+                    if (who != null) StartCoroutine(AfterTalk(() => OpenDust(who, terms)));
                     break;
                 default: Asked?.Invoke(name, data); break;
             }
@@ -1143,6 +1155,34 @@ namespace SecondFace.Game.Play
                 Face = face != null ? Portraits.Of(face) : null,
                 Now = ClockNow, Then = ClockTo,
                 Said = line => Said?.Invoke(line),
+            }));
+            Table = screen;
+            return screen;
+        }
+
+        /// <summary>Sits down to Dust with someone, their face over the table (null when they cannot: the player or they
+        /// short of the stake, said): both put the stake in the pot (Core <see cref="Dust.Ante"/>), the game is played on
+        /// Game <see cref="DustScreen"/>, and the pot or the prize is paid the moment it is decided.</summary>
+        public DustScreen OpenDust(Interactable who, DustTerms terms)
+        {
+            var ui = UIService.Instance;
+            var npc = NpcOf(who);
+            if (ui == null || npc == null || terms == null) return null;
+            var name = string.IsNullOrEmpty(npc.Name) ? who.Title : npc.Name;
+            var refusal = Dust.CanSit(Game, npc, terms);
+            if (refusal != null)
+            {
+                Said?.Invoke(refusal == "you_short" ? Strings.Get("dust.you_short", terms.Stake) : Strings.Get("dust.they_short", name));
+                return null;
+            }
+            Dust.Ante(Game, npc, terms);
+            var face = who.GetComponentInChildren<Animator>() != null ? who.gameObject : null;
+            _with = who;
+            var screen = ui.Open(new DustScreen(new DustModel
+            {
+                Game = Game, Npc = npc, Name = name, Face = face != null ? Portraits.Of(face) : null, Terms = terms, Host = Quests,
+                Said = line => Said?.Invoke(line),
+                Settled = () => Quests.Update(),
             }));
             Table = screen;
             return screen;

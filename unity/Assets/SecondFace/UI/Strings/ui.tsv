@@ -612,3 +612,28 @@ surgery.nothing_there	Nothing there.
 surgery.said_clean	{0}: fitted.
 surgery.said_complication	{0}: fitted, with a complication.
 surgery.said_rejected	{0}: rejected.
+dust.title	Dust
+dust.terms	First past {0} · {1} Tolls in the pot
+dust.terms_prize	First past {0} · for {1}
+dust.you	You
+dust.run_yours	Your run · {0}
+dust.run_theirs	{0}'s run · {1}
+dust.wins	{0} wins
+dust.roll	Roll
+dust.bank	Bank
+dust.bank_run	Bank {0}
+dust.leave	Leave the table
+dust.rules	Throw as often as you dare: a 1 loses the run and the turn. Bank to keep it. First past {0} at the end of a round takes the pot.
+dust.log.stake	{0} puts {1} Tolls in the dust. So do you.
+dust.log.stake_prize	{0} names the stakes: {1}.
+dust.log.dusted	{0} throws a 1: dusted, {1} lost.
+dust.log.bank	{0} banks {1} ({2}).
+dust.log.level	Level at {0}. Another round.
+dust.log.pot	{0} takes the pot: {1} Tolls.
+dust.log.pot_prize	{0} takes it: {1}.
+dust.won_tolls	You win {0} Tolls.
+dust.lost_tolls	{0} takes the pot.
+dust.won_prize	You win: {0}.
+dust.lost_prize	{0} wins: {1}.
+dust.you_short	You need {0} Tolls to sit down.
+dust.they_short	{0} can't cover the stake.

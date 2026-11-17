@@ -1718,3 +1718,109 @@
     white-space: normal;
     margin: 12px 0;
 }
+
+/* ---- the Dust table (DustScreen.cs): a page at the right, the two of them in the world beside it; the dice drawn with
+   their pips, a 1 in rust; roll, bank and leave at the HUD's action size (100) ---- */
+.sf-dust { background-color: rgba(12, 10, 8, 0.16); }
+.sf-dust__safe { flex-direction: row; justify-content: flex-end; }
+.sf-dust__page {
+    width: 46%;
+    min-width: 560px;
+    background-color: var(--paper);
+    border-radius: 4px;
+    padding: 18px 26px 14px 26px;
+}
+.sf-dust__head { flex-direction: row; align-items: center; flex-shrink: 0; }
+.sf-dust__face {
+    width: 84px;
+    height: 84px;
+    margin-right: 16px;
+    border-radius: 42px;
+    border-width: 3px;
+    border-color: var(--paper-edge);
+    overflow: hidden;
+    background-color: #5C5146;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+.sf-dust__face Image { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.sf-dust__initial {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: var(--fs-42);
+    color: var(--plate-text);
+}
+.sf-dust__title {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: var(--fs-36);
+    color: var(--ink);
+}
+.sf-dust__terms { font-size: var(--fs-21); color: var(--pencil); white-space: normal; }
+.sf-dust__scores { margin-top: 14px; flex-shrink: 0; }
+.sf-dust__score { flex-direction: row; align-items: center; margin-bottom: 6px; padding: 4px 8px; border-radius: 3px; }
+.sf-dust__score--turn { background-color: rgba(196, 138, 44, 0.16); }
+.sf-dust__who {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-23);
+    color: var(--ink);
+    width: 34%;
+    overflow: hidden;
+}
+.sf-dust__bar { flex-grow: 1; height: 12px; border-radius: 6px; background-color: rgba(36, 32, 27, 0.12); overflow: hidden; }
+.sf-dust__fill { height: 100%; width: 0; border-radius: 6px; background-color: var(--ochre); }
+.sf-dust__points {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-26);
+    color: var(--ink);
+    width: 64px;
+    -unity-text-align: middle-right;
+}
+.sf-dust__run {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-22);
+    letter-spacing: 2px;
+    color: var(--pencil);
+    margin-top: 12px;
+    flex-shrink: 0;
+}
+.sf-dust__dice { flex-direction: row; flex-wrap: wrap; min-height: 72px; margin-top: 6px; flex-shrink: 0; }
+.sf-dust__die {
+    width: 64px;
+    height: 64px;
+    margin: 0 8px 8px 0;
+    border-radius: 10px;
+    border-width: 2px;
+    border-color: #B9A47E;
+    background-color: #F6F0E1;
+}
+.sf-dust__die--dusted { border-color: var(--rust); background-color: #F3DDD3; }
+.sf-dust__pip {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    margin-left: -6px;
+    margin-top: -6px;
+    border-radius: 6px;
+    background-color: var(--ink);
+}
+.sf-dust__die--dusted .sf-dust__pip { width: 16px; height: 16px; margin-left: -8px; margin-top: -8px; border-radius: 8px; background-color: var(--rust); }
+.sf-dust__acts { flex-direction: row; flex-shrink: 0; margin-top: 4px; }
+.sf-dust__act { min-height: 100px; min-width: 140px; margin-right: 12px; padding: 0 24px; font-size: var(--fs-26); }
+.sf-dust__leave { background-color: var(--ochre); color: var(--ink); }
+.sf-dust__leave:enabled:hover { background-color: #D59B3A; }
+.sf-dust__result {
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: var(--fs-24);
+    color: var(--rust);
+    white-space: normal;
+    margin-top: 10px;
+    flex-shrink: 0;
+}
+.sf-dust__scroll { flex-grow: 1; flex-shrink: 1; margin-top: 8px; }
+.sf-dust__line {
+    -unity-font-definition: url("../Fonts/Literata-Regular.asset");
+    font-size: var(--fs-20);
+    color: var(--ink-soft);
+    white-space: normal;
+}
+.sf-dust__rules { font-size: var(--fs-18); color: var(--pencil); white-space: normal; margin-top: 6px; flex-shrink: 0; }

@@ -26,7 +26,8 @@ namespace SecondFace.Tests
     /// map's spawn in the place that holds it (the minutes passed); a title card shows its text and goes; a dialogue opens
     /// the next tree once the first has closed; a reverie turns the picture cold while its memory plays and back after;
     /// combat fights whoever has turned; a fight is with the person talked to; a pit bout ends with both standing and pays
-    /// by its terms.
+    /// by its terms; the surgeon's table opens from their word and fits a piece, the hours passed; a game of Dust is played
+    /// for its stake, their throws played out on the table, and the pot paid.
     /// </summary>
     public class ContentEventsTests
     {
@@ -205,6 +206,73 @@ namespace SecondFace.Tests
             Assert.That(walk.Busy, Is.False, "back to the walkabout");
         }
 
+        [UnityTest, Timeout(1200000)]
+        public IEnumerator AGameOfDustIsPlayedForTheStakeAndPaid()
+        {
+            Bootstrap boot = null;
+            yield return Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            yield return Quiet(walk);
+            var them = Nearest(walk);
+            Assert.That(them, Is.Not.Null, "someone stands near");
+            var g = walk.Game;
+            if (!g.Npcs.TryGetValue(them.Def.Id, out var save)) g.Npcs[them.Def.Id] = save = new NpcSave();
+            save.Inventory = SecondFace.Core.Npc.NpcStats.Build(them.Def).inv;
+            save.Inventory.Tolls = 50;
+            Tree("t_ev_dust", "A game?", "[{\"event\":\"dust\",\"data\":{\"stake\":5}}]");
+            // short of the stake, nobody sits down
+            var said = new List<string>();
+            walk.Said += said.Add;
+            g.Pc.Inventory.Tolls = 3;
+            Assert.That(walk.OpenConversation(them.GetComponent<Interactable>(), "t_ev_dust"), Is.True, "talking to them");
+            walk.Conversation.Finish();
+            walk.Conversation.Choose("t_ev_dust.go");
+            for (var i = 0; i < 3; i++) yield return null;
+            Assert.That(walk.Table == null || !walk.Table.IsOpen, Is.True, "no table without the stake");
+            Assert.That(said, Is.Not.Empty, "it is said");
+            // with it, they play
+            g.Pc.Inventory.Tolls = 20;
+            Assert.That(walk.OpenConversation(them.GetComponent<Interactable>(), "t_ev_dust"), Is.True);
+            walk.Conversation.Finish();
+            walk.Conversation.Choose("t_ev_dust.go");
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 3f && !(walk.Table is DustScreen)) yield return null;
+            var table = walk.Table as DustScreen;
+            Assert.That(table, Is.Not.Null, "the Dust table opened");
+            Assert.That(table.IsOpen, Is.True);
+            Assert.That(walk.Conversation.IsOpen, Is.False, "the conversation closed for it");
+            Assert.That(g.Pc.Inventory.Tolls, Is.EqualTo(15), "the stake went in");
+            Assert.That(save.Inventory.Tolls, Is.EqualTo(45), "and theirs");
+            for (var i = 0; i < 3; i++) yield return null;   // (laid out)
+            Assert.That(table.RollButton.resolvedStyle.height, Is.GreaterThanOrEqualTo(100f - 0.5f), "a tap target the HUD's size");
+            Assert.That(table.BankButton.enabledInHierarchy, Is.False, "nothing to bank yet");
+            // the player banks at 12 (or what wins it); their turns play out on the table, throw by throw
+            var theirTurns = 0;
+            while (Time.realtimeSinceStartup - t0 < 400f && !table.Game.Over)
+            {
+                if (table.TheirTurn) { theirTurns++; while (table.TheirTurn && Time.realtimeSinceStartup - t0 < 400f) yield return null; continue; }
+                var s = table.Game;
+                var me = s.Players[0];
+                if (s.Run >= 12 || (s.Run > 0 && me.Score + s.Run >= s.Target && me.Score + s.Run > s.Players[1].Score)) BootTests.Press(table.BankButton);
+                else BootTests.Press(table.RollButton);
+                yield return null;
+            }
+            Assert.That(table.Game.Over, Is.True, "the game was decided");
+            Assert.That(theirTurns, Is.GreaterThan(0), "they played their turns at the table");
+            Assert.That(table.Settled, Is.True, "and it was paid");
+            Assert.That(g.Pc.Inventory.Tolls, Is.EqualTo(table.Game.Winner == 0 ? 25 : 15), "the pot to the winner");
+            Assert.That(save.Inventory.Tolls, Is.EqualTo(table.Game.Winner == 1 ? 55 : 45));
+            Assert.That(g.Flag("dust_games"), Is.EqualTo(1.0));
+            Assert.That(table.Result, Is.Not.Empty);
+            Assert.That(table.LeaveButton.resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex), "the table can be left");
+            BootTests.Press(table.LeaveButton);
+            yield return null;
+            Assert.That(table.IsOpen, Is.False, "left");
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 5f && walk.Busy) yield return null;
+            Assert.That(walk.Busy, Is.False, "back to the walkabout");
+        }
+
         [UnityTest, Timeout(1800000)]
         public IEnumerator MovesTitleCardsNextConversationsAndMemories()
         {
@@ -245,6 +313,7 @@ namespace SecondFace.Tests
             Assert.That(Flat(walk.Walker.transform.position, spawn.transform.position), Is.LessThan(2.5f));
             yield return Wait(1f);
             Assert.That(walk.Game.LocationId, Is.EqualTo("rustdogs"), "the game is where the walker stands");
+            Assert.That(walk.Game.Flags.ContainsKey("visited_overpass"), Is.True, "the map is visited");
             yield return Quiet(walk);
 
             // title: the card shows once the conversation has closed, and goes by itself
