@@ -717,6 +717,15 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-17 (late), the motion gate's root causes, and a plan by cause.** Gate: red, 55. The owner asked why the
+  gate is still red after 26 rounds. The answer is that the method is wrong, not the tuning. `docs/MOTION_ROOT_CAUSE.md`
+  sets out the evidence (3,173 lines of post-animation corrections fighting each other; 21 of A1's 25 on three broad-waisted
+  men; all W6 women jogging on men's captures; a pregnant woman's idle on every man; `idle` at double speed from a misread
+  60 fps; a gate never run on real people), five root causes (R1-R5) and seven tracks (T1-T7: calibrate the gate on real
+  captures; a clip QA gate and sex-matched source motion; one contact-preserving retarget baked per body in place of the
+  heuristic stack; derived soft-tissue contact; a geometry audit against ANSUR II; measures of speed, cadence and gait by sex;
+  a fast offline loop), with contingencies and what "done" means. Owners: an offline helper (T1, T2, T5 measures, T6
+  offline) and the gate agent in the editor (T3, T4, T6 in-gate, imports).
 - **2026-11-17 (later), where everything is (read this to resume).** Gate: red, 55 (63a0e244: A1 25, W6 11, C1 8,
   A4 4, W3 3, F1/F2/F5/K1 1). On main: `side/core`'s first part merged (e3b3aefd: party followers, crowd names, the
   content's eight events — PlayMode PartyTests + ContentEventsTests 7/7) and a fight held active until wholly over
