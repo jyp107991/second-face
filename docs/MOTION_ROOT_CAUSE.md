@@ -123,7 +123,9 @@ frame rates), `/home/user/second-face-staging/motion/README.md` (clip QA, clips 
   stack state by state as before; T4 where contact remains.
 - **Still open (offline helper):** men's idles, stretch, yawn and sit from documented men (ACCAD Male1/Male2 need a
   position-based re-solve); faster women's walks (the staged ones are 0.86-1.08 m/s, so 1.4 m/s would need a playback rate
-  past `RateMax`); idles whose actors stand straight (K1) and hold the head level (the game's `idle` looks 35-42° down: H1);
+  past `RateMax`; **open item, decided:** until a woman's brisk walk is staged (T2b), townsfolk women walk at their own
+  walks' natural pace (`Pace.NaturalWalk`) and a woman player or companion keeps the man's 1.4 m/s on the men's `walk` at a
+  natural rate, a fill clip in the women's set: game speed never depends on sex, and `RateMax` is not raised); idles whose actors stand straight (K1) and hold the head level (the game's `idle` looks 35-42° down: H1);
   the staged clips' remaining seams and slides.
 
 ## 8. T3 design: the contact-preserving retarget, baked per body (editor owner, 2026-11-17)
@@ -171,3 +173,14 @@ frame, H, K): minutes per body and clip, before and after a bake. The whole-cast
 gesture ends) and Business_Female_01 (jog); (2) the arm solve (rest contact + signed distance) on those three men's idles;
 (3) the foot solve on the woman's jog; (4) their picks in the gate with the bake applied and the matching heuristics off for
 those states; only then a whole-cast run.
+- **Clip set v2 (staging/motion/v2, 46 clips, 34 pass) and its decisions (coordinator, 2026-11-17).** Men now come from
+  documented men too (ACCAD Male1/Male2 re-solved onto the T-pose, every joint where captured). The converter's own faults
+  caused most seam and slide failures (loops cut to a fraction of a frame, a straight blend ramp, hips pinned in gestures)
+  and are fixed for every clip. In the game: the women's walk is `walk_f_b` (1.15 m/s; the player's 1.4 m/s at a rate of
+  about 1.2, a real brisk 120 steps/min; above 1.4 the jog takes over; speed never depends on sex); the women's idles are
+  `idle_f` and `idle_f_c`; the old `idle`, `idle_b`, `idle_c`, `idle_d` and `idle_f_b` come out (their actors' knees 20-24°,
+  `idle` looking 58° down), as do `walk_brisk`, `walk_c`, `walk_f_n`, and `run_f` and `sweep` until fixed. No free capture
+  of a woman walking faster than 1.27 m/s exists. Standing captures bend the knee 7-24° because of how they were solved
+  (anatomy 0-5°): one documented correction is applied to every standing idle alike (knee p98 to ≤ 5°, feet kept, pelvis
+  by IK, the size recorded per clip). K1 stays at 8° for the game and the clips. Men's stretch and yawn come from CMU 143_30
+  (sex unrecorded) until a documented man's take is found; no free man's chair-sit exists.
