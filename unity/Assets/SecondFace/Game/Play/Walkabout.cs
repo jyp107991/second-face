@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Linq;
+using SecondFace.Core.Combat;
 using SecondFace.Core.Content;
 using SecondFace.Core.Dialogue;
 using SecondFace.Core.Inventory;
@@ -48,6 +49,9 @@ namespace SecondFace.Game.Play
         public int Townsfolk => People != null ? People.Standing : 0;
         /// <summary>The world's people keeping their routines (P6.2; null until the walker is first set down).</summary>
         public PeopleService People { get; private set; }
+        /// <summary>The party in the world: the companions following the player, and those waiting where they were left
+        /// (null until the walker is first set down).</summary>
+        public PartyFollowers Party { get; private set; }
         /// <summary>The people about watching the walker (P6.3: the light on them, who has noticed them).</summary>
         public Watchers Watch { get; private set; }
         /// <summary>The standing places' things that can be used: containers, talking props, fires, seats (P6.1).</summary>
@@ -89,9 +93,13 @@ namespace SecondFace.Game.Play
         public Triggers Triggers { get; private set; }
         /// <summary>The player lost a fight.</summary>
         public event System.Action Defeated;
-        /// <summary>A conversation, a trade or a fight is under way: the world's own events wait.</summary>
-        public bool Busy => (Conversation != null && Conversation.IsOpen) || (Trade != null && Trade.IsOpen) || (Combat != null && Combat.Active) || _responding > 0;
+        /// <summary>A conversation, a trade, a table (Dust, the surgeon's), a fight or a move to another place is under way:
+        /// the world's own events wait.</summary>
+        public bool Busy => (Conversation != null && Conversation.IsOpen) || (Trade != null && Trade.IsOpen) || (Table != null && Table.IsOpen)
+                            || (Combat != null && Combat.Active) || _responding > 0 || (Begun && !Placed);
         private int _responding;
+        /// <summary>A table open with someone now: Dust, the surgeon's (null when none).</summary>
+        public UIScreen Table { get; private set; }
 
         /// <summary>A map trigger fires: its line said, its effects applied, the quests and the people brought up to date.</summary>
         public void Fire(Core.Scene.TriggerDef def)
@@ -102,6 +110,7 @@ namespace SecondFace.Game.Play
             if (def.Effects != null) Logic.Apply(def.Effects, Game, new Host(this));
             if (Stage != null && Stage.Clock != null && Game.Minutes != before) Stage.Clock.Minutes += Game.Minutes - before;
             Quests.Update();
+            if (Party != null) Party.Sync();
             if (People != null) People.Refresh();
         }
 
@@ -111,6 +120,8 @@ namespace SecondFace.Game.Play
         {
             Milestone?.Invoke();
             Quests.Update();
+            // the party first: one who joined goes on in the body they stood in before the place's people are brought anew
+            if (Party != null) Party.Sync();
             if (People != null) People.Refresh();
             if (Combat != null) Combat.Check(true);
         }
@@ -143,6 +154,7 @@ namespace SecondFace.Game.Play
         {
             Game = state ?? States.NewGame(StartAt, 0, 0);
             _quests = null;
+            _arriving = null;
             Begun = true;
             if (fresh || state == null)
             {
@@ -162,6 +174,7 @@ namespace SecondFace.Game.Play
         /// <summary>The game as it stands now, for a save: where the walker is and how the camera looks at them, the hour.</summary>
         public GameState Snapshot()
         {
+            if (Party != null) Party.Keep();   // where the waiting stand
             if (Walker != null)
             {
                 var p = Walker.Footing;
@@ -179,9 +192,11 @@ namespace SecondFace.Game.Play
         public void End()
         {
             Begun = false;
+            _arriving = null;
             _placing++;   // a setting down under way is dropped
             if (Walker != null) Destroy(Walker.gameObject);
             Walker = null;
+            if (Party != null) Party.Clear();
             if (Input != null) Input.Walker = null;
             if (Pad != null) Pad.Walker = null;
             if (Rig != null) Rig.Leader = null;
@@ -218,14 +233,17 @@ namespace SecondFace.Game.Play
             {
                 var place = string.IsNullOrEmpty(Game.LocationId) || !Stage.World.Layout.Places.ContainsKey(Game.LocationId) ? "shale" : Game.LocationId;
                 var centre = Stage.World.PlaceCentre(place);
-                yield return Stage.WaitAround(centre, place, LoadTimeout);
+                // (a place not built yet stands as a bare pad: it is never shown, so it is not waited for)
+                yield return Stage.WaitAround(centre, Built(place) ? place : null, LoadTimeout);
                 if (ticket != _placing) yield break;
-                var marker = Stage.Marker(place, "spawn", StartSpawn) ?? Stage.Marker(place, "spawn");
+                // a move the content asked for lands on its map's spawn (a lift's top, a cell); else the place's own
+                var arrival = Arrival(place);
+                var marker = arrival ?? Stage.Marker(place, "spawn", StartSpawn) ?? Stage.Marker(place, "spawn");
                 at = marker != null ? marker.transform.position : centre;
                 yaw = marker != null ? marker.transform.eulerAngles.y : 0f;
                 // arriving, the walker and the view face where the place's life is, not the map's drawn facing (an arrival
-                // looked out at bare ground beside the road, play-ch1 T43)
-                var heart = Stage.Heart(place, marker != null ? marker.Map : null);
+                // looked out at bare ground beside the road, play-ch1 T43); a named spawn keeps its own facing
+                var heart = arrival != null ? null : Stage.Heart(place, marker != null ? marker.Map : null);
                 if (heart.HasValue)
                 {
                     var to = heart.Value - at; to.y = 0f;
@@ -269,6 +287,9 @@ namespace SecondFace.Game.Play
             }
             Pad.Walker = Walker;
             Populate(assets);
+            // the party beside the walker, wherever they were set down (a new game, a load, a journey by the map)
+            if (Party == null) { Party = gameObject.AddComponent<PartyFollowers>(); Party.Walkabout = this; }
+            Party.SetDown();
             if (Piles == null)
             {
                 Piles = gameObject.AddComponent<GroundPiles>();
@@ -277,7 +298,80 @@ namespace SecondFace.Game.Play
             }
             Piles.Clear();
             Piles.Sync(Game);
+            // a move's map is visited (as the web game's map entry had it): a room not stamped as a place of its own, or
+            // under one, is not marked by walking in (Visit)
+            if (_arriving != null && !Game.Flags.ContainsKey("visited_" + _arriving.Map.Id))
+            {
+                Game.Flags["visited_" + _arriving.Map.Id] = true;
+                Quests.Update();
+            }
+            _arriving = null;
             SetDown?.Invoke();
+        }
+
+        /// <summary>A place is built (it has a prefab to show; the rest stand as bare pads until their kits are made).</summary>
+        private bool Built(string place)
+        {
+            var set = Stage?.Streamer?.PlaceSpawner?.Places;
+            return set == null || set.AddressOf(place) != null;
+        }
+
+        /// <summary>The spawn a move is landing on, in the place shown (null when no move is under way or the place does not
+        /// stand: the place's own spawn is used).</summary>
+        private PlaceMarker Arrival(string place)
+        {
+            if (_arriving == null) return null;
+            var go = Stage?.Streamer?.PlaceSpawner?.Instance(place);
+            if (go == null) return null;
+            PlaceMarker first = null;
+            foreach (var m in go.GetComponentsInChildren<PlaceMarker>())
+            {
+                if (m.Kind != "spawn" || m.Map != _arriving.Map.Id) continue;
+                if (_arriving.Spawn != null && m.Id == _arriving.Spawn.Id) return m;
+                first ??= m;
+            }
+            if (first == null) Debug.LogWarning($"Walkabout: {_arriving.Map.Id} is not stamped into {place}; set down at the place's spawn");
+            return first;
+        }
+
+        /// <summary>The move under way (the content's goto): the map and spawn it lands on.</summary>
+        private GotoTarget _arriving;
+        /// <summary>Where the last move the content asked for went (tests read it).</summary>
+        public GotoTarget LastMove { get; private set; }
+        /// <summary>A move to another map has begun: the name of the map (the card over the world says it).</summary>
+        public event System.Action<string> Moving;
+
+        /// <summary>The world place that holds a map (its own place, or a place by that id), as the world's layout has it.</summary>
+        public string PlaceOf(string map)
+        {
+            var layout = Stage?.World?.Layout;
+            if (layout == null || string.IsNullOrEmpty(map)) return null;
+            foreach (var p in layout.Places.Values) if (p.Map == map) return p.Id;
+            return layout.Places.ContainsKey(map) ? map : null;
+        }
+
+        /// <summary>Moves the player to a map's spawn (the content's <c>goto</c>: a lift, a district's transit, a cell; port
+        /// of the web game's loadLocation): the minutes it takes pass, the walker is set down at the spawn in the world
+        /// place that holds the map (Core <see cref="Goto"/>: its own, the one it lies under or beside, or its town while
+        /// it is not stamped yet), the camera and the touches with them, and the party comes along (set down beside them).
+        /// False when the map is unknown or no place holds it.</summary>
+        public bool Move(GotoOrder order)
+        {
+            if (order == null || Stage == null || Stage.World == null || !Stage.World.Ready) return false;
+            var target = Goto.Resolve(order.Location, order.Spawn, PlaceOf);
+            if (target == null) { Debug.LogWarning($"Walkabout: no place holds {order.Location} (goto)"); return false; }
+            if (!target.SpawnFound && !string.IsNullOrEmpty(order.Spawn)) Debug.LogWarning($"Walkabout: {order.Location} has no spawn {order.Spawn}; its first instead");
+            if (Party != null) Party.Keep();   // the companions left waiting stay where they stand
+            ClockToGame();
+            Game.Minutes += order.Minutes;
+            if (Stage.Clock != null) { Stage.Clock.Minutes = Game.Minutes; if (Stage.Sky != null) Stage.Sky.Apply(); }
+            Game.LocationId = target.Place;
+            Game.Spot = null;
+            _arriving = target;
+            LastMove = target;
+            Moving?.Invoke(string.IsNullOrEmpty(target.Map.Name) ? target.Map.Id : target.Map.Name);
+            if (_raised) StartCoroutine(Place());
+            return true;
         }
 
         /// <summary>The world's people (P6.2) for the game begun: each standing place's placements whose condition holds,
@@ -541,16 +635,21 @@ namespace SecondFace.Game.Play
             public override void Event(string name, Newtonsoft.Json.Linq.JToken data) => _w.OnEvent(name, data);
         }
 
-        /// <summary>An event from the content (a choice's effect): camp (a bed of one's own), trade with whoever is being
-        /// talked to, everyone healed; the rest go to <see cref="Asked"/>. What opens a screen waits for the conversation
-        /// to close first.</summary>
+        /// <summary>An event from the content (a choice's effect, a quest's, a trigger's; port of the web game's dialogue
+        /// and logic hosts): camp (a bed of one's own); trade with whoever is being talked to; everyone healed; someone
+        /// comes to talk; a move to another map (goto); a fight with whoever has turned (combat) or with the person talked
+        /// to (fight; a pit bout with <c>{ pit: { win, lose } }</c>); another conversation (dialogue); a recorded memory
+        /// (reverie: the picture turns cold while it plays); a title card (title). The rest go to <see cref="Asked"/>.
+        /// What opens a screen or moves the player waits for the conversation to close first.</summary>
         private void OnEvent(string name, Newtonsoft.Json.Linq.JToken data)
         {
+            // the person being talked to: only while their conversation is open (a quest's or a trigger's effect later has
+            // nobody across from the player, as the web game's dialogue host had it)
+            var who = Conversation != null && Conversation.IsOpen ? _speaking : null;
             switch (name)
             {
                 case "camp": StartCoroutine(AfterTalk(() => OpenCamp(true))); break;
                 case "barter":
-                    var who = _speaking;
                     if (who != null) StartCoroutine(AfterTalk(() => OpenTrade(who)));
                     break;
                 case "heal": Camp.HealAll(Game); break;
@@ -558,8 +657,155 @@ namespace SecondFace.Game.Play
                     // someone comes to talk (a trigger: the stranger at the door, the riders in the square)
                     StartCoroutine(Comes(data?["npc"]?.ToString()));
                     break;
+                case "goto":
+                    var order = GotoOrder.From(data);
+                    if (order != null) StartCoroutine(AfterTalk(() => Move(order)));
+                    break;
+                case "combat":
+                    // a word, a quest or a trigger turned someone: the hostility is tested again and whoever turned fights
+                    // (as the web game's: the conversation is not cut short; the fight starts as it closes)
+                    if (Combat != null) Provoke(null, null, false);
+                    break;
+                case "fight":
+                    // with the person being talked to: they turn on the player now, or square up for a pit bout
+                    var person = who != null ? who.GetComponent<Townsperson>() : null;
+                    if (person == null || Combat == null) { Debug.LogWarning("Walkabout: a fight asked for with nobody being talked to"); break; }
+                    var pit = PitTerms.From(data);
+                    if (pit == null) Combat.Turn(person);
+                    Provoke(person, pit, true);
+                    break;
+                case "dialogue":
+                    var tree = (string)data?["tree"];
+                    if (!string.IsNullOrEmpty(tree)) StartCoroutine(AfterTalk(() => OpenTree(tree, (string)data["name"] ?? "")));
+                    break;
+                case "reverie":
+                    var memory = (string)data?["tree"];
+                    if (!string.IsNullOrEmpty(memory)) StartCoroutine(AfterTalk(() => OpenReverie(memory, (string)data["name"])));
+                    break;
+                case "title":
+                    ShowTitle((string)data?["text"] ?? "");
+                    break;
+                case "surgery":
+                    // the surgeon's table, with whoever is being talked to (a mender with a surgeon's stock)
+                    if (who != null) StartCoroutine(AfterTalk(() => OpenSurgery(who)));
+                    break;
+                case "dust":
+                    // a game of Dust with whoever is being talked to: a stake each, or a prize
+                    var terms = DustTerms.From(data);
+                    if (who != null) StartCoroutine(AfterTalk(() => OpenDust(who, terms)));
+                    break;
                 default: Asked?.Invoke(name, data); break;
             }
+        }
+
+        /// <summary>The fight the content asked for starts once the conversation has closed (<paramref name="close"/>: closed
+        /// for it, as a word that comes to blows ends the talk; Combat <see cref="Combat.Provoke"/>); whoever was being
+        /// talked to stays with the player meanwhile.</summary>
+        private void Provoke(Townsperson target, PitTerms pit, bool close)
+        {
+            _provoking++;
+            IEnumerator Run()
+            {
+                try
+                {
+                    yield return null;   // (the choice that asked runs to its end first)
+                    if (close && Conversation != null && Conversation.IsOpen) Conversation.Close();
+                    while (Conversation != null && Conversation.IsOpen) yield return null;
+                    yield return Combat.Provoke(target, pit);
+                }
+                finally { _provoking--; }
+            }
+            StartCoroutine(Run());
+        }
+        private int _provoking;
+
+        /// <summary>A conversation with no face (a door, a camp's approach, a memory): the tree under a name. Null when the
+        /// tree is unknown or has nothing to say now.</summary>
+        public DialoguePanel OpenTree(string tree, string name)
+        {
+            var ui = UIService.Instance;
+            if (ui == null || string.IsNullOrEmpty(tree) || !Registry.Dialogues.TryGetValue(tree, out var def)) return null;
+            ClockToGame();
+            var runner = new DialogueRunner(def, Game, Quests);
+            if (runner.Ended) return null;
+            _speaking = null;
+            var panel = new DialoguePanel(runner, id => SpeakerName(id, def, name));
+            TimeFollows(panel);
+            Conversation = ui.Open(panel);
+            return panel;
+        }
+
+        /// <summary>A speaker's name in a conversation with no face: nobody's for the narrator, the player's own, a person's
+        /// from the content, the tree's name for its owner.</summary>
+        private string SpeakerName(string id, DialogueDef def, string title)
+        {
+            if (string.IsNullOrEmpty(id) || id == "narrator") return "";
+            if (id == "pc") return string.IsNullOrEmpty(Game.Pc.Sheet.Name) ? Strings.Get("dialogue.you") : Game.Pc.Sheet.Name;
+            if (Registry.Npcs.TryGetValue(id, out var n) && !string.IsNullOrEmpty(n.Name)) return n.Name;
+            return id == def.Owner || string.IsNullOrEmpty(def.Owner) ? title : id;
+        }
+
+        /// <summary>The cold picture while a recorded memory plays (null until the first).</summary>
+        public SecondFace.Game.World.Reverie Reverie { get; private set; }
+        /// <summary>A recorded memory is playing (the picture is cold).</summary>
+        public bool InReverie => Reverie != null && Reverie.On;
+
+        /// <summary>A recorded memory (the content's <c>reverie</c>): the picture turns cold, washed and grainy (a
+        /// post-processing volume over the look), the memory's tree plays under its name, and the picture comes back when
+        /// it ends. Null when the tree has nothing to say.</summary>
+        public DialoguePanel OpenReverie(string tree, string name)
+        {
+            if (Reverie == null) Reverie = SecondFace.Game.World.Reverie.Create(transform);
+            Reverie.Begin();
+            var panel = OpenTree(tree, string.IsNullOrEmpty(name) ? Strings.Get("reverie.title") : name);
+            if (panel == null) { Reverie.End(); return null; }
+            panel.Reverie = true;
+            panel.Ended += () => { if (Reverie != null) Reverie.End(); };
+            return panel;
+        }
+
+        /// <summary>The title card up now (a chapter's, an act's; null when none).</summary>
+        public TitleCard Title { get; private set; }
+        private readonly System.Collections.Generic.Queue<string> _titles = new();
+        private bool _titling;
+
+        /// <summary>A title card over the world (the content's <c>title</c>: a chapter begins, an act ends): its first line
+        /// small over the rest, for a few seconds, then it fades. Each waits for the conversation that raised it to close
+        /// and for the card before it to go, so each stands alone.</summary>
+        public void ShowTitle(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return;
+            _titles.Enqueue(text);
+            if (!_titling) StartCoroutine(Titles());
+        }
+
+        /// <summary>How long a title card stays, seconds (real time: a camp or a menu does not hold it).</summary>
+        public const float TitleSeconds = 5f;
+
+        private IEnumerator Titles()
+        {
+            _titling = true;
+            try
+            {
+                while (_titles.Count > 0)
+                {
+                    yield return null;
+                    while (Conversation != null && Conversation.IsOpen) yield return null;
+                    var ui = UIService.Instance;
+                    var text = _titles.Dequeue();
+                    if (ui == null) continue;
+                    var card = Title = ui.Open(TitleCard.Chapter(text));
+                    var t0 = Time.unscaledTime;
+                    while (card.IsOpen && Time.unscaledTime - t0 < TitleSeconds - TitleCard.FadeSeconds) yield return null;
+                    card.FadeOut();
+                    t0 = Time.unscaledTime;
+                    while (card.IsOpen && Time.unscaledTime - t0 < TitleCard.FadeSeconds) yield return null;
+                    // (only the card goes: a conversation opened over it meanwhile stays)
+                    if (card.IsOpen) ui.Dismiss(card);
+                    if (Title == card) Title = null;
+                }
+            }
+            finally { _titling = false; }
         }
 
         /// <summary>Someone comes to talk: once they stand (the trigger that brings them may have just placed them, and the
@@ -733,6 +979,8 @@ namespace SecondFace.Game.Play
                 var d = to.magnitude;
                 if (d > reach) continue;
                 var score = d * (d < 0.01f || Vector3.Dot(fwd, to / d) > 0.3f ? 1f : 2f);
+                // (the party is always within reach: one of them is acted on only when no one else is near)
+                if (Party != null && Party.Holds(it)) score *= 3f;
                 if (score < bestScore) { bestScore = score; best = it; }
             }
             if (best == null) return false;
@@ -798,13 +1046,25 @@ namespace SecondFace.Game.Play
             if (walkerGaze != null) walkerGaze.Target = head;
             if (ambient != null) ambient.Gesture(verb == "talk" ? "talk" : "wave");   // not ?. on a component
             if (verb == "talk" && OpenConversation(who))
+            {
                 while (Conversation != null && Conversation.IsOpen) yield return null;
+                // what the conversation asked for with them (a trade, a table, a fight) opens as it closes: they stay with
+                // the player until it is done
+                for (var i = 0; i < 2; i++) yield return null;
+                while (With(who)) yield return null;
+            }
             else if (verb == "trade" && OpenTrade(who))
                 while (Trade != null && Trade.IsOpen) yield return null;
             else yield return new WaitForSeconds(6f);
             if (gaze != null && gaze.Target == walkerHead) gaze.Target = null;
             if (walkerGaze != null && walkerGaze.Target == head) walkerGaze.Target = null;
         }
+
+        /// <summary>Something is on with this person: a trade or a table with them, or a fight.</summary>
+        private bool With(Interactable who) =>
+            (_with == who && ((Trade != null && Trade.IsOpen) || (Table != null && Table.IsOpen))) || _provoking > 0 || (Combat != null && Combat.Active);
+        /// <summary>Who the trade or the table open now is with.</summary>
+        private Interactable _with;
 
         /// <summary>Turns a person to face a point (the conversation turn), over a time that grows with the turn (half a
         /// second for a glance round, 1.3 s for about-face) so their feet step round (FootPlant). The motion and posture gate
@@ -827,12 +1087,13 @@ namespace SecondFace.Game.Play
             if (person != null) person.rotation = goal;
         }
 
-        /// <summary>Opens a person's conversation from the content in the panel (false when they have none).</summary>
-        public bool OpenConversation(Interactable who)
+        /// <summary>Opens a person's conversation from the content in the panel (false when they have none): their own, or
+        /// <paramref name="tree"/> with them.</summary>
+        public bool OpenConversation(Interactable who, string tree = null)
         {
             var ui = UIService.Instance;
             var npc = NpcOf(who);
-            var tree = who.GetComponent<Townsperson>()?.Placement?.Dialogue ?? npc?.Dialogue;   // a placement may say other things
+            tree ??= who.GetComponent<Townsperson>()?.Placement?.Dialogue ?? npc?.Dialogue;   // a placement may say other things
             if (ui == null || npc == null || string.IsNullOrEmpty(tree) || !Registry.Dialogues.TryGetValue(tree, out var def)) return false;
             ClockToGame();
             var runner = new DialogueRunner(def, Game, Quests);
@@ -861,12 +1122,72 @@ namespace SecondFace.Game.Play
             var npc = NpcOf(who);
             if (ui == null || npc == null || npc.Merchant == null) return false;
             var face = who.GetComponentInChildren<Animator>() != null ? who.gameObject : null;
+            _with = who;
             Trade = ui.Open(new BarterScreen(new BarterModel
             {
                 Game = Game, MerchantId = npc.Id, Def = npc.Merchant, Name = string.IsNullOrEmpty(npc.Name) ? who.Title : npc.Name,
                 Settlement = string.IsNullOrEmpty(npc.Settlement) ? "shale" : npc.Settlement, Face = face != null ? Portraits.Of(face) : null,
             }));
             return true;
+        }
+
+        /// <summary>The world's clock as the tables read it (it leads while walking), and what passing time on it does: the sky
+        /// turns now (a table may stop the world), the quests look again.</summary>
+        private double ClockNow() => Stage != null && Stage.Clock != null ? Stage.Clock.Minutes : Game.Minutes;
+
+        private void ClockTo(double minutes)
+        {
+            if (Stage != null && Stage.Clock != null) Stage.Clock.Minutes = minutes;
+            if (Stage != null && Stage.Sky != null) Stage.Sky.Apply();
+            Quests.Update();
+        }
+
+        /// <summary>Opens a surgeon's table with their face across it (null when they keep none): Game
+        /// <see cref="SurgeryScreen"/> on Core <see cref="Surgery"/>; the hours an operation takes pass on the world's clock.</summary>
+        public SurgeryScreen OpenSurgery(Interactable who)
+        {
+            var ui = UIService.Instance;
+            var npc = NpcOf(who);
+            if (ui == null || npc == null || npc.Surgeon == null) return null;
+            var face = who.GetComponentInChildren<Animator>() != null ? who.gameObject : null;
+            _with = who;
+            var screen = ui.Open(new SurgeryScreen(new SurgeryModel
+            {
+                Game = Game, SurgeonId = npc.Id, Def = npc, Name = string.IsNullOrEmpty(npc.Name) ? who.Title : npc.Name,
+                Face = face != null ? Portraits.Of(face) : null,
+                Now = ClockNow, Then = ClockTo,
+                Said = line => Said?.Invoke(line),
+            }));
+            Table = screen;
+            return screen;
+        }
+
+        /// <summary>Sits down to Dust with someone, their face over the table (null when they cannot: the player or they
+        /// short of the stake, said): both put the stake in the pot (Core <see cref="Dust.Ante"/>), the game is played on
+        /// Game <see cref="DustScreen"/>, and the pot or the prize is paid the moment it is decided.</summary>
+        public DustScreen OpenDust(Interactable who, DustTerms terms)
+        {
+            var ui = UIService.Instance;
+            var npc = NpcOf(who);
+            if (ui == null || npc == null || terms == null) return null;
+            var name = string.IsNullOrEmpty(npc.Name) ? who.Title : npc.Name;
+            var refusal = Dust.CanSit(Game, npc, terms);
+            if (refusal != null)
+            {
+                Said?.Invoke(refusal == "you_short" ? Strings.Get("dust.you_short", terms.Stake) : Strings.Get("dust.they_short", name));
+                return null;
+            }
+            Dust.Ante(Game, npc, terms);
+            var face = who.GetComponentInChildren<Animator>() != null ? who.gameObject : null;
+            _with = who;
+            var screen = ui.Open(new DustScreen(new DustModel
+            {
+                Game = Game, Npc = npc, Name = name, Face = face != null ? Portraits.Of(face) : null, Terms = terms, Host = Quests,
+                Said = line => Said?.Invoke(line),
+                Settled = () => Quests.Update(),
+            }));
+            Table = screen;
+            return screen;
         }
 
         /// <summary>Who someone in the world is: their routine's person, else the definition named by their id.</summary>
@@ -904,7 +1225,7 @@ namespace SecondFace.Game.Play
                 if (!Game.World.KnownLocations.Contains(p.Id)) { Game.World.KnownLocations.Add(p.Id); changed = true; }
                 foreach (var map in new[] { p.Map, p.Id })
                     if (!string.IsNullOrEmpty(map) && !Game.Flags.ContainsKey("visited_" + map)) { Game.Flags["visited_" + map] = true; changed = true; }
-                if (changed) { Quests.Update(); People?.Refresh(); }
+                if (changed) { Quests.Update(); Party?.Sync(); People?.Refresh(); }
                 return;
             }
         }

@@ -1,0 +1,317 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using NUnit.Framework;
+using SecondFace.Core.Content;
+using SecondFace.Core.Npc;
+using SecondFace.Core.Save;
+using SecondFace.Core.State;
+using SecondFace.Core.Stats;
+using SecondFace.Core.World;
+using SecondFace.Game;
+using SecondFace.Game.People;
+using SecondFace.Game.Play;
+using SecondFace.Game.UI;
+using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.SceneManagement;
+using UnityEngine.TestTools;
+using UnityEngine.UIElements;
+
+namespace SecondFace.Tests
+{
+    /// <summary>
+    /// The party in the world (<see cref="PartyFollowers"/>), at Shale as the phone plays it: a companion who joins stands
+    /// near the player in a body the world made for them, walks and jogs with the player over 30 m by the townsfolk's own
+    /// locomotion and ends a few metres off, never inside the player and never jumping; the HUD's party strip shows them
+    /// with their face, name and health; a fight takes them as the player's side; dismissed with a bare "wait here" they
+    /// stay where they were left, and a save and a load bring them back to that spot; asked back they come; leaving the road
+    /// they walk off and are gone, and stand nowhere as a follower or a waiting figure after.
+    /// </summary>
+    public class PartyTests
+    {
+        /// <summary>The game this test booted, gone after it (left running, its world NavMesh turned every later test's
+        /// places' own off: PlacePlayTests failed after it, 2026-11-16).</summary>
+        [UnityTearDown]
+        public IEnumerator CleanUp() => BootTests.Clear();
+
+        /// <summary>A companion whose own placement no longer holds once they have joined (their join sets the flag it
+        /// waits on), so a wait leaves them where they stood.</summary>
+        private const string Companion = "npc_of_03", Joined = "ash_joined";
+
+        private static string SavesDir => Path.Combine(Application.temporaryCachePath, "party-tests-saves");
+
+        private static IEnumerator Wait(float seconds) { var t = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t < seconds) yield return null; }
+        private static float Flat(Vector3 a, Vector3 b) { a.y = 0; b.y = 0; return Vector3.Distance(a, b); }
+
+        /// <summary>A new game at Shale, from the title through creation, until the walker stands on the NavMesh.</summary>
+        private static IEnumerator Boot(System.Action<Bootstrap> done)
+        {
+            if (Directory.Exists(SavesDir)) Directory.Delete(SavesDir, true);
+            Bootstrap.MakeSession = () => new Session(new DirectoryBackend(SavesDir));
+            Walkabout.StartAt = "shale";
+            if (Object.FindAnyObjectByType<Bootstrap>() != null) yield return BootTests.Clear();
+            SceneManager.LoadScene("Boot");
+            yield return null;
+            var boot = Object.FindAnyObjectByType<Bootstrap>();
+            Assert.That(boot, Is.Not.Null, "the Boot scene's Bootstrap");
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 120f && boot.Title == null) yield return null;
+            Assert.That(boot.Title, Is.Not.Null, "the title");
+            for (var i = 0; i < 2; i++) yield return null;
+            BootTests.Press(boot.Title.NewButton);
+            var creation = boot.UI.Top as CreationScreen;
+            Assert.That(creation, Is.Not.Null, "character creation");
+            for (var i = 0; i < 3; i++) yield return null;
+            BootTests.Press(creation.Content.Q<Button>("origin-" + Creation.Origins()[0].Id));
+            creation.Content.Q<TextField>("name").value = "Ash Corran";
+            Assert.That(creation.Finish(), Is.True);
+            while (Time.realtimeSinceStartup - t0 < 420f && (boot.Walkabout == null || !boot.Walkabout.Ready || !boot.Walkabout.Placed)) yield return null;
+            Assert.That(boot.Walkabout.Ready, Is.True, $"set down ({boot.Walkabout.Line()})");
+            done(boot);
+        }
+
+        /// <summary>Whatever conversation the moment brought (a trigger, someone come to say a word) closed: the party's
+        /// moves are what is tested here.</summary>
+        private static void Quiet(Walkabout walk)
+        {
+            if (walk.Conversation != null && walk.Conversation.IsOpen) walk.Conversation.Close();
+        }
+
+        /// <summary>A walkable point about <paramref name="metres"/> m off with a whole path to it (null when none).</summary>
+        private static Vector3? Away(Vector3 from, Vector3 forward, float metres)
+        {
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 1e-4f) forward = Vector3.forward;
+            var path = new NavMeshPath();
+            for (var k = 0; k < 15; k++)
+            {
+                var dir = Quaternion.Euler(0f, k * 24f, 0f) * forward.normalized;
+                if (!NavMesh.SamplePosition(from + dir * metres, out var hit, 3f, NavMesh.AllAreas)) continue;
+                if (Flat(hit.position, from) < metres * 0.8f) continue;
+                if (!NavMesh.CalculatePath(from, hit.position, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete) continue;
+                var length = 0f;
+                for (var i = 1; i < path.corners.Length; i++) length += Vector3.Distance(path.corners[i - 1], path.corners[i]);
+                if (length < metres * 1.5f) return hit.position;
+            }
+            return null;
+        }
+
+        /// <summary>Walks the walker to a point, watching a follower every frame: the nearest they came to the player, the
+        /// largest jump in a frame (a placement in view), and the highest pace their locomotion was set to.</summary>
+        private sealed class Watch { public float Nearest = float.MaxValue, Jump, Pace; }
+
+        private static IEnumerator WalkTo(Walkabout walk, Vector3 to, Townsperson follower, Watch watch, float timeout = 45f)
+        {
+            Assert.That(walk.Walker.GoTo(to), Is.True, $"the walker can go to {to}");
+            var anim = follower != null ? follower.Animator : null;
+            var last = follower != null ? follower.transform.position : Vector3.zero;
+            var t0 = Time.realtimeSinceStartup;
+            yield return null;
+            while (Time.realtimeSinceStartup - t0 < timeout && walk.Walker != null && walk.Walker.Goal != null)
+            {
+                Quiet(walk);
+                if (follower != null)
+                {
+                    var p = follower.transform.position;
+                    watch.Nearest = Mathf.Min(watch.Nearest, Flat(p, walk.Walker.transform.position));
+                    watch.Jump = Mathf.Max(watch.Jump, Flat(p, last));
+                    last = p;
+                    if (anim != null) watch.Pace = Mathf.Max(watch.Pace, anim.GetFloat("Speed"));
+                }
+                yield return null;
+            }
+            Assert.That(walk.Walker.Goal, Is.Null, $"the walker arrived ({Flat(walk.Walker.transform.position, to):0.0} m short)");
+        }
+
+        /// <summary>Waits for a follower to settle (stopped) after the walker has, watching them as they come.</summary>
+        private static IEnumerator Settled(Walkabout walk, Townsperson follower, Watch watch, float timeout = 12f)
+        {
+            var t0 = Time.realtimeSinceStartup;
+            var last = follower.transform.position;
+            var still = 0f;
+            while (Time.realtimeSinceStartup - t0 < timeout && still < 1f)
+            {
+                var p = follower.transform.position;
+                watch.Nearest = Mathf.Min(watch.Nearest, Flat(p, walk.Walker.transform.position));
+                watch.Jump = Mathf.Max(watch.Jump, Flat(p, last));
+                last = p;
+                still = follower.Agent != null && follower.Agent.enabled && follower.Agent.velocity.magnitude < 0.05f ? still + Time.deltaTime : 0f;
+                yield return null;
+            }
+        }
+
+        private static int HudShown(Bootstrap boot) => boot.Hud.Party.Children().Count(c => c.resolvedStyle.display == DisplayStyle.Flex);
+
+        [UnityTest, Timeout(1800000)]
+        public IEnumerator TheCompanyFollowsFightsWaitsAndLeaves()
+        {
+            Bootstrap boot = null;
+            yield return Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            var g = walk.Game;
+            Assert.That(walk.Party, Is.Not.Null, "the party in the world");
+            Assert.That(Registry.Npcs.ContainsKey(Companion), Is.True, "the companion is in the content");
+            var def = Registry.Npcs[Companion];
+
+            // ---- a companion joins: they stand near the player, made as the world makes a named person ----
+            Logic.Apply(Logic.Fx($"[{{ 'join': '{Companion}' }}, {{ 'set': '{Joined}' }}]"), g, walk.Quests);
+            walk.Settle();
+            Townsperson follower = null;
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 30f)
+            {
+                Quiet(walk);
+                follower = walk.Party.Of(Companion);
+                if (follower != null && follower.Agent != null && follower.Agent.enabled && follower.Agent.isOnNavMesh
+                    && Flat(follower.transform.position, walk.Walker.transform.position) < 6f) break;
+                yield return null;
+            }
+            Assert.That(follower, Is.Not.Null, "the companion stands in the world");
+            Assert.That(walk.Party.ModeOf(Companion), Is.EqualTo(PartyFollowers.Mode.Following));
+            Assert.That(Flat(follower.transform.position, walk.Walker.transform.position), Is.LessThan(6f), "near the player");
+            Assert.That(follower.Agent.isOnNavMesh, Is.True, "on the NavMesh");
+            var anim = follower.Animator;
+            Assert.That(anim, Is.Not.Null, "a body with an animator");
+            Assert.That(anim.runtimeAnimatorController, Is.SameAs(boot.World.Locomotion), "the game's locomotion");
+            Assert.That(anim.applyRootMotion, Is.False, "no root motion: the agent moves them");
+            Assert.That(anim.GetComponent<Ambient>(), Is.Not.Null, "their own idle and gestures");
+            Assert.That(anim.GetComponent<FootPlant>(), Is.Not.Null, "feet on the ground");
+            Assert.That(anim.GetComponent<Gaze>(), Is.Not.Null, "their gaze");
+            Assert.That(follower.GetComponent<Interactable>().Verbs, Does.Contain("talk"), "they can be talked to");
+            Assert.That(walk.Party.Following, Is.EqualTo(new[] { follower }));
+            Assert.That(g.Companions[Companion].Sheet, Is.Not.Null, "their sheet travels with them");
+
+            // ---- the HUD lists them: their face, their name, their health ----
+            yield return Wait(2.5f);
+            var strip = boot.HudState.Party;
+            Assert.That(strip.Count, Is.EqualTo(2), "the player and the companion");
+            Assert.That(strip[1].Name, Is.EqualTo(def.Name));
+            Assert.That(strip[1].Portrait, Is.Not.Null, "their portrait");
+            Assert.That(strip[1].MaxHp, Is.EqualTo(Sheet.Derived(g.Companions[Companion].Sheet).MaxHp));
+            Assert.That(strip[1].Hp, Is.EqualTo(g.Companions[Companion].Sheet.Hp));
+            Assert.That(strip[0].MaxHp, Is.EqualTo(Sheet.Derived(g.Pc.Sheet).MaxHp), "the player's own health too");
+            Assert.That(HudShown(boot), Is.EqualTo(2), "two faces in the strip");
+
+            // ---- the player walks 30 m (a jog, as a tap that far sends them): the companion keeps up ----
+            var dest = Away(walk.Walker.transform.position, walk.Walker.transform.forward, 30f);
+            Assert.That(dest.HasValue, Is.True, "somewhere 30 m off to walk to");
+            var watch = new Watch();
+            yield return WalkTo(walk, dest.Value, follower, watch);
+            yield return Settled(walk, follower, watch);
+            var gap = Flat(follower.transform.position, walk.Walker.transform.position);
+            Debug.Log($"PartyTests: after 30 m the companion stands {gap:0.00} m off (nearest {watch.Nearest:0.00} m, largest step in a frame {watch.Jump:0.00} m, top pace {watch.Pace:0.00})");
+            Assert.That(gap, Is.LessThanOrEqualTo(4f), "kept up: a few metres off when the player stops");
+            Assert.That(gap, Is.GreaterThan(0.9f), "beside, not on top of the player");
+            Assert.That(watch.Nearest, Is.GreaterThan(0.45f), "never inside the player");
+            Assert.That(watch.Jump, Is.LessThan(1f), "walked the whole way (no jump in view)");
+            Assert.That(watch.Pace, Is.GreaterThan(1f), "their legs went at the pace (the locomotion's Speed)");
+
+            // ---- a fight: they are among the player's side; down, they get up, never dead ----
+            foreach (var id in new[] { "npc_rd_t1", "npc_rd_t2", "npc_rd_t3", "npc_rd_t4" }) g.Npcs[id] = new NpcSave { Hp = 1 };
+            g.SetFlag("tribute_day", true);
+            walk.Settle();
+            Townsperson raider = null;
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 60f && (raider = walk.People.StandingPeople.FirstOrDefault(p => p != null && p.Def != null && p.Def.Id == "npc_rd_t1")) == null)
+            {
+                Quiet(walk);
+                yield return null;
+            }
+            Assert.That(raider, Is.Not.Null, "the raiders came to the town");
+            var near = raider.transform.position + (walk.Walker.transform.position - raider.transform.position).normalized * 9f;
+            if (NavMesh.SamplePosition(near, out var nh, 4f, NavMesh.AllAreas)) yield return WalkTo(walk, nh.position, follower, new Watch(), 60f);
+            yield return Settled(walk, follower, new Watch());
+            g.SetFlag("tribute_fight", true);
+            walk.Settle();
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 30f && !walk.Combat.Active)
+            {
+                Quiet(walk);
+                if (!walk.Busy) walk.Combat.Check(true);
+                yield return Wait(0.5f);
+            }
+            Assert.That(walk.Combat.Active, Is.True, "the fight began");
+            Assert.That(walk.Combat.CompanionsFighting, Does.Contain(Companion), "the companion fights");
+            Assert.That(walk.Combat.Allies, Does.Contain(Companion).And.Contain("pc"), "on the player's side");
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 600f && walk.Combat.Active)
+            {
+                if (walk.Combat.PlayersTurn) yield return walk.Combat.PlayerTurnByAi();
+                yield return null;
+            }
+            Assert.That(walk.Combat.Active, Is.False, "the fight ended");
+            yield return Wait(3f);
+            Quiet(walk);
+            Assert.That(walk.Walker, Is.Not.Null, "the player was not beaten out of the game");
+            Assert.That(g.World.Party, Does.Contain(Companion), "still with the player");
+            Assert.That(g.Companions[Companion].Sheet.Hp, Is.GreaterThan(0), "never dead");
+            Assert.That(g.Npcs.TryGetValue(Companion, out var dead) && dead.Dead == true, Is.False, "never written dead");
+            Assert.That(walk.Party.Of(Companion), Is.SameAs(follower), "the same body, following again");
+            yield return Wait(4f);   // (up from the ground, if they went down)
+            Assert.That(walk.Party.ModeOf(Companion), Is.EqualTo(PartyFollowers.Mode.Following));
+
+            // ---- "wait here": they stay where they were left ----
+            Logic.Apply(Logic.Fx($"[{{ 'leave': '{Companion}' }}]"), g, walk.Quests);
+            walk.Settle();
+            yield return Wait(1f);
+            Assert.That(Party.StateOf(g, Companion), Is.EqualTo(CompanionState.Waiting));
+            Assert.That(walk.Party.ModeOf(Companion), Is.EqualTo(PartyFollowers.Mode.Waiting), "waiting where they stood");
+            var left = follower.transform.position;
+            var spot = Party.Spot(g, Companion);
+            Assert.That(spot != null && spot.HasPoint, Is.True, "their spot is in the game");
+            Assert.That(Flat(new Vector3(spot.X, spot.Y, spot.Z), left), Is.LessThan(0.5f));
+            dest = Away(walk.Walker.transform.position, walk.Walker.transform.position - left, 16f);
+            Assert.That(dest.HasValue, Is.True, "somewhere 16 m off");
+            yield return WalkTo(walk, dest.Value, null, new Watch());
+            yield return Wait(4f);
+            Assert.That(walk.Party.Of(Companion), Is.SameAs(follower), "still standing");
+            Assert.That(Flat(follower.transform.position, left), Is.LessThan(0.6f), "where they were left");
+            Assert.That(Flat(follower.transform.position, walk.Walker.transform.position), Is.GreaterThan(10f), "not following");
+            Assert.That(HudShown(boot), Is.EqualTo(1), "the strip is the player's alone");
+
+            // ---- saved and loaded: they wait at the same spot ----
+            Assert.That(boot.Save(Session.Quick), Is.Not.Null, "saved");
+            Assert.That(boot.Load(Session.Quick), Is.True, "loaded");
+            t0 = Time.realtimeSinceStartup;
+            yield return null;
+            while (Time.realtimeSinceStartup - t0 < 300f && (walk.Walker == null || !walk.Ready || !walk.Placed)) yield return null;
+            Assert.That(walk.Ready, Is.True, "set down again");
+            g = walk.Game;
+            Assert.That(Party.StateOf(g, Companion), Is.EqualTo(CompanionState.Waiting), "still waiting in the loaded game");
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 30f && walk.Party.Of(Companion) == null) { Quiet(walk); yield return null; }
+            var waiting = walk.Party.Of(Companion);
+            Assert.That(waiting, Is.Not.Null, "the waiting companion stands again");
+            Assert.That(walk.Party.ModeOf(Companion), Is.EqualTo(PartyFollowers.Mode.Waiting));
+            yield return Wait(1f);
+            Assert.That(Flat(waiting.transform.position, left), Is.LessThan(1f), "at the spot they were left");
+
+            // ---- asked back: they come ----
+            Logic.Apply(Logic.Fx($"[{{ 'join': '{Companion}' }}]"), g, walk.Quests);
+            walk.Settle();
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 40f && Flat(waiting.transform.position, walk.Walker.transform.position) > 4f) { Quiet(walk); yield return null; }
+            Assert.That(walk.Party.ModeOf(Companion), Is.EqualTo(PartyFollowers.Mode.Following));
+            Assert.That(Flat(waiting.transform.position, walk.Walker.transform.position), Is.LessThanOrEqualTo(4f), "back at the player's side");
+
+            // ---- leaving the road: they walk off and are gone ----
+            Logic.Apply(Logic.Fx($"[{{ 'leave': '{Companion}' }}, {{ 'set': 'ash_left' }}, {{ 'decision': {{ 'id': 'party_test_left', 'text': 'They went their own way.' }} }}]"), g, walk.Quests);
+            walk.Settle();
+            yield return Wait(1f);
+            Assert.That(Party.StateOf(g, Companion), Is.EqualTo(CompanionState.Left));
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 90f && walk.Party.Of(Companion) != null) { Quiet(walk); yield return null; }
+            Assert.That(walk.Party.Of(Companion), Is.Null, "gone");
+            yield return Wait(3f);
+            Assert.That(walk.Party.Of(Companion), Is.Null, "and not back as a follower or a waiting figure");
+            Assert.That(Party.Waiting(g), Is.Empty, "nobody waits for the player");
+            Assert.That(walk.Party.Following, Is.Empty);
+            var standing = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None).Where(i => i.Id == Companion && Flat(i.transform.position, walk.Walker.transform.position) < 60f);
+            Assert.That(standing, Is.Empty, "no body of theirs near the player");
+            yield return Wait(1.5f);
+            Assert.That(HudShown(boot), Is.EqualTo(1), "the strip is the player's alone");
+        }
+    }
+}

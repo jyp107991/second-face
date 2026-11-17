@@ -78,6 +78,10 @@ namespace SecondFace.Game.Play
 
         public TimeService Clock;
         public readonly List<Townsperson> People = new();
+        /// <summary>Someone the story has elsewhere now, by their definition's id (a companion on the road with the player,
+        /// or walking off from them; <see cref="PartyFollowers"/>): wherever a place's placement of theirs still holds,
+        /// that body is kept out of sight like one away until they are back, so nobody stands in two places.</summary>
+        public static System.Func<string, bool> Elsewhere;
         /// <summary>The place's spots by map and id.</summary>
         private readonly Dictionary<(string, string), Transform> _spots = new();
         private Transform _place;
@@ -158,6 +162,7 @@ namespace SecondFace.Game.Play
 
         private void Keep(Townsperson p, double hour, bool snap)
         {
+            if (Elsewhere != null && p.Def != null && Elsewhere(p.Def.Id)) { GoIn(p, p.transform.position); return; }
             var e = Routine.Now(p.Placement, p.Def, hour);
             var changed = e != p.Entry;
             p.Entry = e;
@@ -224,6 +229,10 @@ namespace SecondFace.Game.Play
             if (Ready(p) && p.Agent.Warp(at) && p.Agent.isOnNavMesh) p.Agent.ResetPath();
             else p.transform.position = at;
         }
+
+        /// <summary>Takes someone out of sight where they stand, at once (as one gone in; they come out where they were
+        /// when their routine has them about again).</summary>
+        public static void PutAway(Townsperson p) { if (p != null) GoIn(p, p.transform.position); }
 
         private static void GoIn(Townsperson p, Vector3 home)
         {

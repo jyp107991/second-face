@@ -65,6 +65,35 @@ namespace SecondFace.Core.Npc
             ["medic"] = new[] { "Wash it. Then come back.", "Don't pick at it." },
         };
 
+        private static Dictionary<string, NpcDef> _castOf;
+        private static HashSet<string> _cast = new();
+
+        /// <summary>The first names the game's named people carry (every person the content names, not the crowd), so a
+        /// face in the crowd is never called by a companion's or a story person's name.</summary>
+        public static HashSet<string> CastNames()
+        {
+            if (ReferenceEquals(_castOf, Registry.Npcs) && _cast.Count > 0) return _cast;
+            var s = new HashSet<string>();
+            foreach (var n in Registry.Npcs.Values)
+            {
+                if (n == null || n.Minor == true || string.IsNullOrEmpty(n.Name)) continue;
+                var first = FirstWord(n.Name);
+                if (first != null) s.Add(first);
+            }
+            _castOf = Registry.Npcs; _cast = s;
+            return s;
+        }
+
+        private static string FirstWord(string name)
+        {
+            foreach (var w in name.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var t = w.Trim('"', '\'', '(', ')', ',', '.');
+                if (t.Length > 0 && char.IsUpper(t[0])) return t;
+            }
+            return null;
+        }
+
         /// <summary>Every extra a map asks for.</summary>
         public static List<Extra> Of(MapDef map)
         {
@@ -97,13 +126,14 @@ namespace SecondFace.Core.Npc
                 var pool = Names[Pool(look, rng)];
                 var names = male ? pool.M : pool.F;
                 var name = rng.Pick(names);
-                if (taken != null)
                 {
-                    // the next of the same people's names not yet given in the place (no draw of its own: the rest of
-                    // the place stays as it was); a repeat only once the pool is spent
+                    // the next of the same people's names not yet given in the place and not a named person's (no draw
+                    // of its own: the rest of the place stays as it was); a repeat only once the pool is spent
+                    var cast = CastNames();
                     var at0 = Array.IndexOf(names, name);
-                    for (var step = 0; step < names.Length && taken.Contains(name); step++) name = names[(at0 + step + 1) % names.Length];
-                    taken.Add(name);
+                    for (var step = 0; step < names.Length && (cast.Contains(name) || (taken != null && taken.Contains(name))); step++)
+                        name = names[(at0 + step + 1) % names.Length];
+                    taken?.Add(name);
                 }
                 // a spot each while they last, then about the area; a definition with neither keeps them at the map's middle
                 string spot = null;

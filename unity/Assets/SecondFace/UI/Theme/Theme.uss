@@ -182,6 +182,18 @@
     -unity-text-align: middle-center;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
 }
+/* the story's title cards (TitleCard.Chapter: a chapter begins, an act ends): a lighter veil, the first line small and
+   spaced over the rest in the book face, fading in and out over the world */
+.sf-title-card--chapter {
+    background-color: rgba(14, 12, 9, 0.3);
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.8s;
+    transition-timing-function: ease-in-out;
+}
+.sf-title-card--chapter.sf-title-card--shown { opacity: 1; }
+.sf-title-card--chapter .sf-title-card__name { font-size: var(--fs-48); letter-spacing: 8px; max-width: 86%; white-space: normal; }
+.sf-title-card--chapter .sf-title-card__over { margin-top: 0; margin-bottom: 14px; letter-spacing: 6px; color: var(--plate-dim); }
 
 /* ---- modal questions ---- */
 .sf-modal { justify-content: center; align-items: center; background-color: var(--scrim); }
@@ -1595,6 +1607,10 @@
     color: #E0A645;
 }
 
+/* a recorded memory (the content's reverie): the page goes cold with the picture */
+.sf-dialogue--reverie .sf-dialogue__page { background-color: #DCE2E3; border-left-color: #9DAAB0; }
+.sf-dialogue--reverie .sf-dialogue__speaker { color: #3B4A52; }
+
 /* U7: a conversation back at a node it has said: the speaker waits (a narrated beat, not the speech again) */
 .sf-dialogue__line.sf-dialogue__line--beat {
     -unity-font-definition: url("../Fonts/Literata-Italic.asset");
@@ -1602,3 +1618,209 @@
     font-size: var(--fs-24);
 }
 .sf-dialogue__passive--companion .sf-dialogue__passive-label { color: #6E8A5E; }
+
+/* ---- the surgeon's table (SurgeryScreen.cs): the player's body on the left page, the surgeon across the table, what
+   could go in on the right; every button at least the HUD's action size (100) ---- */
+.sf-surgery { background-color: #2B241E; }
+.sf-surgery__body { flex-grow: 1; flex-direction: row; margin: 14px 16px 14px 16px; }
+.sf-surgery__page { flex-grow: 1; flex-basis: 0; background-color: var(--paper); border-radius: 6px; }
+.sf-surgery__page--offers { flex-grow: 1.3; }
+.sf-surgery__scroll { flex-grow: 1; }
+.sf-surgery__scroll .unity-scroll-view__content-container { padding: 0 16px 14px 18px; }
+.sf-surgery__table {
+    width: 340px;
+    flex-shrink: 0;
+    margin: 0 14px;
+    padding: 14px 16px;
+    border-radius: 6px;
+    background-color: #3C342D;
+}
+.sf-surgery__tolls {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-24);
+    color: #E0A645;
+    margin-top: 14px;
+}
+.sf-surgery__note {
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: var(--fs-21);
+    color: var(--plate-text);
+    white-space: normal;
+    margin-top: 10px;
+}
+.sf-surgery__fine { font-size: var(--fs-18); color: var(--plate-dim); white-space: normal; margin-bottom: 10px; }
+.sf-surgery__act { min-height: 100px; min-width: 100px; padding: 0 18px; font-size: var(--fs-22); white-space: normal; }
+.sf-surgery__done { background-color: var(--ochre); color: var(--ink); }
+.sf-surgery__done:enabled:hover { background-color: #D59B3A; }
+.sf-surgery__slot {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 8px 0;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--paper-edge);
+}
+.sf-surgery__slot--empty { opacity: 0.75; }
+.sf-surgery__slot-text { flex-grow: 1; flex-shrink: 1; }
+.sf-surgery__slot-name {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-18);
+    letter-spacing: 2px;
+    color: var(--pencil);
+}
+.sf-surgery__piece {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-24);
+    color: var(--ink);
+    white-space: normal;
+}
+.sf-surgery__dim { font-size: var(--fs-20); color: var(--pencil); white-space: normal; }
+.sf-surgery__warn { color: var(--rust); }
+.sf-surgery__acts { flex-direction: row; flex-shrink: 0; }
+.sf-surgery__acts .sf-surgery__act { margin-left: 8px; }
+.sf-surgery__offer {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 10px 0;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--paper-edge);
+}
+.sf-surgery__offer-text { flex-grow: 1; flex-shrink: 1; margin-right: 12px; }
+.sf-surgery__desc {
+    -unity-font-definition: url("../Fonts/Literata-Regular.asset");
+    font-size: var(--fs-20);
+    color: var(--ink-soft);
+    white-space: normal;
+    margin-top: 2px;
+}
+.sf-surgery__gives { font-size: var(--fs-20); color: var(--slate); white-space: normal; margin-top: 4px; }
+.sf-surgery__terms {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-20);
+    color: var(--ink-soft);
+    white-space: normal;
+    margin-top: 4px;
+}
+.sf-surgery__offer-side { flex-shrink: 0; align-items: stretch; width: 140px; }
+.sf-surgery__total {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-26);
+    color: var(--ink);
+    -unity-text-align: middle-center;
+    margin-bottom: 6px;
+}
+.sf-surgery__total--short { color: var(--rust); }
+.sf-surgery__empty {
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: var(--fs-22);
+    color: var(--ink-soft);
+    white-space: normal;
+    margin: 12px 0;
+}
+
+/* ---- the Dust table (DustScreen.cs): a page at the right, the two of them in the world beside it; the dice drawn with
+   their pips, a 1 in rust; roll, bank and leave at the HUD's action size (100) ---- */
+.sf-dust { background-color: rgba(12, 10, 8, 0.16); }
+.sf-dust__safe { flex-direction: row; justify-content: flex-end; }
+.sf-dust__page {
+    width: 46%;
+    min-width: 560px;
+    background-color: var(--paper);
+    border-radius: 4px;
+    padding: 18px 26px 14px 26px;
+}
+.sf-dust__head { flex-direction: row; align-items: center; flex-shrink: 0; }
+.sf-dust__face {
+    width: 84px;
+    height: 84px;
+    margin-right: 16px;
+    border-radius: 42px;
+    border-width: 3px;
+    border-color: var(--paper-edge);
+    overflow: hidden;
+    background-color: #5C5146;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+.sf-dust__face Image { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.sf-dust__initial {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: var(--fs-42);
+    color: var(--plate-text);
+}
+.sf-dust__title {
+    -unity-font-definition: url("../Fonts/Literata-SemiBold.asset");
+    font-size: var(--fs-36);
+    color: var(--ink);
+}
+.sf-dust__terms { font-size: var(--fs-21); color: var(--pencil); white-space: normal; }
+.sf-dust__scores { margin-top: 14px; flex-shrink: 0; }
+.sf-dust__score { flex-direction: row; align-items: center; margin-bottom: 6px; padding: 4px 8px; border-radius: 3px; }
+.sf-dust__score--turn { background-color: rgba(196, 138, 44, 0.16); }
+.sf-dust__who {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-23);
+    color: var(--ink);
+    width: 34%;
+    overflow: hidden;
+}
+.sf-dust__bar { flex-grow: 1; height: 12px; border-radius: 6px; background-color: rgba(36, 32, 27, 0.12); overflow: hidden; }
+.sf-dust__fill { height: 100%; width: 0; border-radius: 6px; background-color: var(--ochre); }
+.sf-dust__points {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-26);
+    color: var(--ink);
+    width: 64px;
+    -unity-text-align: middle-right;
+}
+.sf-dust__run {
+    -unity-font-definition: url("../Fonts/Barlow-SemiBold.asset");
+    font-size: var(--fs-22);
+    letter-spacing: 2px;
+    color: var(--pencil);
+    margin-top: 12px;
+    flex-shrink: 0;
+}
+.sf-dust__dice { flex-direction: row; flex-wrap: wrap; min-height: 72px; margin-top: 6px; flex-shrink: 0; }
+.sf-dust__die {
+    width: 64px;
+    height: 64px;
+    margin: 0 8px 8px 0;
+    border-radius: 10px;
+    border-width: 2px;
+    border-color: #B9A47E;
+    background-color: #F6F0E1;
+}
+.sf-dust__die--dusted { border-color: var(--rust); background-color: #F3DDD3; }
+.sf-dust__pip {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    margin-left: -6px;
+    margin-top: -6px;
+    border-radius: 6px;
+    background-color: var(--ink);
+}
+.sf-dust__die--dusted .sf-dust__pip { width: 16px; height: 16px; margin-left: -8px; margin-top: -8px; border-radius: 8px; background-color: var(--rust); }
+.sf-dust__acts { flex-direction: row; flex-shrink: 0; margin-top: 4px; }
+.sf-dust__act { min-height: 100px; min-width: 140px; margin-right: 12px; padding: 0 24px; font-size: var(--fs-26); }
+.sf-dust__leave { background-color: var(--ochre); color: var(--ink); }
+.sf-dust__leave:enabled:hover { background-color: #D59B3A; }
+.sf-dust__result {
+    -unity-font-definition: url("../Fonts/Literata-Italic.asset");
+    font-size: var(--fs-24);
+    color: var(--rust);
+    white-space: normal;
+    margin-top: 10px;
+    flex-shrink: 0;
+}
+.sf-dust__scroll { flex-grow: 1; flex-shrink: 1; margin-top: 8px; }
+.sf-dust__line {
+    -unity-font-definition: url("../Fonts/Literata-Regular.asset");
+    font-size: var(--fs-20);
+    color: var(--ink-soft);
+    white-space: normal;
+}
+.sf-dust__rules { font-size: var(--fs-18); color: var(--pencil); white-space: normal; margin-top: 6px; flex-shrink: 0; }

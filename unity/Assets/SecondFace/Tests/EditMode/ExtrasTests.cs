@@ -57,6 +57,16 @@ namespace SecondFace.Tests
         }
 
         [Test]
+        public void NoFaceInTheCrowdCarriesANamedPersonsName()
+        {
+            var cast = Extras.CastNames();
+            Assert.That(cast, Is.Not.Empty, "the named people's first names");
+            foreach (var map in Registry.Maps.Values.Where(m => m.Extras != null))
+                foreach (var x in Extras.Of(map))
+                    Assert.That(cast.Contains(x.Def.Name), Is.False, $"{x.Def.Id} on {map.Id} is called {x.Def.Name}, a named person's name");
+        }
+
+        [Test]
         public void TheirHoursKeepThemThereAndAwayAfter()
         {
             var map = Registry.Maps.Values.First(m => m.Extras != null && m.Extras.Any(e => e.Hours != null && e.Spots != null && e.Spots.Count > 0));
