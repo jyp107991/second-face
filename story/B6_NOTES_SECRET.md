@@ -1012,3 +1012,11 @@ The default shared files touched by a content slice are the registries: `quests/
 ---------------------------------------------------------------------------------------------------------------------
 ## As built (each slice appends here: what changed from this plan, and the B5d/B4b mapping once reconciled)
 - (empty)
+
+## Defaults taken for the open questions (coordinator, 2026-11-17; the owner may override)
+1. After the ending: epilogue, credits, then the title screen; the named autosave at the point of no return stays
+   loadable ("play the last stretch again"). No post-ending free roam in v1.
+2. Epilogue length: keep the 27 slides as the full set, but show only the slides whose subject the player met
+   (most games show 12–20); every slide skippable, the whole sequence skippable after the first.
+3. Ways to finish: not listed by name. Before the climb, the notebook's "what you hold" page shows allies, items and
+   standing; companions voice what they think is possible. The choice itself is made in the scene.
