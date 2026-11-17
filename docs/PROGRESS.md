@@ -771,6 +771,56 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   "the Depot" where the content has Four Ways and Yard Nine); PlaceBuilder for the new places (Meridian's districts need a
   city kit); Ninebridge's empty tiles (`V`, a gap in the bridge deck) read as flat ground: lower the pad there and put water
   below; its concrete roads read as flat grey slabs; the arrival view frames bare ground; CI's six failures above.
+- **2026-11-17 (day), the companion's following measured; agents stand on the ground; the gaze's and the idle's findings.**
+  Gate: red, 55 (A1 25, W6 11, C1 8, A4 4, W3 3, F1/F2/F5/K1 1), the whole cast measured again on this commit: every
+  measure as it was. Committed: `PartyFollowers.cs`, `Townsfolk.cs` and `World/PlaceNav.cs` are
+  gate inputs (they decide how people move); the fixes below; `BootTests` and `ArmClearance.DepthWhere` name the deepest arm
+  point (its part, sleeve and the body's clothes). **The following state** (`follow:walk`, `follow:jog`: a walk, a jog, from
+  the companion's first step to their halt; `after:follow_walk`, `after:follow_jog`: standing from 0.6 s after it) is written
+  and measured on picks but **not yet in the gate**: its jog still slides the soles at the stop (W1 5-10 % of frames over
+  15 cm/s on most people picked, against 5 %), and a state that fails cannot go in without making W1 worse than the
+  committed verdict. It is on branch `wip/follow-state` (`HumanMotionGateTests.Following`): the companion on the party's own
+  NavMeshAgent (`PartyFollowers.Configure`), paced as the townsfolk are (`Townsperson`), sent by the party's own step (the
+  follow logic made static and shared: `PartyFollowers.Pursue`, `Stand`, `SlotPoint`, `Heading`). What it found, fixed and
+  committed: (1) **the agents stood on polygons 5-6 cm over flat ground** (no height mesh): their hips sank that far and the
+  bent strides slid the held feet (W1 8-10 % of a jog's frames for most men): `PlaceNav.Settings` builds the height mesh
+  (the places' NavMeshes and the world's); (2) **a halt in one frame** while the stride's eased pace ran on 0.25 s: a body
+  that was moving and has halted stands (`FootPlant.HaltSpeed`, `Halted`), and its arms come to rest from then
+  (`ArmClearance.Resting`: the hands hung 6.4-7.9 cm off the thighs a second after a stop, A4); (3) **the stop's plant took
+  the walking clip's foot places**, 5-9 cm from where the feet stood: the feet settle from where they were shown, each
+  straight down; (4) **a jogging companion aimed a metre past their slot** ran past it as the player stopped, turned about
+  and walked back: they aim ahead by the player's own pace; (5) an agent's pace is eased over 0.06 s, not the walker's 0.12
+  (`Townsperson.AgentDamp`; 0.03 slid the women's jog stops more). Tried and taken back: easing the pace faster as it slows
+  (the gate's jog stops skated), the cadence matched to the clips blended (the women's jog starts skated, W1 2.8 → 13 %), the
+  resting push tried straight back and forward of the waist (no gain for the two men it was for, a C1 contact for another).
+  **Open, the follow jog:** at the stop a held foot is let go by its reach while the body slows from a jog (the stride runs
+  0.06 s behind the agent) and slides 1-2 m/s for 2-3 frames, and the landing foot glides in 0.5-2 cm up at 0.5 m/s.
+  **`BootTests.ArmsStayOutOfTheBody`** (townsfolk's arms ≤ 1.2 cm into their bodies, real time, whoever is in view): on the
+  same code it read 0.7, 1.3, 1.0, 1.1, 1.9 and 1.3 cm over six runs. The failing readings: Female_Adult_07 (the upper arm by
+  the elbow against a 1.9 cm garment, no sleeve there), Female_Adult_11 (the upper arm by the elbow, no sleeve, the body's
+  clothes 1.0 cm: 1.9 cm, past anything the clearance allows there), Construction_Male_03 and Male_Adult_05 (the forearm, no
+  sleeve, 0.6-1.1 cm of clothes). Not caused by `SleeveGive` (no sleeve at any failing contact) nor by `OutMax` (none of them
+  is one of its seven bodies). Measured in the gate's fixed states (`tools/qa/patches/arm_depth_diag.py`) the same reading is
+  0.7-0.9 cm for Female_Adult_07 and 1.2-4.5 cm for broad men, almost all at the upper arm's top against the chest's side at
+  armpit height (120-133 cm), where a resting arm may press 2.5 cm (`UpperGive`, 4020fea5) and which the gate's C1 leaves
+  out; the elbow and forearm readings past their allowance are the game's skin points reading a contact the mesh does not
+  (as the gaze's C1 below). Fixed in part: `KeepHang`'s turn at the shoulder may no longer take the arm back into the body
+  the clearance had just cleared. **Still red; the fixes that cost no A1:** the flank correctives baked up to the armpit, and
+  the skin's coverage where it misreads (next).
+  **Measured, not committed:** (6) **the look's chest turn holds the arms out**: the resting upper arm's p98 is 12.5° looking
+  ahead and 15.3-15.5° looking 45-135° aside across the cast (the gaze gives the body a quarter of its 20°): 13 of the 25 A1
+  and 2 of the 4 A4. `Gaze.BodyWeight` 0.25 → 0.1 fixed 10 A1, 3 A4, 1 F5, 3 C1 in three batches of a whole-cast run but
+  brought 13 new C1 (0.5-0.8 cm: arms hanging nearer met the body where the game's skin points read them 1-2.5 cm clear: an
+  upper arm against the chest's side at 1.23 m, a forearm against the top of the thigh at 1.01 m) and two W6 spikes in a jog:
+  the skin's coverage there first, then the gaze. (7) **The idle played at twice its speed** (CMU 77 at 60 fps, read at 120): re-exported at its true rate it holds the
+  weight shifts' extremes twice as long, and on a pick of ten A1 +5, K1 +3, C1 +1, A4 +1; the motion tool and the clips now
+  belong to the offline helper (T2, `docs/MOTION_ROOT_CAUSE.md` §7), staged for import.
+  **Next (the root-cause plan, `docs/MOTION_ROOT_CAUSE.md`, binding):** no more rounds of caps, gives, shares or pushes;
+  import the helper's sex-matched clips (LocomotionBuild and `Pace.Clips` by sex, the ACCAD mapping, the new `idle`'s
+  length, credits); slim the five broad bases' baked sleeves and gear to a real garment's stand-off (T5's remedy); the
+  limit decisions of §7 in the gate's code and `docs/PEOPLE_MOTION.md` together; picks, then a whole-cast run; T3 (one
+  contact-preserving solve baked per body, design in §8) prototyped on the remaining contact failures; the following
+  state into the gate once its jog's stop passes.
 - **2026-11-17, gate 89 → 55: A1's remainder was two false readings, not too little room.** Gate: red, 55 (A1 25, A4 4,
   C1 8, W6 11, W3 3, F1/F2/F5/K1 1), committed with its verdict (full44). The diagnosis's plan (bake the flank correctives at
   the arms' real 17°) was tried and taken back: the sweep widened to 17° added almost nothing (the 3-10° poses already

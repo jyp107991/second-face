@@ -125,3 +125,49 @@ frame rates), `/home/user/second-face-staging/motion/README.md` (clip QA, clips 
   position-based re-solve); faster women's walks (the staged ones are 0.86-1.08 m/s, so 1.4 m/s would need a playback rate
   past `RateMax`); idles whose actors stand straight (K1) and hold the head level (the game's `idle` looks 35-42° down: H1);
   the staged clips' remaining seams and slides.
+
+## 8. T3 design: the contact-preserving retarget, baked per body (editor owner, 2026-11-17)
+**What is solved.** For each base body (79) and clip (28; 4,254 frames at 30 fps, about 4,400 with the idle at its true
+speed), every frame once: the clip as Mecanim retargets it to the body (sampled offline on the body's own avatar, muscle
+space) is the starting pose and the objective's anchor; the solve changes only what it must.
+- *Unknowns:* the muscles of the arms (shoulder 2, upper arm 3, forearm 2, hand 2, each side), the legs (upper leg 3, lower
+  leg 1, foot 2, each side), the spine and chest (3 x 3) and the hips' height: about 45 values a frame.
+- *Objective:* least squares from the retargeted muscles (weighted per joint: the spine and shoulders cost most to move, the
+  wrist least), plus a smoothness term to the frame before (no new jitter), Levenberg-Marquardt warm-started from the frame
+  before, 3-6 iterations a frame.
+- *Contacts kept from the source, read on the actor's own skeleton (T1's reader):* a sole planted on the frames the actor's
+  was (height under 2.5 cm and slower than 10 cm/s, the heel and the ball separately, scaled by the body's hip over the
+  actor's) stays where it touched while the body travels at the pace `Pace` gives it; an upper arm the actor rested against
+  the side (the elbow's gap to the actor's torso line under the actor's own forearm width) rests against the body's side at
+  0-0.3 cm (soft contact; T4 gives the flesh), never pushed out further than contact requires; the palm's gap to the thigh is
+  the actor's scaled by the body's hip breadth over the actor's.
+- *No penetration:* signed distance from the arm's skin to the body's posed skin, read on the posed mesh itself (the
+  gate's own C1 method: baked mesh, closest triangle by a BVH of the torso, hips and thighs, ray parity for inside), not the
+  skin's sample points (they misread contacts by 1-2.5 cm at the chest's side and the top of the thigh: the gaze trial, `docs/PROGRESS.md` 2026-11-17). The body is
+  posed with T4's correctives at the arm's angle, so the solve sees flesh that gives.
+- *Where the constraints conflict* (an elbow that cannot touch a broad waist without the arm 20° out): T4 first; if still
+  infeasible, the body goes to T5 (§4), never to a looser limit.
+
+**Storage and runtime.** Per body, one additive humanoid clip per source clip (muscle deltas only, the joints the solve
+moved), in an additive layer that mirrors the base layer's states and blend trees; a per-body AnimatorOverrideController
+swaps the layer's placeholder clips for the body's, so Mecanim blends the corrections with the same weights, times and
+`LocoRate` as the clips they correct. Size: 45 curves x 4,400 frames, keyframe-reduced (deltas are smooth and mostly near
+zero) to an estimated 0.3-0.8 MB a body, 25-60 MB for 79 bodies on disk, loaded by Addressables per body in view (about 30:
+10-25 MB of memory). Contingency (§4): bodies grouped into 10-15 proportion clusters, one bake per cluster plus a bounded
+runtime residual (the remaining foot height and gaze only). At runtime only the terrain feet (a bounded height offset, no
+posture work) and the gaze adjust; `ArmClearance` and `FootPlant`'s posture work are retired state by state as each state's
+gate is as good or better with the bake.
+
+**Cost of the bake.** Per frame: pose the body (HumanPoseHandler), bake its skinned mesh (~1-2 ms), refit the BVH (~1 ms),
+query ~300 arm vertices and the sole points (~0.5 ms), 3-6 solver iterations with numerical Jacobians on the ~45 unknowns
+(the mesh is re-posed only for the arm and leg segments that move: ~10-20 ms a frame in all). 79 x 4,400 = 348,000 frames:
+about 1-2 hours on the editor machine, Burst jobs across bodies; re-baked only for the bodies and clips a change touches.
+
+**Fast loop (T7).** An editor method, run by `tools/unity/editor.sh run`, that samples a clip on a body offline, bakes its
+mesh per frame and computes the gate's measures that need no runtime (A1-A6, C1, the soles' slide and height per contact
+frame, H, K): minutes per body and clip, before and after a bake. The whole-cast Unity run only confirms.
+
+**Prototype order.** (1) the T7 measure on Construction_Male_02, cap_Police_Male_03n, cap_Military_Male_03n (idles, looks,
+gesture ends) and Business_Female_01 (jog); (2) the arm solve (rest contact + signed distance) on those three men's idles;
+(3) the foot solve on the woman's jog; (4) their picks in the gate with the bake applied and the matching heuristics off for
+those states; only then a whole-cast run.

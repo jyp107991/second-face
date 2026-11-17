@@ -255,7 +255,7 @@ namespace SecondFace.Game.Play
             v.y = 0f;
             // where the player is going (kept while they stand: slots do not swing round as they turn on the spot)
             // (by yaw: a vector slerp between opposite headings, the player turning back, swings through the vertical)
-            if (v.magnitude > 0.3f) _heading = Quaternion.Euler(0f, Mathf.LerpAngle(Yaw(_heading), Yaw(v), Mathf.Clamp01(Time.deltaTime * 6f)), 0f) * Vector3.forward;
+            _heading = Heading(_heading, v, Time.deltaTime);
             if (Time.unscaledTime >= _nextSync)
             {
                 _nextSync = Time.unscaledTime + SyncEvery;
@@ -307,7 +307,7 @@ namespace SecondFace.Game.Play
                 return;
             }
             Stuck(m, a, d);
-            var slot = SlotPoint(i, lp);
+            var slot = SlotPoint(i, lp, _heading);
             var toSlot = Flat(fp, slot);
             if (lead.Sneaking)
             {
@@ -319,24 +319,63 @@ namespace SecondFace.Game.Play
                 if (still || float.IsNaN(m.Asked.x)) Go(m, slot, Walker.WalkSpeed);
                 return;
             }
-            var leaderJogs = leadSpeed > Walker.WalkSpeed + 0.5f;
-            m.Jogging = moving ? leaderJogs || (m.Jogging ? toSlot > WalkWithin : toSlot > JogFrom) : d > Far + 4f;
-            var speed = m.Jogging ? Walker.JogSpeed : Walker.WalkSpeed;
+            if (Pursue(a, ref m.Asked, ref m.Jogging, slot, lp, fp, _heading, moving, leadSpeed, Crowded(m), out var sent)) Idle(m, lp);
+            else if (sent) Moved(m);
+        }
+
+        /// <summary>One step of a follower keeping up with a player who is not sneaking (every <see cref="Step"/> s; the
+        /// motion gate's "following" states run this same step on the same agent, HumanMotionGateTests): the player moving
+        /// (at <paramref name="v"/> m/s), they are sent a little ahead of their <paramref name="slot"/> at a walk, or at a jog
+        /// when the player jogs or they have fallen behind; the player stopped, those in the band stand where they are (true:
+        /// stand, <see cref="Stand"/>) unless <paramref name="crowded"/>, the rest walk to their place.
+        /// <paramref name="sent"/>: a new way was asked of the agent.</summary>
+        public static bool Pursue(NavMeshAgent a, ref Vector3 asked, ref bool jogging, Vector3 slot, Vector3 lp, Vector3 fp, Vector3 heading,
+            bool moving, float v, bool crowded, out bool sent)
+        {
+            sent = false;
+            var d = Flat(lp, fp);
+            var toSlot = Flat(fp, slot);
+            var leaderJogs = v > Walker.WalkSpeed + 0.5f;
+            jogging = moving ? leaderJogs || (jogging ? toSlot > WalkWithin : toSlot > JogFrom) : d > Far + 4f;
+            var speed = jogging ? Walker.JogSpeed : Walker.WalkSpeed;
             if (moving)
             {
-                // aimed a little ahead of the slot (about a second's walk), so a follower keeps the player's pace instead of
-                // braking at every step to a point that has just moved on
-                var ahead = slot + _heading * Mathf.Max(1f, speed * 0.7f);
+                // aimed a little ahead of the slot (where it will be in 0.7 s at the player's pace), so a follower keeps the
+                // player's pace instead of braking at every step to a point that has just moved on, and comes in to the slot as
+                // the player slows (aimed a fixed metre or more ahead, a jogging companion ran 0.3 m past their slot as the
+                // player stopped, turned about and walked back to it, the jog's stride skating the soles, W1, 2026-11-17)
+                var ahead = slot + heading * (Mathf.Min(v, speed) * 0.7f);
                 ahead = NavMesh.SamplePosition(ahead, out var hit, 1f, NavMesh.AllAreas) ? hit.position : slot;
-                Go(m, ahead, speed, 0.5f);
-                return;
+                sent = Send(a, ref asked, ahead, speed, 0.5f);
+                return false;
             }
             // the player has stopped: those in the band stand where they are (unless on top of another of the party), the
             // rest walk to their place
             var idle = !a.pathPending && (!a.hasPath || a.remainingDistance <= a.stoppingDistance + 0.05f);
-            if (idle && d >= Near && d <= Far && !Crowded(m)) { Idle(m, lp); return; }
-            if (idle && toSlot < 0.5f) { Idle(m, lp); return; }
-            Go(m, slot, speed);
+            if (idle && d >= Near && d <= Far && !crowded) return true;
+            if (idle && toSlot < 0.5f) return true;
+            sent = Send(a, ref asked, slot, speed);
+            return false;
+        }
+
+        /// <summary>Where the player is going, eased toward their velocity <paramref name="v"/> while they move (kept while they
+        /// stand: slots do not swing round as they turn on the spot; by yaw: a vector slerp between opposite headings, the
+        /// player turning back, swings through the vertical).</summary>
+        public static Vector3 Heading(Vector3 heading, Vector3 v, float dt)
+        {
+            v.y = 0f;
+            return v.magnitude > 0.3f ? Quaternion.Euler(0f, Mathf.LerpAngle(Yaw(heading), Yaw(v), Mathf.Clamp01(dt * 6f)), 0f) * Vector3.forward : heading;
+        }
+
+        /// <summary>A follower's agent, as the townsfolk's (a person's radius and height, the walker's acceleration), yielding to
+        /// everyone (<paramref name="priority"/>, 70 and up: the player's way and the townsfolk's are never pushed aside by the
+        /// party; a higher number is avoided less). Made off: on once there is a NavMesh under them.</summary>
+        public static void Configure(NavMeshAgent agent, int priority)
+        {
+            agent.radius = 0.28f; agent.height = 1.8f; agent.speed = Walker.WalkSpeed; agent.acceleration = Walker.Acceleration;
+            agent.angularSpeed = 360f; agent.stoppingDistance = 0.3f; agent.autoBraking = true;
+            agent.obstacleAvoidanceType = ObstacleAvoidanceType.LowQualityObstacleAvoidance;
+            agent.avoidancePriority = Mathf.Min(99, priority);
         }
 
         /// <summary>Standing by (a conversation, a fight): no new walk, but out of the player's way.</summary>
@@ -344,7 +383,7 @@ namespace SecondFace.Game.Play
         {
             var a = m.Person.Agent;
             var fp = m.Person.transform.position;
-            if (Flat(lp, fp) < Near - 0.2f && !a.hasPath) Go(m, SlotPoint(i, lp), Walker.WalkSpeed);
+            if (Flat(lp, fp) < Near - 0.2f && !a.hasPath) Go(m, SlotPoint(i, lp, _heading), Walker.WalkSpeed);
             else if (!a.hasPath || a.remainingDistance <= a.stoppingDistance + 0.05f) Idle(m, lp);
         }
 
@@ -352,16 +391,22 @@ namespace SecondFace.Game.Play
         /// to look the way the player is going.</summary>
         private void Idle(Member m, Vector3 lp)
         {
-            var a = m.Person.Agent;
+            if (Stand(m.Person.Agent, m.Person.transform, lp, _heading, Time.time, ref m.StillSince, ref m.Turned, out var look)) m.Turn = StartCoroutine(Turning(m, look));
+        }
+
+        /// <summary>A follower standing still (the motion gate runs this same step): their way ended, and half a second after
+        /// they stop, once, true when they should turn to look the way the player is going (at <paramref name="look"/>, the
+        /// conversation turn's pace, <see cref="Walkabout.Face"/>). <paramref name="now"/>: the clock, s.</summary>
+        public static bool Stand(NavMeshAgent a, Transform body, Vector3 lp, Vector3 heading, float now, ref float stillSince, ref bool turned, out Vector3 look)
+        {
+            look = lp + heading * 4f;
             if (a.hasPath && a.remainingDistance <= a.stoppingDistance + 0.05f) a.ResetPath();
-            if (a.velocity.magnitude > 0.08f) { m.StillSince = -1f; return; }
-            if (m.StillSince < 0f) m.StillSince = Time.time;
-            if (m.Turned || Time.time - m.StillSince < 0.5f) return;
-            m.Turned = true;
-            var look = lp + _heading * 4f;
-            var to = look - m.Person.transform.position; to.y = 0f;
-            if (to.sqrMagnitude < 0.01f || Vector3.Angle(m.Person.transform.forward, to) < 40f) return;
-            m.Turn = StartCoroutine(Turning(m, look));
+            if (a.velocity.magnitude > 0.08f) { stillSince = -1f; return false; }
+            if (stillSince < 0f) stillSince = now;
+            if (turned || now - stillSince < 0.5f) return false;
+            turned = true;
+            var to = look - body.position; to.y = 0f;
+            return to.sqrMagnitude >= 0.01f && Vector3.Angle(body.forward, to) >= 40f;
         }
 
         private IEnumerator Turning(Member m, Vector3 look)
@@ -372,15 +417,27 @@ namespace SecondFace.Game.Play
 
         private void Go(Member m, Vector3 to, float speed, float again = 0.8f)
         {
-            var a = m.Person.Agent;
-            a.speed = speed;
-            if (!float.IsNaN(m.Asked.x) && Flat(m.Asked, to) < again && (a.pathPending || a.hasPath)) return;
-            // (asked once: a new path only when the place moved; PITFALL "ask an agent for a path once")
+            if (Send(m.Person.Agent, ref m.Asked, to, speed, again)) Moved(m);
+        }
+
+        /// <summary>On their way again: a turn on the spot stops.</summary>
+        private void Moved(Member m)
+        {
             if (m.Turn != null) { StopCoroutine(m.Turn); m.Turn = null; }
             m.Turned = false;
             m.StillSince = -1f;
-            m.Asked = to;
+        }
+
+        /// <summary>Sends an agent at <paramref name="speed"/> to <paramref name="to"/>, unless it is already on its way within
+        /// <paramref name="again"/> m of it (asked once: a new path only when the place moved; PITFALL "ask an agent for a
+        /// path once"). True when a new way was asked.</summary>
+        public static bool Send(NavMeshAgent a, ref Vector3 asked, Vector3 to, float speed, float again = 0.8f)
+        {
+            a.speed = speed;
+            if (!float.IsNaN(asked.x) && Flat(asked, to) < again && (a.pathPending || a.hasPath)) return false;
+            asked = to;
             a.SetDestination(to);
+            return true;
         }
 
         /// <summary>Their way is blocked (a path that ends short of where they were sent, or none): since when.</summary>
@@ -405,20 +462,20 @@ namespace SecondFace.Game.Play
 
         /// <summary>Where follower <paramref name="i"/> belongs about the player now: their slot on the ground (the nearest
         /// walkable point to it), else a point 2 m behind the player.</summary>
-        private Vector3 SlotPoint(int i, Vector3 lp)
+        public static Vector3 SlotPoint(int i, Vector3 lp, Vector3 heading)
         {
             var s = Slots[i % Slots.Length];
-            var right = Vector3.Cross(Vector3.up, _heading).normalized;
-            var p = lp + right * s.x + _heading * s.y;
+            var right = Vector3.Cross(Vector3.up, heading).normalized;
+            var p = lp + right * s.x + heading * s.y;
             if (NavMesh.SamplePosition(p, out var hit, 1.5f, NavMesh.AllAreas) && Flat(hit.position, lp) >= Near - 0.2f) return hit.position;
-            var back = lp - _heading * 2f;
+            var back = lp - heading * 2f;
             return NavMesh.SamplePosition(back, out hit, 2f, NavMesh.AllAreas) ? hit.position : p;
         }
 
         /// <summary>Beside the player on slot <paramref name="i"/>, on the ground (for a body set down before the NavMesh is in).</summary>
         private Vector3 Beside(int i, Vector3 lp)
         {
-            var p = SlotPoint(i, lp);
+            var p = SlotPoint(i, lp, _heading);
             if (!NavMesh.SamplePosition(p, out _, 0.5f, NavMesh.AllAreas) && Walkabout.Stage != null) p.y = Walkabout.Stage.Ground(p, lp.y);
             return p;
         }
@@ -598,13 +655,8 @@ namespace SecondFace.Game.Play
             it.Chosen += (who, verb) => { if (Walkabout != null) Walkabout.StartCoroutine(Walkabout.Respond(who, verb)); };
             var p = go.AddComponent<Townsperson>();
             p.Id = id; p.Def = def; p.Post = at; p.Animator = anim; p.Ambient = ambient; p.Body = male ? "base_m" : "base_f";
-            // an agent as the townsfolk's (a person's radius and height, their acceleration), yielding to everyone: the
-            // player's way and the townsfolk's are never pushed aside by the party (a higher number is avoided less)
             var agent = go.AddComponent<NavMeshAgent>();
-            agent.radius = 0.28f; agent.height = 1.8f; agent.speed = Walker.WalkSpeed; agent.acceleration = Walker.Acceleration;
-            agent.angularSpeed = 360f; agent.stoppingDistance = 0.3f; agent.autoBraking = true;
-            agent.obstacleAvoidanceType = ObstacleAvoidanceType.LowQualityObstacleAvoidance;
-            agent.avoidancePriority = Mathf.Min(99, 70 + _members.Count);
+            Configure(agent, 70 + _members.Count);
             agent.enabled = false;   // on once there is a NavMesh under them
             p.Agent = agent;
             return p;

@@ -45,6 +45,7 @@ namespace SecondFace.Game.People
         private Animator _animator;
         private TorsoProfile _profile;
         private BodySkin _skin;
+        private FootPlant _plant;
         private float _fwdL, _fwdR, _carryL = -1f, _carryR = -1f, _twistL, _twistR;
         private Transform _hips, _lu, _ll, _lh, _ru, _rl, _rh, _tl, _kl, _tr, _kr, _lm, _lt, _rm, _rt;
         private float _angleL, _angleR;
@@ -125,6 +126,7 @@ namespace SecondFace.Game.People
             _animator = GetComponent<Animator>();
             _profile = GetComponent<TorsoProfile>();
             _skin = GetComponent<BodySkin>();
+            _plant = GetComponent<FootPlant>();
             if (_skin != null && !_skin.Ready) _skin.Bind();
             if (_animator == null || !_animator.isHuman) return;
             _hips = _animator.GetBoneTransform(HumanBodyBones.Hips);
@@ -167,7 +169,9 @@ namespace SecondFace.Game.People
                 _hasSpeed = false;
                 foreach (var p in _animator.parameters) if (p.nameHash == SpeedId) _hasSpeed = true;
             }
-            if (_hasSpeed && _animator.GetFloat(SpeedId) > 0.1f) return false;
+            // (moving, unless the body has halted: the arms come to rest as the person stops, not when the stride's eased pace
+            // has run down 0.3 s later; a companion's hands hung 6.4-7.9 cm off the thigh a second after they stopped, A4)
+            if (_hasSpeed && _animator.GetFloat(SpeedId) > 0.1f && !(_plant != null && _plant.Halted)) return false;
             if (_gestureLayer >= 0 && _animator.GetLayerWeight(_gestureLayer) > 0.05f) return false;
             var state = _animator.GetCurrentAnimatorStateInfo(0);
             return !state.IsTag("sit") && !state.IsName("pickup") && !state.IsName("sneak");
@@ -749,12 +753,17 @@ namespace SecondFace.Game.People
             // back, not a pace; at 6 a woman's forearm round a wide hip, the arm pushed out three times for the hand, hung 31-33°
             // off the vertical, A3, 2026-11-07)
             var turn = Mathf.Min(10f, move / l1 * Mathf.Rad2Deg);
+            var inBefore = SkinNeed(upper, first, false, true, true).Angle;
             TurnArm(upper, first, turn, axis);
             var E2 = lower.position; var W2 = hand.position;
             Quaternion.FromToRotation(W2 - E2, H - E2).ToAngleAxis(out var a, out var ax);
             if (a > 0.01f && ax.sqrMagnitude > 0.5f) TurnForearm(lower, first, a, ax);
-            // (never straightening the elbow: the elbow out the way the forearm leans can line the two up, A2)
-            if (Vector3.Angle(lower.position - upper.position, hand.position - lower.position) < BendFloor)
+            // (never straightening the elbow: the elbow out the way the forearm leans can line the two up, A2; nor taking
+            // the upper arm or the forearm by the elbow into the body the clearance has just brought them out of: nothing
+            // after the clearance looked again, and resting arms read up to 1.3 cm into the body's clothes in
+            // BootTests.ArmsStayOutOfTheBody, a man's hand 6.2 cm off his thigh in the talk, A4, 2026-11-17)
+            if (Vector3.Angle(lower.position - upper.position, hand.position - lower.position) < BendFloor
+                || SkinNeed(upper, first, false, true, true).Angle > inBefore + 0.05f)
             {
                 if (a > 0.01f && ax.sqrMagnitude > 0.5f) TurnForearm(lower, first, -a, ax);
                 TurnArm(upper, first, -turn, axis);
@@ -1424,12 +1433,21 @@ namespace SecondFace.Game.People
         private float SkinDepth()
         {
             _skin.Pose();
-            var deepest = 0f;
+            var deepest = 0f; DepthWhere = "";
             foreach (var first in new[] { BodySkin.Part.UpperArmL, BodySkin.Part.UpperArmR })
                 for (int i = _skin.Begin(first), to = _skin.End(first + 2); i < to; i++)
-                    if (_skin.Depth(_skin.P[i], out var d, out _)) deepest = Mathf.Max(deepest, d);
+                    if (_skin.Depth(_skin.P[i], out var d, out _) && d > deepest)
+                    {
+                        deepest = d;
+                        var lo = first == BodySkin.Part.UpperArmL ? _ll : _rl; var up = first == BodySkin.Part.UpperArmL ? _lu : _ru;
+                        var part = i >= _skin.Begin(first + 2) ? "hand" : i >= _skin.Begin(first + 1) ? "forearm"
+                            : lo != null && up != null && (_skin.P[i] - lo.position).magnitude > (lo.position - up.position).magnitude / 3f ? "upper arm" : "upper arm by the elbow";
+                        DepthWhere = $"{part}, sleeve {_skin.Off(i) * 100f:0.0} cm, body's clothes {(_skin.Near >= 0 ? _skin.Off(_skin.Near) * 100f : 0f):0.0} cm, {(_restW > 0.99f ? "at rest" : "moving")}";
+                    }
             return deepest;
         }
+        /// <summary>Where the deepest point <see cref="Depth"/> found was (for tests' logs).</summary>
+        [System.NonSerialized] public string DepthWhere = "";
 
         private void Clear(Transform upper, Transform lower, Transform hand, ref float angle, ref Vector3 axis, float dt)
         {
