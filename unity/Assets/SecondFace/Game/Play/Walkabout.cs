@@ -876,7 +876,8 @@ namespace SecondFace.Game.Play
         private System.Collections.Generic.Dictionary<string, string> OwnersOf(MapDef map)
         {
             if (map == null) return null;
-            if (!_owners.TryGetValue(map.Id, out var o)) _owners[map.Id] = o = Owners.Of(map, PlacePlan.Build(map));
+            // (rooms as the place is built: a city district's border is its map's edge, not a wall round one room)
+            if (!_owners.TryGetValue(map.Id, out var o)) _owners[map.Id] = o = Owners.Of(map, PlacePlan.Build(CityKit.Prepare(map)));
             return o;
         }
 

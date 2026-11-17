@@ -5,7 +5,9 @@
 // screen, 3 a window pane (lit at night by the vertex's alpha), 4 a window grid over a megablock or a tower (bays of
 // _GridBay by _GridStorey on the face's metres; uv1.y the pane's share of a bay, the vertex alpha the share lit).
 // Light comes up at dusk with the global _SF_Night (SkyController: 0 by day, 1 at night); neon and screens burn by day
-// too, dimmer (_EmissionDay). Grime: the vertex alpha scales it on surfaces (0.5 as the material).
+// too, dimmer (_EmissionDay). Grime: the vertex alpha scales it on surfaces (0.5 as the material). A recoloured material
+// (_Recolour) takes the vertex colour as its colour and the texture (its luminance over _MeanLum) as detail: the library's
+// painted concrete is green paint and its concrete a dark brown-grey, and a district's palette must read as itself.
 // Interiors (PlaceInteriors): inside the box _SF_CutMin.._SF_CutMax, grown by 1.3 m (CityKit.CutMargin: a balcony, an
 // awning, a sign go with their building), everything above _SF_CutHeight is cut away; the inner faces the cut opens are a
 // dark cap. Elsewhere back faces are not drawn (a camera inside a megablock sees through it).
@@ -28,6 +30,9 @@ Shader "SecondFace/City"
         _Variation ("Patch variation", Range(0, 1)) = 0.3
         _Metal ("Metallic scale", Range(0, 1)) = 1
         _Smooth ("Smoothness scale", Range(0, 2)) = 1
+        _Recolour ("Recolour (0: the tint multiplies the texture, 1: the tint is the colour, the texture its detail)", Range(0, 1)) = 0
+        _MeanLum ("The texture's mean linear luminance", Float) = 0.2
+        _Albedo ("A recoloured tint's albedo", Range(0, 1)) = 0.6
         _Light ("The light material (patterns)", Float) = 0
         _Emission ("Emission (HDR intensity)", Float) = 4
         _EmissionDay ("Emission by day", Range(0, 1)) = 0.35
@@ -52,7 +57,7 @@ Shader "SecondFace/City"
             half4 _Grime, _Dust;
             float _GrimeHeight;
             half _GrimeAmount, _Streaks, _DustAmount, _Variation;
-            half _Metal, _Smooth, _Light, _Emission, _EmissionDay;
+            half _Metal, _Smooth, _Light, _Emission, _EmissionDay, _Recolour, _MeanLum, _Albedo;
             float _GridBay, _GridStorey;
         CBUFFER_END
 
@@ -255,7 +260,13 @@ Shader "SecondFace/City"
                         grimeScale = 0.8h * (1.0h - pane);
                     }
                 }
-                else albedo.rgb *= tint;
+                else
+                {
+                    // the tint multiplies the texture, or (recoloured: paint, concrete, painted steel) is the colour and the
+                    // texture only its detail, its luminance about its mean
+                    half lum = dot(albedo.rgb, half3(0.2126h, 0.7152h, 0.0722h));
+                    albedo.rgb = lerp(albedo.rgb * tint, tint * _Albedo * min(lum / max(_MeanLum, 0.01h), 3.0h), _Recolour);
+                }
 
                 // patches: broad and small, brightness and a little warmth
                 half broad = (half)Noise(p.xz / 9.0 + along * 0.02);

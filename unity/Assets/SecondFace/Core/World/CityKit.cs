@@ -517,17 +517,16 @@ namespace SecondFace.Core.World
 
         /// <summary>The materials the city draws with (the editor's library keys for each are in PlaceBuilder): every merge
         /// cell's mesh has one draw per material it uses, so near-twins are folded into one with a tint.</summary>
-        public static readonly string[] Keys = { "concrete", "painted", "brick", "metal", "tin", "scrap", "canvas", "planks", "grate", "tiles", "soil", "light" };
+        public static readonly string[] Keys = { "concrete", "painted", "brick", "metal", "tin", "rust", "scrap", "canvas", "planks", "grate", "tiles", "soil", "light" };
 
-        private static readonly Rgb Rust = new(0.72f, 0.42f, 0.26f), Steel = new(0.62f, 0.62f, 0.6f);
+        private static readonly Rgb Steel = new(0.62f, 0.62f, 0.6f);
 
-        /// <summary>Folds a piece's material into <see cref="Keys"/>: rust is tin rusted, bare steel is metal darkened, the
-        /// floor slab is concrete, boards are planks, deck plate is metal.</summary>
+        /// <summary>Folds a piece's material into <see cref="Keys"/>: bare steel is metal darkened, the floor slab is
+        /// concrete, boards are planks, deck plate is metal.</summary>
         private static void Fold(Piece p)
         {
             (string, Rgb) F(string key, Rgb tint) => key switch
             {
-                "rust" => ("tin", tint * Rust),
                 "steel" => ("metal", tint * Steel),
                 "slab" => ("concrete", tint),
                 "wood" => ("planks", tint),
@@ -1326,7 +1325,7 @@ namespace SecondFace.Core.World
                 }
                 Free("tin", (x0 + x1) / 2, top + 0.15f, (z0 + z1) / 2, x1 - x0 + 0.5f, 0.04f, z1 - z0 + 0.5f, 0, White, -1, 6f);
                 // its floor over the shack below
-                Free("plate", (x0 + x1) / 2, h + 0.03f, (z0 + z1) / 2, room.Width, 0.06f, room.Depth, 0, White);
+                Free("plate", (x0 + x1) / 2, h + 0.03f, (z0 + z1) / 2, room.Width, 0.06f, room.Depth, 0, C(0x8a8c88));
             }
 
             // --- roofs -----------------------------------------------------------------------------------------------
@@ -1550,7 +1549,9 @@ namespace SecondFace.Core.World
             {
                 var top = FloorTop(room);
                 var key = room.Floor switch { "wood" => "wood", "concrete" => "slab", "metal" => "plate", "tile" => "tiles", "grate" => "grate", _ => "slab" };
-                Free(key, (room.X0 + room.X1) / 2, (top - 0.1f) / 2, (room.Z0 + room.Z1) / 2, room.Width, top + 0.1f, room.Depth, 0, White, 0.25f);
+                // (concrete and plate take their colour from the piece: a worn grey; boards, tiles and grating their own)
+                var tint = key == "slab" ? C(0xa49e94) : key == "plate" ? C(0x8a8c88) : White;
+                Free(key, (room.X0 + room.X1) / 2, (top - 0.1f) / 2, (room.Z0 + room.Z1) / 2, room.Width, top + 0.1f, room.Depth, 0, tint, 0.25f);
             }
 
             private void Fence(PlacePlan.Fence fence)

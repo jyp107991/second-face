@@ -29,22 +29,25 @@ namespace SecondFace.EditorTools
         public const string CityDir = "Assets/SecondFace/Materials/City";
         public const string CityShader = "SecondFace/City";
 
-        /// <summary>A city material's library texture (null: none), its wear (grime, streaks, dust on top) and how metallic
-        /// and glossy the library's mask is taken.</summary>
-        private static readonly Dictionary<string, (string Tex, float Grime, float Streaks, float Dust, float Metal, float Smooth)> CityLib = new()
+        /// <summary>A city material's library texture (null: none), its wear (grime, streaks, dust on top), how metallic and
+        /// glossy the library's mask is taken, and how far the piece's colour replaces the texture's own (Recolour, over
+        /// the texture's mean linear luminance, measured on the library's maps): paint, concrete and painted steel take the
+        /// district's colours, sheet, timber and tiles keep their own.</summary>
+        private static readonly Dictionary<string, (string Tex, float Grime, float Streaks, float Dust, float Metal, float Smooth, float Recolour, float MeanLum)> CityLib = new()
         {
-            ["concrete"] = ("concrete_wall", 0.55f, 0.4f, 0.3f, 1f, 1f),
-            ["painted"] = ("painted", 0.5f, 0.35f, 0.25f, 1f, 1f),
-            ["brick"] = ("brick", 0.55f, 0.3f, 0.25f, 1f, 1f),
-            ["metal"] = ("steel_painted", 0.35f, 0.5f, 0.3f, 1f, 1f),
-            ["tin"] = ("tin", 0.3f, 0.55f, 0.35f, 1f, 1f),
-            ["scrap"] = ("scrap", 0.3f, 0.55f, 0.35f, 1f, 1f),
-            ["canvas"] = ("canvas", 0.3f, 0.2f, 0.2f, 0f, 0.6f),
-            ["planks"] = ("planks", 0.45f, 0.3f, 0.3f, 1f, 1f),
-            ["grate"] = ("grate", 0.3f, 0.3f, 0.2f, 1f, 1f),
-            ["tiles"] = ("tiles", 0.25f, 0.1f, 0.25f, 1f, 1f),
-            ["soil"] = ("grass", 0.1f, 0f, 0f, 0f, 0.5f),
-            ["light"] = (null, 0.3f, 0.2f, 0.1f, 0f, 1f),
+            ["concrete"] = ("concrete_wall", 0.55f, 0.4f, 0.3f, 1f, 1f, 0.85f, 0.086f),
+            ["painted"] = ("painted", 0.5f, 0.35f, 0.25f, 1f, 1f, 1f, 0.130f),
+            ["brick"] = ("brick", 0.55f, 0.3f, 0.25f, 1f, 1f, 0.35f, 0.310f),
+            ["metal"] = ("steel_painted", 0.35f, 0.5f, 0.3f, 1f, 1f, 0.9f, 0.227f),
+            ["tin"] = ("tin", 0.3f, 0.55f, 0.35f, 1f, 1f, 0f, 0.097f),
+            ["rust"] = ("rust", 0.3f, 0.55f, 0.3f, 1f, 1f, 0f, 0.3f),
+            ["scrap"] = ("scrap", 0.3f, 0.55f, 0.35f, 1f, 1f, 0f, 0.158f),
+            ["canvas"] = ("canvas", 0.3f, 0.2f, 0.2f, 0f, 0.6f, 0.8f, 0.448f),
+            ["planks"] = ("planks", 0.45f, 0.3f, 0.3f, 1f, 1f, 0f, 0.061f),
+            ["grate"] = ("grate", 0.3f, 0.3f, 0.2f, 1f, 1f, 0f, 0.203f),
+            ["tiles"] = ("tiles", 0.25f, 0.1f, 0.25f, 1f, 1f, 0f, 0.175f),
+            ["soil"] = ("grass", 0.1f, 0f, 0f, 0f, 0.5f, 0.7f, 0.124f),
+            ["light"] = (null, 0.3f, 0.2f, 0.1f, 0f, 1f, 0f, 0.2f),
         };
 
         /// <summary>The street's surfaces: a map floor → the library key its patch is drawn with (SecondFace/Road).</summary>
@@ -306,6 +309,7 @@ namespace SecondFace.EditorTools
             }
             m.SetFloat("_GrimeAmount", e.Grime); m.SetFloat("_Streaks", e.Streaks); m.SetFloat("_DustAmount", e.Dust);
             m.SetFloat("_Metal", e.Metal); m.SetFloat("_Smooth", e.Smooth);
+            m.SetFloat("_Recolour", e.Recolour); m.SetFloat("_MeanLum", e.MeanLum); m.SetFloat("_Albedo", 0.6f);
             m.SetFloat("_Light", key == "light" ? 1f : 0f);
             m.SetFloat("_Emission", 4f); m.SetFloat("_EmissionDay", 0.35f);
             m.SetFloat("_GridBay", CityKit.GridBay); m.SetFloat("_GridStorey", CityKit.Storey);

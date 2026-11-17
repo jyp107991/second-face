@@ -303,16 +303,19 @@ namespace SecondFace.Tests
             interiors.World = world;
             interiors.Refresh();
             yield return Shot(cam, arrive.transform.position + Vector3.up * 1.3f, 35f, yaw + 200f, 26f, $"place_{id}_street");
-            // what that view draws of the places standing (each renderer in the frustum, a draw per material)
+            // what that view draws (each renderer in the frustum, a draw per material): of this district, and of every place
+            // standing (its neighbours at its edges)
             var planes = GeometryUtility.CalculateFrustumPlanes(cam);
-            var draws = 0; var renderers = 0;
-            foreach (var (_, standing) in streamer.PlaceSpawner.Standing())
+            var draws = 0; var renderers = 0; var all = 0;
+            foreach (var (standingId, standing) in streamer.PlaceSpawner.Standing())
                 foreach (var r in standing.GetComponentsInChildren<Renderer>())
                 {
                     if (!r.enabled || !r.gameObject.activeInHierarchy || !GeometryUtility.TestPlanesAABB(planes, r.bounds)) continue;
+                    all += r.sharedMaterials.Length;
+                    if (standingId != id) continue;
                     renderers++; draws += r.sharedMaterials.Length;
                 }
-            Debug.Log($"PlacePlayTests: {id}: the street view draws {draws} ({renderers} renderers) of the places standing");
+            Debug.Log($"PlacePlayTests: {id}: the street view draws {draws} of the district ({renderers} renderers), {all} of all the places standing");
             // and at night: the windows, the neon, the screens
             clock.SetHour(22.5);
             sky.Apply();
@@ -320,7 +323,7 @@ namespace SecondFace.Tests
             yield return Shot(cam, arrive.transform.position, 50f, yaw + 20f, 22f, $"place_{id}_night");
             yield return Shot(cam, centre, 52f, 30f, 80f, $"place_{id}_night_wide");
             world.Focus = centre;
-            Assert.That(draws, Is.LessThanOrEqualTo(CityKit.DrawBudget), $"{id}: the street view draws {draws} of the places standing (budget {CityKit.DrawBudget})");
+            Assert.That(draws, Is.LessThanOrEqualTo(CityKit.DrawBudget), $"{id}: the street view draws {draws} of the district (budget {CityKit.DrawBudget})");
         }
 
         /// <summary>The shelter under its mouth (step 21b): Cistern 9's rooms ten metres down a ramp tunnel from the door in

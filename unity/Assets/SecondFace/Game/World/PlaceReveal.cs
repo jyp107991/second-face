@@ -15,7 +15,7 @@ namespace SecondFace.Game.World
     /// </summary>
     public sealed class PlaceReveal : MonoBehaviour
     {
-        public const float MinRadius = 1.4f, MaxRadius = 3.2f, PerMetre = 0.12f, MaxCamera = 45f, Chest = 1.3f;
+        public const float MinRadius = 1.2f, MaxRadius = 2.6f, PerMetre = 0.09f, MaxCamera = 45f, Chest = 1.3f;
 
         private static readonly int At = Shader.PropertyToID("_SF_RevealAt"), From = Shader.PropertyToID("_SF_RevealFrom");
         private static int _live;
