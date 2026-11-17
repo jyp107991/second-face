@@ -199,7 +199,7 @@ ninebridge = {
     'npcs': [
         {'def': 'npc_nb_01', 'x': 39, 'y': 18, 'facing': 0},
         {'def': 'npc_nb_02', 'x': 55, 'y': 12, 'facing': 2},
-        {'def': 'npc_nb_03', 'x': 27, 'y': 17, 'facing': 2, 'if': {'not': {'flag': 'odile_joined'}}},
+        {'def': 'npc_nb_03', 'x': 27, 'y': 17, 'facing': 2, 'if': {'any': [{'not': {'flag': 'odile_joined'}}, {'all': [{'any': [{'flag': 'odile_left'}, {'flag': 'odile_gone'}]}, {'not': {'inParty': 'npc_nb_03'}}]}]}},
         {'def': 'npc_nb_04', 'x': 20, 'y': 21, 'facing': 3},
         {'def': 'npc_nb_05', 'x': 10, 'y': 36, 'facing': 1},
         {'def': 'npc_nb_06', 'x': 37, 'y': 20, 'facing': 3},

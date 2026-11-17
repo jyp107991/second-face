@@ -1676,9 +1676,32 @@ export const openfield: MapDef = {
       y: 21,
       facing: 1,
       if: {
-        not: {
-          flag: "ash_joined"
-        }
+        any: [
+          {
+            not: {
+              flag: "ash_joined"
+            }
+          },
+          {
+            all: [
+              {
+                any: [
+                  {
+                    flag: "ash_left"
+                  },
+                  {
+                    flag: "ash_gone"
+                  }
+                ]
+              },
+              {
+                not: {
+                  inParty: "npc_of_03"
+                }
+              }
+            ]
+          }
+        ]
       }
     },
     {
