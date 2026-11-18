@@ -61,15 +61,32 @@ namespace SecondFace.Tests
         // ---------------------------------------------------------------- the arm's hang by build (docs/qa/motion_calibration.md §9)
         /// <summary>A man's upper arm hangs further out the broader his trunk where the elbow hangs (docs/qa/arm_build_evidence.md:
         /// Cau et al., Shewhorak's walkers, the clearance geometry on ANSUR II; the coordinator's decision, 2026-11-18): standing,
-        /// A1 ≤ 20 + <see cref="A1PerCm"/>·e, where e is his trunk's breadth at the hanging elbow (his TorsoProfile, what he
-        /// wears included) past ANSUR II men's median at his stature (<see cref="AnsurWaistShare"/> of it: the median of waist
-        /// breadth over stature, 4,082 men), held to <see cref="BuildMaxCm"/>, the edge of the data. The conservative end of
-        /// the evidence (k 0.43 of its 0.43-1.29° per cm). Women keep 20 until a woman's reference exists; the cap stays 28.</summary>
+        /// A1 ≤ 20 + <see cref="A1PerCm"/>·e, where e is his BODY's breadth at the hanging elbow past ANSUR II men's median at
+        /// his stature (<see cref="AnsurWaistShare"/> of it: the median of waist breadth over stature, 4,082 men, nude), held
+        /// to <see cref="BuildMaxCm"/>, the edge of the data. The body's breadth: his TorsoProfile as built (the game's own
+        /// garment layers left out) less twice his base's baked top (docs/qa/gates/motion_build_tops.json: a shirt 0.3 cm a
+        /// side, a knit 0.6, a jacket or coat 1.3; a top that cannot be classified a jacket's, the stricter limit). The base
+        /// limit of 20 already holds real people's ordinary clothes, so clothes counted into e would count twice. The
+        /// conservative end of the evidence (k 0.43 of its 0.43-1.29° per cm). Women keep 20 until a woman's reference
+        /// exists; the cap stays 28.</summary>
         public const float A1PerCm = 0.37f, AnsurWaistShare = 0.18588f, BuildMaxCm = 9f;
         private static readonly Dictionary<string, float> BuildCm = new();
+        private static readonly Dictionary<string, string> BuildTop = new();
+        private static Newtonsoft.Json.Linq.JObject _tops;
+        private static (string Class, float Cm) Top(string id)
+        {
+            if (_tops == null)
+            {
+                var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "docs", "qa", "gates", "motion_build_tops.json"));
+                _tops = File.Exists(path) ? Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(path)) : new Newtonsoft.Json.Linq.JObject();
+            }
+            var cls = _tops["bases"]?[id]?.Value<string>() ?? "jacket";
+            var cm = _tops["allowance_cm"]?[cls]?.Value<float?>() ?? 1.3f;
+            return (cls, cm);
+        }
 
         /// <summary>A man's e (cm; 0 for a woman, or where his trunk is no broader than the median).</summary>
-        private static float Build(GameObject go, Animator a, bool male)
+        private static float Build(GameObject go, Animator a, bool male, string id)
         {
             if (!male || a == null) return 0f;
             var tp = go.GetComponentInChildren<TorsoProfile>();
@@ -90,10 +107,18 @@ namespace SecondFace.Tests
             var stature = (top - go.transform.position.y) * 100f;
             // the hanging elbow's height in the profile's frame (the hips' at rest): the shoulder joints less the upper arm
             var elbowY = 0.5f * (up.position.y + upR.position.y) - (lo.position - up.position).magnitude - hips.position.y;
-            if (!tp.Sample(elbowY / Mathf.Max(0.01f, go.transform.lossyScale.y), out _, out _, out var rx, out _)) return 0f;
-            var breadth = 2f * rx * go.transform.lossyScale.x * 100f;
+            // the profile as built (its Rx: Sample adds the game's garment layers worn over it)
+            if (tp.Rx == null || tp.Rx.Length < 2) return 0f;
+            var f = (elbowY / Mathf.Max(0.01f, go.transform.lossyScale.y) - tp.Bottom) / tp.Step;
+            if (f < 0f || f > tp.Rx.Length - 1) return 0f;
+            var i0 = Mathf.Min((int)f, tp.Rx.Length - 2);
+            var rx = Mathf.Lerp(tp.Rx[i0], tp.Rx[i0 + 1], f - i0);
+            var built = 2f * rx * go.transform.lossyScale.x * 100f;
+            var (cls, side) = Top(id);
+            var breadth = built - 2f * side;
             var e = Mathf.Clamp(breadth - AnsurWaistShare * stature, 0f, BuildMaxCm);
-            Debug.Log($"HumanMotionGate build: {go.name} trunk at the hanging elbow {breadth:0.0} cm, stature {stature:0.0} cm, the median {AnsurWaistShare * stature:0.0}, e {e:0.0}");
+            BuildTop[id] = $"{cls} {side:0.0}";
+            Debug.Log($"HumanMotionGate build: {id} trunk at the hanging elbow {built:0.0} cm as built, its top a {cls} ({side:0.0} cm a side), the body {breadth:0.0}, stature {stature:0.0} cm, the median {AnsurWaistShare * stature:0.0}, e {e:0.0}");
             return e;
         }
         private static Lim L(string m, float lo, float hi, float capLo, float capHi) => new() { M = m, Lo = lo, Hi = hi, CapLo = capLo, CapHi = capHi };
@@ -436,654 +461,116 @@ namespace SecondFace.Tests
 #else
             var ids = new string[0];
 #endif
-            var failed = new List<string>();
-            var measured = new int[1];
-            var done = 0;
-            for (var i = 0; i < ids.Length; i += 10)
-            {
-                var batch = ids.Skip(i).Take(10).ToArray();
-                yield return Gate(batch, $"motion_gate_full_{i / 10}", captures: false, failures: failed, assert: false, measured: measured);
-                done += batch.Length;
-            }
-            // one verdict for the whole cast (the lock counts the gate green only on it: docs/PEOPLE_MOTION.md §1.9), with the
-            // people it measured (a run stopped in its last batch wrote a verdict of 70 of the 79 as the whole cast's,
-            // 2026-11-08: tools/qa/people_gate.mjs holds a verdict short of the cast red)
-            Verdict("motion_gate_full", measured[0], failed, done, ids.Length);
-            Assert.That(failed, Is.Empty, $"{failed.Count} measures past their limits:\n" + string.Join("\n", failed.Take(80)));
-        }
-
-        private sealed class Subject
-        {
-            public string Id;
-            public GameObject Go;
-            public Animator A;
-            public Ambient Ambient;
-            public Gaze Gaze;
-            public MotionProbe Probe;
-            public Transform Mark;      // a partner's head where the looking states put it
-            public GameObject Partner;  // the one they talk with
-            public Vector3 Home;
-        }
-
-        private sealed class Runner : MonoBehaviour { }
-
-        /// <summary>Waits this long, in frames when the gate's frames are fixed (docs/PEOPLE_MOTION.md §1.9): a wait by
-        /// Time.time compared floats whose size depends on how long the editor took to start, so the same wait ended a frame
-        /// sooner or later from run to run, every state after it began on another frame and the same code's verdicts differed
-        /// (1073 and 1085, 174 lines, 2026-11-07).</summary>
-        private static IEnumerator Wait(float seconds)
-        {
-            if (Time.captureDeltaTime > 0f) { for (int n = Frames(seconds), i = 0; i < n; i++) yield return null; yield break; }
-            var t = Time.time; while (Time.time - t < seconds) yield return null;
-        }
-
-        private static int Frames(float seconds) => Time.captureDeltaTime > 0f ? Mathf.Max(1, Mathf.RoundToInt(seconds / Time.captureDeltaTime)) : int.MaxValue;
-
-        private IEnumerator Gate(string[] ids, string report, bool captures, List<string> failures = null, bool assert = true, int[] measured = null)
-        {
-#if UNITY_EDITOR
-            var cat = AssetDatabase.LoadAssetAtPath<RocketboxCatalog>("Assets/SecondFace/People/Rocketbox/RocketboxCatalog.asset");
-            var assets = AssetDatabase.LoadAssetAtPath<WorldAssets>("Assets/SecondFace/World/WorldAssets.asset");
-            if (cat == null || cat.People.Length == 0 || assets == null || assets.Locomotion == null) { Assert.Ignore("no Rocketbox catalogue or locomotion built"); yield break; }
-            yield return BootTests.Clear();
-            foreach (var c in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None)) { c.enabled = false; c.tag = "Untagged"; }
-            var root = new GameObject("motion gate");
-            var runner = root.AddComponent<Runner>();
-            // the ground: flat, and a 10° slope beyond it
-            var flat = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            flat.name = "flat"; flat.transform.SetParent(root.transform);
-            flat.transform.localScale = new Vector3(200f, 1f, 70f); flat.transform.position = new Vector3(0f, -0.5f, 0f);
-            var slope = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            slope.name = "slope"; slope.transform.SetParent(root.transform);
-            slope.transform.localScale = new Vector3(200f, 1f, 30f);
-            slope.transform.rotation = Quaternion.Euler(-10f, 0f, 0f);
-            slope.transform.position = new Vector3(0f, 0f, 70f) - slope.transform.rotation * new Vector3(0f, 0.5f, 0f);
-            var groundMat = flat.GetComponent<Renderer>().sharedMaterial;
-            if (groundMat != null) groundMat.color = new Color(0.58f, 0.55f, 0.5f);
-            var grounds = new Collider[] { flat.GetComponent<Collider>(), slope.GetComponent<Collider>() };
-            var sun = new GameObject("sun").AddComponent<Light>();
-            sun.transform.SetParent(root.transform);
-            sun.type = LightType.Directional; sun.intensity = 1.6f; sun.shadows = LightShadows.Soft;
-            sun.transform.rotation = Quaternion.Euler(45f, 150f, 0f);
-            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.55f, 0.56f, 0.6f);
-
-            // the people, as the game makes them
-            var people = new List<Subject>();
-            for (var i = 0; i < ids.Length; i++)
-            {
-                var prefab = cat.Get(ids[i]);
-                if (prefab == null) continue;
-                var home = new Vector3((i - (ids.Length - 1) * 0.5f) * Lane, 0f, 0f);
-                var go = Object.Instantiate(prefab, home, Quaternion.identity, root.transform);
-                go.name = "gate_" + ids[i];
-                var p = RbPeople.Of(ids[i]);
-                RbDress.Apply(go, RbPeople.DyesFor(p, "gate_" + ids[i], p?.Roles?.FirstOrDefault() ?? "settler", null));
-                var a = go.GetComponentInChildren<Animator>();
-                Assert.That(a, Is.Not.Null, ids[i] + "'s animator");
-                var asPlayer = ids.Length > 1 && i == ids.Length - 1 && report == "motion_gate";
-                Ambient amb = null;
-                if (asPlayer) Walker.Animate(a, assets.Locomotion, p?.Male ?? true);
-                else amb = PeopleService.Animate(a, assets.Locomotion, ids[i], p?.Male ?? true);
-                a.cullingMode = AnimatorCullingMode.AlwaysAnimate;   // measured every frame, seen or not
-                if (amb != null) { amb.MinGap = amb.MaxGap = 1e6f; }   // the gestures are played by the gate, each in turn
-                var probe = a.gameObject.AddComponent<MotionProbe>();
-                probe.Person = ids[i] + (asPlayer ? " (player)" : "");
-                probe.Ground = grounds;
-                // the first person, and the first man (their strides differ: one woman's trace hid the men's skate), traced
-                var traced = i == 0 || (ids[i].Contains("Male") && !ids.Take(i).Any(x => x.Contains("Male")));
-                // (and anyone named in GATE_TRACE, for a look at their frames: "_" and their name in the trace's file name)
-                var also = System.Environment.GetEnvironmentVariable("GATE_TRACE");
-                var named = !traced && !string.IsNullOrEmpty(also) && also.Split(',').Contains(ids[i]);
-                if (traced || named)
-                {
-                    probe.TracePath = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", report + (named ? "_" + ids[i] : i == 0 ? "" : "_m") + "_trace.csv"));
-                    Directory.CreateDirectory(Path.GetDirectoryName(probe.TracePath));   // (CI has no test-results folder yet: DirectoryNotFound, 2026-11-16)
-                    File.Delete(probe.TracePath.Replace(".csv", "_soles.csv"));   // (it is appended to: each run afresh)
-                    probe.TraceState = "";   // every state (the feet, frame by frame)
-                    File.WriteAllText(probe.TracePath, "state,t,rootx,rootz,heelL,ballL,ankleLz,heelR,ballR,ankleRz,speed,hipsz,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR,sink,low,eL,eR,gL,gR,slipL,slipR,rL,rR,a1L,a1R,poleL,poleR,flexL,flexR,adaptL,adaptR,surfL,surfR,hgapL,hgapR,dL0,dL1,dL2,dL3,dL4,dL5,dR0,dR1,dR2,dR3,dR4,dR5,holdtL,holdbL,holdyL,holdgL,holdtR,holdbR,holdyR,holdgR,a4L,a4R,flankL,flankR,outL,fwdL,outR,fwdR,saLclip,saL0,saL1,saL2,saL3,saL4,saL5,saRclip,saR0,saR1,saR2,saR3,saR4,saR5,flankHoldL,flankHoldR,kneeL,kneeR,valgusL,valgusR,sink,pushPartL,pushDegL,pushPartR,pushDegR,restPartL,restDepL,restBodyL,restYL,restDegL,restPartR,restDepR,restBodyR,restYR,restDegR,pushDepL,pushDepR\n");
-                }
-                Assert.That(probe.Calibrate(), Is.True, $"{ids[i]}: {probe.Error}");
-                BuildCm[ids[i]] = Build(go, a, p?.Male ?? ids[i].Contains("Male"));
-                var mark = new GameObject("mark_" + ids[i]).transform;
-                mark.SetParent(root.transform);
-                // (the player's body has no Ambient in the game: it neither idles by a hash nor gestures)
-                people.Add(new Subject { Id = ids[i], Go = go, A = a, Ambient = amb, Gaze = a.GetComponent<Gaze>(), Probe = probe, Mark = mark, Home = home });
-            }
-            Assert.That(people.Count, Is.GreaterThan(0), "no people made");
-            yield return Wait(1f);
-
-            void Record(string state, MotionProbe.K? kind) { foreach (var s in people) { s.Probe.State = state; s.Probe.Kind = kind; } }
-            void Stop() { foreach (var s in people) s.Probe.Kind = null; }
-            void Place(Vector3 offset, float yaw)
-            {
-                foreach (var s in people)
-                {
-                    var at = s.Home + offset;
-                    var ray = new Ray(at + Vector3.up * 5f, Vector3.down);
-                    var y = 0f;
-                    foreach (var g in grounds) if (g.Raycast(ray, out var hit, 20f)) y = Mathf.Max(y, hit.point.y);
-                    s.Go.transform.SetPositionAndRotation(new Vector3(at.x, y, at.z), Quaternion.Euler(0f, yaw, 0f));
-                }
-            }
-
-            // 0. the pace each gait plays at for this body at the game's speeds, and the cadence it gives (P1, P2)
-            foreach (var s in people)
-            {
-                var hip = Pace.Hip(s.A); var set = Pace.ClipsOf(s.A);
-                foreach (var (state, v) in new[] { ("pace:walk", Townsfolk.WalkSpeed), ("pace:walk", Walker.WalkSpeed), ("pace:jog", Walker.JogSpeed) })
-                {
-                    var (speed, rate) = Pace.For(v, hip, set, Pace.Female(s.A));
-                    var gait = set.FirstOrDefault(c => Mathf.Abs(c.Speed - speed) < 1e-4f).Name;
-                    var clip = gait == null ? null : s.A.runtimeAnimatorController.animationClips.FirstOrDefault(c => c.name == gait);
-                    Add(s.Probe, state, "P1", rate);
-                    // (each gait clip is one stride, two steps: the converters cut one)
-                    if (clip != null && clip.length > 0f) Add(s.Probe, state, "P2", 2f * 60f * rate / clip.length);
-                }
-            }
-
-            // 1. standing: each of their sex's idles on the flat (Ambient.IdlesOf)
-            for (var idle = 0; idle < Ambient.IdleCount; idle++)
-            {
-                foreach (var s in people) s.A.SetFloat("Idle", Mathf.Min(idle, Ambient.IdlesOf(s.A) - 1));
-                yield return Wait(1.2f);
-                Record("idle" + idle, MotionProbe.K.Stand);
-                foreach (var s in people) if (idle >= Ambient.IdlesOf(s.A)) s.Probe.Kind = null;
-                yield return Wait(6f);
-                Stop();
-            }
-            // (what the foot plant and the arm clearance did, for the report: a goal the foot did not reach, a body without
-            // its torso measured)
-            foreach (var s in people)
-            {
-                var fp = s.A.GetComponent<FootPlant>(); var ac = s.A.GetComponent<ArmClearance>();
-                Debug.Log($"HumanMotionGate systems: {s.Probe.Person}: foot goals missed by {(fp != null ? fp.GoalError * 100f : Vector2.zero)} cm, sink {(fp != null ? fp.Sink * 100f : 0f):0.0} cm; arm clearance {(ac != null && ac.Ready ? (ac.SkinReady ? "ready on the skin" : "ready on the SECTIONS (no BodySkin)") : "NOT READY")}, depth {(ac != null ? ac.Depth() * 100f : 0f):0.0} cm, turned {(ac != null ? ac.Turned : Vector2.zero)}; cost {(ac != null && ac.CostFrames > 0 ? ac.CostMs / ac.CostFrames : 0):0.000} ms a frame, skin posed {(ac != null && ac.CostFrames > 0 && ac.Skin != null ? (float)ac.Skin.Poses / ac.CostFrames : 0):0.0}x a frame at {(ac != null && ac.Skin is { Poses: > 0 } sk2 ? sk2.PoseMs / sk2.Poses : 0):0.000} ms, {(ac != null && ac.Skin != null ? ac.Skin.Count : 0)} points, {(ac != null && ac.Skin != null && ac.CostFrames > 0 ? ac.Skin.DepthCalls / ac.CostFrames : 0)} depth asks a frame; stages {(ac != null && ac.CostFrames > 0 ? string.Join("/", ac.StageMs.Select(x => (x / ac.CostFrames).ToString("0.00"))) : "")} ms");
-            }
-            // 2. on the slope (facing up it), then back
-            Place(new Vector3(0f, 0f, 70f), 0f);
-            foreach (var s in people) s.A.SetFloat("Idle", 0f);
-            yield return Wait(1.5f);
-            Record("slope", MotionProbe.K.Stand);
-            yield return Wait(5f);
-            Stop();
-            Place(Vector3.zero, 0f);
-            yield return Wait(1.5f);
-            // 3. looking at someone round them (the gaze alone)
-            foreach (var angle in new[] { 0, 45, 90, 135 })
-            {
-                foreach (var s in people)
-                {
-                    s.Mark.position = s.Go.transform.position + Quaternion.Euler(0f, angle, 0f) * Vector3.forward * 1.3f + Vector3.up * 1.6f;
-                    if (s.Gaze != null) s.Gaze.Target = s.Mark;
-                }
-                yield return Wait(1.2f);
-                Record("look" + angle, MotionProbe.K.Stand);
-                yield return Wait(3f);
-                Stop();
-            }
-            foreach (var s in people) if (s.Gaze != null) s.Gaze.Target = null;
-            yield return Wait(1f);
-            // 4. each gesture, then the moments after it
-            foreach (var g in Gestures)
-            {
-                foreach (var s in people) if (s.Ambient != null) s.Ambient.Gesture(g);
-                Record("gesture:" + g, MotionProbe.K.Gesture);
-                // (only those whose sex's captures hold it: a woman's stretch and yawns are not played by men)
-                foreach (var s in people) if (!Ambient.Can(s.A, g)) s.Probe.Kind = null;
-                yield return Wait(0.5f);
-                for (int n = Frames(15f), f0 = 0; f0 < n && people.Any(s => Playing(s.A)); f0++) yield return null;
-                Stop();
-                yield return Wait(0.6f);
-                Record("after:" + g, MotionProbe.K.Stand);
-                foreach (var s in people) if (!Ambient.Can(s.A, g)) s.Probe.Kind = null;
-                yield return Wait(2f);
-                Stop();
-            }
-            // 5. the conversation turn: someone behind them speaks; they turn as the game turns them
-            foreach (var s in people)
-            {
-                s.Mark.position = s.Go.transform.position - s.Go.transform.forward * 1.3f + Vector3.up * 1.6f;
-                if (s.Gaze != null) s.Gaze.Target = s.Mark;
-            }
-            yield return Wait(0.5f);
-            Record("turn", MotionProbe.K.Turn);
-            foreach (var s in people) runner.StartCoroutine(Walkabout.Face(s.Go.transform, s.Mark.position));
-            yield return Wait(1.1f);
-            foreach (var s in people)
-            {
-                var to = s.Mark.position - s.Probe.HeadPosition; to.y = 0f;
-                Add(s.Probe, "turn", "T1", Vector3.Angle(s.Probe.ChestForward(), to.normalized));
-            }
-            Stop();
-            foreach (var s in people) if (s.Gaze != null) s.Gaze.Target = null;
-            // 6. walking, jogging, sneaking: straight from a standstill to a stop, and round a 3 m bend
-            Camera walkCam = null;
-            foreach (var (name, v, sneak, accel) in new[] { ("sneak", 0.85f, true, 6f), ("walk", Townsfolk.WalkSpeed, false, 6f), ("walk_player", Walker.WalkSpeed, false, Walker.Acceleration), ("jog", Walker.JogSpeed, false, Walker.Acceleration) })
-            {
-                Place(new Vector3(0f, 0f, -30f), 0f);
-                foreach (var s in people) { s.A.SetBool("Sneak", sneak); s.A.SetFloat("Speed", 0f); }
-                yield return Wait(1.2f);
-                Record("walk:" + name, MotionProbe.K.Walk);
-                // each at the game's pace for the state, whoever walks it (the same for both sexes)
-                var vOf = people.Select(s => v).ToArray();
-                var speedOf = new float[people.Count]; var travelledOf = new float[people.Count];
-                var lengthOf = vOf.Select(x => Mathf.Min(45f, x * 7f)).ToArray();
-                var frames = 0; var nextFrame = 0f;
-                while (Enumerable.Range(0, people.Count).Any(i => travelledOf[i] < lengthOf[i]))
-                {
-                    var dt = Time.deltaTime;
-                    for (var i = 0; i < people.Count; i++)
-                    {
-                        var s = people[i];
-                        if (travelledOf[i] >= lengthOf[i]) continue;
-                        var left = lengthOf[i] - travelledOf[i];
-                        var stopping = speedOf[i] * speedOf[i] / (2f * accel);
-                        speedOf[i] = left <= stopping ? Mathf.Max(0.05f, speedOf[i] - accel * dt) : Mathf.Min(vOf[i], speedOf[i] + accel * dt);
-                        var step = Mathf.Min(left, speedOf[i] * dt);
-                        travelledOf[i] += step;
-                        s.Go.transform.position += Vector3.forward * step;
-                        Pace.Set(s.A, speedOf[i], sneak, 0.12f, dt);   // as the game's walker sets it
-                        if (travelledOf[i] >= lengthOf[i]) { s.A.SetFloat("Speed", 0f); s.Probe.Kind = null; }   // (each stops as the walk's end does)
-                    }
-                    var travelled = travelledOf[0]; var length = lengthOf[0];
-                    if (captures && (name is "walk" or "jog") && travelled > length * 0.45f && travelled < length && frames < 10 && Time.time >= nextFrame)
-                    {
-                        nextFrame = Time.time + (name == "jog" ? 0.06f : 0.1f);
-                        var s0 = people[0].Go.transform;
-                        walkCam ??= new GameObject("walk camera") { tag = "MainCamera" }.AddComponent<Camera>();
-                        walkCam.fieldOfView = 30f; walkCam.clearFlags = CameraClearFlags.SolidColor; walkCam.backgroundColor = new Color(0.7f, 0.75f, 0.8f);
-                        walkCam.transform.SetPositionAndRotation(s0.position + Vector3.up * 0.95f - Vector3.right * 4.2f + Vector3.forward * 0.2f, Quaternion.LookRotation(Vector3.right, Vector3.up));
-                        var keep = Time.timeScale; Time.timeScale = 0f;   // the frame held while it is captured
-                        yield return ScreenshotTests.Capture($"motion_{name}_{frames}", 700, 700);
-                        Time.timeScale = keep;
-                        frames++;
-                        continue;
-                    }
-                    yield return null;
-                }
-                foreach (var s in people) s.A.SetFloat("Speed", 0f);
-                Stop();
-                if (walkCam != null) { Object.Destroy(walkCam.gameObject); walkCam = null; }
-                yield return Wait(1f);
-                if (name is "walk" or "jog")
-                {
-                    // round a bend of 3 m radius, at speed (each at their own, as on the straight)
-                    Place(new Vector3(0f, 0f, -10f), -90f);
-                    var centres = people.Select(s => s.Go.transform.position + Vector3.forward * 3f).ToList();
-                    var thetaOf = new float[people.Count];
-                    for (var i = 0; i < people.Count; i++) Pace.Set(people[i].A, vOf[i], false, 0f);
-                    yield return Wait(0.8f);
-                    Record("bend:" + name, MotionProbe.K.Walk);
-                    for (int n1 = Frames(6f), f1 = 0; f1 < n1; f1++)
-                    {
-                        var dt = Time.deltaTime;
-                        for (var i = 0; i < people.Count; i++)
-                        {
-                            var s = people[i];
-                            thetaOf[i] += vOf[i] / 3f * dt;
-                            var theta = thetaOf[i];
-                            var pos = centres[i] + new Vector3(-Mathf.Sin(theta), 0f, -Mathf.Cos(theta)) * 3f;
-                            var tangent = new Vector3(-Mathf.Cos(theta), 0f, Mathf.Sin(theta));
-                            s.Go.transform.SetPositionAndRotation(pos, Quaternion.LookRotation(tangent, Vector3.up));
-                            Pace.Set(s.A, vOf[i], false, 0.12f, dt);
-                        }
-                        yield return null;
-                    }
-                    Stop();
-                    foreach (var s in people) s.A.SetFloat("Speed", 0f);
-                    yield return Wait(1f);
-                }
-                foreach (var s in people) s.A.SetBool("Sneak", false);
-            }
-            // 7. two people talking, as the game sets them: the other turned to face, both looking at each other's head, the
-            // opening gesture, then the talk
-            Place(Vector3.zero, 0f);
-            yield return Wait(1f);
-            var partnerId = cat.Get("Male_Adult_01") != null ? "Male_Adult_01" : people[0].Id;
-            foreach (var s in people)
-            {
-                var pp = Object.Instantiate(cat.Get(partnerId), s.Go.transform.position + Vector3.forward * 1.3f + Vector3.right * 0.25f, Quaternion.Euler(0f, 180f, 0f), root.transform);
-                var pa = pp.GetComponentInChildren<Animator>();
-                var pam = PeopleService.Animate(pa, assets.Locomotion, "partner_" + s.Id, RbPeople.Of(partnerId)?.Male ?? true);
-                pam.MinGap = pam.MaxGap = 1e6f;
-                pa.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-                s.Partner = pp;
-            }
-            yield return Wait(0.3f);
-            foreach (var s in people) runner.StartCoroutine(Walkabout.Face(s.Go.transform, s.Partner.transform.position));
-            yield return Wait(0.8f);
-            foreach (var s in people)
-            {
-                var ph = s.Partner.GetComponentInChildren<Animator>().GetBoneTransform(HumanBodyBones.Head);
-                if (s.Gaze != null) s.Gaze.Target = ph;
-                var pg = s.Partner.GetComponentInChildren<Gaze>();
-                if (pg != null) pg.Target = s.A.GetBoneTransform(HumanBodyBones.Head);
-                if (s.Ambient != null) s.Ambient.Gesture("talk");
-            }
-            Record("gesture:talk (conversation)", MotionProbe.K.Gesture);
-            yield return Wait(0.5f);
-            for (int n2 = Frames(15f), f2 = 0; f2 < n2 && people.Any(s => Playing(s.A)); f2++) yield return null;
-            Stop();
-            yield return Wait(0.6f);
-            Record("talk", MotionProbe.K.Stand);
-            yield return Wait(4f);
-            foreach (var s in people)
-            {
-                var to = s.Partner.transform.position - s.Go.transform.position; to.y = 0f;
-                Add(s.Probe, "talk", "T2", Vector3.Angle(s.Probe.ChestForward(), to.normalized));
-                Add(s.Probe, "talk", "T3", to.magnitude);
-            }
-            Stop();
-
-            // 8. fighting (§2.7)
-            if (assets.Combat != null && people.Count > 0 && Fighter.HasLayers(people[0].A))
-                yield return Fighting(people, root, runner, assets.Combat, captures, (st, k) => Record(st, k), Stop, Place);
-            else Debug.LogWarning("HumanMotionGate: the fight's motion is not built: its states are not measured (Second Face/Build the fight's motion and weapons)");
-
-            // the captures: the game camera (default and closest zoom), the conversation view, human height
-            if (captures)
-            {
-                var cam = new GameObject("gate camera") { tag = "MainCamera" }.AddComponent<Camera>();
-                cam.transform.SetParent(root.transform);
-                cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.7f, 0.75f, 0.8f);
-                cam.nearClipPlane = 0.2f; cam.farClipPlane = 500f;
-                // the conversation view, as the game frames it
-                {
-                    var a0 = people[0];
-                    var shots = ConversationCamera.Begin(cam, a0.Go.transform, a0.Partner.transform, 0f);
-                    yield return Wait(0.3f);
-                    yield return ScreenshotTests.Capture("motion_conversation", 1600, 720);
-                    shots.End();
-                    yield return Wait(0.3f);
-                    foreach (var b in cam.GetComponents<Behaviour>()) if (b.GetType().Name == "CinemachineBrain") Object.Destroy(b);
-                    yield return null;
-                }
-                foreach (var s in people) { Object.Destroy(s.Partner); if (s.Gaze != null) s.Gaze.Target = null; }
-                yield return Wait(1f);
-                foreach (var k in report == "motion_gate_pick" ? Enumerable.Range(0, people.Count).ToArray() : new[] { 0, people.Count / 2, people.Count - 1 })
-                {
-                    var s = people[k];
-                    var focus = s.Go.transform.position + Vector3.up * 1.3f;
-                    foreach (var (dist, label) in new[] { (OrbitRig.MinDistance, "8m"), (20f, "20m") })
-                    {
-                        cam.fieldOfView = 28f;
-                        var rot = Quaternion.Euler(50f, 210f, 0f);
-                        cam.transform.SetPositionAndRotation(focus - rot * Vector3.forward * dist, rot);
-                        yield return ScreenshotTests.Capture($"motion_game_{label}_{s.Id}", 1600, 900);
-                    }
-                    cam.fieldOfView = 30f;
-                    var side = Quaternion.LookRotation(-s.Go.transform.right, Vector3.up);
-                    cam.transform.SetPositionAndRotation(s.Go.transform.position + Vector3.up * 0.95f + s.Go.transform.right * 4.2f, side);
-                    yield return ScreenshotTests.Capture($"motion_side_{s.Id}", 1000, 1000);
-                    var front = Quaternion.LookRotation(-s.Go.transform.forward, Vector3.up);
-                    cam.transform.SetPositionAndRotation(s.Go.transform.position + Vector3.up * 0.95f + s.Go.transform.forward * 4.2f, front);
-                    yield return ScreenshotTests.Capture($"motion_front_{s.Id}", 1000, 1000);
-                }
-                Object.Destroy(cam.gameObject);
-            }
-
-            // the verdict
-            var fails = failures ?? new List<string>();
-            var table = new List<Dictionary<string, object>>();
-            foreach (var s in people)
-            {
-                if (s.Probe.Error != null) fails.Add($"{s.Probe.Person}: {s.Probe.Error}");
-                foreach (var (st, (d, where)) in s.Probe.WorstClip) Debug.Log($"HumanMotionGate clip: {s.Probe.Person} {st}: {where}");
-                foreach (var (st, (d, where)) in s.Probe.WorstHand) Debug.Log($"HumanMotionGate hand off: {s.Probe.Person} {st}: {where}");
-                if (s.Probe.SkinFit != null) Debug.Log($"HumanMotionGate skin fit: {s.Probe.Person}: {s.Probe.SkinFit}; {s.Probe.SkinWhy}");
-                foreach (var (st, where) in s.Probe.ArmWhere) Debug.Log($"HumanMotionGate arm contact: {s.Probe.Person} {st}: {where}");
-                foreach (var (st, pk) in s.Probe.SwingPeak) Debug.Log($"HumanMotionGate swing peak: {s.Probe.Person} {st}: {pk.Arm} {pk.A:0.0}° (forward {pk.Sag:0.0}, out {pk.Side:0.0})");
-                foreach (var (st, (nn, rest, sum)) in s.Probe.ArmDiag)
-                {
-                    if (nn == 0) continue;
-                    string M(int q, float scale = 1f) => (sum[q] / nn * scale).ToString("0.0");
-                    Debug.Log($"HumanMotionGate arms: {s.Probe.Person} {st}: resting {rest * 100 / nn}%, L gapE {M(0, 100)} gapH {M(1, 100)} cm in {M(4)} fwd {M(5)} carry {M(6)} out {M(7)} roll {M(12)} back {M(14)}; R gapE {M(2, 100)} gapH {M(3, 100)} cm in {M(10)} fwd {M(11)} carry {M(8)} out {M(9)} roll {M(13)} back {M(15)}");
-                }
-                BuildCm.TryGetValue(s.Id, out var buildE);
-                foreach (var (state, measures) in s.Probe.Samples)
-                    foreach (var lim0 in LimitsFor(state))
-                    {
-                        // (standing, a man's A1 by his build: A1PerCm)
-                        var lim = lim0;
-                        if (lim0.M == "A1" && buildE > 0f && LimitsFor(state).Contains(StandA1))
-                            lim = new Lim { M = lim0.M, Lo = lim0.Lo, Hi = lim0.Hi + A1PerCm * buildE, CapLo = lim0.CapLo, CapHi = lim0.CapHi, MeanMax = lim0.MeanMax, Over = lim0.Over, OverFrac = lim0.OverFrac };
-                        if (!measures.TryGetValue(lim.M, out var vals) || vals.Count == 0) continue;
-                        var sorted = vals.OrderBy(x => x).ToList();
-                        float P(double q) => sorted[Mathf.Clamp((int)System.Math.Round(q * (sorted.Count - 1)), 0, sorted.Count - 1)];
-                        var p2 = P(0.02); var p50 = P(0.5); var p98 = P(0.98); var min = sorted[0]; var max = sorted[^1];
-                        var mean = vals.Average();
-                        var over = float.IsInfinity(lim.Over) ? 0f : vals.Count(x => x > lim.Over) / (float)vals.Count;
-                        var why = new List<string>();
-                        if (p98 > lim.Hi) why.Add($"p98 {p98:0.0} > {lim.Hi:0.0}");
-                        if (p2 < lim.Lo) why.Add($"p2 {p2:0.0} < {lim.Lo:0.0}");
-                        if (max > lim.CapHi) why.Add($"max {max:0.0} > cap {lim.CapHi:0.0}");
-                        if (min < lim.CapLo) why.Add($"min {min:0.0} < cap {lim.CapLo:0.0}");
-                        if (mean > lim.MeanMax) why.Add($"mean {mean:0.00} > {lim.MeanMax:0.00}");
-                        if (over > lim.OverFrac) why.Add($"{over:P0} of frames over {lim.Over:0}");
-                        table.Add(new Dictionary<string, object>
-                        {
-                            ["person"] = s.Probe.Person, ["state"] = state, ["measure"] = lim.M, ["n"] = vals.Count, ["p2"] = p2, ["p50"] = p50,
-                            ["p98"] = p98, ["min"] = min, ["max"] = max, ["mean"] = mean, ["over"] = over, ["pass"] = why.Count == 0, ["why"] = string.Join("; ", why),
-                        });
-                        if (why.Count > 0) fails.Add($"{s.Probe.Person} {state} {lim.M}: {string.Join("; ", why)}");
-                    }
-            }
+            // resumable by chunk (the container restarts every 2-3 hours, and a 90-minute run had to finish in one go,
+            // 2026-11-18): each chunk of ten writes its result stamped with the gate inputs' hash of the tree it measured; a
+            // run skips every chunk already measured under the tree's hash and measures the rest; the verdict is written only
+            // when every chunk is there under that one hash (Chunks.Assemble)
             var dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results"));
             Directory.CreateDirectory(dir);
-            File.WriteAllText(Path.Combine(dir, report + ".json"), JsonConvert.SerializeObject(table, Formatting.Indented));
-            File.WriteAllText(Path.Combine(dir, report + ".md"), Markdown(table));
-            Debug.Log($"HumanMotionGate {report}: {table.Count} measures, {table.Count(r => !(bool)r["pass"])} past their limits\n" + string.Join("\n", fails.Take(200)));
-            if (measured != null) measured[0] += table.Count;
-            if (report == "motion_gate") Verdict(report, table.Count, fails, ids.Length, ids.Length);
-            Object.Destroy(root);
-            yield return null;
-            if (assert) Assert.That(fails, Is.Empty, $"{fails.Count} measures past their limits (docs/PEOPLE_MOTION.md):\n" + string.Join("\n", fails.Take(80)));
-#else
-            Assert.Ignore("editor only");
-            yield break;
-#endif
+            var batches = Enumerable.Range(0, (ids.Length + 9) / 10).Select(k => ids.Skip(k * 10).Take(10).ToArray()).ToArray();
+            string Hash() => InputsHash("people") + "|" + InputsHash("measures");
+            string ChunkPath(int k) => Path.Combine(dir, $"motion_gate_full_{k}.chunk.json");
+            var hash = Hash();
+            var plan = Chunks.Assemble(batches, Enumerable.Range(0, batches.Length).Select(k => Chunks.Load(ChunkPath(k))).ToArray(), hash);
+            Debug.Log($"HumanMotionGate whole cast: {batches.Length} chunks, {batches.Length - plan.ToRun.Count} already measured under this tree's hash, {plan.ToRun.Count} to run");
+            foreach (var k in plan.ToRun)
+            {
+                var failed = new List<string>();
+                var measured = new int[1];
+                BuildCm.Clear(); BuildTop.Clear();
+                yield return Gate(batches[k], $"motion_gate_full_{k}", captures: false, failures: failed, assert: false, measured: measured);
+                // (stamped with the hash at its end: a tree changed under a chunk is not this chunk's tree)
+                var after = Hash();
+                Chunks.Save(ChunkPath(k), new Chunks.Result
+                {
+                    Hash = after == hash ? hash : after, Ids = batches[k], Measured = measured[0], Failures = failed,
+                    Build = BuildCm.Where(kv => kv.Value > 0f).ToDictionary(kv => kv.Key, kv => kv.Value),
+                    Top = BuildTop.ToDictionary(kv => kv.Key, kv => kv.Value),
+                });
+            }
+            // one verdict for the whole cast, only when every chunk is there under the tree's hash (the lock counts the gate
+            // green only on it: docs/PEOPLE_MOTION.md §1.9; a run stopped in its last batch once wrote 70 of 79 as the cast's)
+            hash = Hash();
+            var whole = Chunks.Assemble(batches, Enumerable.Range(0, batches.Length).Select(k => Chunks.Load(ChunkPath(k))).ToArray(), hash);
+            Assert.That(whole.Complete, Is.True, $"the whole cast is not complete under one hash: chunks {string.Join(", ", whole.ToRun)} to run again");
+            BuildCm.Clear(); BuildTop.Clear();
+            foreach (var r in whole.Results) { foreach (var kv in r.Build) BuildCm[kv.Key] = kv.Value; foreach (var kv in r.Top) BuildTop[kv.Key] = kv.Value; }
+            Verdict("motion_gate_full", whole.Measured, whole.Failures, whole.People, ids.Length);
+            Assert.That(whole.Failures, Is.Empty, $"{whole.Failures.Count} measures past their limits:\n" + string.Join("\n", whole.Failures.Take(80)));
         }
 
-        /// <summary>
-        /// 8. Fighting (docs/PEOPLE_MOTION.md §2.7): each person in a fight's view as the game makes one
-        /// (<see cref="CombatViews.ForBody"/>: the fighter on their animator, the weapon from their pack, every runtime system
-        /// on), through every state the fight shows, each weapon in turn: its ready stance; a long gun's and a pistol's aim, a
-        /// shot and a burst, the reload; blows by weapon and sex and a block; down into cover and the crouch held; a throw; a
-        /// crit's stagger; the long gun carried over a walk; hands up; a fall and the captured get-up. The probe measures every
-        /// frame as it does the walks; the more bent knee (Kb) and the weapon's grips (WG1, WG2) are measured here.
-        /// </summary>
-        private static IEnumerator Fighting(List<Subject> people, GameObject root, Runner runner, CombatSet set, bool captures,
-            System.Action<string, MotionProbe.K?> record, System.Action stop, System.Action<Vector3, float> place)
+        /// <summary>The whole cast's chunks: each chunk's result with the gate inputs' hash it was measured under, and the
+        /// assembly of a verdict from them (pure: <see cref="ChunksAssembleOnlyUnderOneHash"/>).</summary>
+        public static class Chunks
         {
-            if (Registry.Items.Count == 0)
+            public sealed class Result
             {
-                var db = new ContentDb();
-                foreach (var name in ContentDb.Registries) db.Load(name, File.ReadAllText(Path.Combine(Application.streamingAssetsPath, "content", name + ".json")));
-                Registry.Load(db);
-            }
-            foreach (var s in people) { if (s.Partner != null) Object.Destroy(s.Partner); if (s.Gaze != null) s.Gaze.Target = null; }
-            place(Vector3.zero, 0f);
-            yield return Wait(1f);
-            var fx = new CombatFx(root.transform);
-            var ahead = Vector3.forward * 8f;
-            var views = new List<AnimatedUnitView>();
-            Camera cam = null;
-            if (captures)
-            {
-                cam = new GameObject("fight camera") { tag = "MainCamera" }.AddComponent<Camera>();
-                cam.transform.SetParent(root.transform);
-                cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.7f, 0.75f, 0.8f); cam.fieldOfView = 28f;
-                cam.enabled = false;
+                public string Hash;
+                public string[] Ids = new string[0];
+                public int Measured;
+                public List<string> Failures = new();
+                public Dictionary<string, float> Build = new();
+                public Dictionary<string, string> Top = new();
             }
 
-            // (each person's records under the set of the state they play, so its limits are that state's: combat set v4's
-            // two-handed blows are `strike2`, its slips and ducks `dodge`, a woman's miss a duck where a man's may be a block;
-            // `per` names a person's state, else everyone's is `state`)
-            IEnumerator Measure(string state, float hold, System.Func<AnimatedUnitView, IEnumerator> act, MotionProbe.K kind = MotionProbe.K.Stand, System.Func<int, string> per = null)
+            public sealed class Plan
             {
-                record(state, kind);
-                if (per != null) for (var k = 0; k < people.Count; k++) people[k].Probe.State = per(k);
-                var running = 0;
-                if (act != null)
-                    foreach (var v in views)
-                    {
-                        if (v == null) continue;
-                        running++;
-                        runner.StartCoroutine(Counted(act(v), () => running--));
-                    }
-                for (int n = Frames(hold), cap = Frames(25f), i = 0; (i < n || running > 0) && i < cap; i++)
-                {
-                    yield return null;
-                    for (var k = 0; k < people.Count && k < views.Count; k++) Grips(people[k], views[k], per != null ? per(k) : state);
-                }
-                stop();
-            }
-            // the set a person's state is measured under: the gate of the state the table plays for them
-            string SetOf(int k, string state, string otherwise) => CombatMotion.State(state)?.Gate ?? otherwise;
-
-            IEnumerator Shoot(AnimatedUnitView v, int rounds) { for (var i = 0; i < rounds; i++) yield return v.OnFire(v.Body.position + ahead + Vector3.up * 1.1f, true, i, rounds); }
-            IEnumerator Blows(AnimatedUnitView v, int n) { for (var i = 0; i < n; i++) { yield return v.OnStrike(v.Body.position + ahead * 0.12f, true); yield return Wait(0.9f); } }
-            IEnumerator Then(System.Action a, float s) { a(); yield return Wait(s); }
-            IEnumerator Throw(AnimatedUnitView v)
-            {
-                var arc = new List<Vector3>();
-                PlaceholderUnitView.ArcPoints(v.Body.position + Vector3.up * 1.5f, v.Body.position + ahead, arc);
-                yield return v.OnThrow(arc, "w_frag");
-                yield return Wait(0.8f);
-            }
-            IEnumerator Rise(AnimatedUnitView v)
-            {
-                v.OnRise();
-                yield return null;
-                for (var t = 0f; t < 20f && v.Rising; t += Time.deltaTime) yield return null;
-            }
-            IEnumerator Shot(string name, int k)
-            {
-                if (cam == null) yield break;
-                var s = people[k];
-                var focus = s.Go.transform.position + Vector3.up * 1.2f;
-                cam.enabled = true;
-                foreach (var (dist, label) in new[] { (OrbitRig.MinDistance, "8m"), (20f, "20m") })
-                {
-                    var rot = Quaternion.Euler(50f, 210f, 0f);
-                    cam.transform.SetPositionAndRotation(focus - rot * Vector3.forward * dist, rot);
-                    yield return ScreenshotTests.Capture($"motion_fight_{name}_{label}_{s.Id}", 1600, 900);
-                }
-                cam.enabled = false;
+                public bool Complete;
+                public List<int> ToRun = new();
+                public List<Result> Results = new();
+                public List<string> Failures = new();
+                public int Measured, People;
             }
 
-            foreach (var (item, arms) in new[] { ("w_carbine556", "rifle"), ("w_pistol9", "pistol"), ("w_machete", "melee"), ((string)null, "unarmed"), ("w_sledge", "club2") })
+            public static Result Load(string path)
             {
-                views.Clear();
-                foreach (var s in people) views.Add(CombatViews.ForBody(GateUnit(s.Id, item), s.Go.transform, runner, fx, set, Female(s.Id), theirs: false));
-                yield return Wait(1.2f);
-                yield return Measure($"combat:{(arms is "unarmed" or "melee" ? "guard" : "ready")}:{arms}", 3f, null);
-                if (arms is "unarmed" or "rifle") yield return Shot("ready_" + arms, 0);
-                if (arms is "rifle" or "pistol")
-                {
-                    var aim = arms == "rifle" ? "aim" : "aim_pistol";
-                    // the aim held as the game holds it (a held shot: overwatch), then turned onto a target and fired
-                    foreach (var v in views) if (v != null) { v.Unit.Watch = new Watch(); v.OnHold(Watch.Overwatch); runner.StartCoroutine(v.OnAim(v.Body.position + ahead)); }
-                    yield return Wait(1.6f);
-                    yield return Measure($"combat:{aim}:{arms}", 2.5f, null);
-                    yield return Shot("aim_" + arms, 0);
-                    yield return Measure($"combat:{aim}:{arms}_shot", 0f, v => Shoot(v, 1));
-                    yield return Measure($"combat:{aim}:{arms}_burst", 0f, v => Shoot(v, 3));
-                    foreach (var v in views) if (v != null) v.Unit.Watch = null;
-                    yield return Wait(2f);
-                    yield return Measure($"combat:reload:{arms}", 0f, v => v.OnReload());
-                    if (arms == "rifle")
-                    {
-                        // carried over a walk (the gate drives the body as the game's walker does; the fighter carries)
-                        place(new Vector3(0f, 0f, -30f), 0f);
-                        foreach (var v in views) v?.Fighter.Locomote(true, false);
-                        yield return Wait(0.5f);
-                        record("combat:carry:rifle", MotionProbe.K.Walk);
-                        float speed = 0f, travelled = 0f; const float length = 9f;
-                        while (travelled < length)
-                        {
-                            var dt = Time.deltaTime;
-                            var left = length - travelled;
-                            speed = left <= speed * speed / (2f * Walker.Acceleration) ? Mathf.Max(0.05f, speed - Walker.Acceleration * dt) : Mathf.Min(Walker.WalkSpeed, speed + Walker.Acceleration * dt);
-                            var step = Mathf.Min(left, speed * dt);
-                            travelled += step;
-                            foreach (var s in people) { s.Go.transform.position += Vector3.forward * step; Pace.Set(s.A, speed, false, 0.12f, dt); }
-                            yield return null;
-                            for (var k = 0; k < people.Count; k++) Grips(people[k], views[k], "combat:carry:rifle");
-                        }
-                        foreach (var s in people) s.A.SetFloat("Speed", 0f);
-                        stop();
-                        foreach (var v in views) v?.Fighter.Locomote(false, false);
-                        place(Vector3.zero, 0f);
-                        yield return Wait(1.2f);
-                        // down into cover, the crouch held, and up
-                        yield return Measure("combat:crouch:rifle", 3.5f, v => Then(() => v.OnStance("crouch"), 0.1f));
-                        yield return Shot("crouch_rifle", 0);
-                        foreach (var v in views) v?.OnStance("stand");
-                        yield return Wait(1.2f);
-                        yield return Measure("combat:throw:rifle", 0f, Throw);
-                        yield return Measure("combat:hit:rifle", 2.5f, v => Then(() => v.OnHit(v.Body.position + ahead, "torso", "crit"), 0.1f));
-                    }
-                }
-                else
-                {
-                    var held = arms == "melee" ? Arms.Melee : arms == "club2" ? Arms.Club2 : Arms.Unarmed;
-                    yield return Measure($"combat:strike:{arms}", 0f, v => Blows(v, 3),
-                        per: k => $"combat:{SetOf(k, CombatMotion.Strike(held, Female(people[k].Id), 0), "strike")}:{arms}");
-                    yield return Measure($"combat:strike:{arms}_block", 0f, v => Then(() => v.OnMiss(v.Body.position + ahead * 0.12f, true), 1.8f),
-                        per: k => $"combat:{SetOf(k, CombatMotion.Miss(held, Female(people[k].Id), true, 0), "strike")}:{arms}_block");
-                }
-                if (arms == "unarmed")
-                {
-                    yield return Measure("combat:yield:unarmed", 2.5f, v => Then(v.OnYield, 0.1f));
-                    foreach (var v in views) v?.OnEnd();
-                    yield return Wait(1f);
-                    views.Clear();
-                    foreach (var s in people) views.Add(CombatViews.ForBody(GateUnit(s.Id, null), s.Go.transform, runner, fx, set, Female(s.Id), theirs: false));
-                    yield return Wait(1f);
-                    foreach (var v in views) v?.OnFall(v.Body.position + ahead);
-                    yield return Wait(2.5f);
-                    yield return Measure("combat:rise:unarmed", 0f, Rise);
-                }
-                foreach (var v in views) v?.OnEnd();
-                yield return Wait(1.5f);
-                place(Vector3.zero, 0f);
-                yield return Wait(0.5f);
+                try { return File.Exists(path) ? JsonConvert.DeserializeObject<Result>(File.ReadAllText(path)) : null; }
+                catch (System.Exception) { return null; }
             }
-            if (cam != null) Object.Destroy(cam.gameObject);
+
+            public static void Save(string path, Result r) => File.WriteAllText(path, JsonConvert.SerializeObject(r, Formatting.Indented));
+
+            /// <summary>Which chunks stand (measured under <paramref name="hash"/>, of the same people) and which are to run
+            /// (missing, of another tree, or of other people); complete only when none is to run.</summary>
+            public static Plan Assemble(string[][] batches, Result[] found, string hash)
+            {
+                var plan = new Plan();
+                for (var k = 0; k < batches.Length; k++)
+                {
+                    var r = k < found.Length ? found[k] : null;
+                    if (r == null || r.Hash != hash || r.Ids == null || !r.Ids.SequenceEqual(batches[k])) { plan.ToRun.Add(k); continue; }
+                    plan.Results.Add(r);
+                    plan.Failures.AddRange(r.Failures ?? new List<string>());
+                    plan.Measured += r.Measured;
+                    plan.People += r.Ids.Length;
+                }
+                plan.Complete = plan.ToRun.Count == 0;
+                return plan;
+            }
         }
 
-        private static IEnumerator Counted(IEnumerator inner, System.Action done)
+        [Test]
+        public void ChunksAssembleOnlyUnderOneHash()
         {
-            try { while (inner.MoveNext()) yield return inner.Current; }
-            finally { done(); }
+            var batches = new[] { new[] { "a", "b" }, new[] { "c" } };
+            Chunks.Result R(string hash, string[] ids, params string[] fails) => new() { Hash = hash, Ids = ids, Measured = 10 * ids.Length, Failures = fails.ToList() };
+            // every chunk under the tree's hash: the verdict, every chunk's failures
+            var all = Chunks.Assemble(batches, new[] { R("h", batches[0], "a x A1: p98"), R("h", batches[1], "c y W3: p98") }, "h");
+            Assert.That(all.Complete, Is.True);
+            Assert.That(all.Failures, Is.EqualTo(new[] { "a x A1: p98", "c y W3: p98" }));
+            Assert.That(all.Measured, Is.EqualTo(30)); Assert.That(all.People, Is.EqualTo(3));
+            // a chunk missing: no verdict, that chunk to run
+            var missing = Chunks.Assemble(batches, new[] { R("h", batches[0]), null }, "h");
+            Assert.That(missing.Complete, Is.False); Assert.That(missing.ToRun, Is.EqualTo(new[] { 1 }));
+            // a chunk of another tree: run again (mixed hashes never make a verdict)
+            var mixed = Chunks.Assemble(batches, new[] { R("old", batches[0]), R("h", batches[1]) }, "h");
+            Assert.That(mixed.Complete, Is.False); Assert.That(mixed.ToRun, Is.EqualTo(new[] { 0 }));
+            // a chunk of other people (the catalogue changed): run again
+            var other = Chunks.Assemble(batches, new[] { R("h", new[] { "a", "z" }), R("h", batches[1]) }, "h");
+            Assert.That(other.ToRun, Is.EqualTo(new[] { 0 }));
+            // fewer files than chunks
+            Assert.That(Chunks.Assemble(batches, new[] { R("h", batches[0]) }, "h").ToRun, Is.EqualTo(new[] { 1 }));
         }
-
-        /// <summary>The more bent knee (Kb), and the weapon's hold (WG1: its main grip from the palm; WG2: the off hand from its
-        /// grip, cm) for one person this frame.</summary>
-        private static void Grips(Subject s, AnimatedUnitView v, string state)
-        {
-            var a = s.A;
-            var hipL = a.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position; var hipR = a.GetBoneTransform(HumanBodyBones.RightUpperLeg).position;
-            var kneeL = a.GetBoneTransform(HumanBodyBones.LeftLowerLeg).position; var kneeR = a.GetBoneTransform(HumanBodyBones.RightLowerLeg).position;
-            var ankleL = a.GetBoneTransform(HumanBodyBones.LeftFoot).position; var ankleR = a.GetBoneTransform(HumanBodyBones.RightFoot).position;
-            Add(s.Probe, state, "Kb", Mathf.Max(Vector3.Angle(kneeL - hipL, ankleL - kneeL), Vector3.Angle(kneeR - hipR, ankleR - kneeR)));
-            if (v?.Fighter == null) return;
-            if (v.Fighter.InHand && v.Fighter.MainError >= 0f) Add(s.Probe, state, "WG1", v.Fighter.MainError * 100f);
-            if (v.Fighter.OffError >= 0f) Add(s.Probe, state, "WG2", v.Fighter.OffError * 100f);
-        }
-
-        /// <summary>A gate person as a fight's unit, holding <paramref name="item"/> (null: fists).</summary>
-        private static BattleUnit GateUnit(string id, string item)
-        {
-            var inv = Inv.Empty();
-            if (item != null) { Inv.AddItem(inv, Inv.MakeItem(item)); Inv.Equip(inv, 0); }
-            var u = new BattleUnit { C = new Combatant { Id = id, Name = id, Team = "gate", Sheet = Sheet.Empty(id), Inv = inv, Ap = 8, Morale = 60 } };
-            u.Place(0, 0);
-            return u;
-        }
-
-        private static bool Female(string id) { var p = RbPeople.Of(id); return p != null ? !p.Male : id.Contains("Female"); }
 
         /// <summary>The gate's verdict where the lock reads it (docs/qa/gates/motion_gate.json; tools/qa/people_gate.mjs, run by
         /// npm run check and CI): while it is red nothing with a person in it goes to the owner (docs/PEOPLE_MOTION.md §1.8).</summary>
@@ -1107,6 +594,8 @@ namespace SecondFace.Tests
                 ["lastGreen"] = green ? now : lastGreen, ["failing"] = fails.OrderBy(f => f.Contains(" combat:") ? 1 : 0).Take(80).ToList(),
                 // each man's build past the median (cm; docs/qa/motion_calibration.md §9): his A1 limit standing is 20 + 0.37·e
                 ["buildCm"] = BuildCm.Where(kv => kv.Value > 0f).OrderBy(kv => kv.Key, System.StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => (float)System.Math.Round(kv.Value, 2)),
+                // each man's base's baked top and its allowance a side (cm; docs/qa/gates/motion_build_tops.json)
+                ["buildTop"] = BuildTop.OrderBy(kv => kv.Key, System.StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value),
             };
             File.WriteAllText(path, JsonConvert.SerializeObject(verdict, Formatting.Indented));
         }
