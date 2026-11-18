@@ -29,7 +29,7 @@
  ],
  "facing": "mean",
  "travel_m": [
-  -0.003,
+  -0.004,
   0.012
  ],
  "root_note": "in place",
@@ -77,6 +77,17 @@
   "surrender_enter_ual"
  ],
  "stature_est_m": 1.726,
+ "root_basis": "take",
+ "chain": "stand_f",
+ "frame": {
+  "yaw_deg": -0.862,
+  "origin_m": [
+   0.0992,
+   0.1665
+  ],
+  "ref": "pistol_ready_f_built",
+  "note": "origin and +Z: pistol_ready_f_built's first-key centre of mass and body orientation"
+ },
  "plant_record": {
   "stances": {
    "Left": [
@@ -115,7 +126,7 @@
    "held_keys": 122,
    "max_shift_cm": 0.0,
    "out_of_reach_keys": 0,
-   "foot_pitched_keys": 11,
+   "foot_pitched_keys": 4,
    "foot_pitched_max_deg": 0.0
   },
   "third_pass": {
@@ -136,7 +147,7 @@
    "held_keys": 122,
    "max_shift_cm": 0.0,
    "out_of_reach_keys": 0,
-   "foot_pitched_keys": 12,
+   "foot_pitched_keys": 9,
    "foot_pitched_max_deg": 0.0
   }
  },

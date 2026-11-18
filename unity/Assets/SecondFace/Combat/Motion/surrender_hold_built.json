@@ -69,6 +69,17 @@
   "surrender_idle_ual"
  ],
  "stature_est_m": 1.366,
+ "root_basis": "take",
+ "chain": "stand_m",
+ "frame": {
+  "yaw_deg": 4.952,
+  "origin_m": [
+   -0.5421,
+   0.4545
+  ],
+  "ref": "pistol_ready_built",
+  "note": "origin and +Z: pistol_ready_built's first-key centre of mass and body orientation"
+ },
  "plant_record": {
   "stances": {
    "Left": [

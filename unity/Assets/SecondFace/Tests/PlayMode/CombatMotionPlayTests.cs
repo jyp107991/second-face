@@ -222,9 +222,11 @@ namespace SecondFace.Tests
                     // hands up
                     seen.Clear();
                     // (to the hold: the way up as long as its clip plays to its cut, and its fade; v4's take 2 s, the old one 0.8)
-                    var up = CombatMotion.State("yield_enter");
-                    yield return Seen(v, Do(v.OnYield), seen, f.Set.Length("yield_enter", f.Female) * (up.Cut - up.From) / up.Speed + up.Fade + 0.4f);
-                    if (f.Current != "yield_hold") wrong.Add($"{who}: hands up played {string.Join(",", seen)}, holds {f.Current}");
+                    // (on the weapon class's own stance: CombatMotion.Yield, v4.1)
+                    var enter = CombatMotion.Yield(f.Arms, f.Female);
+                    var up = CombatMotion.State(enter);
+                    yield return Seen(v, Do(v.OnYield), seen, f.Set.Length(enter, f.Female) * (up.Cut - up.From) / up.Speed + up.Fade + 0.4f);
+                    if (f.Current != up.Then) wrong.Add($"{who}: hands up played {string.Join(",", seen)}, holds {f.Current} (not {up.Then})");
                     v.OnEnd();
                     yield return Wait(1.5f);
                     if (f.FullWeight > 0.05f) wrong.Add($"{who}: the fight's layer still weighs {f.FullWeight:0.00} after the end");

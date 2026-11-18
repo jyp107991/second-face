@@ -260,7 +260,7 @@ PAIRS = [
     ('unarmed_idle', 'unarmed_uppercut_r', 'same', 'OnStrike'), ('unarmed_uppercut_r', 'unarmed_idle', 'same', 'the blow\'s recovery'),
     ('unarmed_idle', 'unarmed_combo', 'same', 'OnStrike'), ('unarmed_combo', 'unarmed_idle', 'same', 'the blow\'s recovery'),
     ('unarmed_idle', 'unarmed_block', 'same', 'OnMiss: a block'), ('unarmed_block', 'unarmed_idle', 'same', 'the block\'s recovery'),
-    ('unarmed_idle', 'unarmed_relax', 'same', 'the end: out of the guard'),
+    ('unarmed_idle', 'unarmed_relax', 'change', 'the end: out of the guard, the feet stepping to a standing stance'),
     ('melee_idle', 'melee_slash', 'same', 'OnStrike'), ('melee_slash', 'melee_idle', 'same', 'the blow\'s recovery'),
     ('melee_idle', 'melee_strike', 'same', 'OnStrike'), ('melee_strike', 'melee_idle', 'same', 'the blow\'s recovery'),
     ('melee_idle', 'melee_block', 'same', 'OnMiss: a block'), ('melee_block', 'melee_idle', 'same', 'the block\'s recovery'),
@@ -285,8 +285,18 @@ def with_mapping(mp):
     'routed': {'remove': [[a, b]], 'add': [[a, b, kind, where]]}}: combat_v41_jobs.MAPPING, ROUTED)."""
     states = dict(STATES); states.update({k: tuple(v) for k, v in (mp.get('states') or {}).items()})
     rm = {tuple(x) for x in (mp.get('routed') or {}).get('remove', [])}
+    rms = {tuple(x) for x in (mp.get('routed') or {}).get('remove_sex', [])}     # (a, b, sex): a pair no longer played for one sex
     pairs = [p for p in PAIRS if (p[0], p[1]) not in rm] + [tuple(x) for x in (mp.get('routed') or {}).get('add', [])]
-    return states, pairs
+    out = []
+    for p in pairs:
+        gone = {x[2] for x in rms if (x[0], x[1]) == (p[0], p[1])}
+        if len(p) > 4:
+            if p[4] not in gone: out.append(p)
+            continue
+        if not gone: out.append(p); continue
+        for sx in ('m', 'f'):
+            if sx not in gone: out.append(tuple(p[:4]) + (sx,))
+    return states, out
 
 
 def audit(dumps, jsons, states=None, pairs=None, basis=None):
@@ -300,11 +310,9 @@ def audit(dumps, jsons, states=None, pairs=None, basis=None):
             if len(pr) > 4 and pr[4] != sex: continue     # a pair the game plays for one sex only
             sa, sb = states.get(a), states.get(b)
             if not sa or not sb: continue
-            ca = sa[1] if sex == 'f' and sa[1] else sa[0]; cb = sb[1] if sex == 'f' and sb[1] else sb[0]
-            # a state played by one sex only (CombatMotion's `only`): a men's clip is not played on women and back
-            if sex == 'f' and sa[1] is None and a in ONLY_M: continue
-            if sex == 'f' and sb[1] is None and b in ONLY_M: continue
-            if sex == 'm' and (sa[0] is None or sb[0] is None): continue
+            # a state with no clip for a sex is not played for it (CombatMotion's `only`; every state both sexes play names
+            # its clip for each)
+            ca = sa[1] if sex == 'f' else sa[0]; cb = sb[1] if sex == 'f' else sb[0]
             if ca is None or cb is None: continue
             A = clip_feet(dumps, jsons, ca, basis); B = clip_feet(dumps, jsons, cb, basis)
             if A is None or B is None:
@@ -317,10 +325,6 @@ def audit(dumps, jsons, states=None, pairs=None, basis=None):
             r['verdict'] = ('pass' if r['pass'] else 'FAIL') if kind == 'same' else ('step' if kind == 'change' else 'free')
             rows.append(r)
     return rows
-
-
-ONLY_M = {'unarmed_hook_l', 'unarmed_hook_r', 'unarmed_uppercut_l', 'unarmed_uppercut_r', 'unarmed_block', 'unarmed_relax', 'melee_block',
-          'miss_left', 'miss_right'}
 
 
 def table(rows):

@@ -450,6 +450,8 @@ namespace SecondFace.Game.Fighting
             _aiming = false; Fighter.ClearAim();
             var state = CombatMotion.Reload(Fighter.Arms);
             if (state == null || !Fighter.InHand) { yield return Wait(Secs(0.3f)); yield break; }
+            // (a raised long gun comes down through its lower first: v4.1's routing)
+            if (Raised()) { Fighter.Play("rifle_lower", null, restart: true); yield return Fighter.Until("rifle_lower", CombatMotion.State("rifle_lower").Cut, 3f); }
             Fighter.Play(state, null, restart: true);
             yield return Fighter.Until(state, CombatMotion.State(state).Cut, 4f);
         }
@@ -463,18 +465,35 @@ namespace SecondFace.Game.Fighting
             if (aim == null) return;
             if (!Fighter.InHand) Fighter.Draw();
             Fighter.AimAt(Body.position + Body.forward * 8f + Vector3.up * 1.2f);
-            Fighter.Play(aim, 0.3f);
+            // (a standing long gun reaches its aim only through the raise: the take's actor pivots his feet into it, v4.1)
+            if (Fighter.Arms == Arms.Rifle && _stance == "stand" && !Fighter.Is("rifle_aim") && !Fighter.Is("rifle_raise")) Fighter.Play("rifle_raise");
+            else if (!Fighter.Is(aim)) Fighter.Play(aim, 0.3f);
             _aiming = true; _quietFor = 0f;
         }
+
+        /// <summary>A long gun up at the shoulder (or on its way up), standing: it leaves the aim only through the lower.</summary>
+        private bool Raised() => Fighter.Arms == Arms.Rifle && _stance == "stand" && (Fighter.Is("rifle_aim") || Fighter.Is("rifle_raise"));
 
         public void OnYield()
         {
             if (Body == null || _down || _yielded) return;
             _yielded = true; _aiming = false; _holding = false;
             Fighter.ClearAim();
-            Fighter.Drop();
             Rate();
-            Fighter.Play("yield_enter", null, restart: true);
+            // (hands up on the class's own stance, the class held as they go up; a raised long gun through its lower first)
+            var enter = CombatMotion.Yield(Fighter.Arms, Fighter.Female);
+            if (Raised()) { Fighter.StartCoroutine(YieldThroughLower(enter)); return; }
+            Fighter.Drop();
+            Fighter.Play(enter, null, restart: true);
+        }
+
+        private IEnumerator YieldThroughLower(string enter)
+        {
+            Fighter.Play("rifle_lower", null, restart: true);
+            yield return Fighter.Until("rifle_lower", CombatMotion.State("rifle_lower").Cut, 3f);
+            if (Body == null || _down) yield break;
+            Fighter.Drop();
+            Fighter.Play(enter, null, restart: true);
         }
 
         public void Place(Vector3 at, Quaternion facing)

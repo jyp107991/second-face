@@ -104,9 +104,10 @@ namespace SecondFace.Tests
             foreach (var c in CombatMotion.Clips.Concat(CombatMotion.Spare))
                 foreach (var loop in new[] { false, true })
                 foreach (var seated in new[] { false, true })
+                foreach (var take in new[] { false, true })
                 {
                     var a = new ModelImporterClipAnimation();
-                    CombatImportPostprocessor.Settings(a, loop, c, seated);
+                    CombatImportPostprocessor.Settings(a, loop, c, seated, take);
                     Assert.That(a.loopTime, Is.EqualTo(loop), c.Name);
                     Assert.That(a.lockRootPositionXZ, Is.EqualTo(c.XZ == RootXZ.Bake), c.Name + ": XZ");
                     Assert.That(a.lockRootHeightY, Is.True, c.Name + ": never height as root motion");
@@ -115,8 +116,41 @@ namespace SecondFace.Tests
                     Assert.That(a.keepOriginalPositionY, Is.EqualTo(!feet), c.Name + ": Y as captured");
                     Assert.That(a.heightFromFeet, Is.EqualTo(feet), c.Name + ": Y from the feet");
                     Assert.That(a.lockRootRotation, Is.EqualTo(!(c.Turn || c.DropTurn)), c.Name + ": the turn");
-                    Assert.That(a.keepOriginalOrientation, Is.False, c.Name + ": from the body's facing, never the file's axes");
+                    // (a clip written in its take's frame is stood where the take stood it, based upon Original, its root still
+                    // baked; any other from the body's facing and centre of mass, never the file's axes: v4.1 README §1)
+                    Assert.That(a.keepOriginalOrientation, Is.EqualTo(take), c.Name + ": the facing's basis");
+                    Assert.That(a.keepOriginalPositionXZ, Is.EqualTo(take), c.Name + ": the place's basis");
                 }
+        }
+
+        /// <summary>Every clip whose sidecar says it is written in its take's frame ("root_basis": "take", combat set v4.1) is
+        /// imported on that basis, its rotation and place still baked into the pose: based upon the body orientation and the
+        /// centre of mass, Unity stands each clip at its own first key and a chain cut from one take parts at its joins (CMU
+        /// 79_96's raise into its own aim 17.9 / 10.9 cm and 42°).</summary>
+        [Test]
+        public void EveryTakeFrameClipIsImportedOnItsTakesBasis()
+        {
+            var wrong = new System.Collections.Generic.List<string>();
+            var n = 0;
+            foreach (var json in Directory.GetFiles(CombatMotion.Folder, "*.json"))
+            {
+                var side = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(json));
+                if (side.Value<string>("root_basis") != "take") continue;
+                var name = Path.GetFileNameWithoutExtension(json);
+                var fbx = $"{CombatMotion.Folder}/{name}.fbx";
+                var imp = AssetImporter.GetAtPath(fbx) as ModelImporter;
+                if (imp == null) { wrong.Add(name + ": not imported"); continue; }
+                n++;
+                foreach (var c in imp.clipAnimations)
+                    if (!c.keepOriginalOrientation || !c.keepOriginalPositionXZ || !c.lockRootRotation && !(CombatMotion.Clip(name)?.Turn ?? false) || !c.lockRootPositionXZ && CombatMotion.Clip(name)?.XZ != RootXZ.Apply)
+                        wrong.Add($"{name}: orientation {(c.keepOriginalOrientation ? "Original" : "body")}, XZ {(c.keepOriginalPositionXZ ? "Original" : "centre of mass")}, baked {c.lockRootRotation}/{c.lockRootPositionXZ}");
+                var clip = AssetDatabase.LoadAllAssetsAtPath(fbx).OfType<AnimationClip>().FirstOrDefault(x => !x.name.StartsWith("__preview"));
+                if (clip == null) { wrong.Add(name + ": no clip"); continue; }
+                var s = AnimationUtility.GetAnimationClipSettings(clip);
+                if (!s.keepOriginalOrientation || !s.keepOriginalPositionXZ) wrong.Add($"{name}: the imported clip's basis {s.keepOriginalOrientation}/{s.keepOriginalPositionXZ}");
+            }
+            Assert.That(n, Is.GreaterThan(0), "no clip in its take's frame (combat set v4.1 not imported)");
+            Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
         }
 
         [Test]

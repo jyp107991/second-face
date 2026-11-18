@@ -130,7 +130,7 @@ namespace SecondFace.Core.Combat
     {
         /// <summary>Bump when the states or their clips change: the editor rebuilds the layers (the controller carries
         /// "combat_v&lt;Version&gt;").</summary>
-        public const int Version = 3;
+        public const int Version = 4;
         public const string FullLayer = "Combat", ArmsLayer = "CombatArms";
         public const string ArmsParam = "CombatArms", CrouchParam = "CombatCrouch", RateParam = "CombatRate", SexParam = "Sex";
         public const string None = "none";
@@ -153,17 +153,17 @@ namespace SecondFace.Core.Combat
             // docs/COMBAT_ANIMATION_STANDARD.md): the clips the states play, root motion where the clip travels (its json's
             // "root"), the height as captured for the crouched, lying and rising ones
             C("fist_guard_accad", set: "m"), C("guard_f_cmu", set: "f"), C("ready_crouch_cmu", y: RootY.Keep),
-            C("pistol_ready_built", set: "m"), C("pistol_ready_f_built", set: "f"), C("rifle_ready_built", set: "m"),
-            C("rifle_ready_f_built", set: "f"), C("club_ready_built", set: "m"), C("club_ready_f_built", set: "f"),
+            C("pistol_ready_built", set: "m"), C("pistol_ready_f_built", set: "f"), C("rifle_ready_u_built"),
+            C("club_ready_u_built"), C("club_ready_f_built", set: "f"),
             C("fist_jab_accad", set: "m"), C("fist_cross_accad", set: "m"), C("fist_hook_l_accad", set: "m"),
             C("fist_hook_r_accad", set: "m"), C("fist_uppercut_l_accad", set: "m"), C("fist_uppercut_r_accad", set: "m"),
             C("fist_jab_f_cmu", set: "f"), C("fist_cross_f_cmu", RootXZ.Apply, set: "f"), C("fist_combo_f_cmu", set: "f"),
             C("fist_ready_accad", RootXZ.Apply, set: "m"), C("fist_relax_accad", set: "m"), C("block_mid_r_accad", set: "m"),
             C("melee_thrust_built", set: "m"), C("melee_thrust_f_built", RootXZ.Apply, set: "f"), C("melee_forehand_built", set: "m"),
             C("melee_forehand_f_built", set: "f"), C("club_overhead_cmu"), C("club_thrust_f_built", set: "f"),
-            C("rifle_raise_cmu"), C("rifle_aim_b_cmu"), C("rifle_aim_cmu"),
-            C("rifle_aim_c_100s"), C("pistol_aim_built"), C("pistol_aim_c_built", set: "f"),
-            C("reload_rifle_built", set: "m"), C("reload_rifle_f_built", set: "f"), C("reload_pistol_built", set: "m"),
+            C("rifle_raise_cmu"), C("rifle_aim_cmu"), C("rifle_lower_cmu"),
+            C("rifle_aim_c_100s"), C("pistol_aim_m_built", set: "m"), C("pistol_aim_c_built", set: "f"),
+            C("reload_rifle_u_built"), C("reload_pistol_built", set: "m"),
             C("reload_pistol_f_built", set: "f"), C("crouch_down_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("crouch_down_f_accad", RootXZ.Apply, RootY.Keep, set: "f"),
             C("crouch_rifle_built", y: RootY.Keep, set: "m"), C("crouch_rifle_f_built", y: RootY.Keep, set: "f"), C("crouch_to_run_accad", RootXZ.Apply, RootY.Keep, set: "m"),
             C("crouch_to_run_f_accad", RootXZ.Apply, RootY.Keep, set: "f"), C("stagger_cmu", RootXZ.Apply, RootY.Keep, dropTurn: true, set: "f"), C("stagger_fwd_cmu", RootXZ.Apply, RootY.Keep),
@@ -174,6 +174,8 @@ namespace SecondFace.Core.Combat
             C("getup_f_cmu", RootXZ.Apply, RootY.Keep, turn: true, set: "f"), C("getup_to_crouch_accad", RootXZ.Apply, RootY.Keep, turn: true, set: "m"), C("getup_to_crouch_f_accad", RootXZ.Apply, RootY.Keep, turn: true, set: "f"),
             C("prone_hold_accad", y: RootY.Keep, set: "m"), C("prone_hold_f_accad", y: RootY.Keep, set: "f"), C("surrender_enter_built", set: "m"),
             C("surrender_enter_f_built", set: "f"), C("surrender_hold_built", set: "m"), C("surrender_hold_f_built", set: "f"),
+            // combat set v4.1 (2026-11-18, staging combat/v4_1: one take per chain, written in its frame, "root_basis": "take")
+            C("surrender_enter_u_built"), C("surrender_hold_u_built"), C("surrender_enter_club_u_built"), C("surrender_hold_club_u_built"),
         };
 
         /// <summary>The clips staged but not played by any state yet (the standard's variety, G2: other takes of the same action,
@@ -181,6 +183,10 @@ namespace SecondFace.Core.Combat
         public static readonly MotionClip[] Spare =
         {
             C("block_low_r_accad", set: "m"), C("block_mid_l_accad", set: "m"), C("club_guard_cmu"),
+            // (v4's takes no chain of v4.1 holds: other actors' stances than their states' chains; alternatives, not played)
+            C("rifle_ready_built", set: "m"), C("rifle_ready_f_built", set: "f"), C("club_ready_built", set: "m"), C("rifle_aim_b_cmu"),
+            C("pistol_aim_built"), C("reload_rifle_built", set: "m"), C("reload_rifle_f_built", set: "f"),
+            C("reload_bolt_u_built"), C("reload_break_u_built"),
             C("cower_cmu", RootXZ.Apply, RootY.Keep, set: "f"), C("crawl_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("crawl_b_accad", RootXZ.Apply, RootY.Keep, set: "m"),
             C("crawl_back_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("crawl_f_accad", RootXZ.Apply, RootY.Keep, set: "f"), C("crouch_aim_built", y: RootY.Keep, set: "m"),
             C("crouch_down_b_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("crouch_to_guard_accad", y: RootY.Keep, set: "m"), C("crouch_to_walk_accad", RootXZ.Apply, RootY.Keep, set: "m"),
@@ -257,18 +263,21 @@ namespace SecondFace.Core.Combat
             // gun's and a two-handed club's ready hold made for each body on the stopgap's legs and trunk: HandsIk.Hold)
             S("unarmed_idle", "fist_guard_accad", "guard_f_cmu", loop: true, fade: 0.35f, gate: "guard");
             S("pistol_idle", "pistol_ready_built", "pistol_ready_f_built", loop: true, fade: 0.35f, gate: "ready");
-            S("rifle_idle", "rifle_ready_built", "rifle_ready_f_built", loop: true, fade: 0.35f, hands: HandsIk.Hold, gate: "ready");
+            S("rifle_idle", "rifle_ready_u_built", loop: true, fade: 0.35f, hands: HandsIk.Hold, gate: "ready");
             S("melee_idle", "fist_guard_accad", "guard_f_cmu", loop: true, fade: 0.35f, gate: "guard");
-            S("club2_idle", "club_ready_built", "club_ready_f_built", loop: true, fade: 0.35f, hands: HandsIk.Hold, gate: "ready");
-            // the long gun: up to the shoulder, the hold, down; the reload. Its rounds are fired on the hold itself with their
-            // recoil at run time (Fighter.Recoil; combat set v4 retired the authored shot clips: the standard's S4 layer). No
-            // lowering passes the clip QA (v4 §6): the aim eases back into the ready hold, its hands on the gun by IK
+            S("club2_idle", "club_ready_u_built", "club_ready_f_built", loop: true, fade: 0.35f, hands: HandsIk.Hold, gate: "ready");
+            // the long gun: up to the shoulder, the hold, down; the reload, every one of them CMU 79_96's (one take for the
+            // chain, both sexes: no woman's long-gun capture exists; combat set v4.1). Its rounds are fired on the hold itself
+            // with their recoil at run time (Fighter.Recoil; the standard's S4 layer). A standing long gun reaches the aim only
+            // through the raise and leaves it only through the lower (AnimatedUnitView): the take's actor pivots his feet as
+            // he blades into the aim, and a crossfade straight between the ready and the aim turned the planted feet 9.8°
             S("rifle_raise", "rifle_raise_cmu", then: "rifle_aim", from: 0.42f, speed: 1.5f, cut: 0.95f, fade: 0.15f, hands: HandsIk.OffHand, gate: "aim");
-            S("rifle_aim", "rifle_aim_b_cmu", loop: true, fade: 0.2f, hands: HandsIk.OffHand, gate: "aim");
-            S("rifle_lower", "rifle_ready_built", "rifle_ready_f_built", then: ToIdle, cut: 0.15f, fade: 0.3f, hands: HandsIk.Hold, gate: "ready");
-            S("rifle_reload", "reload_rifle_built", "reload_rifle_f_built", then: ToIdle, cut: 0.95f, fade: 0.2f, hands: HandsIk.Free, gate: "reload");
-            // the pistol: its aim on rifle_aim_b's captured legs and torso, both hands by IK (the shot is a recoil on it)
-            S("pistol_aim", "pistol_aim_built", "pistol_aim_c_built", loop: true, fade: 0.25f, hands: HandsIk.PistolAim, gate: "aim_pistol");
+            S("rifle_aim", "rifle_aim_cmu", loop: true, fade: 0.2f, hands: HandsIk.OffHand, gate: "aim");
+            S("rifle_lower", "rifle_lower_cmu", then: ToIdle, cut: 0.92f, fade: 0.3f, hands: HandsIk.OffHand, gate: "aim");
+            S("rifle_reload", "reload_rifle_u_built", then: ToIdle, cut: 0.95f, fade: 0.2f, hands: HandsIk.Free, gate: "reload");
+            // the pistol: its aim on each sex's own ready's stance (ACCAD Male2_A1, Female1_A01: one take a sex, v4.1), both hands
+            // by IK (the shot is a recoil on it)
+            S("pistol_aim", "pistol_aim_m_built", "pistol_aim_c_built", loop: true, fade: 0.25f, hands: HandsIk.PistolAim, gate: "aim_pistol");
             S("pistol_reload", "reload_pistol_built", "reload_pistol_f_built", then: ToIdle, cut: 0.95f, fade: 0.2f, hands: HandsIk.Free, gate: "reload");
             // unarmed blows (men's and women's takes are different blows: picked by sex, see Strikes)
             S("unarmed_jab", "fist_jab_accad", "fist_jab_f_cmu", fade: 0.12f, cut: 0.9f, gate: "strike");
@@ -320,9 +329,15 @@ namespace SecondFace.Core.Combat
             // hands up
             S("yield_enter", "surrender_enter_built", "surrender_enter_f_built", then: "yield_hold", cut: 0.95f, fade: 0.15f, hands: HandsIk.Free, gate: "yield");
             S("yield_hold", "surrender_hold_built", "surrender_hold_f_built", loop: true, fade: 0.2f, hands: HandsIk.Free, gate: "yield");
+            // hands up on the weapon class's own stance (Yield): the long gun's on CMU 79_96's rest (both sexes), a man's
+            // two-handed club's on CMU 79_01's (v4.1)
+            S("yield_enter_long", "surrender_enter_u_built", then: "yield_hold_long", cut: 0.95f, fade: 0.15f, hands: HandsIk.Free, gate: "yield");
+            S("yield_hold_long", "surrender_hold_u_built", loop: true, fade: 0.2f, hands: HandsIk.Free, gate: "yield");
+            S("yield_enter_club", "surrender_enter_club_u_built", then: "yield_hold_club", cut: 0.95f, fade: 0.15f, hands: HandsIk.Free, gate: "yield", only: "m");
+            S("yield_hold_club", "surrender_hold_club_u_built", loop: true, fade: 0.2f, hands: HandsIk.Free, gate: "yield", only: "m");
             // the weapon carried while walking or jogging (arms only, over the locomotion's legs)
             S("carry_pistol", "pistol_ready_built", "pistol_ready_f_built", loop: true, fade: 0.25f, gate: "carry", layer: ArmsLayer);
-            S("carry_long", "rifle_ready_built", "rifle_ready_f_built", loop: true, fade: 0.25f, hands: HandsIk.Hold, gate: "carry", layer: ArmsLayer);
+            S("carry_long", "rifle_ready_u_built", loop: true, fade: 0.25f, hands: HandsIk.Hold, gate: "carry", layer: ArmsLayer);
             return l.ToArray();
         }
 
@@ -365,6 +380,11 @@ namespace SecondFace.Core.Combat
         };
 
         public static string Reload(Arms a) => a == Arms.Rifle ? "rifle_reload" : a == Arms.Pistol ? "pistol_reload" : null;
+
+        /// <summary>Hands up, on the weapon class's own stance (the class held as the hands go up): a long gun's on its chain's
+        /// rest, a man's two-handed club's on the club's; everyone else's (a woman's club too: her stand) the common one. The
+        /// enter state; it goes on to its own hold.</summary>
+        public static string Yield(Arms a, bool female) => a == Arms.Rifle ? "yield_enter_long" : a == Arms.Club2 && !female ? "yield_enter_club" : "yield_enter";
 
         private static readonly string[] MenBlows = { "unarmed_jab", "unarmed_cross", "unarmed_hook_r", "unarmed_hook_l", "unarmed_uppercut_r", "unarmed_uppercut_l" };
         /// <summary>The women's single blows (the combination is three blows: it is not a single attack's).</summary>
