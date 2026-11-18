@@ -681,6 +681,7 @@ namespace SecondFace.Tests
             var stand = baseSm.states.Select(x => x.state).FirstOrDefault(x => x.name == CombatMotion.StanceBase);
             Assert.That(stand, Is.Not.Null, "the base layer's " + CombatMotion.StanceBase);
             Assert.That(stand.iKOnFeet, Is.False, CombatMotion.StanceBase + ": no Foot IK");
+            Assert.That(baseSm.defaultState.motion, Is.Not.Null, "the base layer's locomotion has its motion");
             Assert.That(stand.motion, Is.SameAs(baseSm.defaultState.motion), CombatMotion.StanceBase + ": the base's own locomotion");
 #else
             Assert.Ignore("editor only");

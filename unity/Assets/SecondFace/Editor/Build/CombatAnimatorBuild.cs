@@ -111,10 +111,11 @@ namespace SecondFace.EditorTools
         private static void StanceBase(AnimatorController ctl)
         {
             var sm = ctl.layers[0].stateMachine;
-            foreach (var old in sm.states.Where(s => s.state.name == CombatMotion.StanceBase).Select(s => s.state).ToArray()) sm.RemoveState(old);
             var loco = sm.defaultState;
-            if (loco == null) { Debug.LogWarning("CombatAnimatorBuild: the base layer has no default state for the fight's stance"); return; }
-            var st = sm.AddState(CombatMotion.StanceBase);
+            if (loco == null || loco.motion == null) { Debug.LogError("CombatAnimatorBuild: the base layer has no default state with a motion for the fight's stance"); return; }
+            // (updated in place, never removed: AnimatorStateMachine.RemoveState destroys the state's blend tree with it, and the
+            // two states share the locomotion's tree: a second build left every person's locomotion with no motion, 2026-11-18)
+            var st = sm.states.Select(s => s.state).FirstOrDefault(s => s.name == CombatMotion.StanceBase) ?? sm.AddState(CombatMotion.StanceBase);
             st.motion = loco.motion;
             st.speed = loco.speed;
             st.speedParameterActive = loco.speedParameterActive;

@@ -1413,6 +1413,10 @@ def make(d, out_dir):
         # combat v4.2 (G13): a clip whose root motion the game applies, and where its root stands at the cut the next state
         # is written (that state's `after`)
         js['root_travel'] = d['root_travel']
+    if d.get('step_arms'):
+        # combat v4.4: a re-stance step whose hands leave or take up the fighting guard ('lower', 'raise'); the runtime picks
+        # it only out of or into a guard (README of the v4.4 stage)
+        js['step_arms'] = d['step_arms']
     if d.get('root_apply'):
         # combat v4.4: a clip whose horizontal root motion the game applies (Core CombatMotion: RootXZ.Apply), named here so the
         # stance audit places its pose against each key's own centre of mass

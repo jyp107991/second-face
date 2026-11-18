@@ -358,7 +358,7 @@ def step_library(dumps, jsons):
             if j.get('loop'): continue
             a, b = feet(m, 0, anc, sc), feet(m, m.n - 1, anc, sc)
             names.add(j['name'])
-            lib.append(dict(name=j['name'], set=j.get('set', 'both'), kind=j.get('kind'), seconds=round((m.n - 1) / m.fps, 3),
+            lib.append(dict(name=j['name'], set=j.get('set', 'both'), kind=j.get('kind'), seconds=round((m.n - 1) / m.fps, 3), arms=j.get('step_arms', 'quiet'),
                             d={s: [float(b[s][0][0] - a[s][0][0]), float(b[s][0][1] - a[s][0][1]),
                                    float((b[s][1] - a[s][1] + 180.0) % 360.0 - 180.0)] for s in ('Left', 'Right')}))
     return lib
@@ -423,11 +423,12 @@ def _foot_warps(c, n=9, m=13):
     return np.array(out)
 
 
-def fit_step_feet(req, lib, sex, chain=True):
+def fit_step_feet(req, lib, sex, chain=True, arms=('quiet',)):
     """As fit_step, each foot's landing warped on its own (the runtime warps the stepping foot onto its target, as leading
     games do: within +/-WARP_SCALE of its captured length and +/-WARP_TURN of its captured direction and turn). Returns
-    (cost, plan) with the worse foot's residual against G13."""
-    use = [e for e in lib if e['set'] in ('both', sex)]
+    (cost, plan) with the worse foot's residual against G13. `arms`: the steps' hand sets the transition admits (v4.4: a
+    step that lowers the guard only out of a guard, one that raises it only into one)."""
+    use = [e for e in lib if e['set'] in ('both', sex) and e.get('arms', 'quiet') in arms]
     if not use: return None
     def fcost(R): return np.maximum(np.linalg.norm(R[..., :2], axis=-1) / LIMIT_CM, np.abs(R[..., 2]) / LIMIT_DEG)
     best = (1e9, None)
@@ -463,6 +464,9 @@ def pair_feet(A, tA, B, tB):
     return fA, fB, hA, hB, r
 
 
+GUARDS = {'unarmed_idle', 'melee_idle'}     # the fighting guards (a step that lowers or raises the hands plays only out of or into one)
+
+
 def steps_audit(dumps, jsons, lib, states, pairs, only=None, standing=0.70):
     """The pairs that fail G13 (or `only` those), each with the step the runtime would insert: the required re-stance, the
     nearest single step or chain of two within the warp limits, and the verdict (pass, fail, or n/a: a crouched stance at
@@ -482,7 +486,8 @@ def steps_audit(dumps, jsons, lib, states, pairs, only=None, standing=0.70):
         if min(hA, hB) < standing:
             e.update(verdict='n/a', why=f"a crouched stance at the {'start' if hA < standing else 'end'} (hips {min(hA, hB):.2f} m): no standing step bridges it")
         else:
-            f = fit_step(req, lib, r['sex']); g = fit_step_feet(req, lib, r['sex'])
+            arms = ('quiet',) + (('lower',) if a in GUARDS else ()) + (('raise',) if b in GUARDS else ())
+            f = fit_step(req, [e for e in lib if e.get('arms', 'quiet') in arms], r['sex']); g = fit_step_feet(req, lib, r['sex'], arms=arms)
             if f is None: e.update(verdict='fail', why='no step for this sex')
             else:
                 c, plan = f

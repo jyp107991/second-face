@@ -38,6 +38,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import combat_v4_jobs as J
 import combat_v42_jobs as V2
+import combat_v43_jobs as V3
 
 CMU_EXTRA = ['/home/user/second-face-staging/motion/raw/cmu']
 
@@ -64,31 +65,46 @@ JOBS = [
         kind="overhand throw, a second take (a man, CMU 143_20, mirrored), through his recovery to his ready"),
     _v4('throw_overhand_b_f_cmu', name='throw_rec_f_cmu', range=(5.95, 8.5), root_apply=True, replaces=['throw_overhand_cmu', 'throw_overhand_b_f_cmu'],
         kind="overhand throw, right hand (woman, CMU 111_33), through her recovery to a still stance"),
-    # the ducks, each set on its guard's feet (settle_in)
-    J.J('duck_m_accad', 'accad', 'Male2_E21_DuckLeft', range=(0.0, 2.733), face='mean', state='S9', gate='dodge', weapon=J.ANY, events='dodge',
-        set='m', fit='guard_m_built', chain='guard_m', replaces=['duck_cmu'],
-        kind="duck under a swing and up again to a still stance (a man, ACCAD Male2), its feet set on the men's guard"),
-    J.J('duck_f_cmu', 'cmu', '144_20', range=(7.7, 11.4), face='mean', state='S9', gate='dodge', weapon=J.ANY, events='dodge',
-        set='f', fit='guard_f2_built', chain='guard_f', replaces=['duck_cmu'],
-        kind="bob down under a swing and up again (woman, CMU 144_20: the guard's actor), her feet set on her guard's"),
-    J.J('duck_f_b_cmu', 'cmu', '144_21', range=(8.6, 11.95), face='mean', state='S9', gate='dodge', weapon=J.ANY, events='dodge',
-        set='f', fit='guard_f2_built', chain='guard_f', replaces=['duck_cmu'],
-        kind="bob down and up again (woman, CMU 144_21: her guard's own take), her feet set on her guard's"),
-    # (2) the stand-ups from each crouched hold
-    rise('rise_m_accad', 'accad', 'Male2_D13_CrouchToReady', (0.45, 3.2), 'm', 'crouch_hold_built', 'cover_m',
-         "up from the crouched hold to standing (a man, ACCAD Male2_D13: the holds' actor), its feet set on the hold's",
-         replaces=['crouch_to_guard_accad']),
-    rise('rise_f_cmu', 'cmu', '114_05', (12.9, 14.45), 'f', 'crouch_hold_f_built', 'cover_f',
-         "up from a squat to standing, the feet planted (woman, CMU 114_05), set on the crouched hold's feet"),
-    rise('rise_f_b_cmu', 'cmu', '114_05', (18.95, 20.1), 'f', 'crouch_hold_f_built', 'cover_f',
-         "up from a squat to standing, a second rise (woman, CMU 114_05), set on the crouched hold's feet"),
-    rise('rise_f_c_cmu', 'cmu', '114_11', (17.9, 19.85), 'f', 'crouch_hold_f_built', 'cover_f',
-         "up from a kneel to standing (woman, CMU 114_11), set on the crouched hold's feet"),
+    # the women's duck, set on her guard's feet (settle_in; built: its feet moved up to 2.8 cm): her guard's own take
+    # (tried and not staged: ACCAD Male2_E21 travels 63 cm sideways and stands 48 cm wide against the men's 27 cm guard, its
+    # feet 7-12 cm off it after the best fit; CMU 144_20, the same woman, ends 25 cm off her guard)
+    J.B('duck_f_built', dict(db='cmu', src='144_21', range=(8.6, 11.95), face='mean', set='f'), {}, state='S9', gate='dodge', weapon=J.ANY,
+        events='dodge', fit='guard_f2_built', chain='guard_f', replaces=['duck_cmu'],
+        kind="bob down under a swing and up again (woman; built on CMU 144_21, her guard's own take: its first key's feet set on her guard's)"),
+    # (2) the stand-ups from each crouched hold (built: each foot set on the hold's until it first steps)
+    J.B('rise_m_built', RISE_M, {}, state='S17', gate='crouch', timing='crouch', weapon=J.ANY, fit='crouch_hold_built', chain='cover_m',
+        replaces=['crouch_to_guard_accad'],
+        kind="up from the crouched hold to standing (a man; built on ACCAD Male2_D13, the holds' actor: its feet set on the hold's)"),
+    # (tried and not staged: her second squat rise in 114_05, 18.95-20.1 s, and her rise from a kneel in 114_11, 17.9-19.85 s,
+    # which ends with her feet together, 11 cm apart: both meet the standing states no better)
+    J.B('rise_f_built', RISE_F, {}, state='S17', gate='crouch', timing='crouch', weapon=J.ANY, fit='crouch_hold_f_built', chain='cover_f',
+        kind="up from a squat to standing, the feet planted (woman; built on CMU 114_05: her feet set on the crouched hold's)"),
     J.B('rise_long_m_built', RISE_M, LONG, state='S17', gate='crouch', timing='crouch', weapon='long', fit='crouch_rifle_built', chain='cover_m',
         kind="up from the crouched hold with the long gun (a man; built on ACCAD Male2_D13's rise: the gun held by IK, crouched to the low ready)"),
     J.B('rise_long_f_built', RISE_F, LONG, state='S17', gate='crouch', timing='crouch', weapon='long', fit='crouch_rifle_f_built', chain='cover_f',
         kind="up from the crouched hold with the long gun (woman; built on CMU 114_05's rise: the gun held by IK, crouched to the low ready)"),
 ]
+
+# (3) re-stance steps v4.3's library lacked (S24; each cut inside its two still stances, written in its own first key's frame,
+# also mirrored): her steps out of her fighting guard to a standing stance and into it (CMU 144: the women's guard's actor,
+# 13.37-13.93 s of 144_21 is guard_f2_built's own still guard; her arms come down or up with the step), and feet turned in
+# place (pivots: one foot turned 17-26° and set down within 7 cm), mined from every take on disk with the arms let move
+# (v4.3 held them under 1.2 m/s, which left out every guard change); her right step (CMU 111_28) again, its hand's solver
+# flip (65° between two keys) repaired at a quiet-hand rate (600°/s, as cmu2fbx's sit_ground)
+STEPS = [
+    dict(V3.S('step_guardout_f_14421', 'cmu', '144_21', (13.73, 14.85), 'f', 'guard_out'), step_arms='lower'),   # her guard (69 cm) to 41 cm, the right foot in 37 cm
+    dict(V3.S('step_guardout_f_14413', 'cmu', '144_13', (13.91, 15.57), 'f', 'guard_out'), step_arms='lower'),   # her guard (68 cm) to standing (28 cm), three lifts
+    dict(V3.S('step_guardin_f_14413', 'cmu', '144_13', (0.45, 1.61), 'f', 'guard_in'), step_arms='raise'),       # standing (30 cm) into her guard (54 cm)
+    dict(V3.S('step_guardin_f_14427', 'cmu', '144_27', (2.43, 3.29), 'f', 'guard_in'), step_arms='raise'),       # standing (23 cm) into her guard (57 cm)
+    V3.S('step_pivot_f_11107', 'cmu', '111_07', (14.175, 14.825), 'f', 'pivot'),        # the right foot turned 23° in place
+    V3.S('step_pivot_u_1323', 'cmu', '13_23', (17.65, 18.525), 'u', 'pivot'),           # the right foot turned 24°, set 4 cm over
+    V3.S('step_pivot_u_swatfw', 'style', 'Swat_FW', (6.783, 7.55), 'u', 'pivot'),       # the right foot turned 26°, set 7 cm back
+    dict(V3.S('step_right_f_11128b', 'cmu', '111_28', (4.0, 4.908), 'f', 'right'), max_rate=600.0),
+]
+for _d in STEPS:
+    JOBS.append(dict(_d, chain=_d['name'], own_frame=True))
+    JOBS.append(dict(_d, name=_d['name'] + '_mir', chain=_d['name'], mirror=True, kind=_d['kind'] + ', mirrored',
+                     step_kind={'left': 'right', 'right': 'left'}.get(_d['step_kind'], _d['step_kind'])))
 
 
 def _fit2d(q, h, w):
@@ -114,6 +130,13 @@ def frames_from(p1_dump, p1_json, ref_dump, ref_json):
     import stance_continuity as SC
     out = {}
     for d in JOBS:
+        if d.get('own_frame'):
+            A = SC.clip_feet([p1_dump], [p1_json], d['name'], basis='first')
+            if A is None: raise SystemExit(f"no pass-1 dump of {d['name']}")
+            m, j, (o, yaw), _ = A
+            out[d['name']] = dict(yaw=-yaw, origin=[float(o[0]), float(o[2])], ref=d['name'],
+                                  note="origin and +Z: the step's own first-key centre of mass and body orientation")
+            continue
         if not d.get('fit'): continue
         m = SC.load([p1_dump], d['name']); r = SC.load([ref_dump], d['fit'])
         if m is None or r is None: raise SystemExit(f"{d['name']}: no pass-1 dump or no dump of {d['fit']}")
@@ -135,7 +158,9 @@ def plan(frames=None):
     res = []
     for d in JOBS:
         d = dict(d)
-        if d.get('fit'):
+        if d.get('step_kind'):
+            d['frame'] = dict(frames[d['chain']]) if frames else dict(yaw=0.0, origin=[0.0, 0.0], ref="pass 1: the take's raw frame")
+        elif d.get('fit'):
             if frames:
                 f = dict(frames[d['name']]); d['settle_in'] = f.pop('settle_in'); d['frame'] = f
             else:
@@ -159,8 +184,8 @@ def plan(frames=None):
 # meets the standing state (a stance change: the re-stance step, v4.3)
 MAPPING = {
     'throw': ['throw_rec_m_cmu', 'throw_rec_f_cmu', 0.0, 0.97, False],
-    'miss_duck': ['duck_m_accad', 'duck_f_cmu', 0.0, 0.95, False],
-    'cover_rise': ['rise_m_accad', 'rise_f_cmu', 0.0, 0.97, False],
+    'miss_duck': ['duck_cmu', 'duck_f_built', 0.0, 0.95, False],      # (men: v4's CMU 77_09, sex not recorded, played through its rise)
+    'cover_rise': ['rise_m_built', 'rise_f_built', 0.0, 0.97, False],
     'cover_rise_long': ['rise_long_m_built', 'rise_long_f_built', 0.0, 0.97, False],
     'miss_left': ['dodge_l_accad', None, 0.0, 1.0, False],
 }
@@ -192,6 +217,6 @@ if __name__ == '__main__':
         print(f"{len(p)} jobs, {'final frames' if fr else 'pass 1 (raw frames)'}; missing: {[d['name'] for d in p if d.get('missing')]}")
     elif a[0] == 'frames':
         fr = frames_from(a[1], a[2], a[3], a[4]); json.dump(fr, open(a[5], 'w'), indent=1)
-        for k, v in fr.items(): print(k, f"yaw {math.degrees(v['yaw']):.1f}°", 'fit residual cm (L ankle, L toe, R ankle, R toe)', v['fit_residual_cm'])
+        for k, v in fr.items(): print(k, f"yaw {math.degrees(v['yaw']):.1f}°", 'fit residual cm (L ankle, L toe, R ankle, R toe)', v.get('fit_residual_cm', 'own frame'))
     elif a[0] == 'mapping':
         mp = mapping(json.load(open(a[1]))); json.dump(mp, open(a[2], 'w'), indent=1); print('mapping written:', len(mp['states']), 'states')
