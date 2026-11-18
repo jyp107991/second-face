@@ -92,6 +92,11 @@ Divinity: Original Sin 2 have no cover system and no surrender) or nothing beyon
   crouch, a guard to a standing surrender) and states whose feet the fight does not pin (hits, throws, slips) are reported with
   their offsets. Equal ankles are not enough: CMU 79_96's ready and aim stand within 1.3 cm but the right foot turns 9.8° (the
   captured pivot), so the game reaches the aim through the captured raise and leaves it through the captured lower.
+  **The front of a take frame** (combat v4.6): a clip written in its take's frame (`root_basis: take`, imported based upon
+  Original) keeps the file's own root turn, and the converters' FBX and Unity's import put the file's +Z on Unity's -Z: its
+  frame's front is written on the file's -Z (`stance_continuity.TAKE_FRONT`), and clip QA's `facing` models that basis. The
+  clip that sets its chain's front faces Unity's +Z within 10° (its body orientation, or the aim's gun line). Every take-basis
+  clip faces it within 90° on its hips, chest, body and gun.
 
 ## 2. The states
 

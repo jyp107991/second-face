@@ -131,7 +131,18 @@ every frame. Angles are degrees, distances centimetres. "Down" and "horizon" are
 | K3 | Pelvis level | the line between the hip joints from the horizontal | ≤ 5 | 8 | in standing the pelvis is level [16]; a weight shift drops it a little, a hip hitched or dropped far is a pose |
 | K4 | Hips over the feet | the pelvis's middle past the outer foot across the body (cm, + beyond) | ≤ 2 | 4 | a weight shift brings the hips over the standing foot, not past it: a hip thrown out is a pose (the owner, 2026-11-09) |
 | K5 | A bent knee over its foot | a bent leg's (10° or more) knee, seen from above: where it points (from the middle of its hip and ankle) against whichever of the body's front and its foot's line is further in (+ in): so it may point anywhere between the two and 10° beyond (on a turned-out foot, K5 ≤ F3s + 10 measured on the foot's line) | ≤ 10 | 20 | a resting leg's knee bends the way its toes point [16]; a knee turned in across its foot reads as the owner's 'other knee turned in' (2026-11-09). Measured against the foot's own line (≤ 15, cap 25) until 2026-11-17: a real relaxed knee points ahead while the foot turns out 10–28°, so 8 of 13 real quiet-standing captures failed by their toe-out alone [17] |
-| C1 | Nothing clips | depth of a hand, forearm or lower upper-arm vertex (the upper arm's third nearest the elbow, which hangs clear of the waist; higher, the arm rests on the side of the chest, a contact both soft tissues take) inside the torso, hip or thigh skin (baked mesh: behind the three nearest skin points' planes, and inside by ray parity, two of three level rays crossing the skin an odd number of times; the planes alone call a point beside the top of a shoulder or below a hem inside) | ≤ 0.5 | 1.5 | the owner's rule: arms, hands and clothing never sink into a body (CLAUDE.md §2) |
+| C1 | Nothing clips | depth of a hand, forearm or lower upper-arm vertex (the upper arm's third nearest the elbow, which hangs clear of the waist; higher, the arm rests on the side of the chest, a contact both soft tissues take) inside the torso, hip or thigh skin, measured as its distance to the drawn surface: the nearest point on the torso's, hips' and thighs' own triangles (since 2026-11-18; baked mesh: found behind the three nearest skin points' planes, and inside by ray parity, two of three level rays crossing the skin an odd number of times; the planes alone call a point beside the top of a shoulder or below a hem inside, and over-read the depth: see the note under this table) | ≤ 0.5 | 1.5 | the owner's rule: arms, hands and clothing never sink into a body (CLAUDE.md §2) |
+
+**C1 reads the drawn surface (coordinator's decision, 2026-11-18).** Until then C1 was the least of the three nearest body
+vertices' plane depths. On a convex hip whose vertices stand 4-7 cm apart a point under the chord between two vertices lies
+behind both their planes, so the planes read a penetration the drawn surface does not have. Evidence (`C1ProbeTests`, chunk
+0's people, the idles at 10 Hz; `docs/MOTION_ROOT_CAUSE.md` §7): at the gate's worst forearm vertex the planes read 0.53 cm
+(Business_Male_02) and 0.71 cm (Business_Female_03); the same vertex is 0.13-0.15 and 0.05-0.12 cm inside the triangles as drawn;
+the runtime's `BodySkin.Depth` reads 0.53 and 0.28-0.40 there. The limit stays at 0.5 cm and the runtime keeps its own reading.
+The depth is `MotionProbe.DrawnDepth` (exact point-to-triangle distance over the triangles the inside test counts), held by
+`MotionProbeDepthTests` (known penetrations of 0, 0.3, 0.5, 1 and 2 cm under a convex patch with vertices 8 cm apart and under a
+flat one, read within 0.05 cm). The planes' reading is still written beside every report (`<report>_c1v.json`, never judged)
+so the cells the change moved are on record, both ways.
 
 ### 2.2 Gestures
 
@@ -246,6 +257,25 @@ Limit p2 … p98 (cap min … max). New measures for these states: **Kb**, the m
 as K1 for the straighter); **WG1**, the weapon's main grip from the palm's centre (≤ 1 cm, cap 2: the weapon stays in the hand,
 COMBAT.md A1); **WG2**, the off hand's palm from the weapon's `grip_off` (a pistol's support point beside its grip) while it is
 held there (≤ 2 cm, cap 3: the fix for the captured long-gun and club takes whose mimed hands drift 5-27 cm apart).
+
+**Facing the target (FY1, FY2; added 2026-11-18, a new measure: `motion_gate_inputs.json` `introduced`).** The pelvis's front
+(the hip joints' line, flat) and the chest's (the shoulder joints' line) against the line to what the fighter fights, degrees,
++ clockwise seen from above (to the fighter's right): the gate's fights are all at the body's front (+Z), the game's target.
+It closes a hole: combat set v4.1's take-frame clips played with the body 180° from its target and no measure saw it
+(`docs/COMBAT_ROOT_CAUSE.md` §11). Limits from the §8 actors (`tools/qa/calibration/facing.py`, `docs/qa/calibration_facing.json`;
+`docs/qa/motion_calibration.md` §11), the target read from the action, as no capture records one: the aim's gun line (the main
+hand to the off hand), the ready's own take's later gun line, each blow's line (the upper chest to the striking hand at its
+furthest). Right-handed fighters, as the game's.
+
+| Measure | Aim, long gun (3: CMU 79_96, 80_03, 100STYLE Swat_ID) | Ready, long gun (2: CMU 79_96, 80_03) | Strike (10 takes: ACCAD Male2, CMU 143, 144, 141, 113) |
+|---|---|---|---|
+| FY1 pelvis yaw ° | 45.3 … 60.4 (44.9 … 68.7) | 22.3 … 42.4 (22.3 … 42.5) | −69.5 … +47.6 (−87.2 … +109.5) |
+| FY2 chest yaw ° | 56.3 … 76.5 (56.1 … 84.6) | 15.4 … 44.3 (14.9 … 44.3) | −64.4 … +50.4 (−80.3 … +99.0) |
+
+Held in the sets `aim` (the long gun's aim, shot and burst), `strike` (blows and a block; a one-handed weapon's blows to the
+unarmed fighters', as §8's rule for them) and the long gun's ready (`combat:ready:rifle` only: no pistol's or club's ready
+facing is captured). A rifleman blades the body to his right of the gun line; a still ready stands 15-44° off the line the gun
+will take.
 
 Which limits each state is held to (`HumanMotionGateTests.CombatLimits`), and C1 (nothing clips) in every one:
 

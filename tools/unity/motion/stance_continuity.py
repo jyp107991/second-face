@@ -112,6 +112,26 @@ def width(f):
     return float(np.linalg.norm(f['Left'][0] - f['Right'][0]))
 
 
+# combat v4.6: the front of a clip written in its take's frame (root_basis take). Imported based upon Original, Unity keeps the
+# file's own root turn: the converters' FBX (axis_forward -Z, from the file's axes) and Unity's import put the file's +Z at
+# Unity's -Z, so a take frame whose front is the file's +Z played with the body turned 180° from the root's front (found in
+# Unity, 2026-11-18: fighters with their backs to the target). The take frames are written with their front on the file's -Z
+# (frames_from: the reference's yaw turned half a turn more), which lands on Unity's +Z; this is that frame's front, as
+# body_yaw measures it (0 = the file's +Z).
+TAKE_FRONT = math.pi
+
+
+def unity_original(v):
+    """A direction in the file's (dumps') axes as Unity holds it in a clip imported based upon Original (+Z the root's front)."""
+    return np.array([v[0], v[1], -v[2]], float)
+
+
+def from_take_front(p):
+    """A point in a frame whose front is +Z (an anchor's) into the take frame's file axes (front -Z: TAKE_FRONT)."""
+    c, s = math.cos(TAKE_FRONT), math.sin(TAKE_FRONT)
+    return np.array([c * p[0] + s * p[2], p[1], -s * p[0] + c * p[2]])
+
+
 def clip_feet(dumps, jsons, name, basis=None):
     """A clip as the game places it: `basis` 'first' (Unity's import as CombatImportPostprocessor sets it: the first key's
     centre of mass and body orientation) or 'take' (Root Transform Rotation and Position XZ based upon Original: the file's
@@ -121,7 +141,7 @@ def clip_feet(dumps, jsons, name, basis=None):
     if j.get('loop') and m.n > 2: m = m.slice(0, (m.n - 1) / m.fps)    # a loop's last key is its first again
     hip = float(j.get('hip') or REF_HIP)
     basis = basis or j.get('root_basis') or 'first'
-    anc = (np.zeros(3), 0.0) if basis == 'take' else anchor(m)
+    anc = (np.zeros(3), TAKE_FRONT) if basis == 'take' else anchor(m)
     return m, j, anc, REF_HIP / hip
 
 

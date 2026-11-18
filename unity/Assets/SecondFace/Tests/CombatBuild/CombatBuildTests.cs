@@ -123,6 +123,32 @@ namespace SecondFace.Tests
                 }
         }
 
+        /// <summary>A clip in its take's frame that travels (combat set v4.5: the break from the crouched hold into a run,
+        /// cover_leave_m/f_built, set on the hold's feet) keeps its travel as root motion, Position XZ unbaked and based upon
+        /// Original, so it leaves from where the hold stands; one in place has its place baked on the same basis; a clip on its
+        /// own first key keeps Unity's default basis.</summary>
+        [Test]
+        public void ATakeFrameClipThatTravelsRunsOutOfItsTakesFrame()
+        {
+            ModelImporterClipAnimation Of(MotionClip m, bool take)
+            {
+                var c = new ModelImporterClipAnimation();
+                CombatImportPostprocessor.Settings(c, false, m, seated: false, takeBasis: take);
+                return c;
+            }
+            foreach (var name in new[] { "cover_leave_m_built", "cover_leave_f_built" })
+            {
+                var run = Of(new MotionClip { Name = name, XZ = RootXZ.Apply, Y = RootY.Keep }, true);
+                Assert.That(run.lockRootPositionXZ, Is.False, name + ": its travel applied");
+                Assert.That(run.keepOriginalPositionXZ, Is.True, name + ": from the take's frame");
+                Assert.That(run.lockRootRotation && run.keepOriginalOrientation, Is.True, name + ": its turn baked on the take's frame");
+            }
+            var hold = Of(new MotionClip { Name = "crouch_hold_built", Y = RootY.Keep }, true);
+            Assert.That(hold.lockRootPositionXZ && hold.keepOriginalPositionXZ && hold.keepOriginalOrientation, Is.True, "a hold in place on the take's frame");
+            var own = Of(new MotionClip { Name = "throw_full_m_cmu", XZ = RootXZ.Apply }, false);
+            Assert.That(own.keepOriginalPositionXZ || own.keepOriginalOrientation, Is.False, "a first-key clip on Unity's default basis");
+        }
+
         /// <summary>Every clip whose sidecar says it is written in its take's frame ("root_basis": "take", combat set v4.1) is
         /// imported on that basis, its rotation and place still baked into the pose: based upon the body orientation and the
         /// centre of mass, Unity stands each clip at its own first key and a chain cut from one take parts at its joins (CMU

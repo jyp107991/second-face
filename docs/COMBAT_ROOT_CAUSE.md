@@ -197,7 +197,9 @@ plays with the body turned 180° from the body's root.**
   "based upon Original": the clip files' frame convention (`tools/unity/motion/combat_v4.py` `build_framed` with
   `stance_continuity.body_yaw`'s axes) and the import's basis disagree by a half turn. Clips on their first key are
   normalised by Unity and never show it.
-- Fix (at the source, not in the gaze): the take frame written so that its +Z is Unity's +Z (the converters' frame yaw, one
-  half turn; every `root_basis: take` clip of v4.1-v4.5 re-staged), then imported as now. Not made here: the converters run
-  with Blender on the offline helper's machine. Nothing is changed in `Gaze` for it.
-- Gate hole: no measure checks that a fighter faces its target. To add: the hips' and the weapon's line against the target.
+- Fix (at the source, not in the gaze; coordinator's decision): the converters' frame yaw corrected so that a take's +Z is
+  Unity's +Z under "based upon Original", a clip-QA check that every take-basis clip imported that way faces +Z, and every
+  `root_basis: take` clip of v4.1-v4.5 re-staged as one set (staging combat/v4_6, the offline helper); no import offset (it would
+  turn the body, not the take's places). The v4.2-v4.5 imports wait for v4.6. Nothing is changed in `Gaze` for it.
+- Gate hole closed: a facing measure for the fight's states (the pelvis's and chest's yaw against the target, within real
+  fighters' limits per state; `docs/PEOPLE_MOTION.md` §2.7), recorded as a new measure.

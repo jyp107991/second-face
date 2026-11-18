@@ -143,7 +143,9 @@ def frames_from(dump_dir, json_dir):
             f = np.mean([[-k['fwd'][0], k['fwd'][1], k['fwd'][2]] for k in lj['ik']['keys']], axis=0)   # Unity's axes -> the file's
             yaw = math.atan2(f[0], f[2])
         # p' = R(-yaw)(p - o): combat_v4.build_framed's yaw is -yaw, its origin o (the take's raw frame: pass 1 had none)
-        out[ch] = dict(yaw=-yaw, origin=[float(o[0]), float(o[2])], ref=c['ref'], note=c['note'], take=c['take'])
+        # (v4.6: + SC.TAKE_FRONT, the front on the file's -Z, which Unity's Original basis puts on the root's +Z)
+        out[ch] = dict(yaw=-yaw + SC.TAKE_FRONT, origin=[float(o[0]), float(o[2])], ref=c['ref'], note=c['note'], take=c['take'],
+                       front={'by': 'gun line', 'clip': c['line']} if c['line'] else {'by': 'body', 'clip': c['ref']})
     for ch, c in CHAINS.items():
         if c.get('same_as'): out[ch] = dict(out[c['same_as']], note=c['note'], take=c['take'])
     return out

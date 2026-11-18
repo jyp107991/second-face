@@ -37,6 +37,20 @@ describe('the motion gate ratchet', () => {
     expect(worse(base, { ...now, measures: 'm1' }, strict).map((w) => w.key)).toEqual(['W3']);
   });
 
+  it('leaves out a new measure (introduced) while the measures differ, from the keys and the totals; then compares it', () => {
+    expect(Object.keys(spec.introduced ?? {})).toEqual(expect.arrayContaining(['FY1', 'FY2']));
+    const now = { set: 'full', measures: 'm2', date: 'now', byMeasure: { ...base.byMeasure, 'FY1 combat:aim': 30, 'FY2 combat:ready': 9 } };
+    expect(worse(base, now, spec)).toEqual([]);
+    const r = judge(base, now, spec, [], ['before', 'now']);
+    expect(r.problems).toEqual([]);
+    expect(r.totals.now).toEqual(r.totals.before);
+    // committed on its code (the same measures' hash), a new measure is compared as any other
+    const later = { ...now, measures: 'm2', byMeasure: { ...now.byMeasure, 'FY1 combat:aim': 31 } };
+    expect(worse(now, later, spec).map((w) => w.key)).toEqual(['FY1 combat:aim']);
+    // and never hides an old measure's regression
+    expect(worse(base, { ...now, byMeasure: { ...now.byMeasure, W3: 3 } }, spec).map((w) => w.key)).toEqual(['W3']);
+  });
+
   it('compares only the same set', () => {
     expect(worse(base, { set: 'pick', measures: 'm1', byMeasure: { W3: 50 } }, spec)).toEqual([]);
   });

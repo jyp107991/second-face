@@ -43,6 +43,10 @@ import combat_v4_jobs as J
 REL = 'Assets/SecondFace/Combat/Motion'
 WEAPONS = '/home/user/second-face-staging/combat/weapons'
 UP, FWD, LEFT = Vector((0.0, 0.0, 1.0)), Vector((0.0, -1.0, 0.0)), Vector((1.0, 0.0, 0.0))   # Blender's world after the BVH import
+# the front the build's world-fixed choices take (a knee's pole, the pistol's line): FWD, the file's +Z, for a clip Unity
+# re-bases on its first key; for a clip written in its take's frame (combat v4.6), the frame's front, the file's -Z
+# (stance_continuity.TAKE_FRONT: what Unity's Original basis puts on the root's +Z). Set per clip by make().
+FRONT = FWD.copy()
 RIGHT = -LEFT
 NB, AB = Vector((0.0, 0.0, -1.0)), Vector((0.0, -1.0, 0.0))   # the palm's normal and across (little to index) at the T-pose bind
 PALM_F, PALM_N = 0.075, 0.02     # the palm's centre from the wrist joint: along the fingers, toward the palm (m)
@@ -449,7 +453,7 @@ def plant(rig, rows, fps, skip=None):
                             else: lo_ = mid
                     q = Quaternion(axis, hi_); T = q @ (T - P) + P; R0 = q @ R0
                     rec['foot_pitched_keys'] += 1; rec['foot_pitched_max_deg'] = max(rec['foot_pitched_max_deg'], round(math.degrees(hi_), 1))
-            miss = rig.two_bone(s + 'UpperLeg', s + 'LowerLeg', s + 'Foot', T, rig.head(s + 'LowerLeg') - rig.head(s + 'UpperLeg') + FWD * 0.05)
+            miss = rig.two_bone(s + 'UpperLeg', s + 'LowerLeg', s + 'Foot', T, rig.head(s + 'LowerLeg') - rig.head(s + 'UpperLeg') + FRONT * 0.05)
             if miss > 0.002: rec['out_of_reach_keys'] += 1
             rig.set_wrot(s + 'Foot', R0)
             rec['held_keys'] += 1
@@ -697,7 +701,7 @@ def op_pistol_aim(rig, rows, d, fps):
         rig.pose(rows[k])
         sr, sl, right, up, ahead = rig.body_frame()
         hq = rig.rel('Head'); eye = rig.head('Head') + hq @ Vector((0.0, -0.09, 0.07)) + right * 0.03
-        f = FWD.copy(); u = UP.copy()
+        f = FRONT.copy(); u = UP.copy()     # (the clip's front: v4.6, a take frame's is the file's -Z)
         L = 0.96 * rig.reach('Right'); e = eye - u * sight - sr
         ef = e.dot(f); disc = ef * ef - (e.dot(e) - L * L)
         D = -ef + math.sqrt(max(0.0, disc))
@@ -1191,7 +1195,7 @@ def pin_feet(rig, rows, pin):
         for s in ('Left', 'Right'):
             T = from_file(pin[s]); R0 = rig.wrot(s + 'Foot')
             worst = max(worst, (T - rig.head(s + 'Foot')).length)
-            rig.two_bone(s + 'UpperLeg', s + 'LowerLeg', s + 'Foot', T, rig.head(s + 'LowerLeg') - rig.head(s + 'UpperLeg') + FWD * 0.05)
+            rig.two_bone(s + 'UpperLeg', s + 'LowerLeg', s + 'Foot', T, rig.head(s + 'LowerLeg') - rig.head(s + 'UpperLeg') + FRONT * 0.05)
             rig.set_wrot(s + 'Foot', R0)
         rows[k] = rig.capture()
     return {'from': pin['from'], 'max_move_cm': round(worst * 100, 2)}
@@ -1217,7 +1221,7 @@ def lead_in(rig, rows, pin, fps):
             R0 = Quaternion(UP, ang * w) @ rig.wrot(s + 'Foot')
             T = A.lerp(tA, w)
             worst = max(worst, (T - A).length); wturn = max(wturn, abs(math.degrees(ang * w)))
-            rig.two_bone(s + 'UpperLeg', s + 'LowerLeg', s + 'Foot', T, rig.head(s + 'LowerLeg') - rig.head(s + 'UpperLeg') + FWD * 0.05)
+            rig.two_bone(s + 'UpperLeg', s + 'LowerLeg', s + 'Foot', T, rig.head(s + 'LowerLeg') - rig.head(s + 'UpperLeg') + FRONT * 0.05)
             rig.set_wrot(s + 'Foot', R0)
         rows[k] = rig.capture()
     return {'from': pin['from'], 'until_s': T_end, 'max_move_cm': round(worst * 100, 2), 'max_turn_deg': round(wturn, 1)}
@@ -1273,7 +1277,7 @@ def settle_in(rig, rows, pin, fps):
                 T = Vector((A0.x + rel.x + off.x * w, A0.y + rel.y + off.y * w, A.z))
             R0 = Quaternion(UP, ang * w) @ rig.wrot(s + 'Foot')
             worst = max(worst, (T - A).length); wturn = max(wturn, abs(math.degrees(ang * w)))
-            rig.two_bone(s + 'UpperLeg', s + 'LowerLeg', s + 'Foot', T, rig.head(s + 'LowerLeg') - rig.head(s + 'UpperLeg') + FWD * 0.05)
+            rig.two_bone(s + 'UpperLeg', s + 'LowerLeg', s + 'Foot', T, rig.head(s + 'LowerLeg') - rig.head(s + 'UpperLeg') + FRONT * 0.05)
             rig.set_wrot(s + 'Foot', R0)
         rows[k] = rig.capture()
     rec.update(max_move_cm=round(worst * 100, 2), max_turn_deg=round(wturn, 1))
@@ -1321,8 +1325,11 @@ def build_framed(d, take):
 
 
 def make(d, out_dir):
+    global FRONT
     name = d['name']; built = bool(d.get('built')); fps = C.OUT_FPS
     d = dict(d)
+    fr_ = d.get('frame')
+    FRONT = -FWD if fr_ and not str(fr_.get('ref', '')).startswith('pass 1') else FWD.copy()
     if d.get('mirror'): d['face'] = {'strike_R': 'strike_L', 'strike_L': 'strike_R'}.get(d.get('face'), d.get('face'))
     K.reset()
     tmp = os.path.join(out_dir, '_tmp'); os.makedirs(tmp, exist_ok=True)
@@ -1419,6 +1426,7 @@ def make(d, out_dir):
         js['chain'] = d.get('chain')
         js['frame'] = {'yaw_deg': round(math.degrees(float(d['frame']['yaw'])), 3), 'origin_m': [round(float(v), 4) for v in d['frame']['origin']],
                        'ref': d['frame'].get('ref'), 'note': d['frame'].get('note')}
+        if d['frame'].get('front'): js['frame']['front'] = d['frame']['front']     # (v4.6: what sets the frame's front)
     if d.get('root_travel'):
         # combat v4.2 (G13): a clip whose root motion the game applies, and where its root stands at the cut the next state
         # is written (that state's `after`)

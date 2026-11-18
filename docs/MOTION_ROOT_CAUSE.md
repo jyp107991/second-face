@@ -293,9 +293,11 @@ frame rates), `/home/user/second-face-staging/motion/README.md` (clip QA, clips 
   0.28-0.40. So the runtime does not under-read the surface: the gate's vertex-plane depth over-reads it by 0.4-0.6 cm where
   the body's vertices stand 4-7 cm apart over a convex hip (a point under the chord between two vertices is behind both their
   planes). The forearms rest 1-1.5 mm into the drawn surface. Business_Male_05's idle0 (gate 1.2 cm, 10 % of frames) is not
-  reproduced alone (0 in 41 samples): to trace in the gate's own run. **Decision for the coordinator** (not made here): whether C1
-  measures the drawn surface (the triangles it already uses for its inside test and A4's gap), or the runtime is made to hold
-  the arms off the vertex planes (0.4-0.6 cm further out than the surface needs, against A1).
+  reproduced alone (0 in 41 samples): to trace in the gate's own run. **Decided (coordinator, 2026-11-18): C1 measures the drawn
+  surface**, the exact point-to-triangle depth over the triangles its inside test counts, in every state and on every body; the
+  limit stays 0.5 cm and the runtime keeps its own reading (`MotionProbe.DrawnDepth`, `MotionProbeDepthTests`; the planes'
+  reading written beside each report, `<report>_c1v.json`, for the record of the cells moved both ways; `docs/PEOPLE_MOTION.md`
+  §2.1). A contact that survives the drawn surface (Business_Male_05's 1.2 cm, if it does) is traced as a cause of its own.
 
 ## 8. T3 design: the contact-preserving retarget, baked per body (editor owner, 2026-11-17)
 **What is solved.** For each base body (79) and clip (28; 4,254 frames at 30 fps, about 4,400 with the idle at its true

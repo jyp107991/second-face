@@ -24,18 +24,28 @@ export function fold(byMeasure, aliases = {}) {
  * The keys a new verdict makes worse than the one it replaces, `{ key, was, now }` each (failing cells, folded), when both
  * measured the same set. Compared whether or not the gate's own code changed (a change of the measures' code is no
  * exemption); only a measure named in `spec.remeasured` (made stricter, with its why) is left out, and only while the
- * measures' hash differs. A key whose set the verdict before did not measure at all is not compared.
+ * measures' hash differs. A key whose set the verdict before did not measure at all is not compared, nor a key of a measure
+ * the verdict before did not have (`spec.introduced`, a new measure: its cells are no regression of an old key) while the
+ * measures' hash differs: from the first verdict committed on its code it is compared as any other.
  */
+export function exempt(before, verdict, spec = {}) {
+  const out = new Set();
+  if (!before || !verdict || before.measures === verdict.measures) return out;
+  for (const m of Object.keys(spec.remeasured ?? {})) out.add(m);
+  for (const m of Object.keys(spec.introduced ?? {})) out.add(m);
+  return out;
+}
+
 export function worse(before, verdict, spec = {}) {
   if (!before || !before.byMeasure || !verdict || !verdict.byMeasure || before.set !== verdict.set) return [];
   const aliases = spec.aliases ?? {};
-  const remeasured = new Set(Object.keys(spec.remeasured ?? {}));
+  const left = exempt(before, verdict, spec);
   const was = fold(before.byMeasure, aliases), now = fold(verdict.byMeasure, aliases);
   const measuredBefore = new Set(Object.keys(was).map(setOf));
   const out = [];
   for (const [key, n] of Object.entries(now)) {
     if (!measuredBefore.has(setOf(key))) continue;
-    if (before.measures !== verdict.measures && remeasured.has(key.split(' ')[0])) continue;
+    if (left.has(key.split(' ')[0])) continue;
     if (n > (was[key] ?? 0)) out.push({ key, was: was[key] ?? 0, now: n });
   }
   return out;
@@ -43,10 +53,11 @@ export function worse(before, verdict, spec = {}) {
 
 /** The failing cells of a folded verdict, over the sets `sets` holds (all when null): overall, and the everyday states'
  * (the standing, walking and gesture states: keys with no set). */
-export function totals(folded, sets = null) {
+export function totals(folded, sets = null, left = null) {
   let all = 0, everyday = 0;
   for (const [key, n] of Object.entries(folded)) {
     if (sets && !sets.has(setOf(key))) continue;
+    if (left && left.has(key.split(' ')[0])) continue;   // (a new or remeasured measure, while exempt: not counted)
     all += n;
     if (setOf(key) === '') everyday += n;
   }
@@ -73,7 +84,8 @@ export function judge(before, verdict, spec = {}, waivers = [], history = []) {
   const was = fold(before?.byMeasure, aliases), now = fold(verdict?.byMeasure, aliases);
   const sets = new Set(Object.keys(was).map(setOf));
   const same = before && verdict && before.byMeasure && verdict.byMeasure && before.set === verdict.set;
-  const t = { before: totals(was), now: totals(now, sets) };
+  const left = exempt(before, verdict, spec);
+  const t = { before: totals(was, null, left), now: totals(now, sets, left) };
   const byKey = new Map((waivers ?? []).map((w) => [w.key, w]));
   for (const b of bad) {
     const w = byKey.get(b.key);

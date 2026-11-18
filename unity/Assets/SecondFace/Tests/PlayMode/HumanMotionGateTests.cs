@@ -945,6 +945,9 @@ namespace SecondFace.Tests
             // the verdict
             var fails = failures ?? new List<string>();
             var table = new List<Dictionary<string, object>>();
+            // (C1 by the vertices' planes, its reading before 2026-11-18, judged by the same limit beside the verdict: the record of
+            // the cells the drawn surface changed, docs/PEOPLE_MOTION.md §2.6 C1)
+            var c1v = new List<Dictionary<string, object>>();
             foreach (var s in people)
             {
                 if (s.Probe.Error != null) fails.Add($"{s.Probe.Person}: {s.Probe.Error}");
@@ -986,11 +989,22 @@ namespace SecondFace.Tests
                             ["p98"] = p98, ["min"] = min, ["max"] = max, ["mean"] = mean, ["over"] = over, ["pass"] = why.Count == 0, ["why"] = string.Join("; ", why),
                         });
                         if (why.Count > 0) fails.Add($"{s.Probe.Person} {state} {lim.M}: {string.Join("; ", why)}");
+                        if (lim.M == "C1" && measures.TryGetValue("C1v", out var cv) && cv.Count > 0)
+                        {
+                            var sv = cv.OrderBy(x => x).ToList();
+                            var v98 = sv[Mathf.Clamp((int)System.Math.Round(0.98 * (sv.Count - 1)), 0, sv.Count - 1)];
+                            c1v.Add(new Dictionary<string, object>
+                            {
+                                ["person"] = s.Probe.Person, ["state"] = state, ["n"] = sv.Count, ["p98"] = v98, ["max"] = sv[^1],
+                                ["pass"] = v98 <= lim.Hi && sv[^1] <= lim.CapHi, ["drawn_p98"] = p98, ["drawn_max"] = max, ["drawn_pass"] = why.Count == 0,
+                            });
+                        }
                     }
             }
             var dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results"));
             Directory.CreateDirectory(dir);
             File.WriteAllText(Path.Combine(dir, report + ".json"), JsonConvert.SerializeObject(table, Formatting.Indented));
+            File.WriteAllText(Path.Combine(dir, report + "_c1v.json"), JsonConvert.SerializeObject(c1v, Formatting.Indented));
             File.WriteAllText(Path.Combine(dir, report + ".md"), Markdown(table));
             Debug.Log($"HumanMotionGate {report}: {table.Count} measures, {table.Count(r => !(bool)r["pass"])} past their limits\n" + string.Join("\n", fails.Take(200)));
             if (measured != null) measured[0] += table.Count;

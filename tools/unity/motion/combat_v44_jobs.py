@@ -133,7 +133,7 @@ def frames_from(p1_dump, p1_json, ref_dump, ref_json):
             A = SC.clip_feet([p1_dump], [p1_json], d['name'], basis='first')
             if A is None: raise SystemExit(f"no pass-1 dump of {d['name']}")
             m, j, (o, yaw), _ = A
-            out[d['name']] = dict(yaw=-yaw, origin=[float(o[0]), float(o[2])], ref=d['name'],
+            out[d['name']] = dict(yaw=-yaw + SC.TAKE_FRONT, origin=[float(o[0]), float(o[2])], ref=d['name'], front={'by': 'body', 'clip': d['name']},
                                   note="origin and +Z: the step's own first-key centre of mass and body orientation")
             continue
         if not d.get('fit'): continue
@@ -147,6 +147,7 @@ def frames_from(p1_dump, p1_json, ref_dump, ref_json):
         pin = {s: {'ankle': [float(v) for v in r.P[s + 'Foot'][0]], 'toe': [float(v) for v in r.P[s + 'Toes'][0]]} for s in ('Left', 'Right')}
         pin['from'] = d['fit']
         out[d['name']] = dict(yaw=float(a), origin=[float(o[0]), float(o[1])], ref=d['fit'], fit_residual_cm=[round(x * 100, 1) for x in res],
+                              front={'by': 'fit', 'clip': d['fit']},
                               note=f"chosen so its first key's feet lie on {d['fit']}'s first key's (chain {d['chain']}), the rest by settle_in",
                               settle_in=pin)
     return out
