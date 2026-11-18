@@ -40,7 +40,8 @@
   ],
   "measures": [
     "unity/Assets/SecondFace/Tests/PlayMode/MotionProbe.cs",
-    "unity/Assets/SecondFace/Tests/PlayMode/HumanMotionGateTests.cs"
+    "unity/Assets/SecondFace/Tests/PlayMode/HumanMotionGateTests.cs",
+    "docs/qa/gates/motion_build_tops.json"
   ],
   "aliases": {
     "combat:strike2": "combat:strike",

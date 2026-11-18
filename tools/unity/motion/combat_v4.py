@@ -649,12 +649,21 @@ def op_hold(rig, rows, d, fps):
     tr = Track(model, 'Hold', main_grip(model), off_grip(model)); miss = []
     for k in range(n):
         rig.pose(rows[k])
-        W = hold_frame(rig, b['hold'], model)
+        hold = b['hold']
+        if b.get('hold_to'):
+            # (v4.4) a rise: the hold carried from one to the other between two shares of the clip (`blend`), smoothstep
+            w = smooth((k / max(1, n - 1) - b['blend'][0]) / max(1e-6, b['blend'][1] - b['blend'][0]))
+            (p0, a0, g0), (p1, a1, g1) = HOLDS[b['hold']], HOLDS[b['hold_to']]
+            HOLDS['_mix'] = (p0 + (p1 - p0) * w, a0 + (a1 - a0) * w, tuple(x + (y - x) * w for x, y in zip(g0, g1))); hold = '_mix'
+        W = hold_frame(rig, hold, model)
         tgt, mm, mo = hold_hands(rig, W, model, warm=True)
         W = hold_hands.last_W
         miss.append(max(mm, mo)); tr.add(rig, W, 1.0, 1.0, tgt)
         rows[k] = rig.capture()
-    return tr, {'hold': b['hold'], 'hold_values': HOLDS[b['hold']], 'beyond_reach_cm_max': round(max(miss) * 100, 2)}
+    HOLDS.pop('_mix', None)
+    info = {'hold': b['hold'], 'hold_values': HOLDS[b['hold']], 'beyond_reach_cm_max': round(max(miss) * 100, 2)}
+    if b.get('hold_to'): info.update(hold_to=b['hold_to'], hold_to_values=HOLDS[b['hold_to']], blend=list(b['blend']))
+    return tr, info
 
 
 def op_aim(rig, rows, d, fps):
@@ -1214,6 +1223,53 @@ def lead_in(rig, rows, pin, fps):
     return {'from': pin['from'], 'until_s': T_end, 'max_move_cm': round(worst * 100, 2), 'max_turn_deg': round(wturn, 1)}
 
 
+def settle_in(rig, rows, pin, fps):
+    """combat v4.4 (G13): a clip from another take that follows a hold (a rise from a crouched hold, a duck from a guard)
+    starts on the hold's feet. Each foot is set where the hold has it (`pin`: each foot's ankle and toe joint in the shared
+    frame, the hold's first key): the ankle by two-bone IK, the foot turned about up onto the hold's line, the captured
+    motion kept relative to it, through the foot's first weight-bearing stance (still_stances, G4's rule); between that
+    stance's end and the next one's start (the swing) it is carried onto the capture's own landing (smoothstep), so no
+    planted foot slides. A foot that never leaves its first stance keeps the hold's place to the clip's end (its stance then
+    the hold's). Run before planting (which then holds every stance's contact point). Returns the record."""
+    n = len(rows); cap = {s: [] for s in ('Left', 'Right')}; an = {s: [] for s in cap}; ba = {s: [] for s in cap}; Rf = {s: [] for s in cap}
+    for k in range(n):
+        rig.pose(rows[k])
+        for s in cap:
+            cap[s].append((rig.head(s + 'Foot').copy(), rig.head(s + 'Toes').copy()))
+            an[s].append(to_file(rig.head(s + 'Foot'))); ba[s].append(to_file(rig.head(s + 'Toes'))); Rf[s].append(rot_file(rig.wrot(s + 'Foot')))
+    rec = {'from': pin['from']}; W = {}
+    for s in cap:
+        heel, ball, hl, bl = PL.sole_points(np.array(an[s]), np.array(ba[s]), np.array(Rf[s]), fps)
+        st = still_stances(heel, ball, fps, PL.sole_floors(heel, ball))
+        first = next((x for x in st if x[0] <= 2), None)
+        k0 = first[1] if first else 0
+        nxt = next((x for x in st if x[0] > k0), None)
+        k1 = nxt[0] if nxt else n - 1
+        if first and first[1] >= n - 1: k0 = k1 = None                  # never leaves its first stance
+        W[s] = [1.0 if k0 is None or k <= k0 else (0.0 if k >= k1 else 1.0 - smooth((k - k0) / max(1, k1 - k0))) for k in range(n)]
+        rec[s] = {'stance_ends_s': round(k0 / fps, 3) if k0 is not None else None, 'next_stance_s': round(k1 / fps, 3) if k1 is not None else None}
+    worst, wturn = 0.0, 0.0
+    for k in range(n):
+        rig.pose(rows[k])
+        for s in ('Left', 'Right'):
+            w = W[s][k]
+            if w <= 0.0: continue
+            A0, T0 = cap[s][0]; tA, tT = from_file(pin[s]['ankle']), from_file(pin[s]['toe'])
+            cur = Vector((T0.x - A0.x, T0.y - A0.y, 0.0)); tgt = Vector((tT.x - tA.x, tT.y - tA.y, 0.0))
+            ang = math.atan2(cur.x * tgt.y - cur.y * tgt.x, cur.dot(tgt))
+            A = rig.head(s + 'Foot'); off = Vector((tA.x - A0.x, tA.y - A0.y, 0.0))
+            # the captured motion about the ankle's first place, turned with the foot onto the hold's line
+            rel = Quaternion(UP, ang * w) @ Vector((A.x - A0.x, A.y - A0.y, 0.0))
+            T = Vector((A0.x + rel.x + off.x * w, A0.y + rel.y + off.y * w, A.z))
+            R0 = Quaternion(UP, ang * w) @ rig.wrot(s + 'Foot')
+            worst = max(worst, (T - A).length); wturn = max(wturn, abs(math.degrees(ang * w)))
+            rig.two_bone(s + 'UpperLeg', s + 'LowerLeg', s + 'Foot', T, rig.head(s + 'LowerLeg') - rig.head(s + 'UpperLeg') + FWD * 0.05)
+            rig.set_wrot(s + 'Foot', R0)
+        rows[k] = rig.capture()
+    rec.update(max_move_cm=round(worst * 100, 2), max_turn_deg=round(wturn, 1))
+    return rec
+
+
 def build_framed(d, take):
     """combat2fbx.build in a chain's shared frame (combat v4.1, docs/COMBAT_ANIMATION_STANDARD.md G13): every clip of one
     take's chain turned by the same yaw about the same origin (`frame`: yaw in radians about +Y, origin x, z in the take's
@@ -1285,6 +1341,8 @@ def make(d, out_dir):
         _, info = op_hit(rig, rows, d, fps); side.update(info); ops.append('hit layer')
     if b.get('op') == 'crouch_gait':
         _, info = op_crouch_gait(rig, rows, d, fps); side['crouch_gait'] = info; speed *= b['stride']; ops.append('crouch gait by leg IK')
+    if d.get('settle_in'):
+        side['settle_in'] = settle_in(rig, rows, d['settle_in'], fps); ops.append("feet set on " + d['settle_in']['from'] + "'s, each carried to the capture's landing in its first swing")
     if d.get('plant', True) and d.get('loop') != 'gait' and not os.environ.get('SF_NO_PLANT'):   # (SF_NO_PLANT=1: unplanted, for comparison)
         side['plant_record'] = plant(rig, rows, fps)
         side['plant_record']['second_pass'] = plant(rig, rows, fps)     # the stances the planted clip shows, held too
@@ -1355,6 +1413,10 @@ def make(d, out_dir):
         # combat v4.2 (G13): a clip whose root motion the game applies, and where its root stands at the cut the next state
         # is written (that state's `after`)
         js['root_travel'] = d['root_travel']
+    if d.get('root_apply'):
+        # combat v4.4: a clip whose horizontal root motion the game applies (Core CombatMotion: RootXZ.Apply), named here so the
+        # stance audit places its pose against each key's own centre of mass
+        js['root_apply'] = True
     if d.get('after'):
         js['after'] = {'clip': d['after'], 'note': "written with its origin where that clip's applied root motion leaves the root at its cut, "
                                                   "+Z that clip's first-key body orientation (root_basis: take)"}

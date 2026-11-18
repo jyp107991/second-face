@@ -147,7 +147,7 @@ def at_key(C, k):
     """The anchor a clip's pose stands against at key k: its first key's (baked), or for a clip whose root motion the game
     applies, key k's own centre of mass (the turn still the first key's)."""
     m, j, anc, sc = C
-    if j.get('name') in APPLY and j.get('root_basis') != 'take':
+    if (j.get('name') in APPLY or j.get('root_apply')) and j.get('root_basis') != 'take':
         c = com(m, k); return (np.array([c[0], 0.0, c[2]]), anc[1])
     return anc
 
