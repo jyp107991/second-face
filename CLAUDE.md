@@ -186,8 +186,14 @@ The owner wants to play unspoiled.
   seams and folds, never padded or rubbery (`docs/PEOPLE_MOTION.md` §2.6). Enforced by `npm run check` and CI
   (`tools/qa/people_gate.mjs` over `docs/qa/gates/motion_gate.json`); a red check is fixed only by making the people pass.
   A verdict counts only for the code it measured (hashed: a stale one is red), green only over the whole cast (never
-  the quick ten), and no commit may make any measure worse; every report to the owner starts with the gate's state
-  (`npm run people-gate`) and never calls people work done while it is not green (`docs/PEOPLE_MOTION.md` §1.9).
+  the quick ten); every report to the owner starts with the gate's state (`npm run people-gate`) and never calls people
+  work done while it is not green (`docs/PEOPLE_MOTION.md` §1.9). **The waiver policy** (owner, 2026-11-18: "adopt the
+  waiver policy", replacing "no commit may make any measure worse"): integrate often, as studios do; never hold a large
+  batch uncommitted. A batch commits on a whole-cast verdict of its own tree when (1) the total failing cells fall,
+  overall and within the everyday states; (2) every key worse than the last verdict is listed in
+  `docs/qa/gates/motion_waivers.json` (key, before, after, cause or "unknown", the fix item), which the check enforces:
+  an unlisted worse key fails; (3) a waived key ratchets from its new value and must be back at or below its
+  pre-waiver value within two batches, or the next batch is blocked; (4) tests, the build and CI stay green.
 - **Overhead, always** (owner, 2026-11-05, binding: "i told you to make an overhead game like bg3/divinity original
   sin"): play is seen from above as in DOS2 and BG3's exploration view. Exploring, combat and conversations all keep
   the overhead game camera (the rig's pitch, 35-62°); a conversation eases the camera closer over the two people and
