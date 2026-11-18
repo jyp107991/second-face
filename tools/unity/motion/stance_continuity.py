@@ -2,7 +2,9 @@
 feet. numpy only; reads clip_qa.py's dumps (the clips as written) and their jsons.
 
     python3 -I tools/unity/motion/stance_continuity.py audit <dump dir>[,<dump dir>...] <json dir>[,<json dir>...] <out.json>
-        [--mapping <mapping.json>]     (the state -> clip table to judge; default: STATES below, the game's as of combat v4)
+        [--mapping <mapping.json>]     (a proposed state -> clip table and routing: combat_v41_jobs.py mapping; default: STATES
+                                        and PAIRS below, the game's as of combat v4)
+        [--basis first|take]           (place every clip on one basis, whatever its json says: to show what an import does)
 
 What the game does with a pair (Core CombatMotion, Game AnimatedUnitView): it crossfades from state A, at the key it leaves
 (a one-shot's `cut`, any key of a loop), into state B at the key it enters (`from`, else B's first). Unity imports every combat
@@ -19,9 +21,11 @@ carry the centre of mass forward). Measured here as the game measures it:
     json's `hip`), so two actors of different sizes compare as on one body;
   - the pair passes when both feet stand within LIMIT_CM (1.5 cm) and turn within LIMIT_DEG (5°) between A's leaving key and
     B's entering key (below Fighter.Feet's re-plant, 2.5 cm: a planted foot then follows instead of stepping).
-A loop left at any key is judged at its worst key against B's entering key. A pair whose clips change the stance on purpose
-(into and out of a crouch, a strike's step, a get-up) is a stance change: G13 asks for a captured step between them, so it is
-reported with its offsets and judged as `step` (the transition clip's own ends against the states either side).
+A loop left at any key is judged at its worst key against B's entering key; a clip whose root motion the game applies (APPLY)
+stands at each key against that key's own centre of mass. Only one weapon class's chain ('same' pairs) is judged; a stance
+change on purpose (into and out of a crouch, a guard to a standing surrender: verdict 'step') and states whose feet the fight
+does not pin (hits, throws, slips: 'free') are reported with their offsets. Between different actors the figure is approximate
+(Humanoid retargets each actor's own proportions); within one take it is exact.
 """
 import json, math, os, sys
 import numpy as np

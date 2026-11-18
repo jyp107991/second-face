@@ -11,8 +11,10 @@ The chains (one take each; `chain`):
            and lower (one take, the actor standing on the same feet throughout, ankles within 1 cm), the ready and the
            reloads built on the same take's rest before the raise (as v4 built the ready on a stand). No woman's capture
            holds a long gun: women play this u chain, as v4's aim already did on them; it is not a woman's take.
+  club_u   the men's two-handed club on CMU 79_01 (the long gun's actor, same session and marks; u): its captured chop, and a
+           ready and a hands-up hold built on the still rest the chop comes back to. It shares long_u's frame.
   stand_m  ACCAD Male2_A1_Stand (a man): the pistol's ready, aim (new: the isosceles aim on his own stance, where v4's stood on
-           CMU 80_03's long-gun hold), reloads, the two-handed club's ready and the hands up, all on the same frames.
+           CMU 80_03's long-gun hold), reloads and the hands up, all on the same frames.
   stand_f  ACCAD Female1_A01_Stand (a woman): the same set on her stance (v4's women's pistol aim already stood on it).
 Each chain's frame: the origin at its reference clip's first-key centre of mass on the ground, +Z its facing (long_u: the
 captured aim's gun line, so the game's learnt facing is nil and no turn steps the feet between ready and aim; stand_m,
