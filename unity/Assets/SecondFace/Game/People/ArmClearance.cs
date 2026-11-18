@@ -22,7 +22,15 @@ namespace SecondFace.Game.People
         /// stands under a uniform's surface by about a centimetre in places, and a walking man's swinging arms went 0.8-1.1
         /// cm into his chest's side (C1, 2026-11-06). At rest the hand's place and the elbow's contact set it instead.</summary>
         public float MoveMargin = 0.006f;
-        private float Margin3 => SkinMargin + MoveMargin * (1f - _restW);
+        /// <summary>At rest, how far a resting arm's contact (the forearm and hand against the hip or thigh, the upper arm by
+        /// the elbow against the flank) may press into the body's skin before the shoulder turns it out (m): the soft
+        /// tissue gives under a hanging arm's light contact (the thigh's fat and muscle shear at 0.5-1.7 kPa, Segain et al.
+        /// 2024), and the gate takes a resting contact up to 0.5 cm deep (docs/PEOPLE_MOTION.md C1). Until 2026-11-18 a
+        /// resting arm was turned out until it stood 0.3 cm off the skin: on the broad men the shoulder's remainder turned
+        /// the whole arm 1.9° out for a forearm 0.3 cm into the thigh, and the first turn 3.8-5.8° for the upper arm by the
+        /// elbow 1-2 cm into the flank (A1 20.0-24.4, docs/MOTION_ROOT_CAUSE.md §9). Nothing that stands clear is moved.</summary>
+        public float RestGive = 0.004f;
+        private float Margin3 => Mathf.Lerp(SkinMargin + MoveMargin, -RestGive, _restW);
         /// <summary>With the skin: a resting hand hangs this far from the side of the hip or thigh (A4), surface to surface.</summary>
         public float SkinGap = 0.004f;   // (1 cm off the clothes stood resting hands 6.0-6.5 cm from the thigh's skin, A4, 2026-11-06; 0.6 cm left the men's hands over their cargo pockets 6.1-7 cm from it, 2026-11-07)
         /// <summary>With the skin: a resting hand that hangs behind the thigh's middle (into the buttock, the clip taken on
@@ -116,7 +124,10 @@ namespace SecondFace.Game.People
         [System.NonSerialized] public int[] RestPart = { -1, -1 };
         [System.NonSerialized] public float[] RestDepth = new float[2], RestBodyY = new float[2], RestDeg = new float[2];
         [System.NonSerialized] public int[] RestBody = { -1, -1 };
-        private float _needDepth;
+        private float _needDepth, _firstDepth;
+        /// <summary>For the gate's trace: how deep the point the shoulder's first turn was for stood past its margin (cm; left,
+        /// right).</summary>
+        [System.NonSerialized] public float[] PushDepth = new float[2];
         private int _gapArm = -1, _gapBody = -1;
 
         /// <summary>The turn given to each upper arm this frame, degrees (tests read it).</summary>
@@ -1227,7 +1238,7 @@ namespace SecondFace.Game.People
             var wrist0 = handT != null ? handT.position : Vector3.zero;
             var elbowForearm = elbowFirst && ElbowForearm;
             var (need, dir) = SkinNeed(upper, first, false, elbowFirst, elbowForearm);
-            _needFirst = need > 0f ? _needAt : -1;
+            _needFirst = need > 0f ? _needAt : -1; _firstDepth = _needDepth;
             var forUpper = _needAt >= _skin.Begin(first) && _needAt < _skin.Begin(first + 1);
             if (need > 0f) axis = dir;
             angle = need >= angle ? need : Mathf.MoveTowards(angle, need, Release * dt);
@@ -1253,6 +1264,7 @@ namespace SecondFace.Game.People
             {
                 var k = left ? 0 : 1;
                 PushDeg[k] = pushed;
+                PushDepth[k] = need > 0f ? _firstDepth * 100f : 0f;
                 if (pushed <= 0.01f || _needFirst < 0) PushPart[k] = -1;
                 else if (_needFirst >= _skin.Begin(first + 2)) PushPart[k] = 3;
                 else if (_needFirst >= _skin.Begin(first + 1)) PushPart[k] = 2;

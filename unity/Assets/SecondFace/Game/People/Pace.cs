@@ -105,15 +105,17 @@ namespace SecondFace.Game.People
         /// the clips' own factor is 1.000, so what is left is the retarget to the body; retargeted from configurations of the
         /// takes' first keys instead, as Unity fills them, they read up to 0.07 apart). Before it, the men's clips were played 4-13 % faster than their strides covered the ground and the
         /// women's jog 9 %: the planted foot ran back under a held foot, at a woman's jog's touchdown 0.3-0.45 m/s before the
-        /// hold took it (W1 0 → 13 over the cast, docs/MOTION_ROOT_CAUSE.md §7). 1 where unmeasured.</summary>
+        /// hold took it (W1 0 → 13 over the cast, docs/MOTION_ROOT_CAUSE.md §7). Measured again on 2026-11-18 (Business_Female_01,
+        /// Construction_Male_02) with the T-poses stood on their ground (docs/MOTION_ROOT_CAUSE.md §9: each clip's as its actor
+        /// stands in the take, the bodies' on their root, their humanScale 2.6 % smaller): 2-4 % shorter. 1 where unmeasured.</summary>
         public static readonly System.Collections.Generic.Dictionary<string, float> StrideMen = new()
         {
-            ["walk_slow"] = 1.128f, ["walk_slow_b"] = 1.157f, ["walk_d"] = 1.025f, ["walk"] = 1.140f, ["walk_b"] = 1.131f, ["walk_brisk_b"] = 1.029f,
-            ["jog"] = 1.130f, ["jog_b"] = 1.145f, ["run"] = 1.176f, ["run_c"] = 1.015f
+            ["walk_slow"] = 1.097f, ["walk_slow_b"] = 1.114f, ["walk_d"] = 1.008f, ["walk"] = 1.100f, ["walk_b"] = 1.102f, ["walk_brisk_b"] = 1.017f,
+            ["jog"] = 1.085f, ["jog_b"] = 1.092f, ["run"] = 1.129f, ["run_c"] = 0.983f
         };
         public static readonly System.Collections.Generic.Dictionary<string, float> StrideWomen = new()
         {
-            ["walk_f_b"] = 1.028f, ["jog_f"] = 1.106f, ["jog"] = 1.087f
+            ["walk_f_b"] = 0.989f, ["jog_f"] = 1.068f, ["jog"] = 1.044f
         };
         public static float Stride(string clip, bool female) => (female ? StrideWomen : StrideMen).TryGetValue(clip, out var k) ? k : 1f;
 
