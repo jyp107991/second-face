@@ -170,6 +170,10 @@ def timing(m, meta):
             ok = onset <= J.TIMING['hit_onset']['hi'] * 1.15 and J.TIMING['hit_return']['lo'] * 0.85 <= back <= J.TIMING['hit_return']['hi'] * 1.15
             return dict(res, ref=ref, range=[J.TIMING['hit_onset']['lo'], J.TIMING['hit_onset']['hi']], return_range=[J.TIMING['hit_return']['lo'], J.TIMING['hit_return']['hi']], ok=bool(ok))
         return {'ref': ref, 'ok': False, 'why': 'no flinch over 2 deg'}
+    elif ref == 'throw_release':
+        # (v4.5) from the clip's start to the release (the action resolves there); the recovery after it is not judged
+        ev, tm = J.events(m, meta.get('events_kind') or 'throw:R', (0.0, dur))
+        what = tm.get('beat_s')
     elif ref == 'surrender':
         # to the hold: both palms within 3 cm of where they rest at the clip's end, relative to the head
         pl, pr = palm(m, 'Left') - m.P['Head'], palm(m, 'Right') - m.P['Head']

@@ -292,8 +292,10 @@ none; proposed `cover_full`.
 strides, then hips, trunk, arm (wind-up, stride, cocking, acceleration, deceleration, follow-through [R14]); the one sequence
 that separates skilled throwers is "non-throwing arm elbow extension prior to shoulder extension" [R16]; release on the clip's
 frame; back to ready. Underhand lob for short throws and from cover. Throwing styles differ by person and by sex [R15]. A long
-gun is held in the off hand or slung (*design*). *Timing:* *design* 1-2 s whole (the staged woman's overhand runs 2.3 s with
-settling [here]). *Benchmarks:* XCOM 2 `FF_GrenadeUnderhand` [src B1]; overhand arcs in Divinity: Original Sin 2 and Wasteland 3
+gun is held in the off hand or slung (*design*). *Timing:* *design* 1-2.3 s from the start to the release; the throw itself is
+cut from a still stance to a still stance, as a real throw from a ready runs (3.65-4.4 s captured [here]), and resolves at its
+release (`resolve_at: release`, combat v4.5): the projectile leaves and the next turn may start there while the recovery plays
+on, blended out by the next order; the recovery is the capture's own (G3: captured; the design pace waived for it). *Benchmarks:* XCOM 2 `FF_GrenadeUnderhand` [src B1]; overhand arcs in Divinity: Original Sin 2 and Wasteland 3
 [footage]. *Gate:* `throw`.
 
 ### S20 Surrender
@@ -459,6 +461,24 @@ her guard (CMU 144), pivots, her right half step (111_28, a solver flip repaired
 step (her walks never stop after one step). Of 112 pairs: 79 pass (66 as staged, 13 with a step), 2 n/a, 31 fail, each with
 what it still lacks (the stage's `g13_table.md`). A throw cut from still stance to still stance passes 2 of its 4 pairs with a
 step but runs 3.65-4.4 s, over G3's design 2.3 s: a design decision, not taken here.
+
+**v4.5 (`/home/user/second-face-staging/combat/v4_5/`).** The decision taken (2026-11-18): the throws are cut from a still stance
+to a still stance (CMU 143_20 5.85-10.25 s, CMU 111_33 4.85-8.50 s) and resolve at their release (S19); the break from the
+crouched hold into a run (ACCAD Male2_C27, Female1_C27) is set on the hold's feet as the rises are. Of 112 pairs, 83 pass (68 as
+staged, 15 with a step), none is n/a, 29 fail. **The gaps** (each pair stays on the blend fallback, the current crossfade with
+Fighter.Feet stepping the feet, until a capture that is not on disk is found):
+- into the crouch-down from a ready (rifle ready and aim, guard; men and women: 6): no crouch-down captured from those stances
+  (one set on each ready's feet would close them: not built);
+- the hit reaction with the rifle ready (3): hits are built on another take's stance;
+- the throw against the rifle ready (2: the men's way back, the women's way in, 1.40 and 1.47 of the limits): no ready shared
+  by the thrower's take and the rifle ready's;
+- the men's guard into the relax (1): no relax by the guard's actor (CMU 143);
+- the men's one-handed slash and thrust and their way back (3): no blow captured on the guard's take;
+- the women's two-handed club back to the ready (1): no blow and recovery on her ready's take;
+- the men's slip both ways and the way into the duck (3): no slip or duck by the guard's actor, whose guard is 27 cm wide;
+- hands up from the fighting guard (men 1, women 2): no hands-up captured from a guard;
+- the rise into the pistol ready and aim (men and women: 4), her guard (1) and her long gun's ready and aim (2): no rise that
+  ends in those stances.
 
 ## 5. Proposals for the gate's owner (from the evidence; none applied)
 1. **The long-gun aim limits.** The provisional column (K1 ≤ 2.2, H1 −3…+1.2, H2 15.2-22.2, H3 10.6-16.6) is two mimed actors'
