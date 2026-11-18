@@ -57,6 +57,45 @@ namespace SecondFace.Tests
         }
 
         private const float Inf = float.PositiveInfinity;
+
+        // ---------------------------------------------------------------- the arm's hang by build (docs/qa/motion_calibration.md §9)
+        /// <summary>A man's upper arm hangs further out the broader his trunk where the elbow hangs (docs/qa/arm_build_evidence.md:
+        /// Cau et al., Shewhorak's walkers, the clearance geometry on ANSUR II; the coordinator's decision, 2026-11-18): standing,
+        /// A1 ≤ 20 + <see cref="A1PerCm"/>·e, where e is his trunk's breadth at the hanging elbow (his TorsoProfile, what he
+        /// wears included) past ANSUR II men's median at his stature (<see cref="AnsurWaistShare"/> of it: the median of waist
+        /// breadth over stature, 4,082 men), held to <see cref="BuildMaxCm"/>, the edge of the data. The conservative end of
+        /// the evidence (k 0.43 of its 0.43-1.29° per cm). Women keep 20 until a woman's reference exists; the cap stays 28.</summary>
+        public const float A1PerCm = 0.37f, AnsurWaistShare = 0.18588f, BuildMaxCm = 9f;
+        private static readonly Dictionary<string, float> BuildCm = new();
+
+        /// <summary>A man's e (cm; 0 for a woman, or where his trunk is no broader than the median).</summary>
+        private static float Build(GameObject go, Animator a, bool male)
+        {
+            if (!male || a == null) return 0f;
+            var tp = go.GetComponentInChildren<TorsoProfile>();
+            var hips = a.GetBoneTransform(HumanBodyBones.Hips); var up = a.GetBoneTransform(HumanBodyBones.LeftUpperArm);
+            var lo = a.GetBoneTransform(HumanBodyBones.LeftLowerArm); var upR = a.GetBoneTransform(HumanBodyBones.RightUpperArm);
+            if (tp == null || hips == null || up == null || lo == null || upR == null) return 0f;
+            // the stature: the body's own mesh at its bind, as the audit measures it (a renderer's bounds are padded: 7-9 cm over)
+            var top = float.MinValue; var baked = new Mesh();
+            foreach (var r in go.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                if (r.sharedMesh == null) continue;
+                r.BakeMesh(baked, false);
+                var m = r.transform.localToWorldMatrix;
+                foreach (var v in baked.vertices) top = Mathf.Max(top, m.MultiplyPoint3x4(v).y);
+            }
+            Object.Destroy(baked);
+            if (top == float.MinValue) return 0f;
+            var stature = (top - go.transform.position.y) * 100f;
+            // the hanging elbow's height in the profile's frame (the hips' at rest): the shoulder joints less the upper arm
+            var elbowY = 0.5f * (up.position.y + upR.position.y) - (lo.position - up.position).magnitude - hips.position.y;
+            if (!tp.Sample(elbowY / Mathf.Max(0.01f, go.transform.lossyScale.y), out _, out _, out var rx, out _)) return 0f;
+            var breadth = 2f * rx * go.transform.lossyScale.x * 100f;
+            var e = Mathf.Clamp(breadth - AnsurWaistShare * stature, 0f, BuildMaxCm);
+            Debug.Log($"HumanMotionGate build: {go.name} trunk at the hanging elbow {breadth:0.0} cm, stature {stature:0.0} cm, the median {AnsurWaistShare * stature:0.0}, e {e:0.0}");
+            return e;
+        }
         private static Lim L(string m, float lo, float hi, float capLo, float capHi) => new() { M = m, Lo = lo, Hi = hi, CapLo = capLo, CapHi = capHi };
 
         private static readonly Lim F4 = new() { M = "F4", MeanMax = 3f, Over = 10f, OverFrac = 0.02f };
@@ -65,9 +104,12 @@ namespace SecondFace.Tests
         private static readonly Lim F1 = L("F1", -1.5f, 2.5f, -3f, 4f);
         private static readonly Lim F2 = L("F2", -2f, 2f, -4f, 4f);
 
+        /// <summary>Standing, the upper arm's hang: 20 (28) for everyone, raised for a broad man by his build (Build).</summary>
+        private static readonly Lim StandA1 = L("A1", -Inf, 20f, -Inf, 28f);
+
         private static readonly Lim[] StandLimits =
         {
-            L("A1", -Inf, 20f, -Inf, 28f), L("A2", 5f, 35f, 0f, 50f), L("A3", -Inf, 30f, -Inf, 40f), L("A4", -Inf, 6f, -Inf, 10f),
+            StandA1, L("A2", 5f, 35f, 0f, 50f), L("A3", -Inf, 30f, -Inf, 40f), L("A4", -Inf, 6f, -Inf, 10f),
             L("A5", 8f, 55f, 3f, 75f), L("S1", -Inf, 6f, -Inf, 10f), L("H1", -15f, 8f, -25f, 12f), L("H2", -Inf, 30f, -Inf, 45f),
             L("H3", -Inf, 10f, -Inf, 15f), F1, F2, L("F3w", 8f, 32f, 5f, 40f), L("F3a", -Inf, 12f, -Inf, 20f), L("F3s", -Inf, 25f, -Inf, 35f), F4, C1,
             new() { M = "F5", MeanMax = 0.12f }, A6,
@@ -502,6 +544,7 @@ namespace SecondFace.Tests
                     File.WriteAllText(probe.TracePath, "state,t,rootx,rootz,heelL,ballL,ankleLz,heelR,ballR,ankleRz,speed,hipsz,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR,sink,low,eL,eR,gL,gR,slipL,slipR,rL,rR,a1L,a1R,poleL,poleR,flexL,flexR,adaptL,adaptR,surfL,surfR,hgapL,hgapR,dL0,dL1,dL2,dL3,dL4,dL5,dR0,dR1,dR2,dR3,dR4,dR5,holdtL,holdbL,holdyL,holdgL,holdtR,holdbR,holdyR,holdgR,a4L,a4R,flankL,flankR,outL,fwdL,outR,fwdR,saLclip,saL0,saL1,saL2,saL3,saL4,saL5,saRclip,saR0,saR1,saR2,saR3,saR4,saR5,flankHoldL,flankHoldR,kneeL,kneeR,valgusL,valgusR,sink,pushPartL,pushDegL,pushPartR,pushDegR,restPartL,restDepL,restBodyL,restYL,restDegL,restPartR,restDepR,restBodyR,restYR,restDegR,pushDepL,pushDepR\n");
                 }
                 Assert.That(probe.Calibrate(), Is.True, $"{ids[i]}: {probe.Error}");
+                BuildCm[ids[i]] = Build(go, a, p?.Male ?? ids[i].Contains("Male"));
                 var mark = new GameObject("mark_" + ids[i]).transform;
                 mark.SetParent(root.transform);
                 // (the player's body has no Ambient in the game: it neither idles by a hash nor gestures)
@@ -796,9 +839,14 @@ namespace SecondFace.Tests
                     string M(int q, float scale = 1f) => (sum[q] / nn * scale).ToString("0.0");
                     Debug.Log($"HumanMotionGate arms: {s.Probe.Person} {st}: resting {rest * 100 / nn}%, L gapE {M(0, 100)} gapH {M(1, 100)} cm in {M(4)} fwd {M(5)} carry {M(6)} out {M(7)} roll {M(12)} back {M(14)}; R gapE {M(2, 100)} gapH {M(3, 100)} cm in {M(10)} fwd {M(11)} carry {M(8)} out {M(9)} roll {M(13)} back {M(15)}");
                 }
+                BuildCm.TryGetValue(s.Id, out var buildE);
                 foreach (var (state, measures) in s.Probe.Samples)
-                    foreach (var lim in LimitsFor(state))
+                    foreach (var lim0 in LimitsFor(state))
                     {
+                        // (standing, a man's A1 by his build: A1PerCm)
+                        var lim = lim0;
+                        if (lim0.M == "A1" && buildE > 0f && LimitsFor(state).Contains(StandA1))
+                            lim = new Lim { M = lim0.M, Lo = lim0.Lo, Hi = lim0.Hi + A1PerCm * buildE, CapLo = lim0.CapLo, CapHi = lim0.CapHi, MeanMax = lim0.MeanMax, Over = lim0.Over, OverFrac = lim0.OverFrac };
                         if (!measures.TryGetValue(lim.M, out var vals) || vals.Count == 0) continue;
                         var sorted = vals.OrderBy(x => x).ToList();
                         float P(double q) => sorted[Mathf.Clamp((int)System.Math.Round(q * (sorted.Count - 1)), 0, sorted.Count - 1)];
@@ -1057,6 +1105,8 @@ namespace SecondFace.Tests
                 ["byMeasure"] = fails.Select(MeasureKey).GroupBy(m => m).OrderBy(g => g.Key, System.StringComparer.Ordinal)
                     .ToDictionary(g => g.Key, g => g.Count()),
                 ["lastGreen"] = green ? now : lastGreen, ["failing"] = fails.OrderBy(f => f.Contains(" combat:") ? 1 : 0).Take(80).ToList(),
+                // each man's build past the median (cm; docs/qa/motion_calibration.md §9): his A1 limit standing is 20 + 0.37·e
+                ["buildCm"] = BuildCm.Where(kv => kv.Value > 0f).OrderBy(kv => kv.Key, System.StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => (float)System.Math.Round(kv.Value, 2)),
             };
             File.WriteAllText(path, JsonConvert.SerializeObject(verdict, Formatting.Indented));
         }

@@ -128,6 +128,13 @@ namespace SecondFace.Game.People
         /// <summary>For the gate's trace: how deep the point the shoulder's first turn was for stood past its margin (cm; left,
         /// right).</summary>
         [System.NonSerialized] public float[] PushDepth = new float[2];
+        /// <summary>For the gate's trace: how far each moving arm's swing was turned toward the sagittal plane before any push
+        /// (degrees about the vertical; left, right).</summary>
+        [System.NonSerialized] public float[] SwingDeg = new float[2];
+        /// <summary>Moving, a swing across the trunk is turned toward the sagittal plane before the shoulder turns the arm out,
+        /// by these shares of the whole turn in turn, until it clears.</summary>
+        public bool SwingFirst = true;
+        private static readonly float[] SwingShares = { 0.25f, 0.5f, 0.75f, 1f };
         private int _gapArm = -1, _gapBody = -1;
 
         /// <summary>The turn given to each upper arm this frame, degrees (tests read it).</summary>
@@ -1243,6 +1250,35 @@ namespace SecondFace.Game.People
             var wrist0 = handT != null ? handT.position : Vector3.zero;
             var elbowForearm = elbowFirst && ElbowForearm;
             var (need, dir) = SkinNeed(upper, first, false, elbowFirst, elbowForearm);
+            // moving, the swing turned toward the sagittal plane first: a broad walker swings his arm forward and back, less
+            // across the front of his trunk (the coordinator on docs/qa/arm_build_evidence.md, 2026-11-18: the walking left arm
+            // of the broad men, swung 31-35° forward across the belly, was turned 14-17° out for its third by the elbow 4.7-6.2 cm
+            // in, W3 36-37). A turn about the vertical through the shoulder keeps the arm's angle from down (W3) and its
+            // forward and back amplitude as the clip has them; the shoulder turns the arm out only for what that leaves.
+            var swung = 0f;
+            if (SwingFirst && need > 0f && lower != null && _restW < 0.01f && Striding())
+            {
+                var side = left ? -1f : 1f;
+                var rightAx = transform.right; rightAx.y = 0f; rightAx = rightAx.sqrMagnitude > 1e-6f ? rightAx.normalized : Vector3.right;
+                var fwdAx = transform.forward; fwdAx.y = 0f; fwdAx = fwdAx.sqrMagnitude > 1e-6f ? fwdAx.normalized : Vector3.forward;
+                var ua = lower.position - upper.position; var h = new Vector3(ua.x, 0f, ua.z);
+                var across = -side * Vector3.Dot(h, rightAx);   // the elbow toward the midline of the shoulder's own line, m
+                var along = Vector3.Dot(h, fwdAx);
+                if (across > 0.005f && Mathf.Abs(along) > 0.01f)
+                {
+                    var full = Vector3.SignedAngle(h, fwdAx * Mathf.Sign(along), Vector3.up);
+                    var done = 0f;
+                    foreach (var share in SwingShares)
+                    {
+                        TurnArm(upper, first, full * share - done, Vector3.up);
+                        done = full * share;
+                        (need, dir) = SkinNeed(upper, first, false, elbowFirst, elbowForearm);
+                        if (need <= 0.01f) break;
+                    }
+                    swung = Mathf.Abs(done);
+                }
+            }
+            if (TraceStages) SwingDeg[left ? 0 : 1] = swung;
             _needFirst = need > 0f ? _needAt : -1; _firstDepth = _needDepth;
             var forUpper = _needAt >= _skin.Begin(first) && _needAt < _skin.Begin(first + 1);
             if (need > 0f) axis = dir;

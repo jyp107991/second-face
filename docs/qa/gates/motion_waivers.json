@@ -1,0 +1,4 @@
+{
+  "about": "The motion gate's waivers (the owner's waiver policy, 2026-11-18; CLAUDE.md §2; docs/PEOPLE_MOTION.md §1.9). A batch commits on a whole-cast verdict of its own tree when its failing cells fall, overall and within the everyday states, and every key worse than the verdict it replaces is listed here: key (as the verdict keys it, aliases folded: '<measure>' or '<measure> combat:<set>'), before (its count in the verdict it replaces), after (no less than its count now), cause (or \"unknown\"), fix (the item that brings it back), since (the date of the verdict it was waived on). A waived key ratchets from its new value and must be back at or below its pre-waiver value within two batches, or the next batch is blocked. tools/qa/gate_ratchet.mjs judges it; npm run check enforces it.",
+  "waivers": []
+}

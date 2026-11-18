@@ -78,9 +78,16 @@ It is binding. It sits beside the face and skin gate (`docs/PEOPLE_QA.md`) and i
    start: a wait by it ended a frame sooner or later from run to run, and the same code's whole-cast verdicts came out
    1073 and 1085, 174 lines apart, 2026-11-07); a check of the gate itself is two runs of the same code, line for line
    the same. **Green means the whole cast** (`EveryPersonStandsAndMovesLikePeople`, every body of the
-   catalogue, one verdict): the quick ten are a working check and never count as green. **No commit makes people
-   worse**: a verdict with more failures than the one it replaces on any measure (the same set) fails `npm run check`
-   and CI; a regression is fixed or reverted, never committed. Since 2026-11-18 the comparison holds when the gate's own
+   catalogue, one verdict): the quick ten are a working check and never count as green. **The waiver policy** (owner,
+   2026-11-18, replacing "no commit makes people worse"; CLAUDE.md §2): integrate often and never hold a large batch
+   uncommitted. A batch commits on a whole-cast verdict of its own tree when (1) its failing cells fall, overall and
+   within the everyday states (a total already at nought may stay there; with no key worse the totals cannot rise);
+   (2) every key worse than the verdict it replaces (the same set) is listed in `docs/qa/gates/motion_waivers.json`:
+   key, `before` (its pre-waiver count), `after` (no less than its count now), `cause` (or "unknown"), `fix` (the item that
+   brings it back) and `since` (the date of the verdict it was waived on). An unlisted worse key fails `npm run check` and
+   CI. (3) A waived key ratchets from its new value (a rise past `after` fails) and must be back at or below `before`
+   within two batches: still above it two verdicts after `since`, it blocks the batch. (4) Tests, the build and CI stay
+   green. Since 2026-11-18 the comparison holds when the gate's own
    code changed too (a change of the measures' code is no exemption: only a measure made stricter, named in the inputs'
    `remeasured` with its why, is left out until a verdict on the new code is committed); a set the verdict before did not
    measure at all is not compared. **A fight's state set introduced after a baseline is compared on the set its states
@@ -88,8 +95,8 @@ It is binding. It sits beside the face and skin gate (`docs/PEOPLE_QA.md`) and i
    baseline set's): introduced with combat set v4, whose two-handed blows went to `strike2` and whose slips and ducks to
    `dodge`, each to the limits of real actors of that action (§2.7; `docs/qa/motion_calibration.md` §8). The gate measures
    each person's fight records under the set of the state the table plays for them; both sets were measured under `strike`
-   in the baseline (the blows as the strike action, every miss as its block), so both fold into `strike`. A set is aliased only to the one its states were measured under, never to hide a regression. The fold and the
-   comparison are `tools/qa/gate_ratchet.mjs`, which `npm run check` runs through `people_gate.mjs`; `tests/people_gate_ratchet.test.ts`
+   in the baseline (the blows as the strike action, every miss as its block), so both fold into `strike`. A set is aliased only to the one its states were measured under, never to hide a regression. The fold, the
+   comparison and the waivers' judgement are `tools/qa/gate_ratchet.mjs` (`judge`), which `npm run check` runs through `people_gate.mjs`; `tests/people_gate_ratchet.test.ts`
    pins them on the inputs' own table (a merged key made worse fails though neither of its sets alone is). Files are added to the inputs
    when they start to decide how people look or move, and never taken out to make a verdict fresh. **Every report
    to the owner starts with the gate's state** as `npm run people-gate` prints it (green, or red with the failing

@@ -321,6 +321,17 @@ for aim corrections up to ~50° [R7]. *Benchmarks:* XCOM 2 turns into the shot a
 Draw: the hand to holster or sling, the weapon up to the ready; holster the reverse; unarmed: stand-to-guard, guard-to-relax.
 *Timing:* *design* 0.5-1.0 s. *Gate:* as gestures (§2.2).
 
+### S24 Re-stance step (G13's "captured step clip between them")
+*Look:* a short captured step from a still stance to a still stance: a half step forward, back, left or right with one foot or
+both, a turn in place on the feet (45° and 90°, the head and trunk leading [R32]), the stance widened or narrowed; the arms
+quiet; the planted foot still (G4), the stepping foot lifted and set. *When:* the game inserts one where a transition's leaving
+stance and entering stance differ beyond G13 (either ankle over 1.5 cm, either foot over 5°), chosen by the feet's offsets and
+warped per foot within ±20 % of its captured length and ±15° of its direction and turn, or two in a row; otherwise the
+transition plays as before. A crouched stance at either end is not bridged by a standing step. *Timing:* the captured steps'
+own 0.3-1.4 s between still stances (*design* inside them; turns lengthen with amplitude [R28]). *Benchmarks:* XCOM 2 steps and
+turns into the shot at a move's end [src B1]; leading engines warp a captured step's landing onto its target (motion warping:
+stride and orientation warping). *Gate:* G13's measure with the step inserted (`stance_continuity.py steps`).
+
 ## 3. External sources found (search of 2026-11-17)
 Constraints: commercial use, no account, no NC, ND or research-only licence, and this repository is **public** (anything committed
 is redistributed in source form), which rules out licences that allow binary-only distribution or forbid redistribution.
@@ -424,6 +435,14 @@ routing removes pairs the game no longer plays), and every pair v4.2 touches wit
 - *Still unmatched:* the men's one-handed weapons (a blade built on 143_23's blows puts the pommel 3-7 cm into the chest at his
   boxer's guard: C1) and the women's club (a thrust built on her 144_21 cross loses its delivery in the two-handed fit: timing);
   both stay v4's. Every hit and stance-change pair (39) would fail G13 if judged: the next step's input.
+
+**v4.3 (re-stance steps, S24; `/home/user/second-face-staging/combat/v4_3/`).** 54 captured still-to-still steps (half steps
+forward, back and to the side, turns in place of 45° and 90°, widening and narrowing; men 27, women 14, unrecorded sex 13,
+mined from the 205 takes on disk and mirrored), and the runtime rule that inserts the nearest one, each foot warped within ±20 %
+and ±15°, or two in a row. Of the 47 pairs that fail G13 (the 39 hit and stance-change pairs, the men's one-handed weapons, the
+women's club), 7 pass with the step inserted (4 with one warp for the whole step), 14 are n/a (a crouched end: no standing step
+bridges a crouch) and 26 need re-stances larger or more turned than any captured step reaches (a woman's 90° turn and forward
+half step are not captured; a throw's and a slip's ends are their own takes' recoveries, cut short).
 
 ## 5. Proposals for the gate's owner (from the evidence; none applied)
 1. **The long-gun aim limits.** The provisional column (K1 ≤ 2.2, H1 −3…+1.2, H2 15.2-22.2, H3 10.6-16.6) is two mimed actors'

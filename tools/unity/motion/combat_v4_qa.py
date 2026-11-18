@@ -154,7 +154,7 @@ def timing(m, meta):
     judged = not (T.get('design') and meta.get('source_kind') == 'captured')
     lo, hi = T['lo'] * 0.85, T['hi'] * 1.15
     what = None
-    if ref in ('mag', 'reload_slow', 'throw', 'rise', 'crouch'):
+    if ref in ('mag', 'reload_slow', 'throw', 'rise', 'crouch', 'restance'):
         what = dur
     elif ref in ('hit_onset', 'hit_return'):
         dev = np.zeros(m.n)

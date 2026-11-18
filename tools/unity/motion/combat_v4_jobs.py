@@ -60,6 +60,10 @@ TIMING = {
     'surrender': dict(what='to the hold', lo=1.0, hi=2.0, src='design 1-2 s to the hold (standard S20)', design=True),
     'rise': dict(what='whole get-up', lo=4.4, hi=8.5, src='[here] the staged captured get-ups run 4.4-8.5 s with their lead-ins (standard S15)'),
     'crouch': dict(what='down or up', lo=0.3, hi=3.6, src='design 0.3-0.8 s; captured crouch-downs 2.6-3.6 s with settling (standard S16)'),
+    # (combat v4.3: the re-stance steps, G13)
+    'restance': dict(what='whole step', lo=0.3, hi=1.6, design=True,
+                     src="design: the captured re-stance steps' own 0.3-1.4 s between still stances (mined, combat_v43_jobs), a turn's "
+                         "steps lengthening with its amplitude [R28]"),
 }
 
 L, R2, CLUB, BLADE, ANY, PISTOL = 'long', 'long', 'melee2', 'melee1', 'any', 'pistol'

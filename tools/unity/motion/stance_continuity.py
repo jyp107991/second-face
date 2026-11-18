@@ -336,8 +336,182 @@ def table(rows):
     return '\n'.join(out)
 
 
+# ---------------------------------------------------------------------------------------------------------------------------
+# combat v4.3: the re-stance step between two states whose stances differ (G13: "or have a captured step clip between them")
+WARP_SCALE, WARP_TURN = 0.20, 15.0      # the runtime warps a step's foot offsets by at most +/-20 % and its turn by +/-15°
+
+
+def step_library(dumps, jsons):
+    """Every re-stance step clip (json `restance` or gate 'step'): each foot's offset (cm at the reference body, the step's
+    own start frame: x left, z forward) and turn (deg) from its first key to its last; its set (m, f, both)."""
+    lib = []
+    names = set()
+    for d in jsons:
+        for f in sorted(os.listdir(d)):
+            if not f.endswith('.json') or f in ('MANIFEST.json',): continue
+            try: j = json.load(open(os.path.join(d, f)))
+            except Exception: continue
+            if not isinstance(j, dict) or j.get('gate') != 'step' or j.get('name') in names: continue
+            C = clip_feet(dumps, jsons, j['name'])
+            if C is None: continue
+            m, j, anc, sc = C
+            if j.get('loop'): continue
+            a, b = feet(m, 0, anc, sc), feet(m, m.n - 1, anc, sc)
+            names.add(j['name'])
+            lib.append(dict(name=j['name'], set=j.get('set', 'both'), kind=j.get('kind'), seconds=round((m.n - 1) / m.fps, 3),
+                            d={s: [float(b[s][0][0] - a[s][0][0]), float(b[s][0][1] - a[s][0][1]),
+                                   float((b[s][1] - a[s][1] + 180.0) % 360.0 - 180.0)] for s in ('Left', 'Right')}))
+    return lib
+
+
+def _rot(v, deg):
+    """A foot offset (x left, z forward) turned by `deg` the way a foot's yaw turns (atan2(x, z) grows by deg)."""
+    t = np.radians(deg); c, s = np.cos(t), np.sin(t)
+    return np.stack([v[..., 0] * c + v[..., 1] * s, v[..., 1] * c - v[..., 0] * s], axis=-1)
+
+
+def _warped(lib):
+    """Every library step at every warp on the grid: (entries, 2 feet, x z yaw), and what each entry is."""
+    S = np.linspace(1.0 - WARP_SCALE, 1.0 + WARP_SCALE, 9); T = np.arange(-WARP_TURN, WARP_TURN + 0.01, 2.5)
+    W, meta = [], []
+    for i, e in enumerate(lib):
+        D = np.array([e['d']['Left'], e['d']['Right']])
+        for s in S:
+            for t in T:
+                p = _rot(D[:, :2] * s, t); W.append(np.concatenate([p, (D[:, 2:] + t)], axis=1)); meta.append((i, float(s), float(t)))
+    return np.array(W), meta
+
+
+def fit_step(req, lib, sex, chain=True):
+    """The nearest step (or two) for a required re-stance `req` ((2 feet, x z yaw): B's start against A's end, cm, deg), from
+    the steps a sex may play (its own and of unrecorded sex), warped within the limits. Returns (cost, plan): cost <= 1 passes
+    G13 (both ankles within LIMIT_CM, both feet within LIMIT_DEG of B's start once the step has played)."""
+    use = [i for i, e in enumerate(lib) if e['set'] in ('both', sex)]
+    if not use: return None
+    sub = [lib[i] for i in use]
+    W, meta = _warped(sub)
+    def cost(R):          # R: (..., 2, 3) residual
+        return np.maximum(np.linalg.norm(R[..., :2], axis=-1).max(-1) / LIMIT_CM, np.abs(R[..., 2]).max(-1) / LIMIT_DEG)
+    c1 = cost(req[None] - W); i1 = int(np.argmin(c1))
+    best = (float(c1[i1]), [(sub[meta[i1][0]]['name'], meta[i1][1], meta[i1][2])])
+    if chain and best[0] > 1.0:
+        # two steps: the second in the frame the first leaves the body in (turned by the first's mean turn)
+        turn1 = W[:, :, 2].mean(1)
+        for lo in range(0, len(W), 400):
+            Wa = W[lo:lo + 400]
+            rem = req[None] - Wa                                        # (a, 2, 3)
+            rp = _rot(rem[:, :, :2], -turn1[lo:lo + 400][:, None])       # into the second step's frame
+            R = np.concatenate([rp, rem[:, :, 2:]], axis=2)[:, None] - W[None]   # (a, b, 2, 3)
+            c = cost(R); k = np.unravel_index(int(np.argmin(c)), c.shape)
+            if c[k] < best[0]:
+                ia, ib = lo + k[0], k[1]
+                best = (float(c[k]), [(sub[meta[ia][0]]['name'], meta[ia][1], meta[ia][2]), (sub[meta[ib][0]]['name'], meta[ib][1], meta[ib][2])])
+    return best
+
+
+def _foot_warps(c, n=9, m=13):
+    """Every landing a foot of a step can be warped to (the runtime's warp, per foot): its captured offset `c` (x z yaw)
+    scaled within +/-WARP_SCALE and turned within +/-WARP_TURN about its start, its own turn within +/-WARP_TURN; a foot the
+    step leaves still (under 3 cm) is not moved. `n`, `m`: the grid's scales and turns. Returns (k, 3)."""
+    S = np.linspace(1.0 - WARP_SCALE, 1.0 + WARP_SCALE, n); T = np.linspace(-WARP_TURN, WARP_TURN, m)
+    moving = math.hypot(c[0], c[1]) >= 3.0
+    out = []
+    for s_ in (S if moving else [1.0]):
+        for t in (T if moving else [0.0]):
+            p = _rot(np.array([c[0] * s_, c[1] * s_]), t)
+            for tt in T: out.append([float(p[0]), float(p[1]), c[2] + tt])
+    return np.array(out)
+
+
+def fit_step_feet(req, lib, sex, chain=True):
+    """As fit_step, each foot's landing warped on its own (the runtime warps the stepping foot onto its target, as leading
+    games do: within +/-WARP_SCALE of its captured length and +/-WARP_TURN of its captured direction and turn). Returns
+    (cost, plan) with the worse foot's residual against G13."""
+    use = [e for e in lib if e['set'] in ('both', sex)]
+    if not use: return None
+    def fcost(R): return np.maximum(np.linalg.norm(R[..., :2], axis=-1) / LIMIT_CM, np.abs(R[..., 2]) / LIMIT_DEG)
+    best = (1e9, None)
+    for e in use:
+        c = max(float(fcost(req[k] - _foot_warps(e['d'][side])).min()) for k, side in enumerate(('Left', 'Right')))
+        if c < best[0]: best = (c, [(e['name'], 'per foot', 0.0)])
+    if chain and best[0] > 1.0:
+        # two steps: their landings add, the second's offsets in the frame the first leaves (turned by its mean turn); a coarser
+        # grid of warps (5 scales, 5 turns each way)
+        F = {side: [_foot_warps(e['d'][side], 5, 5) for e in use] for side in ('Left', 'Right')}
+        for i, e1 in enumerate(use):
+            t1 = float(np.mean([e1['d']['Left'][2], e1['d']['Right'][2]]))
+            cs = np.zeros(len(use))
+            for k, side in enumerate(('Left', 'Right')):
+                A_ = F[side][i]
+                for j in range(len(use)):
+                    if cs[j] >= best[0]: continue
+                    B_ = F[side][j]; Bp = np.concatenate([_rot(B_[:, :2], t1), B_[:, 2:]], axis=1)
+                    R = req[k][None, None] - (A_[:, None] + Bp[None])
+                    cs[j] = max(cs[j], float(fcost(R).min()))
+            j = int(np.argmin(cs))
+            if cs[j] < best[0]: best = (float(cs[j]), [(e1['name'], 'per foot', 0.0), (use[j]['name'], 'per foot', 0.0)])
+    return best
+
+
+def pair_feet(A, tA, B, tB):
+    """A's feet at the key it is left (a loop: the key the audit found worst) and B's at the key it is entered, as the game
+    places each clip; with the hips' height there (m, reference body), to tell a standing stance from a crouch."""
+    mA, jA, aA, sA = A; mB, jB, aB, sB = B
+    kb = key_at(mB, tB); fB = feet(mB, kb, at_key(B, kb), sB)
+    r = compare(A, tA, B, tB); ka = r['key_a']; fA = feet(mA, ka, at_key(A, ka), sA)
+    hA = float(mA.P['Hips'][ka][1] * sA); hB = float(mB.P['Hips'][kb][1] * sB)
+    return fA, fB, hA, hB, r
+
+
+def steps_audit(dumps, jsons, lib, states, pairs, only=None, standing=0.70):
+    """The pairs that fail G13 (or `only` those), each with the step the runtime would insert: the required re-stance, the
+    nearest single step or chain of two within the warp limits, and the verdict (pass, fail, or n/a: a crouched stance at
+    either end, which a standing step cannot bridge)."""
+    rows = audit(dumps, jsons, states, pairs)
+    out = []
+    for r in rows:
+        if r.get('missing') or r['pass']: continue
+        if only and r['pair'] not in only: continue
+        a, b = r['pair'].split(' -> ')
+        sa, sb = states[a], states[b]
+        A = clip_feet(dumps, jsons, r['clips'][0]); B = clip_feet(dumps, jsons, r['clips'][1])
+        fA, fB, hA, hB, _ = pair_feet(A, None if sa[4] else sa[3], B, sb[2])
+        req = np.array([[fB[s][0][0] - fA[s][0][0], fB[s][0][1] - fA[s][0][1], (fB[s][1] - fA[s][1] + 180.0) % 360.0 - 180.0] for s in ('Left', 'Right')])
+        e = dict(pair=r['pair'], sex=r['sex'], kind=r['kind'], takes=r['takes'], before=[max(r['left_cm'], r['right_cm']), max(r['left_yaw_deg'], r['right_yaw_deg'])],
+                 required={'Left': [round(float(x), 1) for x in req[0]], 'Right': [round(float(x), 1) for x in req[1]]}, hips_m=[round(hA, 2), round(hB, 2)])
+        if min(hA, hB) < standing:
+            e.update(verdict='n/a', why=f"a crouched stance at the {'start' if hA < standing else 'end'} (hips {min(hA, hB):.2f} m): no standing step bridges it")
+        else:
+            f = fit_step(req, lib, r['sex']); g = fit_step_feet(req, lib, r['sex'])
+            if f is None: e.update(verdict='fail', why='no step for this sex')
+            else:
+                c, plan = f
+                e.update(strict={'verdict': 'pass' if c <= 1.0 else 'fail', 'cost': round(c, 2),
+                                 'steps': [{'clip': n, 'scale': round(s_, 2), 'turn_deg': t} for n, s_, t in plan]})
+                c, plan = g
+                e.update(verdict='pass' if c <= 1.0 else 'fail', cost=round(c, 2), steps=[{'clip': n, 'warp': w} for n, w, _ in plan])
+        out.append(e)
+    return out
+
+
+def _main_steps(a):
+    dumps, jsons, out = a[1].split(','), a[2].split(','), a[3]
+    states, pairs = with_mapping(json.load(open(a[a.index('--mapping') + 1]))) if '--mapping' in a else (STATES, PAIRS)
+    lib = step_library(dumps, jsons)
+    rows = steps_audit(dumps, jsons, lib, states, pairs)
+    json.dump({'library': lib, 'pairs': rows}, open(out, 'w'), indent=1)
+    for r in rows:
+        print(f"{r['pair']:34s} {r['sex']} {r['kind']:6s} before {r['before'][0]:5.1f} cm {r['before'][1]:5.1f}° -> {r['verdict']:4s} "
+              + (f"cost {r['cost']:.2f} (uniform warp {r['strict']['verdict']} {r['strict']['cost']:.2f}) " + ' + '.join(x['clip'] for x in r['steps']) if 'steps' in r else r.get('why', '')))
+    print(f"\nwith a step (each foot warped): {sum(r['verdict'] == 'pass' for r in rows)} of {len(rows)} failing pairs pass; "
+          f"(one warp for the whole step: {sum(r.get('strict', {}).get('verdict') == 'pass' for r in rows)}); "
+          f"{sum(r['verdict'] == 'n/a' for r in rows)} n/a (crouched); library {len(lib)} steps")
+
+
 if __name__ == '__main__':
     a = sys.argv[1:]
+    if a and a[0] == 'steps':
+        _main_steps(a); sys.exit(0)
     if a and a[0] == 'audit':
         dumps, jsons, out = a[1].split(','), a[2].split(','), a[3]
         states, pairs = None, None

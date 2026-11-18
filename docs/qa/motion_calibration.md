@@ -317,7 +317,25 @@ their max and min; quiet standing's limits never loosened for them; applied only
    now, with K, A and TL bounded by the seven actors' caps (Kmax ≤ 160.2, TL ≤ 102.1).
 5. The clips' own figures against these are in each v4 clip's `stance` (combat v4 `clip_qa.json`), for the same comparison as §7.
 
-## 9. Sources
+## 9. The upper arm's hang by build (2026-11-18; applied, the coordinator's decision on `docs/qa/arm_build_evidence.md`)
+
+Standing, a man's A1 limit is **20 + 0.37·e** (the cap stays 28): e = max(0, his trunk's breadth at the hanging elbow − ANSUR
+II men's median at his stature), held to 9 cm, the edge of the data. Women keep 20 until a woman's reference exists.
+- **The breadth** is the game's own: each man's `TorsoProfile` (the body and what it wears) at the hanging elbow's height
+  (the shoulder joints less the upper arm), 2·Rx. **The median** is 0.18588 of the stature (the median of waist breadth over
+  stature among ANSUR II's 4,082 men, scaled to the stature as `docs/qa/body_geometry_audit.md` scales them: 33.5 cm at 180,
+  34.2 at 184). Both are computed by the gate for each body and written to the verdict (`buildCm`).
+- **k**, the outward arm per cm of breadth past the median, is the conservative end of the evidence. The evidence's centre is
+  0.75° per cm (Cau 0.61, the clearance geometry 0.75, Shewhorak 0.86); its only formal interval is 0.43-1.29 (Shewhorak's).
+  Quiet standing's A1 p98 rises by 0.87 of the geometry's rise, and 0.87 × 0.43 = 0.37.
+- **Consistency:** the game's push raises A1 from the slim actor's 16.4° to 20.0-22.6° on the five broad men, a rise of
+  3.6-6.2°. The rise the evidence predicts for real men that broad is 4.2-5.7°.
+- **W3 is not changed:** no study shows heavier people swing further, and the frontal part is the push's (ArmClearance turns
+  a walking swing toward the sagittal plane before it turns the arm out).
+- **Code and hash:** `HumanMotionGateTests` (`A1PerCm`, `AnsurWaistShare`, `BuildMaxCm`, `Build`), a gate input (measures).
+- **Sources:** `docs/qa/arm_build_evidence.md` (Cau et al.; Shewhorak; ANSUR II, Gordon et al. 2014).
+
+## 10. Sources
 
 - Winter DA (1992) Foot trajectory in human gait: a precise and multifactorial motor control task. Phys Ther 72:45-56
   (minimum toe clearance 1.29 cm). https://consensus.app/papers/details/w:233e28a0-4591-4a8b-9b7e-0ceb2f9be716/
