@@ -180,6 +180,7 @@ namespace SecondFace.Game.People
                 if (skin.SoleL is { Length: 4 }) { _heelL = skin.SoleL[0]; _backL = skin.SoleL[1]; _ballL = skin.SoleL[2]; _tipL = skin.SoleL[3]; }
                 if (skin.SoleR is { Length: 4 }) { _heelR = skin.SoleR[0]; _backR = skin.SoleR[1]; _ballR = skin.SoleR[2]; _tipR = skin.SoleR[3]; }
             }
+            Hull();
         }
 
         /// <summary>A foot's sole at rest (flat on the floor at height <paramref name="floor"/>): the heel's contact a fifth
@@ -249,8 +250,84 @@ namespace SecondFace.Game.People
         private float SoleOver(Transform foot, Transform toe, Vector3 heel, Vector3 back, Vector3 ball, Vector3 tip, float ground)
         {
             var y = Mathf.Min(Mathf.Min(foot.TransformPoint(heel).y, foot.TransformPoint(back).y), Mathf.Min(foot.TransformPoint(ball).y, (toe != null ? toe : foot).TransformPoint(tip).y));
-            return y - ground;
+            return Mathf.Min(y, HullLow(foot, toe)) - ground;
         }
+
+        /// <summary>
+        /// Each foot's own underside as the body's mesh has it (the real contact points, docs/MOTION_ROOT_CAUSE.md §9,
+        /// 2026-11-18): the mesh's vertices under the ankle and within 5 cm of the sole's lowest (the sole, the heel's rounded
+        /// back, the toe box's underside), one a 1.5 cm cell, kept in the foot's frame (and the toes' frame ahead of the toe
+        /// joint). A foot is held and lifted by whichever of them is lowest: on four fixed sole points the walking men's feet,
+        /// pitched toes-up at heel strike, stood their heels' back edges 1.5-1.9 cm in the ground under a heel point held at
+        /// 0.0 (W6, the 14-person pick of 2026-11-18). Read from the bind, as the body is made.
+        /// </summary>
+        private Vector3[] _hullFL = new Vector3[0], _hullTL = new Vector3[0], _hullFR = new Vector3[0], _hullTR = new Vector3[0];
+
+        private float HullLow(Transform foot, Transform toe)
+        {
+            var left = foot == _footL;
+            var f = left ? _hullFL : _hullFR; var t = left ? _hullTL : _hullTR;
+            var y = float.MaxValue;
+            for (var i = 0; i < f.Length; i++) y = Mathf.Min(y, foot.TransformPoint(f[i]).y);
+            if (toe != null) for (var i = 0; i < t.Length; i++) y = Mathf.Min(y, toe.TransformPoint(t[i]).y);
+            return y;
+        }
+
+        private void Hull()
+        {
+            var verts = new System.Collections.Generic.List<Vector3>();
+            var baked = new Mesh();
+            foreach (var r in GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                if (r.sharedMesh == null) continue;
+                r.BakeMesh(baked, true);
+                var v = baked.vertices; var tr = r.transform;
+                for (var i = 0; i < v.Length; i++) verts.Add(tr.TransformPoint(v[i]));
+            }
+            if (Application.isPlaying) Destroy(baked); else DestroyImmediate(baked);
+            if (verts.Count == 0) return;
+            (Vector3 a, Vector3 f, float toes) Line(Transform foot, Transform toe)
+            {
+                var a = foot.position; var d = (toe != null ? toe.position : a + transform.forward * 0.12f) - a; d.y = 0f;
+                var f = d.sqrMagnitude > 1e-6f ? d.normalized : transform.forward;
+                return (a, f, Vector3.Dot((toe != null ? toe.position : a + f * 0.12f) - a, f));
+            }
+            var L = Line(_footL, _toeL); var R = Line(_footR, _toeR);
+            float Lat((Vector3 a, Vector3 f, float toes) l, Vector3 p) { var o = p - l.a; o.y = 0f; return (o - l.f * Vector3.Dot(o, l.f)).magnitude; }
+            void Side((Vector3 a, Vector3 f, float toes) l, (Vector3 a, Vector3 f, float toes) other, Transform foot, Transform toe, out Vector3[] fo, out Vector3[] to)
+            {
+                var near = new System.Collections.Generic.List<Vector3>();
+                foreach (var p in verts)
+                {
+                    var along = Vector3.Dot(p - l.a, l.f);
+                    if (p.y > l.a.y - 0.02f || along < -0.12f || along > l.toes + 0.12f) continue;
+                    var lat = Lat(l, p);
+                    if (lat > 0.08f || lat > Lat(other, p)) continue;
+                    near.Add(p);
+                }
+                fo = new Vector3[0]; to = new Vector3[0];
+                if (near.Count == 0) return;
+                var low = float.MaxValue; foreach (var p in near) low = Mathf.Min(low, p.y);
+                var cells = new System.Collections.Generic.Dictionary<Vector3Int, Vector3>();
+                foreach (var p in near)
+                {
+                    if (p.y > low + 0.05f) continue;
+                    var c = Vector3Int.FloorToInt(p / 0.015f);
+                    if (!cells.TryGetValue(c, out var q) || p.y < q.y) cells[c] = p;
+                }
+                var fl = new System.Collections.Generic.List<Vector3>(); var tl = new System.Collections.Generic.List<Vector3>();
+                foreach (var p in cells.Values)
+                {
+                    if (toe != null && Vector3.Dot(p - l.a, l.f) > l.toes - 0.01f) tl.Add(toe.InverseTransformPoint(p));
+                    else fl.Add(foot.InverseTransformPoint(p));
+                }
+                fo = fl.ToArray(); to = tl.ToArray();
+            }
+            Side(L, R, _footL, _toeL, out _hullFL, out _hullTL);
+            Side(R, L, _footR, _toeR, out _hullFR, out _hullTR);
+        }
+        /// <summary>For tests: how many of each foot's underside points are held (left, right).</summary>
+        public Vector2Int HullPoints => new(_hullFL.Length + _hullTL.Length, _hullFR.Length + _hullTR.Length);
 
         /// <summary>Looks again at the controller's parameters (after a controller is given at runtime).</summary>
         public void Bind()
@@ -657,8 +734,8 @@ namespace SecondFace.Game.People
         }
 
         /// <summary>The height of a foot's lowest sole point (world).</summary>
-        private static float Lowest(Transform foot, Transform toe, Vector3 heel, Vector3 ball, Vector3 tip)
-            => Mathf.Min(foot.TransformPoint(heel).y, Mathf.Min(foot.TransformPoint(ball).y, (toe != null ? toe : foot).TransformPoint(tip).y));
+        private float Lowest(Transform foot, Transform toe, Vector3 heel, Vector3 ball, Vector3 tip)
+            => Mathf.Min(HullLow(foot, toe), Mathf.Min(foot.TransformPoint(heel).y, Mathf.Min(foot.TransformPoint(ball).y, (toe != null ? toe : foot).TransformPoint(tip).y)));
 
         /// <summary>A held foot's turn as it came down, and its heading along the ground.</summary>
         private void Hold(ref Lock k, Transform foot, Transform toe)

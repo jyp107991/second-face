@@ -25,11 +25,11 @@ namespace SecondFace.Game.People
         /// <summary>At rest, how far a resting arm's contact (the forearm and hand against the hip or thigh, the upper arm by
         /// the elbow against the flank) may press into the body's skin before the shoulder turns it out (m): the soft
         /// tissue gives under a hanging arm's light contact (the thigh's fat and muscle shear at 0.5-1.7 kPa, Segain et al.
-        /// 2024), and the gate takes a resting contact up to 0.5 cm deep (docs/PEOPLE_MOTION.md C1). Until 2026-11-18 a
+        /// 2024), and the gate takes a resting contact up to 0.5 cm deep (docs/PEOPLE_MOTION.md C1; the skin's points read a contact 0.1-0.25 cm shallower than the gate's mesh on the broad men, so 0.25 here). Until 2026-11-18 a
         /// resting arm was turned out until it stood 0.3 cm off the skin: on the broad men the shoulder's remainder turned
         /// the whole arm 1.9° out for a forearm 0.3 cm into the thigh, and the first turn 3.8-5.8° for the upper arm by the
         /// elbow 1-2 cm into the flank (A1 20.0-24.4, docs/MOTION_ROOT_CAUSE.md §9). Nothing that stands clear is moved.</summary>
-        public float RestGive = 0.004f;
+        public float RestGive = 0.0025f;
         private float Margin3 => Mathf.Lerp(SkinMargin + MoveMargin, -RestGive, _restW);
         /// <summary>With the skin: a resting hand hangs this far from the side of the hip or thigh (A4), surface to surface.</summary>
         public float SkinGap = 0.004f;   // (1 cm off the clothes stood resting hands 6.0-6.5 cm from the thigh's skin, A4, 2026-11-06; 0.6 cm left the men's hands over their cargo pockets 6.1-7 cm from it, 2026-11-07)
@@ -447,7 +447,12 @@ namespace SecondFace.Game.People
             var S = upper.position; var E = lower.position; var W = hand.position;
             var l1 = (E - S).magnitude; var l2 = (W - E).magnitude;
             if (l1 < 0.05f || l2 < 0.05f) return;
-            var fwd = transform.forward; var outward = Outward(side);
+            // (in the shoulders' frame: the arm hangs from the shoulders, and the gaze's turn of the chest carries them round
+            // the hips; placed by the hips' facing, the hand was drawn back beside the thigh and the forearm crossed the hip's
+            // front, the shoulder turned 2.4-4.4° out for it in every look round, A1 20.6-21.3, 2026-11-18)
+            var yaw = _lu != null && _ru != null ? Vector3.SignedAngle(transform.right, Vector3.ProjectOnPlane(_ru.position - _lu.position, Vector3.up), Vector3.up) : 0f;
+            var turn = Quaternion.AngleAxis(Mathf.Clamp(yaw, -45f, 45f), Vector3.up);
+            var fwd = turn * transform.forward; var outward = turn * Outward(side);
             ref var poleOut = ref (side < 0 ? ref _poleOutL : ref _poleOutR);
             ref var flexAdd = ref (side < 0 ? ref _flexAddL : ref _flexAddR);
             var flex = Mathf.Clamp(RestFlex + _flexVar + flexAdd, 6f, 32f) * Mathf.Deg2Rad;
