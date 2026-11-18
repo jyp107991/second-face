@@ -64,6 +64,34 @@ Divinity: Original Sin 2 have no cover system and no surrender) or nothing beyon
   get-ups) and ends where Core puts the fighter; everything else plays in place.
 - **G12 Measured in game.** Every state is a gate state (`combat:<set>:<what>`) on the whole cast with every runtime system on;
   states the gate cannot measure yet are listed in §5 and reviewed at the game's cameras in writing until they are.
+- **G13 Stance continuity.** States the game blends between (ready, raise, aim, fire hold, lower, reload, hands up, cover
+  entries and exits, guard, strike recoveries) stand on one actor's captured stance per sex and weapon class (one take, or one
+  session on the same marks), or have a captured step clip between them (a raise or a lower whose feet pivot, a crouch-down):
+  a crossfade never carries the planted feet from one actor's stance to another's (G4, G7). Two facts make this a rule of its
+  own (`docs/COMBAT_ROOT_CAUSE.md` 5b; combat v4.1):
+  - *Different actors stand differently.* v4's long-gun ready (ACCAD Male2 and Female1 stands) and its aim (CMU 80_03) stood
+    3-18 cm and up to 36° apart at the join offline (between actors the measure is approximate: Humanoid retargets each actor's
+    own proportions; the editor's probe read the planted feet 7-11 cm off in game); the game's foot hold then stepped a foot
+    while the other leg folded (the aim's straight knee to 24-27°, `TheFightsFeetStandOnTheGroundAndStepBetweenStances`).
+  - *Unity stands each clip at its own first key.* As the combat importer sets it (Root Transform Rotation and Position XZ baked,
+    based upon the body orientation and the centre of mass), Humanoid places every clip against its first key's centre of mass
+    on the ground and its body orientation. So clips cut from one take still part when their first keys differ: a pistol aim
+    built on the very frames of its ready moves the feet 1.6 cm (the arms carry the centre of mass forward; 1.8/1.7 cm measured
+    in game on Female_Adult_01), and CMU 79_96's own raise into its own aim turns the body 42° at the join (the actor blades as
+    he raises). A chain's clips are therefore written in one shared frame (the take's, its origin at the ready's first-key
+    centre of mass, +Z the aim's gun line or the ready's facing) and imported based upon Original (`root_basis: take` in the
+    json), so the game stands them where the take stood them.
+
+  *Measure (clip QA, `clip_qa.py --combat --stance`, `stance_continuity.py`):* for every pair of states the game blends (Core
+  `CombatMotion` and `AnimatedUnitView`: what follows what, per sex), each clip placed as the game places it (its json's
+  `root_basis`, else its first key's centre of mass and body orientation; a clip whose root motion the game applies against
+  each key's own centre of mass), scaled to the reference body (0.935 m hip height; each clip by its own), each foot's ankle on
+  the ground and its yaw (ankle to toe joint) at A's leaving key (a loop: its worst key) against B's entering key: **both
+  ankles within 1.5 cm and both feet within 5°** (under `Fighter.Feet`'s re-plant of 2.5 cm, so a planted foot follows instead
+  of stepping). A one-class pair that fails fails every clip of it that is being changed; stance changes (into and out of a
+  crouch, a guard to a standing surrender) and states whose feet the fight does not pin (hits, throws, slips) are reported with
+  their offsets. Equal ankles are not enough: CMU 79_96's ready and aim stand within 1.3 cm but the right foot turns 9.8° (the
+  captured pivot), so the game reaches the aim through the captured raise and leaves it through the captured lower.
 
 ## 2. The states
 
@@ -365,6 +393,23 @@ What stays a gap after every free, admissible source: reloads (none captured), a
 strikes, women's two-handed strikes and crouched gait, a man's documented overhand throw, directional hit reactions. The honest
 options are, in order: build them on captured bodies (IK and procedural layers inside §2's evidence), mark them as such in each
 clip's json, and capture them ourselves with FreeMoCap when the owner wants (no account, the motion is ours).
+
+**The chains under G13 (combat v4.1, staged as a delta over v4; `/home/user/second-face-staging/combat/v4_1/`).** Audited over
+every pair the game blends: v4 as staged, 8 of 75 one-class pairs stand within G13; with v4.1, 39 of 76, and every pair v4.1
+touches passes (ankles within 1.4 cm, feet within 3.9°).
+- *Long gun, both sexes:* one take, CMU 79_96 (sex not recorded, u): its captured raise, aim and lower, and the ready, the
+  reloads and the hands-up hold built on the same take's rest before the raise. No woman's capture holds a long gun; a woman's
+  standing stance exists (ACCAD Female1) but an aim built on it would have no captured cheek weld or blading, so women play the
+  u take, as v4's aim already did. It is not presented as a woman's take.
+- *Pistol:* men on ACCAD Male2_A1_Stand (the aim newly built on his own stance, where v4's stood on CMU 80_03's long-gun hold),
+  women on ACCAD Female1_A01_Stand, with their reloads and hands up on the same frames.
+- *Two-handed club, men:* CMU 79_01's captured chop and a ready and hands-up hold built on the rest it comes back to (u: the
+  long gun's actor, the same session).
+- *Still unmatched:* the women's club (her ready on Female1, her thrust built on CMU 144_20: no capture of her in one take);
+  every unarmed and one-handed blow against its guard (each man's blow is its own take; the women's guard and jab, one take,
+  CMU 144_13, still part by 15-19 cm as the game places them, each at its own first key);
+  the crouch into cover (the crouch takes' first keys stand and turn differently from the crouched hold); hands up from a guard
+  and the hits (stance changes or unpinned, reported).
 
 ## 5. Proposals for the gate's owner (from the evidence; none applied)
 1. **The long-gun aim limits.** The provisional column (K1 ≤ 2.2, H1 −3…+1.2, H2 15.2-22.2, H3 10.6-16.6) is two mimed actors'

@@ -1170,6 +1170,36 @@ def evidence_for(d):
     return ev.get(d.get('state'), [])
 
 
+def build_framed(d, take):
+    """combat2fbx.build in a chain's shared frame (combat v4.1, docs/COMBAT_ANIMATION_STANDARD.md G13): every clip of one
+    take's chain turned by the same yaw about the same origin (`frame`: yaw in radians about +Y, origin x, z in the take's
+    own coordinates), never re-centred per clip (a seamed loop keeps the take's place), so the clips stand where the take
+    stood them against each other. Imported based upon Original (the json's `root_basis: take`), the game places each clip
+    in that frame; based upon the first key's centre of mass and body orientation (Unity's default as the importer sets
+    it) each clip would stand where its own first key puts it, which a raise or an aim moves (G13)."""
+    rows, pts, fps, hip, floor, meta, write, n = take
+    fr = d['frame']
+    Y = Quaternion((0.0, 1.0, 0.0), float(fr['yaw'])); o = Vector((float(fr['origin'][0]), 0.0, float(fr['origin'][1])))
+    for r in rows:
+        p = Y @ Vector((r['pos'].x - o.x, 0.0, r['pos'].z - o.z))
+        r['pos'] = Vector((p.x, r['pos'].y - floor, p.z))
+        r['loc']['root'] = (Y @ r['loc']['root']).normalized()
+    if d.get('loop') == 'seam':
+        seam = round(d.get('seam', 1.0) * fps); P = len(rows) - seam
+        P = C.refine_seam([r['key'] for r in rows], P, seam, round(0.5 * fps)) if all('key' in r for r in rows) else P
+        cyc = C.cut_loop(rows, 0, P, seam)
+        out = C.resample_loop(cyc, C.OUT_FPS)
+    elif d.get('loop') == 'pingpong':
+        # a still stretch too short to loop on its own seam (CMU 79_96 stands 1.6 s before its raise: a seam loop chose a
+        # 0.55 s cycle, under a breath): played forward and back, a closed loop of twice its length whose turns, on a stance
+        # that barely moves, are under the capture's own sway
+        out = C.resample_loop([{'loc': r['loc'], 'pos': r['pos']} for r in rows + rows[-2:0:-1]], C.OUT_FPS)
+    else:
+        out = C.resample([{'loc': r['loc'], 'pos': r['pos']} for r in rows], C.OUT_FPS)
+    a, b = out[0]['pos'], out[-1]['pos']
+    return out, (b.x - a.x, b.z - a.z), hip, meta, write, fps, n, floor
+
+
 def make(d, out_dir):
     name = d['name']; built = bool(d.get('built')); fps = C.OUT_FPS
     d = dict(d)
@@ -1185,7 +1215,7 @@ def make(d, out_dir):
         if d['db'] == 'cmu' and d.get('range'): d['range'] = tuple(d['range'])
         t = take(d)
         if t is None: print('  skip', name, '(no source)'); return None
-        out, travel, hip, meta, write, src_fps, n_src, floor = CF.build(d, t)
+        out, travel, hip, meta, write, src_fps, n_src, floor = build_framed(d, t) if d.get('frame') else CF.build(d, t)
     write(bvh, out)
     bpy.ops.import_anim.bvh(filepath=bvh, axis_forward='-Z', axis_up='Y', global_scale=1.0, frame_start=1, use_fps_scale=False,
                             update_scene_fps=False, update_scene_duration=True, rotate_mode='QUATERNION')
@@ -1256,6 +1286,13 @@ def make(d, out_dir):
               inbetween=ib or None, resolved=bool(meta.get('resolved')), floor_shift_m=-floor if floor else 0.0, mirrored=bool(d.get('mirror')),
               events=events or None, events_kind=d.get('events'), timing=timing, humanoid=humanoid(arm), replaces=d.get('replaces'), stature_est_m=d.get('stature_est_m'),
               speed_root=round(d['_speed_root'], 3) if d.get('_speed_root') else None, plant=PL.summary(d.get('_plant')) if d.get('_plant') else None)
+    if d.get('frame'):
+        # combat v4.1 (G13): the clip stands in its chain's shared frame; the importer places it there (Root Transform
+        # Rotation and Position XZ baked, based upon Original) instead of at its own first key's centre of mass
+        js['root_basis'] = 'take'
+        js['chain'] = d.get('chain')
+        js['frame'] = {'yaw_deg': round(math.degrees(float(d['frame']['yaw'])), 3), 'origin_m': [round(float(v), 4) for v in d['frame']['origin']],
+                       'ref': d['frame'].get('ref'), 'note': d['frame'].get('note')}
     if d.get('loop') == 'gait':
         # the body's facing against its travel (+Z): 0 walking forward, 180 backward, +/-90 sideways (the editor turns the root)
         rig.pose(rows[len(rows) // 2]); acc = Vector((0.0, 0.0, 0.0))
