@@ -64,7 +64,8 @@ namespace SecondFace.EditorTools
 
         /// <summary>The controller carries this version's fight layers.</summary>
         public static bool HasLayers(AnimatorController ctl) =>
-            ctl != null && ctl.parameters.Any(p => p.name == VersionParam) && ctl.layers.Any(l => l.name == CombatMotion.FullLayer) && ctl.layers.Any(l => l.name == CombatMotion.ArmsLayer);
+            ctl != null && ctl.parameters.Any(p => p.name == VersionParam) && ctl.layers.Any(l => l.name == CombatMotion.FullLayer) && ctl.layers.Any(l => l.name == CombatMotion.ArmsLayer)
+            && ctl.layers.Length > 0 && ctl.layers[0].stateMachine.states.Any(s => s.state.name == CombatMotion.StanceBase);
 
         /// <summary>The fight's clips are in (every state's clip imported): a fresh checkout imports them before the
         /// controller is rebuilt.</summary>
@@ -98,8 +99,28 @@ namespace SecondFace.EditorTools
             ctl.AddParameter(VersionParam, AnimatorControllerParameterType.Bool);
             Layer(ctl, CombatMotion.FullLayer, null);
             Layer(ctl, CombatMotion.ArmsLayer, ArmsMask());
+            StanceBase(ctl);
             EditorUtility.SetDirty(ctl);
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>The base layer's state for the fight's stance (<see cref="CombatMotion.StanceBase"/>): the base's own
+        /// locomotion (its default state's motion, speed and parameter) without Foot IK, which Unity applies by the base
+        /// layer's state under the fight's layers too. Fighter moves the base into it while the stance has the body and back
+        /// after, at the same phase.</summary>
+        private static void StanceBase(AnimatorController ctl)
+        {
+            var sm = ctl.layers[0].stateMachine;
+            foreach (var old in sm.states.Where(s => s.state.name == CombatMotion.StanceBase).Select(s => s.state).ToArray()) sm.RemoveState(old);
+            var loco = sm.defaultState;
+            if (loco == null) { Debug.LogWarning("CombatAnimatorBuild: the base layer has no default state for the fight's stance"); return; }
+            var st = sm.AddState(CombatMotion.StanceBase);
+            st.motion = loco.motion;
+            st.speed = loco.speed;
+            st.speedParameterActive = loco.speedParameterActive;
+            st.speedParameter = loco.speedParameter;
+            st.writeDefaultValues = loco.writeDefaultValues;
+            st.iKOnFeet = false;
         }
 
         private static void Purge(AnimatorController ctl, AnimatorStateMachine sm)

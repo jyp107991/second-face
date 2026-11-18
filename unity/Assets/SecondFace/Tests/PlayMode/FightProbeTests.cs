@@ -40,6 +40,34 @@ namespace SecondFace.Tests
             }
         }
 
+        [DefaultExecutionOrder(25)]
+        public sealed class NoFix : MonoBehaviour
+        {
+            public Fighter F;
+            private void LateUpdate() { if (F != null) F.ClearAim(); }
+        }
+
+        [DefaultExecutionOrder(29)]
+        public sealed class Need : MonoBehaviour
+        {
+            public Fighter F; public float Total, Yaw, Pitch; public bool Have;
+            private void LateUpdate()
+            {
+                Have = false;
+                if (F == null) return;
+                var wgo = Get(F, "_weapon") as GameObject; var w = Get(F, "_w");
+                if (wgo == null || w == null || !(bool)Get(F, "_haveAim")) return;
+                var t = wgo.transform;
+                var muzzle = t.position + t.rotation * (Vector3)w.GetType().GetField("Muzzle").GetValue(w);
+                var want = (Vector3)Get(F, "_aimAt") - muzzle;
+                Total = Vector3.Angle(t.forward, want);
+                var fw = t.forward; var fwf = new Vector3(fw.x, 0f, fw.z); var wf = new Vector3(want.x, 0f, want.z);
+                Yaw = Vector3.SignedAngle(fwf, wf, Vector3.up);
+                Pitch = Mathf.Atan2(want.y, wf.magnitude) * Mathf.Rad2Deg - Mathf.Atan2(fw.y, fwf.magnitude) * Mathf.Rad2Deg;
+                Have = true;
+            }
+        }
+
         [DefaultExecutionOrder(10000)]
         public sealed class After : MonoBehaviour
         {
@@ -107,18 +135,22 @@ namespace SecondFace.Tests
             yield return Arena();
             var sb = new StringBuilder();
             var target = new Vector3(0f, 0f, 8f);
+            foreach (var (item, arms) in new[] { ("w_carbine556", Arms.Rifle), ("w_pistol9", Arms.Pistol), ((string)null, Arms.Unarmed) })
             foreach (var id in new[] { "Male_Adult_08", "Female_Adult_01" })
             {
-                var v = Person(id, "w_carbine556");
+                var v = Person(id, item);
                 var f = v.Fighter; var a = f.Animator;
                 var pre = a.gameObject.AddComponent<Before>(); pre.A = a;
-                sb.AppendLine($"== knee {id} hipHeight {Get(f, "_hipHeight")}");
-                sb.AppendLine("t,state,trans,fullW,preKL,preKR,KL,KR,preAL_y,AL_y,preAR_y,AR_y,dALxz,dARxz,preHips_y,hips_y,sink,soleL,soleR,plL,plR,pinL_dx,pinL_dz,pinR_dx,pinR_dz,ankleLx,ankleLz,ankleRx,ankleRz");
+                sb.AppendLine($"== feet {id} {item ?? "fists"}");
+                sb.AppendLine("t,state,trans,fullW,preKL,preKR,KL,KR,sink,soleL,soleR,plL,plR,stepL,stepR,pinnedL,pinnedR,liftL,liftR,dALxz,dARxz,preALy,ALy,preARy,ARy");
                 var done = false;
                 IEnumerator Act()
                 {
                     yield return Wait(1.5f);
-                    v.Unit.Watch = new Watch(); v.OnHold(Watch.Overwatch); yield return v.OnAim(target); yield return Wait(2f); v.Unit.Watch = null;
+                    if (arms != Arms.Unarmed) { v.Unit.Watch = new Watch(); v.OnHold(Watch.Overwatch); yield return v.OnAim(target); yield return Wait(2f); v.Unit.Watch = null; }
+                    v.OnStance("crouch"); yield return Wait(3f);
+                    v.OnStance("stand"); yield return Wait(2f);
+                    v.OnYield(); yield return Wait(2f);
                     done = true;
                 }
                 _host.StartCoroutine(Act());
@@ -127,32 +159,32 @@ namespace SecondFace.Tests
                 after.Do = () =>
                 {
                     if (done) return;
-                    var s = CombatMotion.State(f.Current);
+                    var st = CombatMotion.State(f.Current);
+                    if (st == null || f.FullWeight < 0.99f || !(st.Gate is "guard" or "ready" or "aim" or "aim_pistol" or "crouch" or "yield")) return;
                     var tr = a.IsInTransition(a.GetLayerIndex(CombatMotion.FullLayer));
-                    var al = a.GetBoneTransform(HumanBodyBones.LeftFoot).position; var ar = a.GetBoneTransform(HumanBodyBones.RightFoot).position;
-                    var hips = a.GetBoneTransform(HumanBodyBones.Hips).position;
                     var fl = Get(f, "_fl"); var fr = Get(f, "_fr");
-                    Vector3 Pin(object foot) => foot != null ? (Vector3)foot.GetType().GetField("Pin").GetValue(foot) : Vector3.zero;
-                    var pl = Pin(fl); var pr = Pin(fr);
-                    sb.AppendLine(string.Join(",", new object[] { (Time.time - t0).ToString("0.000"), f.Current, tr ? 1 : 0, f.FullWeight.ToString("0.00"),
+                    object Fd(object foot, string n) => foot.GetType().GetField(n).GetValue(foot);
+                    var al = a.GetBoneTransform(HumanBodyBones.LeftFoot).position; var ar = a.GetBoneTransform(HumanBodyBones.RightFoot).position;
+                    sb.AppendLine(string.Join(",", new object[] { (Time.time - t0).ToString("0.000"), f.Current + ":" + st.Gate, tr ? 1 : 0, f.FullWeight.ToString("0.00"),
                         pre.KL.ToString("0.0"), pre.KR.ToString("0.0"), Knee(a, true).ToString("0.0"), Knee(a, false).ToString("0.0"),
-                        (pre.AL.y * 100f).ToString("0.00"), (al.y * 100f).ToString("0.00"), (pre.AR.y * 100f).ToString("0.00"), (ar.y * 100f).ToString("0.00"),
+                        ((float)Get(f, "_sink") * 100f).ToString("0.00"), (f.SoleOver.x * 100f).ToString("0.00"), (f.SoleOver.y * 100f).ToString("0.00"), f.Planted.x, f.Planted.y,
+                        Fd(fl, "Stepping"), Fd(fr, "Stepping"), Fd(fl, "Pinned"), Fd(fr, "Pinned"), ((float)Fd(fl, "Lift") * 100f).ToString("0.00"), ((float)Fd(fr, "Lift") * 100f).ToString("0.00"),
                         (new Vector2(al.x - pre.AL.x, al.z - pre.AL.z).magnitude * 100f).ToString("0.00"), (new Vector2(ar.x - pre.AR.x, ar.z - pre.AR.z).magnitude * 100f).ToString("0.00"),
-                        (pre.Hips.y * 100f).ToString("0.00"), (hips.y * 100f).ToString("0.00"), ((float)Get(f, "_sink") * 100f).ToString("0.00"),
-                        (f.SoleOver.x * 100f).ToString("0.00"), (f.SoleOver.y * 100f).ToString("0.00"), f.Planted.x, f.Planted.y,
-                        ((pl.x - pre.AL.x) * 100f).ToString("0.00"), ((pl.z - pre.AL.z) * 100f).ToString("0.00"), ((pr.x - pre.AR.x) * 100f).ToString("0.00"), ((pr.z - pre.AR.z) * 100f).ToString("0.00"),
-                        (pre.AL.x * 100f).ToString("0.0"), (pre.AL.z * 100f).ToString("0.0"), (pre.AR.x * 100f).ToString("0.0"), (pre.AR.z * 100f).ToString("0.0") }));
+                        (pre.AL.y * 100f).ToString("0.00"), (al.y * 100f).ToString("0.00"), (pre.AR.y * 100f).ToString("0.00"), (ar.y * 100f).ToString("0.00") }));
                 };
                 while (!done) yield return null;
                 v.OnEnd(); yield return Wait(0.3f); Object.Destroy(v.Body.gameObject); yield return null;
             }
+            foreach (var nofix in new[] { false })
             foreach (var item in new[] { "w_carbine556", "w_bolt308" })
             {
                 var v = Person("Female_Adult_01", item);
                 var f = v.Fighter;
+                if (nofix) f.gameObject.AddComponent<NoFix>().F = f;
+                var need = f.gameObject.AddComponent<Need>(); need.F = f;
                 yield return Wait(1f);
-                sb.AppendLine($"== off Female_Adult_01 {item}");
-                sb.AppendLine("t,state,trans,fullW,offErr,mainErr,leftReach,shoulderToOff");
+                sb.AppendLine($"== off Female_Adult_01 {item} nofix {nofix}");
+                sb.AppendLine("t,state,trans,fullW,offErr,mainErr,leftReach,shoulderToOff,fixW,holdW,offW,needHave,needTotal,needYaw,needPitch");
                 var done = false;
                 IEnumerator Act()
                 {
@@ -178,12 +210,13 @@ namespace SecondFace.Tests
                     var sh = a.GetBoneTransform(HumanBodyBones.LeftUpperArm).position;
                     var reach = left != null ? left.GetType().GetProperty("Arm")?.GetValue(left) : null;
                     sb.AppendLine(string.Join(",", new object[] { (Time.time - t0).ToString("0.000"), f.Current, tr ? 1 : 0, f.FullWeight.ToString("0.00"),
-                        (f.OffError * 100f).ToString("0.00"), (f.MainError * 100f).ToString("0.00"), reach, ((f.OffPoint() - sh).magnitude * 100f).ToString("0.0") }));
+                        (f.OffError * 100f).ToString("0.00"), (f.MainError * 100f).ToString("0.00"), reach, ((f.OffPoint() - sh).magnitude * 100f).ToString("0.0"),
+                        ((float)Get(f, "_fixW")).ToString("0.00"), ((float)Get(f, "_holdW")).ToString("0.00"), ((float)Get(f, "_offW")).ToString("0.00"), need.Have ? 1 : 0, need.Total.ToString("0.0"), need.Yaw.ToString("0.0"), need.Pitch.ToString("0.0") }));
                 };
                 while (!done) yield return null;
                 v.OnEnd(); yield return Wait(0.2f); Object.Destroy(v.Body.gameObject); yield return null;
             }
-            File.WriteAllText(Path.Combine(Application.dataPath, "../test-results/fight_probe.csv"), sb.ToString());
+            File.WriteAllText(Path.Combine(Application.dataPath, "../test-results/fight_probe5.csv"), sb.ToString());
         }
     }
 }

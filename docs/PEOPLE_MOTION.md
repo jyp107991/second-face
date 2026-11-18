@@ -85,9 +85,12 @@ It is binding. It sits beside the face and skin gate (`docs/PEOPLE_QA.md`) and i
    `remeasured` with its why, is left out until a verdict on the new code is committed); a set the verdict before did not
    measure at all is not compared. **A fight's state set introduced after a baseline is compared on the set its states
    were measured under there** (the inputs' `aliases`: each measure's failing cells of the new set summed into the
-   baseline set's): introduced with combat set v4, whose two-handed blows went from `strike` to `strike2` and whose slips
-   and ducks from `hit` to `dodge`, each to the limits of real actors of that action (§2.7; `docs/qa/motion_calibration.md`
-   §8). A set is aliased only to the one its states were measured under, never to hide a regression. Files are added to the inputs
+   baseline set's): introduced with combat set v4, whose two-handed blows went to `strike2` and whose slips and ducks to
+   `dodge`, each to the limits of real actors of that action (§2.7; `docs/qa/motion_calibration.md` §8). The gate measures
+   each person's fight records under the set of the state the table plays for them; both sets were measured under `strike`
+   in the baseline (the blows as the strike action, every miss as its block), so both fold into `strike`. A set is aliased only to the one its states were measured under, never to hide a regression. The fold and the
+   comparison are `tools/qa/gate_ratchet.mjs`, which `npm run check` runs through `people_gate.mjs`; `tests/people_gate_ratchet.test.ts`
+   pins them on the inputs' own table (a merged key made worse fails though neither of its sets alone is). Files are added to the inputs
    when they start to decide how people look or move, and never taken out to make a verdict fresh. **Every report
    to the owner starts with the gate's state** as `npm run people-gate` prints it (green, or red with the failing
    measures and their counts, or stale), and never calls people work done while it is not green.

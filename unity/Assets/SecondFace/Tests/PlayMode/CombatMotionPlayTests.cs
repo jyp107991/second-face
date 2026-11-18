@@ -673,6 +673,13 @@ namespace SecondFace.Tests
                     Assert.That(cs.state.transitions.All(t => t.hasExitTime), Is.True, $"{cs.state.name}: goes on at its end");
                 }
             }
+            // the base layer's state for the fight's stance: its own locomotion without Foot IK, which Unity applies by the
+            // base layer's state under the fight's layers too (CombatMotion.StanceBase)
+            var baseSm = ctl.layers[0].stateMachine;
+            var stand = baseSm.states.Select(x => x.state).FirstOrDefault(x => x.name == CombatMotion.StanceBase);
+            Assert.That(stand, Is.Not.Null, "the base layer's " + CombatMotion.StanceBase);
+            Assert.That(stand.iKOnFeet, Is.False, CombatMotion.StanceBase + ": no Foot IK");
+            Assert.That(stand.motion, Is.SameAs(baseSm.defaultState.motion), CombatMotion.StanceBase + ": the base's own locomotion");
 #else
             Assert.Ignore("editor only");
 #endif

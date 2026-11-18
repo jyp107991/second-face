@@ -9,14 +9,20 @@ namespace SecondFace.Game.People
     /// real head does on a still body: at most <see cref="MaxYaw"/> round from the body's front and <see cref="MaxUp"/> /
     /// <see cref="MaxDown"/> up and down (the eyes take a gaze shift up to about 30° before the head joins; further round, a
     /// person turns the body, which the game does for a conversation). Humanoid look-at in the base layer's IK pass: the
-    /// head mostly, the body a little, no clamp of Unity's own (the aim is already held in range).
+    /// head and the eyes, no clamp of Unity's own (the aim is already held in range), and the trunk not at all
+    /// (<see cref="BodyWeight"/>).
     /// </summary>
     [RequireComponent(typeof(Animator))]
     public sealed class Gaze : MonoBehaviour
     {
         public Transform Target;
         public float HeadWeight = 0.9f;
-        public float BodyWeight = 0.25f;
+        /// <summary>How much of a look the trunk takes (Unity's look-at body weight): none. A standing person's torso takes no
+        /// part in a gaze shift under 45° (Sidenmark &amp; Gellersen 2019, 7,600 gaze shifts of 20 people, ACM TOCHI 27(1):4; eyes
+        /// and head do it, Cinelli, Patla &amp; Stuart 2007), and every look here is held within <see cref="MaxYaw"/>. At 0.25 the
+        /// look-at turned the upper chest 7.4-7.6° on the pelvis for a 20° look (and 5° for one straight ahead, drawing the
+        /// idle's raised face level), carrying a broad man's hanging arm across his belly (A1 21.7, 2026-11-18).</summary>
+        public float BodyWeight = 0f;
         public float MaxYaw = 20f, MaxUp = 10f, MaxDown = 14f;
         /// <summary>The most the head is let lean to one side (a clip's tilt beyond it is taken out), degrees.</summary>
         public float MaxRoll = 6f;

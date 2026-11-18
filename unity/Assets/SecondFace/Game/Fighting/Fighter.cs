@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using SecondFace.Core.Combat;
 using SecondFace.Game.People;
@@ -45,6 +46,11 @@ namespace SecondFace.Game.Fighting
 
         private Animator _a;
         private int _full = -1, _armsLayer = -1;
+        // the trunk's bones from the hips up (the spine, the chest, the upper chest: those the body has), for AimFix
+        private Transform[] _trunk = new Transform[0];
+        // the base layer's locomotion and its state without Foot IK for the fight's stance (CombatMotion.StanceBase)
+        private int _loco, _stanceBase;
+        private static readonly int StanceBaseId = Animator.StringToHash(CombatMotion.StanceBase), LocomotionId = Animator.StringToHash("Locomotion");
         private Hand _right, _left;
         private Transform _hips, _spine, _chest, _head, _upL, _loL, _footL, _upR, _loR, _footR;
         private FootPlant _plant;
@@ -173,10 +179,13 @@ namespace SecondFace.Game.Fighting
             if (Names.Count == 0) foreach (var s in CombatMotion.States) { Names[Animator.StringToHash(s.AnimName(false))] = s.Name; Names[Animator.StringToHash(s.AnimName(true))] = s.Name; }
             _full = _a.GetLayerIndex(CombatMotion.FullLayer);
             _armsLayer = _a.GetLayerIndex(CombatMotion.ArmsLayer);
+            _stanceBase = _a.HasState(0, StanceBaseId) ? StanceBaseId : 0;
+            _loco = _a.HasState(0, LocomotionId) ? LocomotionId : 0;
             _right = new Hand(_a, false); _left = new Hand(_a, true);
             _hips = _a.GetBoneTransform(HumanBodyBones.Hips);
             _spine = _a.GetBoneTransform(HumanBodyBones.Spine);
             _chest = _a.GetBoneTransform(HumanBodyBones.UpperChest) ?? _a.GetBoneTransform(HumanBodyBones.Chest) ?? _spine;
+            _trunk = new[] { _spine, _a.GetBoneTransform(HumanBodyBones.Chest), _a.GetBoneTransform(HumanBodyBones.UpperChest) }.Distinct().ToArray();
             _head = _a.GetBoneTransform(HumanBodyBones.Head);
             _shoulderR = _a.GetBoneTransform(HumanBodyBones.RightShoulder);
             _upL = _a.GetBoneTransform(HumanBodyBones.LeftUpperLeg); _loL = _a.GetBoneTransform(HumanBodyBones.LeftLowerLeg); _footL = _a.GetBoneTransform(HumanBodyBones.LeftFoot);
@@ -558,6 +567,7 @@ namespace SecondFace.Game.Fighting
                 if (fightStance) { if (!_pausedPlant) { _plantWasOn = _plant.enabled; _pausedPlant = true; } if (_plant.enabled) _plant.enabled = false; }
                 else if (_pausedPlant) { _plant.enabled = _plantWasOn; _pausedPlant = false; }
             }
+            Base(fightStance);
             // a person in a fight makes no idle gestures (the ambient's waves and stretches wait until it is over)
             var fighting = _fullWant > 0.5f || _armsWant > 0.5f || Moving || _fullW > 0.02f || _armsW > 0.02f;
             if (_ambient != null)
@@ -639,6 +649,28 @@ namespace SecondFace.Game.Fighting
             Springs(dt);
             Hands(dt);
         }
+
+        /// <summary>
+        /// Unity's Foot IK goes by the base layer's state, under every layer over it: the people's locomotion has it on, so
+        /// the fight's clips, built without it, were played with it (the long gun aim's straight leg bent from the take's
+        /// 7.2° to 17-21° on the bodies; on the base's "sit", which has none, 7.2°, 2026-11-18). While the fight's stance has
+        /// the body the base plays its locomotion in <see cref="CombatMotion.StanceBase"/> (the same motion without Foot IK,
+        /// at the same phase), and goes back as the stance gives the body up; a base in any other state (a sneak, a sit) is
+        /// left as it is.
+        /// </summary>
+        private void Base(bool stance)
+        {
+            if (_stanceBase == 0 || _loco == 0 || _a.IsInTransition(0)) return;
+            var info = _a.GetCurrentAnimatorStateInfo(0);
+            var from = stance ? _loco : _stanceBase;
+            if (info.shortNameHash != from) return;
+            var phase = info.loop ? info.normalizedTime - Mathf.Floor(info.normalizedTime) : Mathf.Clamp01(info.normalizedTime);
+            _a.CrossFadeInFixedTime(stance ? _stanceBase : _loco, BaseFade, 0, phase * info.length);
+        }
+
+        /// <summary>The base layer's crossfade into and out of <see cref="CombatMotion.StanceBase"/> (s): the fight's
+        /// layer's own (<see cref="Locomote"/>'s 0.25 s), so Foot IK eases out as the stance comes in.</summary>
+        public const float BaseFade = 0.25f;
 
         // ------------------------------------------------------------------------------------------- the feet
 
@@ -931,7 +963,19 @@ namespace SecondFace.Game.Fighting
             _right.Reach_(at, Hand.PalmOn(weapon, CombatMotion.MainGrip(Held.Model)), w * Smooth(ramp));
         }
 
-        /// <summary>A long gun's muzzle onto the target by the wrist (the captured hands mimed a gun: at most 12°).</summary>
+        /// <summary>The most <see cref="AimFix"/> turns a long gun onto its target (°): the captured hands mimed a gun, and the
+        /// held aim's line misses by up to 7.8° (the target's height and the take's own line; 4.4° median, mostly in pitch).</summary>
+        public const float AimFixMax = 12f;
+
+        /// <summary>
+        /// A long gun's muzzle onto the target, by the upper body: the gun held in both hands, its stock in the shoulder and the
+        /// cheek on it, turns with the trunk as one piece, the spine, the chest and the upper chest a share each (the arms, the
+        /// head and the gun go with them, so the off hand keeps the reach the take gives it). It corrects an aim, never a gun
+        /// still coming up: fully within <see cref="AimFixMax"/> of the target, fading out to none at twice that.
+        /// (Turned at the main wrist alone, up to 12° over the whole raise into the aim, where the take's gun is still 18-83°
+        /// off the target, it swung the fore-end 40-55 cm ahead of that hand by 8-11 cm: a woman's off hand 2.6-5.3 cm off its
+        /// grip, out of her reach, 2026-11-18; docs/COMBAT_ROOT_CAUSE.md.)
+        /// </summary>
         private void AimFix(float w)
         {
             if (_w == null || !_w.HasMuzzle) return;
@@ -942,9 +986,15 @@ namespace SecondFace.Game.Fighting
             var turn = Quaternion.FromToRotation(t.forward, want.normalized);
             turn.ToAngleAxis(out var angle, out var axis);
             if (angle > 180f) angle -= 360f;
-            angle = Mathf.Clamp(angle, -12f, 12f) * w;
-            // (turned at the wrist itself: the hand stays on the forearm, the grip moves a centimetre at most)
-            _right.Bone.rotation = Quaternion.AngleAxis(angle, axis) * _right.Bone.rotation;
+            var near = Mathf.Clamp01((2f * AimFixMax - Mathf.Abs(angle)) / AimFixMax);
+            angle = Mathf.Clamp(angle, -AimFixMax, AimFixMax) * w * near;
+            if (Mathf.Abs(angle) < 1e-3f) return;
+            var chain = 0;
+            foreach (var b in _trunk) if (b != null) chain++;
+            if (chain == 0) { _right.Bone.rotation = Quaternion.AngleAxis(angle, axis) * _right.Bone.rotation; return; }
+            // (each bone about the same world axis: they add up along the chain to the whole turn at the shoulders)
+            var share = Quaternion.AngleAxis(angle / chain, axis);
+            foreach (var b in _trunk) if (b != null) b.rotation = share * b.rotation;
         }
 
         // ------------------------------------------------------------------------------------------- the end
@@ -1004,6 +1054,12 @@ namespace SecondFace.Game.Fighting
             if (_pausedAmbient && _ambient != null) { _ambient.enabled = _ambientWasOn; _pausedAmbient = false; }
             if (_clear != null) _clear.Holding = false;
             if (_gaze != null) { _gaze.MaxNeckYaw = _gazeYaw0; _gaze.MaxRoll = _gazeRoll0; }
+            // (the base layer back to its locomotion, Foot IK and all, if the fighter stops while the stance had it)
+            if (_a != null && _a.isActiveAndEnabled && _stanceBase != 0 && _loco != 0)
+            {
+                var info = _a.GetCurrentAnimatorStateInfo(0);
+                if (info.shortNameHash == _stanceBase) _a.Play(_loco, 0, info.normalizedTime - Mathf.Floor(info.normalizedTime));
+            }
         }
 
         private void OnDestroy()

@@ -16,6 +16,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative, sep } from 'node:path';
+import { worse } from './gate_ratchet.mjs';
 
 const ROOT = new URL('../..', import.meta.url).pathname;
 const VERDICT_REL = 'docs/qa/gates/motion_gate.json';
@@ -113,35 +114,11 @@ function prior() {
   } catch { return null; }
 }
 const before = prior();
-// a fight's state set introduced after the baseline is compared on the set its states were measured under there
-// (motion_gate_inputs.json `aliases`, combat set v4 2026-11-18: strike2 -> strike, dodge -> hit): each measure's failing
-// cells summed into the baseline's key, so a state moved to a set of its own is never compared against nothing
-const ALIASES = spec.aliases ?? {};
-function folded(byMeasure) {
-  const out = {};
-  for (const [k, n] of Object.entries(byMeasure ?? {})) {
-    let key = k;
-    for (const [from, to] of Object.entries(ALIASES)) if (k.endsWith(' ' + from)) key = k.slice(0, k.length - from.length) + to;
-    out[key] = (out[key] ?? 0) + n;
-  }
-  return out;
-}
-// (compared whenever both are the same set, the gate's own code changed or not: the owner's rule is that no commit makes any
-// measure worse, and a change of the measures' code is no exemption; a measure whose definition was made stricter is named in
-// motion_gate_inputs.json `remeasured` with its why, and only those are left out until a verdict on the new code is committed)
-const REMEASURED = new Set(Object.keys(spec.remeasured ?? {}));
-// a key's set ('' for the standing and walking states, 'combat:<set>' for a fight's): a set the verdict before did not
-// measure at all (no key of it there: the fight's states before dfc732a4) is not compared
-const setOf = (k) => k.split(' ')[1] ?? '';
-if (before && before.byMeasure && verdict.byMeasure && before.set === verdict.set) {
-  const was = folded(before.byMeasure), now = folded(verdict.byMeasure);
-  const measuredBefore = new Set(Object.keys(was).map(setOf));
-  for (const [m, n] of Object.entries(now)) {
-    if (!measuredBefore.has(setOf(m))) continue;
-    if (before.measures !== verdict.measures && REMEASURED.has(m.split(' ')[0])) continue;
-    if (n > (was[m] ?? 0)) problems.push(`people made worse: ${m} ${was[m] ?? 0} -> ${n} failures (${before.date} -> ${verdict.date}); fix it or revert, never commit a regression`);
-  }
-}
+// each measure's failing cells, the fight's aliased sets folded into their baseline keys (motion_gate_inputs.json
+// `aliases`, combat set v4 2026-11-18: strike2 and dodge -> strike), against the verdict before when both are the same
+// set; a measure made stricter is named in `remeasured` with its why (tools/qa/gate_ratchet.mjs; tests/people_gate_ratchet.test.ts)
+for (const w of worse(before, verdict, spec))
+  problems.push(`people made worse: ${w.key} ${w.was} -> ${w.now} failures (${before.date} -> ${verdict.date}); fix it or revert, never commit a regression`);
 
 const images = walk(EVIDENCE).filter((f) => PEOPLE.test(relative(EVIDENCE, f)) && !/\/_red\//.test(f));
 const recent = images.map((f) => ({ f, t: changed(f) })).filter((x) => x.t >= LOCK);

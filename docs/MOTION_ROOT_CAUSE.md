@@ -426,7 +426,26 @@ own frame, each foot's own lowest skin point in its stance (within 4 cm of its l
   0.5-0.7 cm on the mesh, C1), the upper arm by the elbow lies on the flank at contact (no offset), and nothing that stands
   clear moves; the resting hand is placed in the shoulders' frame, not the hips'. Pick: **A1 57 → 3** (cap_Police_Male_03n's
   looks, 21.7: his left forearm by the elbow 2.5 cm into the belly's front-left where the gaze turns his chest, the first turn
-  4.6°; open).
+  4.6°; traced below).
+- **The looks' A1: the gaze turned the trunk, which a real look of 20° never does.** `Gaze` holds every look within 20° of the
+  body's front (`MaxYaw`) and gave Unity's look-at a body weight of 0.25. Measured on three people (a probe on the game's own
+  people: the spine's, chest's and upper chest's yaw on the pelvis, the left upper arm, ArmClearance's push): for a look at 45°
+  (held at 20°) the upper chest turned 7.6° on cap_Police_Male_03n, 8.4° on Business_Male_01, 7.4° on Female_Adult_01, and 1-5°
+  even for a look straight ahead (the look-at drawing the idle's raised face level by the trunk); the left shoulder came forward
+  with it and laid his hanging arm across the belly, so ArmClearance turned it out 4.6° (A1 17.0 → 21.6). At body weight 0.1
+  the turn was 3.4° (A1 20.1), at 0 none (A1 18.6, within the idle's own phase-to-phase spread of ±1.5°). Real people: a
+  standing person's torso takes no part in a gaze shift under 45° (Sidenmark & Gellersen 2019, ACM TOCHI 27(1):4: 7,600 gaze
+  shifts of 20 people, seated and standing, eye, head and torso tracked; the torso moved in 85 % of standing horizontal shifts
+  only from 45°), and gaze shifts up to 90° are made mainly by the eyes and head (Cinelli, Patla & Stuart 2007, Exp Brain Res).
+  **Fix:** `Gaze.BodyWeight` 0: a look is the eyes' and the head's (the head on the chest stays within H2: 18-21° at a 20°
+  look, the limit 30). The arm hangs where the clip has it; nothing in ArmClearance changes for it.
+- **Found on the way, open (the people's own states):** with the references consistent, Unity's Foot IK (on in every locomotion
+  state) still bends a straight leg: on Male_Adult_08 and Female_Adult_01 the standing idle's straighter knee is 0.0° played
+  bare and 18.9° / 21.0° with Foot IK, the ankles moving under 0.4 cm (the goal is the take's foot by the humanScale ratio, and
+  a near-straight knee turns 10-20° for a centimetre). Standing, FootPlant's bearing leg takes it out (K1 passes in the idles);
+  its reason in P4.8 (the feet 1-2 cm off the floor on the old reference) is gone (played bare on the stood reference, the
+  ankles are within 0.9 cm of the bind's). Under the fight's layer it was not taken out (COMBAT_ROOT_CAUSE, 2026-11-18, item 5).
+  To be traced for the people's own states as its own item: whether Foot IK still does any good there.
 - **C1's cause on the way: the upper arm divided differently from the gate.** ArmClearance gave the chest's soft contact
   (`UpperGive`, 2.5 cm) to the upper arm above its third by the elbow by the distance to the elbow joint; the gate divides it by
   the share along the bone from the shoulder (0.65): a surface point 4-5 cm off the bone near the boundary was the chest's

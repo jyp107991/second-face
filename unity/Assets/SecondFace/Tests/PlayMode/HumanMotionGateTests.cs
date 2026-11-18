@@ -868,9 +868,13 @@ namespace SecondFace.Tests
                 cam.enabled = false;
             }
 
-            IEnumerator Measure(string state, float hold, System.Func<AnimatedUnitView, IEnumerator> act, MotionProbe.K kind = MotionProbe.K.Stand)
+            // (each person's records under the set of the state they play, so its limits are that state's: combat set v4's
+            // two-handed blows are `strike2`, its slips and ducks `dodge`, a woman's miss a duck where a man's may be a block;
+            // `per` names a person's state, else everyone's is `state`)
+            IEnumerator Measure(string state, float hold, System.Func<AnimatedUnitView, IEnumerator> act, MotionProbe.K kind = MotionProbe.K.Stand, System.Func<int, string> per = null)
             {
                 record(state, kind);
+                if (per != null) for (var k = 0; k < people.Count; k++) people[k].Probe.State = per(k);
                 var running = 0;
                 if (act != null)
                     foreach (var v in views)
@@ -882,10 +886,12 @@ namespace SecondFace.Tests
                 for (int n = Frames(hold), cap = Frames(25f), i = 0; (i < n || running > 0) && i < cap; i++)
                 {
                     yield return null;
-                    for (var k = 0; k < people.Count && k < views.Count; k++) Grips(people[k], views[k], state);
+                    for (var k = 0; k < people.Count && k < views.Count; k++) Grips(people[k], views[k], per != null ? per(k) : state);
                 }
                 stop();
             }
+            // the set a person's state is measured under: the gate of the state the table plays for them
+            string SetOf(int k, string state, string otherwise) => CombatMotion.State(state)?.Gate ?? otherwise;
 
             IEnumerator Shoot(AnimatedUnitView v, int rounds) { for (var i = 0; i < rounds; i++) yield return v.OnFire(v.Body.position + ahead + Vector3.up * 1.1f, true, i, rounds); }
             IEnumerator Blows(AnimatedUnitView v, int n) { for (var i = 0; i < n; i++) { yield return v.OnStrike(v.Body.position + ahead * 0.12f, true); yield return Wait(0.9f); } }
@@ -973,8 +979,11 @@ namespace SecondFace.Tests
                 }
                 else
                 {
-                    yield return Measure($"combat:strike:{arms}", 0f, v => Blows(v, 3));
-                    yield return Measure($"combat:strike:{arms}_block", 0f, v => Then(() => v.OnMiss(v.Body.position + ahead * 0.12f, true), 1.8f));
+                    var held = arms == "melee" ? Arms.Melee : arms == "club2" ? Arms.Club2 : Arms.Unarmed;
+                    yield return Measure($"combat:strike:{arms}", 0f, v => Blows(v, 3),
+                        per: k => $"combat:{SetOf(k, CombatMotion.Strike(held, Female(people[k].Id), 0), "strike")}:{arms}");
+                    yield return Measure($"combat:strike:{arms}_block", 0f, v => Then(() => v.OnMiss(v.Body.position + ahead * 0.12f, true), 1.8f),
+                        per: k => $"combat:{SetOf(k, CombatMotion.Miss(held, Female(people[k].Id), true, 0), "strike")}:{arms}_block");
                 }
                 if (arms == "unarmed")
                 {

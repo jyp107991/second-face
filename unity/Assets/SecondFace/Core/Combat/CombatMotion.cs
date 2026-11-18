@@ -134,6 +134,11 @@ namespace SecondFace.Core.Combat
         public const string FullLayer = "Combat", ArmsLayer = "CombatArms";
         public const string ArmsParam = "CombatArms", CrouchParam = "CombatCrouch", RateParam = "CombatRate", SexParam = "Sex";
         public const string None = "none";
+        /// <summary>The base layer's state while the fight's stance has the body: the people's locomotion as it is, without
+        /// Unity's Foot IK. Unity applies Foot IK by the base layer's state under every layer over it, the fight's too
+        /// (whose states are built without it): on the bodies it bent the long gun aim's straight leg from the take's 7.2° to
+        /// 17-21° (docs/COMBAT_ROOT_CAUSE.md, 2026-11-18).</summary>
+        public const string StanceBase = "fight_stand";
         public const string ToIdle = "@idle", ToCover = "@cover";
         public const string Folder = "Assets/SecondFace/Combat/Motion";
         public const string WeaponFolder = "Assets/SecondFace/Combat/Weapons";
