@@ -153,7 +153,9 @@ def frames_from(dump_dir, json_dir):
             o0, y0 = SC.anchor(m); d = SC.to_anchor(o, (o0, y0))
             fr.update(cut=c['cut'], key=k, root_at_cut_m=[round(float(d[0]), 4), round(float(d[2]), 4)],
                       root_after_end_m=[round(float(x), 4) for x in SC.to_anchor(np.array([SC.com(m, m.n - 1)[0], 0.0, SC.com(m, m.n - 1)[2]]), (o0, y0))[[0, 2]]])
-        fr.update(yaw=-yaw, origin=[float(o[0]), float(o[2])])
+        # (v4.6: + SC.TAKE_FRONT, the front on the file's -Z, which Unity's Original basis puts on the root's +Z)
+        fr.update(yaw=-yaw + SC.TAKE_FRONT, origin=[float(o[0]), float(o[2])],
+                  front={'by': 'body', 'clip': c['ref']} if c['rule'] == 'anchor' else {'by': 'body at its first key', 'clip': c['ref']})
         out[ch] = fr
     return out
 
@@ -169,7 +171,7 @@ def pins_from(dump_dir, json_dir):
         c = CHAINS[d['chain']]
         A = SC.clip_feet([dump_dir], [json_dir], d['after'])
         m = A[0]; k = SC.key_at(m, c['cut']); anc = SC.at_key(A, k)
-        pin = {s: [float(v) for v in SC.to_anchor(m.P[s + 'Foot'][k], anc)] for s in ('Left', 'Right')}
+        pin = {s: [float(v) for v in SC.from_take_front(SC.to_anchor(m.P[s + 'Foot'][k], anc))] for s in ('Left', 'Right')}
         pin['from'] = f"{d['after']} at its cut ({c['cut']}, key {k})"
         out[d['name']] = pin
     return out

@@ -92,6 +92,11 @@ Divinity: Original Sin 2 have no cover system and no surrender) or nothing beyon
   crouch, a guard to a standing surrender) and states whose feet the fight does not pin (hits, throws, slips) are reported with
   their offsets. Equal ankles are not enough: CMU 79_96's ready and aim stand within 1.3 cm but the right foot turns 9.8° (the
   captured pivot), so the game reaches the aim through the captured raise and leaves it through the captured lower.
+  **The front of a take frame** (combat v4.6): a clip written in its take's frame (`root_basis: take`, imported based upon
+  Original) keeps the file's own root turn, and the converters' FBX and Unity's import put the file's +Z on Unity's -Z: its
+  frame's front is written on the file's -Z (`stance_continuity.TAKE_FRONT`), and clip QA's `facing` models that basis. The
+  clip that sets its chain's front faces Unity's +Z within 10° (its body orientation, or the aim's gun line). Every take-basis
+  clip faces it within 90° on its hips, chest, body and gun.
 
 ## 2. The states
 
@@ -479,6 +484,14 @@ Fighter.Feet stepping the feet, until a capture that is not on disk is found):
 - hands up from the fighting guard (men 1, women 2): no hands-up captured from a guard;
 - the rise into the pistol ready and aim (men and women: 4), her guard (1) and her long gun's ready and aim (2): no rise that
   ends in those stances.
+
+**v4.6 (`/home/user/second-face-staging/combat/v4_6/`: v4.1-v4.5 as one set, imported in their place).** Found in Unity: every
+take-basis clip played turned 178-180° from the root's front, because Unity's Original basis puts the file's +Z on its -Z.
+The take frames are now written with their front on the file's -Z (`stance_continuity.TAKE_FRONT`; G13's "front of a take
+frame"), positions and rotations together, and the build's two world-fixed choices (a knee's pole, the pistol aim's line)
+follow the clip's front. The same 124 clips under the same names: clip QA 124 of 124, the facing check 117 of 117 take-basis
+clips (it reads 172-180° on v4.1-v4.5), and every G13 pair within 0.3 cm and 0.5° of before (83 pass, 29 on the blend
+fallback).
 
 ## 5. Proposals for the gate's owner (from the evidence; none applied)
 1. **The long-gun aim limits.** The provisional column (K1 ≤ 2.2, H1 −3…+1.2, H2 15.2-22.2, H3 10.6-16.6) is two mimed actors'

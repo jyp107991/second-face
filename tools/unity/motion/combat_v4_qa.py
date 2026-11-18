@@ -262,6 +262,41 @@ def tpose(fbx):
     return {'max_deg': round(worst, 3), 'per_bone': out, 'first_key_from_default_deg': first}
 
 
+FACING_DEG, HALF_TURN_DEG = 10.0, 90.0
+
+
+def facing(m, meta):
+    """combat v4.6: a clip written in its take's frame (root_basis take) as Unity plays it based upon Original (the file's own
+    root turn kept: the file's +Z lands on Unity's -Z, stance_continuity.unity_original), its front measured against Unity's
+    +Z at the first key: the hips' line, the shoulders' (the chest's) line and their mean (Unity's body orientation), each
+    turned to its forward, and the gun line where the clip holds one. Judged: the clip that sets its chain's front (its json's
+    frame.front.clip) within 10°, by what set it (the body orientation, or the aim's gun line: its mean over the clip, as the
+    frame was made, and its first key); every take-basis clip within 90° on each (a clip of a chain starts where its take
+    stood it: the rifle aim bladed 44° to its gun line, a cross's first key 36° into the punch; a half turn cannot pass)."""
+    if meta.get('root_basis') != 'take': return None
+    import stance_continuity as SC
+    def yaw(v):
+        u = SC.unity_original(v); return float(np.degrees(np.arctan2(u[0], u[2])))
+    out = {}; acc = np.zeros(3)
+    for nm, (l_, r_) in (('hips', ('LeftUpperLeg', 'RightUpperLeg')), ('chest', ('LeftUpperArm', 'RightUpperArm'))):
+        v = m.P[l_][0] - m.P[r_][0]; v[1] = 0.0; v = v / max(1e-9, np.linalg.norm(v)); acc += v
+        out[nm + '_deg'] = round(yaw(np.array([-v[2], 0.0, v[0]])), 1)        # forward = left x up
+    out['body_deg'] = round(yaw(np.array([-acc[2], 0.0, acc[0]])), 1)
+    ik = meta.get('ik') or {}
+    if ik.get('keys') and ik.get('mode') in ('Shoulder', 'PistolAim'):
+        f0 = u2f(ik['keys'][0]['fwd']); fm = np.mean([u2f(k['fwd']) for k in ik['keys']], axis=0)
+        out['gun_deg'] = round(yaw(f0), 1); out['gun_mean_deg'] = round(yaw(fm), 1)
+    front = (meta.get('frame') or {}).get('front') or {}
+    sets = front.get('clip') == meta.get('name')
+    out['sets_front'] = front.get('by') if sets else None
+    worst = max(abs(out['hips_deg']), abs(out['chest_deg']), abs(out['body_deg']), abs(out.get('gun_deg', 0.0)))
+    ok = worst <= HALF_TURN_DEG
+    if sets: ok = ok and (abs(out['gun_mean_deg']) <= FACING_DEG and abs(out['gun_deg']) <= FACING_DEG if front.get('by') == 'gun line'
+                          else abs(out['body_deg']) <= FACING_DEG)
+    out['ok'] = bool(ok)
+    return out
+
+
 def checks(m, meta, r, fails, fbx=None):
     """The v4 checks into r['checks'] and fails."""
     if fbx and os.path.exists(fbx):
@@ -282,6 +317,13 @@ def checks(m, meta, r, fails, fbx=None):
     if cl:
         r['checks']['weapon_clearance'] = cl
         if cl['min_clearance_cm'] < 0: fails.append(f"weapon C1: the weapon passes {-cl['min_clearance_cm']:.1f} cm into the {cl['part']} (key {cl['key']})")
+    fc = facing(m, meta)
+    if fc:
+        r['checks']['facing'] = fc
+        if not fc['ok']:
+            fails.append(f"facing: under Unity's Original basis the clip's front is off Unity's +Z (hips {fc['hips_deg']}°, chest "
+                         f"{fc['chest_deg']}°, body {fc['body_deg']}°" + (f", gun {fc['gun_deg']}°" if 'gun_deg' in fc else '') +
+                         f"; the clip setting its chain's front within {FACING_DEG:g}°, every take-basis clip within {HALF_TURN_DEG:g}°)")
     tm = timing(m, meta)
     if tm:
         r['checks']['timing'] = tm

@@ -78,7 +78,7 @@ def frames_from(dump_dir, json_dir):
         A = SC.clip_feet([dump_dir], [json_dir], d['name'], basis='first')
         if A is None: raise SystemExit(f"no pass-1 dump of {d['name']}")
         m, j, (o, yaw), _ = A
-        out[d['name']] = dict(yaw=-yaw, origin=[float(o[0]), float(o[2])], ref=d['name'],
+        out[d['name']] = dict(yaw=-yaw + SC.TAKE_FRONT, origin=[float(o[0]), float(o[2])], ref=d['name'], front={'by': 'body', 'clip': d['name']},
                               note="origin and +Z: the step's own first-key centre of mass and body orientation")
     return out
 
