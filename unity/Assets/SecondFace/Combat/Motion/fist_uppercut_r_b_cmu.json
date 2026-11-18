@@ -6,7 +6,7 @@
  "root": false,
  "hip": 0.8474,
  "fps": 30,
- "frames": 33,
+ "frames": 47,
  "src_fps": 60,
  "sex": "m",
  "sex_source": "the take's own file names its subject Male1 (H:\\Male1\\...\\Male1.ASF); CMU's title records no sex",
@@ -15,19 +15,19 @@
  "source": "http://mocap.cs.cmu.edu/search.php?subjectnumber=143 (trial 143_23)",
  "state": "S7",
  "gate": "strike",
- "kind": "right rising punch (a second man, CMU 143)",
+ "kind": "right rising punch from the guard back to it (a man, CMU 143_23)",
  "weapon": "unarmed",
  "two_hands": false,
  "source_kind": "captured",
  "authoring": "captured (feet planted)",
  "range": [
-  4.7,
-  5.8
+  4.5,
+  6.05
  ],
  "facing": "strike_R",
  "travel_m": [
-  0.017,
-  0.029
+  0.026,
+  0.009
  ],
  "root_note": "in place",
  "closed": false,
@@ -101,7 +101,7 @@
  "mirrored": false,
  "events": {
   "impact": [
-   16
+   22
   ]
  },
  "events_kind": "strike:R",
@@ -112,8 +112,8 @@
   "src": "R1/R2: punch delivery 405 +/- 150 ms (mean +/- 2 SD); hooks deliver slower [R2] (no figure: held to the same span)",
   "ref": "punch",
   "measured": {
-   "onset_s": 0.217,
-   "beat_s": 0.533,
+   "onset_s": 0.417,
+   "beat_s": 0.733,
    "span_s": 0.317,
    "peak_mps": 3.1
   }
@@ -153,45 +153,56 @@
   "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
  },
  "stature_est_m": 1.506,
+ "root_basis": "take",
+ "chain": "guard_m",
+ "frame": {
+  "yaw_deg": 96.613,
+  "origin_m": [
+   1.1969,
+   0.0327
+  ],
+  "ref": "guard_m_built",
+  "note": "origin and +Z: guard_m_built's first-key centre of mass and body orientation"
+ },
  "plant_record": {
   "stances": {
    "Left": [
     [
      0,
-     32
+     46
     ]
    ],
    "Right": [
     [
      0,
-     32
+     46
     ]
    ]
   },
-  "held_keys": 66,
-  "max_shift_cm": 3.17,
+  "held_keys": 94,
+  "max_shift_cm": 3.31,
   "out_of_reach_keys": 0,
-  "foot_pitched_keys": 13,
-  "foot_pitched_max_deg": 11.5,
+  "foot_pitched_keys": 16,
+  "foot_pitched_max_deg": 12.1,
   "second_pass": {
    "stances": {
     "Left": [
      [
       0,
-      32
+      46
      ]
     ],
     "Right": [
      [
       0,
-      32
+      46
      ]
     ]
    },
-   "held_keys": 66,
+   "held_keys": 94,
    "max_shift_cm": 0.0,
    "out_of_reach_keys": 0,
-   "foot_pitched_keys": 10,
+   "foot_pitched_keys": 0,
    "foot_pitched_max_deg": 0.0
   },
   "third_pass": {
@@ -199,20 +210,20 @@
     "Left": [
      [
       0,
-      32
+      46
      ]
     ],
     "Right": [
      [
       0,
-      32
+      46
      ]
     ]
    },
-   "held_keys": 66,
+   "held_keys": 94,
    "max_shift_cm": 0.0,
    "out_of_reach_keys": 0,
-   "foot_pitched_keys": 4,
+   "foot_pitched_keys": 6,
    "foot_pitched_max_deg": 0.0
   }
  }

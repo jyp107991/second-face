@@ -283,6 +283,20 @@ frame rates), `/home/user/second-face-staging/motion/README.md` (clip QA, clips 
   arms exactly level, so Unity's levelling moves 0°, and the same on the bodies' avatars) are a rigour item, held: (b)
   matches (a) within 0.7° without it.
 
+- **Everyday C1 of chunk 0 (2026-11-18, editor owner; `C1ProbeTests`, PlayMode, temporary: every forearm and hand vertex of the
+  baked mesh read three ways at 10 Hz in the idles; `unity/test-results/c1_probe.csv`).** The hand-off's reading (the runtime's
+  sparse points under-read a contact the gate reads at 0.5-1.2 cm) is **refuted where reproduced**: (1) the gate's depth (the
+  least of the three nearest body vertices' planes) at its worst vertex: Business_Male_02 idle0 0.53-0.56 cm, Business_Female_03
+  idle0 0.63-0.71 (the gate's own run: 0.53 and 0.62); (2) the same vertex against the body's own triangles, as the mesh is drawn
+  (the nearest point on the torso's and thighs' triangles, inside by the gate's ray parity): **0.13-0.15 and 0.05-0.12 cm**; (3)
+  the runtime's `BodySkin.Depth` at that same point: 0.53 and 0.28-0.40, and at its nearest arm point (0.0-0.4 cm away) 0.30 and
+  0.28-0.40. So the runtime does not under-read the surface: the gate's vertex-plane depth over-reads it by 0.4-0.6 cm where
+  the body's vertices stand 4-7 cm apart over a convex hip (a point under the chord between two vertices is behind both their
+  planes). The forearms rest 1-1.5 mm into the drawn surface. Business_Male_05's idle0 (gate 1.2 cm, 10 % of frames) is not
+  reproduced alone (0 in 41 samples): to trace in the gate's own run. **Decision for the coordinator** (not made here): whether C1
+  measures the drawn surface (the triangles it already uses for its inside test and A4's gap), or the runtime is made to hold
+  the arms off the vertex planes (0.4-0.6 cm further out than the surface needs, against A1).
+
 ## 8. T3 design: the contact-preserving retarget, baked per body (editor owner, 2026-11-17)
 **What is solved.** For each base body (79) and clip (28; 4,254 frames at 30 fps, about 4,400 with the idle at its true
 speed), every frame once: the clip as Mecanim retargets it to the body (sampled offline on the body's own avatar, muscle
@@ -462,6 +476,31 @@ own frame, each foot's own lowest skin point in its stance (within 4 cm of its l
   its reason in P4.8 (the feet 1-2 cm off the floor on the old reference) is gone (played bare on the stood reference, the
   ankles are within 0.9 cm of the bind's). Under the fight's layer it was not taken out (COMBAT_ROOT_CAUSE, 2026-11-18, item 5).
   To be traced for the people's own states as its own item: whether Foot IK still does any good there.
+- **Everyday C1 on chunk 0 of the v41c whole cast (2026-11-18: 0 → 12 cells against dfc732a4), traced from the gate's own
+  worst-contact lines (`HumanMotionGate clip:`).**
+  - Every cell is the right forearm on the right hip or thigh, at 0.93-1.04 m:
+    - Business_Male_05 1.0-1.2 cm under the gate's mesh;
+    - Business_Female_03 0.5-0.7;
+    - Business_Male_02 0.5, at the limit.
+  - ArmClearance's own skin points read the same contact at 0.1-0.4 cm. The game's nearest forearm point lies 0.0-0.4 cm from
+    the gate's deepest forearm vertex, and its nearest thigh point 0.9-1.5 cm from the gate's thigh vertex.
+  - So the sparse points (the arm about every 3 cm, the body about every 2.5 cm) under-read the forearm's and the hip's
+    convexity by 0.3-1.0 cm.
+  - The change that exposed it is the resting give (`RestGive`, the forearm and hand allowed 0.25 cm into the skin points at
+    rest). Before it, the moving margin kept a resting forearm 0.9 cm off them.
+  - Not yet fixed. The source fix is the skin points' reading of the surface where a forearm rests: denser points on the hips'
+    and thighs' sides and the forearm, or each point's local surface. A smaller give would only shift the threshold. Item for
+    the next batch.
+- **The fight's new head cells (chunk 0: H2 ready 0 → 26, H3 ready 0 → 20, H1/H2 in reload, yield, strike, hit, throw).**
+  Not traced in frames yet. The leading hypothesis has two parts:
+  - The gaze's head weight (0.9) aims the head at nearly the whole look. Real gaze shifts under about 20° are made almost
+    entirely with the eyes, and the head takes about a third at 30° (the 2024 review cited in `docs/qa/arm_build_evidence.md`'s
+    search; Sidenmark & Gellersen 2019).
+  - With the trunk's share now 0, the head's share is no longer offset by the chest.
+  A trunk share as a function of the look angle (none under 45°, rising beyond) changes nothing while every look is held
+  within 20° (`Gaze.MaxYaw`). The candidate cause is the head's share at small angles, which is also what keeps the idle's
+  raised face level (H1). Tracing frames comes first.
+
 - **C1's cause on the way: the upper arm divided differently from the gate.** ArmClearance gave the chest's soft contact
   (`UpperGive`, 2.5 cm) to the upper arm above its third by the elbow by the distance to the elbow joint; the gate divides it by
   the share along the bone from the shoulder (0.65): a surface point 4-5 cm off the bone near the boundary was the chest's

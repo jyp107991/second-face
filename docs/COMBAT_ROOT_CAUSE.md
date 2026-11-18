@@ -172,3 +172,32 @@ fight's layer.**
 - Fix: `fight_stand` is updated in place, never removed, and the build refuses a base with no motion. `GateBatchSetupTests`
   builds the locomotion first and asserts both states share a live tree. The controller test in `CombatMotionPlayTests`
   asserts the base's motion is not null; it passed before because SameAs held with both null.
+
+## 2026-11-18 (later): the head cells of chunk 0, traced (editor owner)
+
+**11. The new H1/H2/H3 cells (ready, reload, yield, strike, hit, throw, aim_pistol): every clip stood in its take's frame
+plays with the body turned 180° from the body's root.**
+- The hypothesis of the hand-off (the gaze's head weight 0.9 at small look angles) is **refuted**: the look angles are not
+  small. Probe (`HeadProbeTests`, PlayMode, temporary; the gate's own H1-H3 through `MotionProbe.Face`/`ChestForward`, the hips'
+  and chest's yaw against the root's front, the weapon's line; the fight driven as the gate drives it; Business_Female_01 and
+  Business_Male_01, the gaze as the game has it and switched off; `unity/test-results/head_probe2.csv`):
+  - With the root facing the target (+Z), the hips and chest stand at **178-180° from the root's front** in every state whose
+    clip carries `root_basis: take` (combat set v4.1): `pistol_idle`, `pistol_aim`, `pistol_reload`, `rifle_idle` (ready, hit),
+    the men's `club2_idle`, `yield_enter`; `rifle_aim` and `rifle_reload` 124-144° (the root turned 84-88° by the learnt gun
+    line). The clips stood on their first key (v4's `club_ready_f_built`, `guard_f_cmu`, `fist_guard_accad`) face the root's
+    front within 2-16°. A capture from behind the root shows the man's pistol ready facing the camera, the woman's club ready
+    showing her back (`unity/Screenshots/_red_headprobe_*`, red gate: never sent).
+  - The gaze, with no target in a fight, draws the head along the root's front: onto the target, behind the body's back.
+    Unity's look-at turns the head round to 173-178° on the chest (H2 p98) and rolls it 38-69° (H3); with the gaze off the same
+    states read H2 3-15°, H3 3-7°. With the old body weight (0.25) the look-at turned the whole chest round instead (the
+    baseline's small head cells hid it).
+  - So the people fight with their backs to the target: ready stances and hands-up face away; the pistol's aim is put on the
+    target by the hands' IK behind the body; the long gun's aim is pointed by turning the root to the learnt gun line.
+- Cause: the take frame's +Z (the chain's first-key body orientation, or the aim's gun line) is Unity's −Z once imported
+  "based upon Original": the clip files' frame convention (`tools/unity/motion/combat_v4.py` `build_framed` with
+  `stance_continuity.body_yaw`'s axes) and the import's basis disagree by a half turn. Clips on their first key are
+  normalised by Unity and never show it.
+- Fix (at the source, not in the gaze): the take frame written so that its +Z is Unity's +Z (the converters' frame yaw, one
+  half turn; every `root_basis: take` clip of v4.1-v4.5 re-staged), then imported as now. Not made here: the converters run
+  with Blender on the offline helper's machine. Nothing is changed in `Gaze` for it.
+- Gate hole: no measure checks that a fighter faces its target. To add: the hips' and the weapon's line against the target.

@@ -1,0 +1,202 @@
+{
+ "name": "rise_m_built",
+ "src": "ACCAD Male2_D13_CrouchToReady",
+ "loop": false,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.9082,
+ "fps": 30,
+ "frames": 82,
+ "src_fps": 30.0,
+ "sex": "m",
+ "sex_source": "ACCAD names its subjects by sex (Male2)",
+ "set": "m",
+ "licence": "ACCAD Open Motion Project (Ohio State University), CC BY 3.0",
+ "source": "https://accad.osu.edu/research/motion-lab/mocap-system-and-data (Male2_bvh.zip: Male2_D13_CrouchToReady.bvh)",
+ "state": "S17",
+ "gate": "crouch",
+ "kind": "up from the crouched hold to standing (a man; built on ACCAD Male2_D13, the holds' actor: its feet set on the hold's)",
+ "weapon": "any",
+ "two_hands": false,
+ "source_kind": "built",
+ "authoring": "built on capture ACCAD Male2_D13_CrouchToReady (feet set on crouch_hold_built's, each carried to the capture's landing in its first swing; feet planted)",
+ "evidence": [
+  "cal"
+ ],
+ "range": [
+  0.45,
+  3.2
+ ],
+ "facing": "mean",
+ "travel_m": [
+  -0.092,
+  0.052
+ ],
+ "root_note": "in place",
+ "closed": false,
+ "resolved": true,
+ "floor_shift_m": 0.0,
+ "mirrored": false,
+ "timing": {
+  "what": "down or up",
+  "lo": 0.3,
+  "hi": 3.6,
+  "src": "design 0.3-0.8 s; captured crouch-downs 2.6-3.6 s with settling (standard S16)",
+  "ref": "crouch"
+ },
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "replaces": [
+  "crouch_to_guard_accad"
+ ],
+ "stature_est_m": 1.366,
+ "root_basis": "take",
+ "chain": "cover_m",
+ "frame": {
+  "yaw_deg": -41.05,
+  "origin_m": [
+   0.025,
+   -0.6031
+  ],
+  "ref": "crouch_hold_built",
+  "note": "chosen so its first key's feet lie on crouch_hold_built's first key's (chain cover_m), the rest by settle_in"
+ },
+ "settle_in": {
+  "from": "crouch_hold_built",
+  "Left": {
+   "stance_ends_s": 0.0,
+   "next_stance_s": 0.4
+  },
+  "Right": {
+   "stance_ends_s": 1.567,
+   "next_stance_s": 1.833
+  },
+  "max_move_cm": 6.49,
+  "max_turn_deg": 21.5
+ },
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     12,
+     27
+    ],
+    [
+     40,
+     64
+    ],
+    [
+     68,
+     81
+    ]
+   ],
+   "Right": [
+    [
+     0,
+     47
+    ],
+    [
+     55,
+     81
+    ]
+   ]
+  },
+  "held_keys": 140,
+  "max_shift_cm": 2.06,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 0,
+  "foot_pitched_max_deg": 0.0,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      28
+     ],
+     [
+      40,
+      64
+     ],
+     [
+      68,
+      81
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      49
+     ],
+     [
+      55,
+      81
+     ]
+    ]
+   },
+   "held_keys": 151,
+   "max_shift_cm": 7.48,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      28
+     ],
+     [
+      40,
+      64
+     ],
+     [
+      68,
+      81
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      49
+     ],
+     [
+      55,
+      81
+     ]
+    ]
+   },
+   "held_keys": 145,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  }
+ }
+}

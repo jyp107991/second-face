@@ -1,0 +1,257 @@
+{
+ "name": "step_widen_f_14426",
+ "src": "CMU 144_26",
+ "loop": false,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.8688,
+ "fps": 30,
+ "frames": 50,
+ "src_fps": 120,
+ "sex": "f",
+ "sex_source": "CMU subject title: punching female",
+ "set": "f",
+ "licence": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses, may not be resold as data",
+ "source": "http://mocap.cs.cmu.edu/search.php?subjectnumber=144 (trial 144_26)",
+ "state": "S24",
+ "gate": "step",
+ "kind": "re-stance step: widen (a woman)",
+ "weapon": "any",
+ "two_hands": false,
+ "source_kind": "captured",
+ "authoring": "captured (feet planted)",
+ "range": [
+  22.308,
+  23.958
+ ],
+ "facing": "first",
+ "travel_m": [
+  -0.022,
+  0.113
+ ],
+ "root_note": "in place",
+ "closed": false,
+ "inbetween": {
+  "LeftHipJoint": {
+   "rest_lcl_quat": [
+    0.4491612,
+    0.4319617,
+    -0.0,
+    -0.7820891
+   ],
+   "kept": "under the root, never turned: at its rest in the bind and the take"
+  },
+  "RightHipJoint": {
+   "rest_lcl_quat": [
+    0.4611757,
+    0.4052808,
+    0.0,
+    0.7893444
+   ],
+   "kept": "under the root, never turned: at its rest in the bind and the take"
+  },
+  "Neck2": {
+   "rest_lcl_quat": [
+    0.9868471,
+    -0.1570406,
+    -0.0023728,
+    0.0382803
+   ],
+   "mode": "rest",
+   "into": [
+    "Neck",
+    "Head"
+   ],
+   "parent_swung_max_deg": 17.62,
+   "child_joint_moved_max_mm": 2.56
+  },
+  "LeftWristTwist": {
+   "rest_lcl_quat": [
+    1.0,
+    -0.0,
+    0.0,
+    -0.0
+   ],
+   "mode": "straight",
+   "into": [
+    "LeftLowerArm",
+    "LeftHand"
+   ],
+   "parent_swung_max_deg": 0.0,
+   "child_joint_moved_max_mm": 0.0
+  },
+  "RightWristTwist": {
+   "rest_lcl_quat": [
+    1.0,
+    0.0,
+    0.0,
+    -0.0
+   ],
+   "mode": "straight",
+   "into": [
+    "RightLowerArm",
+    "RightHand"
+   ],
+   "parent_swung_max_deg": 0.0,
+   "child_joint_moved_max_mm": 0.0
+  }
+ },
+ "resolved": false,
+ "floor_shift_m": 0.0,
+ "mirrored": false,
+ "events": {
+  "lift": [
+   14
+  ],
+  "set": [
+   17
+  ]
+ },
+ "events_kind": "step",
+ "timing": {
+  "what": "whole step",
+  "lo": 0.3,
+  "hi": 1.6,
+  "design": true,
+  "src": "design: the captured re-stance steps' own 0.3-1.4 s between still stances (mined, combat_v43_jobs), a turn's steps lengthening with its amplitude [R28]",
+  "ref": "restance",
+  "measured": {
+   "onset_s": 0.467,
+   "beat_s": 0.567,
+   "span_s": 0.1
+  }
+ },
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [
+   "LeftHipJoint",
+   "LeftWristTwist",
+   "Neck2",
+   "RightHipJoint",
+   "RightWristTwist"
+  ],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "stature_est_m": 1.582,
+ "root_basis": "take",
+ "chain": "step_widen_f_14426",
+ "frame": {
+  "yaw_deg": 20.481,
+  "origin_m": [
+   -0.1287,
+   0.5203
+  ],
+  "ref": "step_widen_f_14426",
+  "note": "origin and +Z: the step's own first-key centre of mass and body orientation"
+ },
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     0,
+     49
+    ]
+   ],
+   "Right": [
+    [
+     0,
+     14
+    ],
+    [
+     23,
+     26
+    ],
+    [
+     37,
+     49
+    ]
+   ]
+  },
+  "held_keys": 94,
+  "max_shift_cm": 3.56,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 5,
+  "foot_pitched_max_deg": 9.1,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      49
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      14
+     ],
+     [
+      23,
+      26
+     ],
+     [
+      37,
+      49
+     ]
+    ]
+   },
+   "held_keys": 82,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 3,
+   "foot_pitched_max_deg": 0.0
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      49
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      14
+     ],
+     [
+      23,
+      26
+     ],
+     [
+      37,
+      49
+     ]
+    ]
+   },
+   "held_keys": 82,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 1,
+   "foot_pitched_max_deg": 0.0
+  }
+ }
+}

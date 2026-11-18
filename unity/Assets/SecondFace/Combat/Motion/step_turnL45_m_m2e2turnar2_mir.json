@@ -1,0 +1,174 @@
+{
+ "name": "step_turnL45_m_m2e2turnar2_mir",
+ "src": "ACCAD Male2_E2_TurnAroundLeft",
+ "loop": false,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.9082,
+ "fps": 30,
+ "frames": 22,
+ "src_fps": 30.0,
+ "sex": "m",
+ "sex_source": "ACCAD names its subjects by sex (Male2)",
+ "set": "m",
+ "licence": "ACCAD Open Motion Project (Ohio State University), CC BY 3.0",
+ "source": "https://accad.osu.edu/research/motion-lab/mocap-system-and-data (Male2_bvh.zip: Male2_E2_TurnAroundLeft.bvh)",
+ "state": "S24",
+ "gate": "step",
+ "kind": "re-stance step: turn left 45 (a man), mirrored",
+ "weapon": "any",
+ "two_hands": false,
+ "source_kind": "captured",
+ "authoring": "captured (mirror; feet planted)",
+ "range": [
+  9.733,
+  10.45
+ ],
+ "facing": "first",
+ "travel_m": [
+  -0.025,
+  -0.006
+ ],
+ "root_note": "in place",
+ "closed": false,
+ "resolved": true,
+ "floor_shift_m": 0.0,
+ "mirrored": true,
+ "events": {
+  "lift": [
+   7
+  ],
+  "set": [
+   10
+  ]
+ },
+ "events_kind": "step",
+ "timing": {
+  "what": "whole step",
+  "lo": 0.3,
+  "hi": 1.6,
+  "design": true,
+  "src": "design: the captured re-stance steps' own 0.3-1.4 s between still stances (mined, combat_v43_jobs), a turn's steps lengthening with its amplitude [R28]",
+  "ref": "restance",
+  "measured": {
+   "onset_s": 0.233,
+   "beat_s": 0.333,
+   "span_s": 0.1
+  }
+ },
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "stature_est_m": 1.366,
+ "root_basis": "take",
+ "chain": "step_turnL45_m_m2e2turnar2",
+ "frame": {
+  "yaw_deg": -7.257,
+  "origin_m": [
+   0.2152,
+   0.2623
+  ],
+  "ref": "step_turnL45_m_m2e2turnar2",
+  "note": "origin and +Z: the step's own first-key centre of mass and body orientation"
+ },
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     0,
+     21
+    ]
+   ],
+   "Right": [
+    [
+     0,
+     5
+    ],
+    [
+     12,
+     21
+    ]
+   ]
+  },
+  "held_keys": 41,
+  "max_shift_cm": 1.33,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 0,
+  "foot_pitched_max_deg": 0.0,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      21
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      5
+     ],
+     [
+      12,
+      21
+     ]
+    ]
+   },
+   "held_keys": 44,
+   "max_shift_cm": 2.25,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      21
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      4
+     ],
+     [
+      12,
+      21
+     ]
+    ]
+   },
+   "held_keys": 37,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  }
+ }
+}

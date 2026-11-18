@@ -1,0 +1,155 @@
+{
+ "name": "crouch_hold_built",
+ "src": "ACCAD Male2_A7_Crouch",
+ "loop": true,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.9082,
+ "fps": 30,
+ "frames": 23,
+ "src_fps": 120.0,
+ "sex": "m",
+ "sex_source": "ACCAD names its subjects by sex (Male2)",
+ "set": "m",
+ "licence": "ACCAD Open Motion Project (Ohio State University), CC BY 3.0",
+ "source": "https://accad.osu.edu/research/motion-lab/mocap-system-and-data (Male2_bvh.zip: Male2_A7_Crouch.bvh)",
+ "state": "S16",
+ "gate": "crouch",
+ "kind": "crouched hold, wary (built on ACCAD Male2_A7_Crouch's own crouch after its crouch-down)",
+ "weapon": "any",
+ "two_hands": false,
+ "source_kind": "built",
+ "authoring": "built on capture ACCAD Male2_A7_Crouch (feet planted; ankles set where crouch_down_accad at its cut (0.92, key 71) leaves them)",
+ "evidence": [
+  "cal",
+  "here: CMU 136_10 (a man), 100STYLE Crouched"
+ ],
+ "range": [
+  2.692,
+  4.417
+ ],
+ "facing": "mean",
+ "travel_m": [
+  0.0,
+  0.0
+ ],
+ "root_note": "in place",
+ "closed": false,
+ "resolved": true,
+ "floor_shift_m": 0.0,
+ "mirrored": false,
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "replaces": [
+  "ready_crouch_cmu"
+ ],
+ "stature_est_m": 1.366,
+ "root_basis": "take",
+ "chain": "cover_m",
+ "frame": {
+  "yaw_deg": 4.437,
+  "origin_m": [
+   -0.7614,
+   0.0864
+  ],
+  "ref": "crouch_down_accad",
+  "note": "origin: crouch_down_accad's centre of mass at its cut (0.92), where its applied root motion leaves the root; +Z: its first key's body orientation (its turn is baked there)"
+ },
+ "after": {
+  "clip": "crouch_down_accad",
+  "note": "written with its origin where that clip's applied root motion leaves the root at its cut, +Z that clip's first-key body orientation (root_basis: take)"
+ },
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     0,
+     22
+    ]
+   ],
+   "Right": [
+    [
+     0,
+     22
+    ]
+   ]
+  },
+  "held_keys": 46,
+  "max_shift_cm": 0.47,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 0,
+  "foot_pitched_max_deg": 0.0,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      22
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      22
+     ]
+    ]
+   },
+   "held_keys": 46,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      22
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      22
+     ]
+    ]
+   },
+   "held_keys": 46,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  }
+ },
+ "pin_feet": {
+  "from": "crouch_down_accad at its cut (0.92, key 71)",
+  "max_move_cm": 3.25
+ }
+}

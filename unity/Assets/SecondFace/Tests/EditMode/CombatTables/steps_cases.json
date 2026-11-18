@@ -1,0 +1,439 @@
+[
+ {
+  "case": "same stance",
+  "sex": "m",
+  "expect": "none: within G13",
+  "from": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  },
+  "to": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  }
+ },
+ {
+  "case": "within G13 (1 cm, 3\u00b0)",
+  "sex": "f",
+  "expect": "none: within G13",
+  "from": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  },
+  "to": {
+   "Left": [
+    -0.16,
+    0.0,
+    -11.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  }
+ },
+ {
+  "case": "right foot 20 cm back (woman)",
+  "sex": "f",
+  "expect": "step_back_f_7604",
+  "cost": 0.37,
+  "from": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  },
+  "to": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    -0.2,
+    20.0
+   ]
+  }
+ },
+ {
+  "case": "left foot 12 cm back (man)",
+  "sex": "m",
+  "expect": "step_back_m_14320",
+  "cost": 0.25,
+  "from": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  },
+  "to": {
+   "Left": [
+    -0.22,
+    -0.095,
+    -16.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  }
+ },
+ {
+  "case": "right foot 15 cm forward (man)",
+  "sex": "m",
+  "expect": "step_fwd_u_7717",
+  "cost": 0.73,
+  "from": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  },
+  "to": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.06,
+    0.15,
+    -22.0
+   ]
+  }
+ },
+ {
+  "case": "turn right about 55\u00b0 on the left foot (man)",
+  "sex": "m",
+  "expect": "step_turnR45_m_m2e1turnar",
+  "cost": 0.93,
+  "from": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  },
+  "to": {
+   "Left": [
+    -0.18,
+    0.06,
+    44.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  }
+ },
+ {
+  "case": "turn left about 80\u00b0 (man)",
+  "sex": "m",
+  "expect": "step_turnL90_m_m2e2turnar2",
+  "cost": 0.6,
+  "from": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  },
+  "to": {
+   "Left": [
+    0.05,
+    0.025,
+    -88.0
+   ],
+   "Right": [
+    -0.07,
+    0.3,
+    -67.0
+   ]
+  }
+ },
+ {
+  "case": "both feet 15 cm left (man)",
+  "sex": "m",
+  "expect": "step_left_m_m2e2jabrig",
+  "cost": 0.33,
+  "from": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  },
+  "to": {
+   "Left": [
+    -0.27,
+    -0.09,
+    2.0
+   ],
+   "Right": [
+    -0.0,
+    -0.05,
+    30.0
+   ]
+  }
+ },
+ {
+  "case": "a 60 cm shift (no step reaches it)",
+  "sex": "m",
+  "expect": "none: the current blend",
+  "cost": 18.9,
+  "from": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  },
+  "to": {
+   "Left": [
+    -0.75,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    -0.45,
+    0.0,
+    8.0
+   ]
+  }
+ },
+ {
+  "case": "a 90\u00b0 turn for a woman (no captured woman's turn that far)",
+  "sex": "f",
+  "expect": "none: the current blend",
+  "cost": 7.13,
+  "from": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  },
+  "to": {
+   "Left": [
+    -0.15,
+    0.0,
+    -98.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    -82.0
+   ]
+  }
+ },
+ {
+  "case": "a crouched stance at either end",
+  "sex": "m",
+  "expect": "none: the current blend (no standing step bridges a crouch)",
+  "note": "hips under 0.70 m at the reference body"
+ },
+ {
+  "case": "out of her guard: the right foot 37 cm in, 12 cm over (woman, leaving her guard)",
+  "sex": "f",
+  "arms": [
+   "quiet",
+   "lower"
+  ],
+  "expect": "step_guardout_f_14421 + step_pivot_u_swatfw",
+  "cost": 0.46,
+  "from": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  },
+  "to": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.026,
+    0.367,
+    8.0
+   ]
+  }
+ },
+ {
+  "case": "the same feet, not leaving a guard (a lowering step is not admitted)",
+  "sex": "f",
+  "arms": [
+   "quiet"
+  ],
+  "expect": "step_fwd_u_7717 + step_fwd_u_7717",
+  "cost": 0.82,
+  "from": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  },
+  "to": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.026,
+    0.367,
+    8.0
+   ]
+  }
+ },
+ {
+  "case": "the right foot turned 25\u00b0 in place (a pivot)",
+  "sex": "f",
+  "arms": [
+   "quiet"
+  ],
+  "expect": "step_pivot_u_swatfw + step_fwd_u_7703_mir",
+  "cost": 0.19,
+  "from": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  },
+  "to": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    33.0
+   ]
+  }
+ },
+ {
+  "case": "a 90\u00b0 turn in place for a woman (two of her 45\u00b0 steps turn one foot each, at most 79\u00b0 with the warp)",
+  "sex": "f",
+  "arms": [
+   "quiet"
+  ],
+  "expect": "none: the current blend",
+  "cost": 11.93,
+  "from": {
+   "Left": [
+    -0.15,
+    0.0,
+    -8.0
+   ],
+   "Right": [
+    0.15,
+    0.0,
+    8.0
+   ]
+  },
+  "to": {
+   "Left": [
+    -0.0,
+    0.15,
+    -98.0
+   ],
+   "Right": [
+    -0.0,
+    -0.15,
+    -82.0
+   ]
+  }
+ }
+]
