@@ -1,35 +1,34 @@
 """Combat set v4.4 (docs/COMBAT_ANIMATION_STANDARD.md G13): the free states cut through their own recovery, the stand-ups
-from each crouched hold. A delta over v4.3. numpy only (no bpy).
+from each crouched hold, and the re-stance steps v4.3 lacked. A delta over v4.3. numpy only (no bpy).
 
     python3 -I tools/unity/motion/combat_v44_jobs.py plan <plan.json> [<frames.json>]   # without frames: pass 1, the takes' raw frames
     python3 -I tools/unity/motion/combat_v44_jobs.py frames <pass-1 dump> <pass-1 json> <v4.2 build dump> <v4.2 build json> <frames.json>
     python3 -I tools/unity/motion/combat_v44_jobs.py mapping <v4.2 mapping.json> <out mapping.json>
 
-(1) The throws, through their own recovery to a still stance (2026-11-18, still stances found where both feet stay under
-    0.12 m/s for 0.12 s):
-      men   CMU 143_20, his second throw (mirrored to the right hand as v4): the take's last still stance, 10.07-10.82 s, is
-            his ready again (4° from the throw's first key's body orientation; v4's cut, 9.2 s, ended 13° turned in a
-            0.13 s pause); cut 7.65-10.25 s. His first throw, 2.45-4.95 s, ends in the ready he holds 4.82-6.03 s.
-      women CMU 113_24 (v4's) never comes back: after each throw she holds the follow-through, the right foot 29-38 cm ahead
-            (3.71-5.47, 8.12-9.20 s), and throws again; CMU 111_33 (v4's second take) comes back to a still stance,
-            8.32-13.98 s (the feet 26 cm apart, the right 18 cm ahead): cut 5.95-8.50 s.
+(1) The throws, through their own recovery to a still stance (still: both feet under 0.12 m/s for 0.12 s):
+      men   CMU 143_20, his second throw (mirrored to the right hand as v4): his last still stance, 10.07-10.82 s, is his
+            ready again (4° from the throw's first key's body orientation; v4's cut, 9.2 s, ended in a 0.13 s pause 13°
+            turned): cut 7.65-10.25 s. His first throw, 2.45-4.95 s, ends in the ready he holds 4.82-6.03 s.
+      women CMU 113_24 (v4's) never comes back: after each throw she holds the follow-through, the right foot 29-38 cm
+            ahead (3.71-5.47, 8.12-9.20 s), and throws again; CMU 111_33 (v4's second take) comes back to a still
+            stance, 8.32-13.98 s: cut 5.95-8.50 s.
+    Cut from the still stance before the wind-up (143_20 from 5.85 s, 111_33 from 4.85 s) the throws meet the ready far
+    better (README §3) but run 3.65-4.4 s, over G3's design 2.3 s (+15 %): built for the evidence, not staged.
     The slips: ACCAD Male2_E19 (dodge left) holds one stance through the whole take (its feet never move: there is no
-    recovery to cut, the take is 2.57 s and v4 plays all of it); Male2_E20 (dodge right) ends in its still stance
-    (1.63-2.80 s) as v4 cut it. What parts them from the men's guard is the actor's stance (ACCAD Male2's, 56 cm wide)
-    against CMU 143_23's guard (v4.2), not a cut. The duck: CMU 77_09 (sex not recorded) is down by 4.1 s and up and still
-    again by 8.30 s; v4's clip runs 3.4-8.6 s, but the state left it at 0.3 (still crouched, hips 0.51 m): the state now
-    plays it to 0.95 (8.34 s, standing). The men's own duck, ACCAD Male2_E21 (v4's duck_accad), is down and up again in
-    1.1 s, still at both ends (0-0.77, 1.90-2.73 s), and is set on the men's guard (settle_in below). The women's: CMU
-    144_20 and 144_21 (subject 144, the women's guard's actor) bob down to hips 0.48-0.58 m from her guard and back.
-(2) The stand-ups, from each crouched hold (a rise 'fit' onto its hold: the clip's frame chosen so its first key's feet lie
-    on the hold's, the rest by settle_in):
+    recovery to cut; v4 plays all 2.57 s of it); Male2_E20 (dodge right) ends in its still stance (1.63-2.80 s) as v4 cut
+    it. What parts them from the men's guard is the actor's stance, 56 cm wide, against CMU 143_23's 27 cm (11-16 cm after
+    the best fit), not the cut. The duck: CMU 77_09 (sex not recorded) is down by 4.1 s and up and still again by 8.30 s;
+    v4's clip runs 3.4-8.6 s but the state left it at 0.3, still crouched (hips 0.51 m): the state now plays it to 0.95
+    (standing). The women's duck: CMU 144_21, her guard's own take, bobs down to hips 0.48 m and back to her guard.
+(2) The stand-ups, from each crouched hold, each 'fit' onto its hold (the clip's frame chosen so its first key's feet lie
+    on the hold's, then settle_in sets them there exactly until each foot first steps):
       men   ACCAD Male2_D13_CrouchToReady (the cover holds' actor, Male2): crouched and still 0-0.83 s, up 1.23-2.37 s,
-            still 2.77-3.73 s.
-      women every take on disk was mined (combat_v44_jobs history: 205 takes; a still crouch or kneel, hips under 0.70 of
-            the take's standing height, then a still standing stance within 4 s): women's rises in CMU 114_05 (two, from
-            a squat, the feet planted throughout), 114_11 and 114_02 (up from the floor through a kneel), 144_20/144_21
-            (from a deep bob in her guard). ACCAD Female1's takes have none (A07 ends crouched; B25 and C27 rise into a
-            walk or a run). The rise is cut from 114_05: a woman's (CMU subject 114, "pregnant woman").
+            still 2.77-3.73 s; cut 0.45-3.2 s.
+      women every take on disk was mined (205 takes; a still crouch or kneel, hips under 0.70 of the take's standing
+            height, then a still standing stance within 4 s): women rise in CMU 114_05 (twice, from a squat, the feet
+            planted throughout), 114_11 and 114_02 (up from the floor through a kneel) and 144_20/144_21 (from a deep bob
+            in her guard); ACCAD Female1's takes have none (A07 ends crouched; B25 and C27 rise into a walk or a run). Her
+            rise is cut from 114_05 (CMU subject 114, "pregnant woman"), 12.9-14.45 s.
     A long gun's rise is the same capture with the gun held by IK, its hold carried from LongGunCrouched to LongGunReady.
 """
 import json, math, os, sys

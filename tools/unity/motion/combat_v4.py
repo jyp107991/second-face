@@ -1237,7 +1237,8 @@ def settle_in(rig, rows, pin, fps):
         for s in cap:
             cap[s].append((rig.head(s + 'Foot').copy(), rig.head(s + 'Toes').copy()))
             an[s].append(to_file(rig.head(s + 'Foot'))); ba[s].append(to_file(rig.head(s + 'Toes'))); Rf[s].append(rot_file(rig.wrot(s + 'Foot')))
-    rec = {'from': pin['from']}; W = {}
+    rec = {'from': pin['from']}; W = {}; K0 = {}
+    carry = pin.get('swing') == 'carry'
     for s in cap:
         heel, ball, hl, bl = PL.sole_points(np.array(an[s]), np.array(ba[s]), np.array(Rf[s]), fps)
         st = still_stances(heel, ball, fps, PL.sole_floors(heel, ball))
@@ -1246,6 +1247,8 @@ def settle_in(rig, rows, pin, fps):
         nxt = next((x for x in st if x[0] > k0), None)
         k1 = nxt[0] if nxt else n - 1
         if first and first[1] >= n - 1: k0 = k1 = None                  # never leaves its first stance
+        if carry and k0 is not None: k1 = min(k1, k0 + int(round(0.4 * fps)))   # (v4.5: a run's strides: within its first swing)
+        K0[s] = k0
         W[s] = [1.0 if k0 is None or k <= k0 else (0.0 if k >= k1 else 1.0 - smooth((k - k0) / max(1, k1 - k0))) for k in range(n)]
         rec[s] = {'stance_ends_s': round(k0 / fps, 3) if k0 is not None else None, 'next_stance_s': round(k1 / fps, 3) if k1 is not None else None}
     worst, wturn = 0.0, 0.0
@@ -1258,9 +1261,16 @@ def settle_in(rig, rows, pin, fps):
             cur = Vector((T0.x - A0.x, T0.y - A0.y, 0.0)); tgt = Vector((tT.x - tA.x, tT.y - tA.y, 0.0))
             ang = math.atan2(cur.x * tgt.y - cur.y * tgt.x, cur.dot(tgt))
             A = rig.head(s + 'Foot'); off = Vector((tA.x - A0.x, tA.y - A0.y, 0.0))
-            # the captured motion about the ankle's first place, turned with the foot onto the hold's line
-            rel = Quaternion(UP, ang * w) @ Vector((A.x - A0.x, A.y - A0.y, 0.0))
-            T = Vector((A0.x + rel.x + off.x * w, A0.y + rel.y + off.y * w, A.z))
+            if carry and K0[s] is not None and k > K0[s]:
+                # (v4.5, `swing: carry`: a clip that travels) past its first stance the foot carries the shift it had at that
+                # stance's end, let go over the swing, its captured path not turned (a turned path swings wide over a stride)
+                Ak = cap[s][K0[s]][0]; rk = Quaternion(UP, ang) @ Vector((Ak.x - A0.x, Ak.y - A0.y, 0.0))
+                D = Vector((A0.x + rk.x + off.x - Ak.x, A0.y + rk.y + off.y - Ak.y, 0.0))
+                T = Vector((A.x + D.x * w, A.y + D.y * w, A.z))
+            else:
+                # the captured motion about the ankle's first place, turned with the foot onto the hold's line
+                rel = Quaternion(UP, ang * w) @ Vector((A.x - A0.x, A.y - A0.y, 0.0))
+                T = Vector((A0.x + rel.x + off.x * w, A0.y + rel.y + off.y * w, A.z))
             R0 = Quaternion(UP, ang * w) @ rig.wrot(s + 'Foot')
             worst = max(worst, (T - A).length); wturn = max(wturn, abs(math.degrees(ang * w)))
             rig.two_bone(s + 'UpperLeg', s + 'LowerLeg', s + 'Foot', T, rig.head(s + 'LowerLeg') - rig.head(s + 'UpperLeg') + FWD * 0.05)
@@ -1413,6 +1423,11 @@ def make(d, out_dir):
         # combat v4.2 (G13): a clip whose root motion the game applies, and where its root stands at the cut the next state
         # is written (that state's `after`)
         js['root_travel'] = d['root_travel']
+    if d.get('resolve_at') and events and events.get(d['resolve_at']):
+        # combat v4.5: the key at which CombatMotion resolves the action (the projectile leaves, the next turn may start); the
+        # rest of the clip is its recovery, which plays on and which the next order may blend out (README of the v4.5 stage)
+        k = int(events[d['resolve_at']][0])
+        js['resolve_at'] = {'event': d['resolve_at'], 'frame': k, 's': round(k / fps, 3), 'recovery_s': round((len(rows) - 1 - k) / fps, 3)}
     if d.get('step_arms'):
         # combat v4.4: a re-stance step whose hands leave or take up the fighting guard ('lower', 'raise'); the runtime picks
         # it only out of or into a guard (README of the v4.4 stage)

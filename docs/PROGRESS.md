@@ -738,7 +738,19 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
     - the women's duck Kb 152.7 against its actor's 129.2 (the runtime adds 23°);
     - the guard's F1/F4, C1 rise, H2 strike;
     - the broad men's A1 after the garments.
-  - **Next:** v4c's compare, the fight probe on guard/blows/miss, then v4_1 when staged, then chunk 0 and the whole cast.
+  - Later the same day:
+    - combat v4.1 imported (take-basis importer, the 79_96 long-gun chain, per-class hands up, routing);
+    - the waiver policy in `gate_ratchet.mjs` (13 tests);
+    - A1 by build (e from the body's breadth less the baked top's allowance; `motion_build_tops.json`);
+    - the walking swing turned sagittal first;
+    - the whole cast made resumable by chunk (`HumanMotionGateTests.Chunks`, hash-stamped).
+    The 07:14 whole cast found the people's controller emptied by a rebuild (COMBAT_ROOT_CAUSE item 10); fixed, and
+    re-running.
+  - **Next:**
+    - the whole cast's verdict and the waiver judgement;
+    - then v4.2-v4.5 together (patch for v4.2 prepared; v4.3 ChooseStep and v4.5 resolve_at to implement in Core with
+      their case tables);
+    - then the resumable whole cast.
 - **2026-11-17 (night), the v6.1 batch: measured, not committed (WIP `wip/gate-batch` 5e87de78).** Gate: red, 6460
   (dfc732a4; the tree unmeasured). In the batch: motion set v6.1 imported (38 clips, same GUIDs); `MotionImportPostprocessor`
   v12 builds each clip's avatar configuration from its own file's T-pose (first import without the take, then the explicit

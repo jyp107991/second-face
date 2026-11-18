@@ -292,8 +292,10 @@ none; proposed `cover_full`.
 strides, then hips, trunk, arm (wind-up, stride, cocking, acceleration, deceleration, follow-through [R14]); the one sequence
 that separates skilled throwers is "non-throwing arm elbow extension prior to shoulder extension" [R16]; release on the clip's
 frame; back to ready. Underhand lob for short throws and from cover. Throwing styles differ by person and by sex [R15]. A long
-gun is held in the off hand or slung (*design*). *Timing:* *design* 1-2 s whole (the staged woman's overhand runs 2.3 s with
-settling [here]). *Benchmarks:* XCOM 2 `FF_GrenadeUnderhand` [src B1]; overhand arcs in Divinity: Original Sin 2 and Wasteland 3
+gun is held in the off hand or slung (*design*). *Timing:* *design* 1-2.3 s from the start to the release; the throw itself is
+cut from a still stance to a still stance, as a real throw from a ready runs (3.65-4.4 s captured [here]), and resolves at its
+release (`resolve_at: release`, combat v4.5): the projectile leaves and the next turn may start there while the recovery plays
+on, blended out by the next order; the recovery is the capture's own (G3: captured; the design pace waived for it). *Benchmarks:* XCOM 2 `FF_GrenadeUnderhand` [src B1]; overhand arcs in Divinity: Original Sin 2 and Wasteland 3
 [footage]. *Gate:* `throw`.
 
 ### S20 Surrender
@@ -330,7 +332,9 @@ warped per foot within ±20 % of its captured length and ±15° of its direction
 transition plays as before. A crouched stance at either end is not bridged by a standing step. *Timing:* the captured steps'
 own 0.3-1.4 s between still stances (*design* inside them; turns lengthen with amplitude [R28]). *Benchmarks:* XCOM 2 steps and
 turns into the shot at a move's end [src B1]; leading engines warp a captured step's landing onto its target (motion warping:
-stride and orientation warping). *Gate:* G13's measure with the step inserted (`stance_continuity.py steps`).
+stride and orientation warping). *Gate:* G13's measure with the step inserted (`stance_continuity.py steps`). (v4.4) The steps
+that take the fighting guard down or up (a woman's out of and into her guard, the arms coming with the feet) carry `arms`
+(lower, raise) and are chosen only out of or into a guard; feet turned in place (one foot 17-26°: pivots) join the library.
 
 ## 3. External sources found (search of 2026-11-17)
 Constraints: commercial use, no account, no NC, ND or research-only licence, and this repository is **public** (anything committed
@@ -443,6 +447,38 @@ and ±15°, or two in a row. Of the 47 pairs that fail G13 (the 39 hit and stanc
 women's club), 7 pass with the step inserted (4 with one warp for the whole step), 14 are n/a (a crouched end: no standing step
 bridges a crouch) and 26 need re-stances larger or more turned than any captured step reaches (a woman's 90° turn and forward
 half step are not captured; a throw's and a slip's ends are their own takes' recoveries, cut short).
+
+**v4.4 (recoveries, stand-ups, more steps; `/home/user/second-face-staging/combat/v4_4/`).** The throws cut on through their own
+recovery to a still stance (CMU 143_20, 111_33: CMU 113_24 never comes back to a still ready), the duck's state played through
+its own rise (CMU 77_09 to 0.95, not 0.3), a women's duck from her guard's own take (CMU 144_21); the slips have no recovery left
+to cut (ACCAD Male2_E19's feet never move; E20 ends still): what parts them from the men's guard is the actor's 56 cm stance
+against CMU 143_23's 27 cm. A rise from each crouched hold (S17's leave to standing): men ACCAD Male2_D13 (the holds' actor),
+women CMU 114_05 (a woman's squat rise, found by mining every take on disk; ACCAD Female1 has none), each written in its hold's
+frame with its first key's feet set on the hold's until each foot first steps (`settle_in`, built), the long gun's held by IK
+from the crouched hold to the low ready; the stands from a crouch route through them. Steps added: a woman's out of and into
+her guard (CMU 144), pivots, her right half step (111_28, a solver flip repaired). Her captured 45° turns each pivot one foot
+56-64°, so two of them cannot turn both feet 90° (79° at most with the warp): her 90° stays uncaptured, as does a forward half
+step (her walks never stop after one step). Of 112 pairs: 79 pass (66 as staged, 13 with a step), 2 n/a, 31 fail, each with
+what it still lacks (the stage's `g13_table.md`). A throw cut from still stance to still stance passes 2 of its 4 pairs with a
+step but runs 3.65-4.4 s, over G3's design 2.3 s: a design decision, not taken here.
+
+**v4.5 (`/home/user/second-face-staging/combat/v4_5/`).** The decision taken (2026-11-18): the throws are cut from a still stance
+to a still stance (CMU 143_20 5.85-10.25 s, CMU 111_33 4.85-8.50 s) and resolve at their release (S19); the break from the
+crouched hold into a run (ACCAD Male2_C27, Female1_C27) is set on the hold's feet as the rises are. Of 112 pairs, 83 pass (68 as
+staged, 15 with a step), none is n/a, 29 fail. **The gaps** (each pair stays on the blend fallback, the current crossfade with
+Fighter.Feet stepping the feet, until a capture that is not on disk is found):
+- into the crouch-down from a ready (rifle ready and aim, guard; men and women: 6): no crouch-down captured from those stances
+  (one set on each ready's feet would close them: not built);
+- the hit reaction with the rifle ready (3): hits are built on another take's stance;
+- the throw against the rifle ready (2: the men's way back, the women's way in, 1.40 and 1.47 of the limits): no ready shared
+  by the thrower's take and the rifle ready's;
+- the men's guard into the relax (1): no relax by the guard's actor (CMU 143);
+- the men's one-handed slash and thrust and their way back (3): no blow captured on the guard's take;
+- the women's two-handed club back to the ready (1): no blow and recovery on her ready's take;
+- the men's slip both ways and the way into the duck (3): no slip or duck by the guard's actor, whose guard is 27 cm wide;
+- hands up from the fighting guard (men 1, women 2): no hands-up captured from a guard;
+- the rise into the pistol ready and aim (men and women: 4), her guard (1) and her long gun's ready and aim (2): no rise that
+  ends in those stances.
 
 ## 5. Proposals for the gate's owner (from the evidence; none applied)
 1. **The long-gun aim limits.** The provisional column (K1 ≤ 2.2, H1 −3…+1.2, H2 15.2-22.2, H3 10.6-16.6) is two mimed actors'

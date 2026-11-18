@@ -161,3 +161,14 @@ fight's layer.**
   - still worse than dfc732a4, from the dodges: F2 strike 1 → 20, H3 strike 0 → 18, Kb strike 20 → 38. These are mostly
     women's `miss_duck` (CMU 77): Kb 152.7° against that actor's own 129.2 (§8 dodge, unisex). Being traced: the runtime adds
     23° to a captured knee.
+
+**10. The people's controller lost its locomotion on a second build (whole cast 07:14, chunk 0: every everyday state failed).**
+- Symptom: knees fixed at 80° and soles 82-90 cm under the ground on every frame, in every state, for everyone.
+- Cause: `CombatAnimatorBuild.StanceBase` removed an existing `fight_stand` before adding it again.
+  `AnimatorStateMachine.RemoveState` destroys the state's blend tree with it, and `fight_stand` shares the base layer's
+  locomotion tree. The second build (the v4.1 rebuild) left the Locomotion and `fight_stand` states with `m_Motion` fileID 0.
+  The v4.1 CombatMotionPlayTests numbers measured then (the aim knee 25°, soles 1.6-3.1 cm, the men's pistol off hand 5 cm)
+  were taken on that broken base and are to be measured again.
+- Fix: `fight_stand` is updated in place, never removed, and the build refuses a base with no motion. `GateBatchSetupTests`
+  builds the locomotion first and asserts both states share a live tree. The controller test in `CombatMotionPlayTests`
+  asserts the base's motion is not null; it passed before because SameAs held with both null.
