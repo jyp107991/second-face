@@ -182,7 +182,7 @@ namespace SecondFace.Tests
                     var side = Side(clip);
                     var frames = side.Value<int>("frames");
                     var ev = side["events"] as JObject;
-                    string need = s.Gate == "strike" && !s.Name.Contains("block") ? "impact" : s.Gate == "throw" ? "release" : s.Name is "rifle_fire" or "rifle_burst" ? "fire" : null;
+                    string need = (s.Gate == "strike" || s.Gate == "strike2") && !s.Name.Contains("block") ? "impact" : s.Gate == "throw" ? "release" : null;
                     if (need == null) continue;
                     Assert.That(ev?[need], Is.Not.Null, $"{s.Name}: {clip} has no {need} frame");
                     foreach (var fr in ev[need].Values<int>())
@@ -192,7 +192,6 @@ namespace SecondFace.Tests
                         Assert.That(t, Is.GreaterThan(s.From).And.LessThan(s.Cut), $"{s.Name}: {clip}'s {need} ({t:0.00}) falls inside the part played ({s.From}-{s.Cut})");
                     }
                 }
-            Assert.That(Side("rifle_burst_cmu")["events"]["fire"].Values<int>().ToArray(), Is.EqualTo(new[] { 7, 10, 13 }));
         }
 
         [Test]

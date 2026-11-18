@@ -1433,7 +1433,6 @@ namespace SecondFace.Game.People
             // (counted whole, that contact stood the gear-held men's resting arms 22-25° off the vertical, the held 17°, A1,
             // 2026-11-16)
             var upperLen = (elbowAt - shoulder).magnitude;
-            var highAbove = upperLen / 3f;
             _skin.DepthRange(from, to);
             for (var i = from; i < to; i++)
             {
@@ -1446,10 +1445,23 @@ namespace SecondFace.Game.People
                 // lower half into the hip's clothes and was refused, the hand left 5-5.5 cm off the thigh after the gestures, A4,
                 // 2026-11-09)
                 if (_restW > 0.99f && i < hand && _skin.Near >= 0) d -= ClothGive * _skin.Off(_skin.Near) + SleeveGive * _skin.Off(i);
-                if (_restW > 0.99f && i < forearm && (p - elbowAt).magnitude > highAbove) d -= UpperGive;
-                if (d + Margin3 <= 0f) continue;
+                // the upper arm by its share along the bone from the shoulder, as the gate's C1 divides it (its third by the
+                // elbow from 0.65: by the distance to the elbow joint, the surface's own 4-5 cm off the bone counted, a point the
+                // gate holds in the third by the elbow was given the chest's contact, and an arm 1.6 cm into the chest stood
+                // unmoved, C1, Construction_Male_02 idle1, 2026-11-18)
+                var high = i < forearm && Vector3.Dot(p - shoulder, elbowAt - shoulder) < 0.65f * upperLen * upperLen;
+                // moving, the upper arm above its third by the elbow swings along the chest's side, the contact C1 leaves out
+                // (both soft tissues take it): never a reason to swing the arm out (on two broad men a point 6 cm in at the
+                // armpit turned the walking left arm 16-20° out, W3 39.8-44.6, 2026-11-18)
+                if (high && _restW < 0.99f) continue;
+                if (high) d -= UpperGive;
+                // at rest a contact rests: the forearm and hand may press into the hip and thigh by the soft tissue's give, the
+                // upper arm by the elbow lies on the flank at contact (the skin's points read the flank 0.1-0.5 cm shallower than
+                // the gate's mesh, so it is given none, C1, Female_Adult_01, 2026-11-18)
+                var m = i >= forearm ? Margin3 : Mathf.Lerp(SkinMargin + MoveMargin, 0f, _restW);
+                if (d + m <= 0f) continue;
                 var arm = p - shoulder;
-                var a = Mathf.Atan2(d + Margin3, arm.magnitude) * Mathf.Rad2Deg;
+                var a = Mathf.Atan2(d + m, arm.magnitude) * Mathf.Rad2Deg;
                 if (a <= best) continue;
                 // (a surface facing along the arm, the top of a pouch under a hanging forearm, is left sideways: about the
                 // shoulder the arm cannot lift off it, and the forearm stayed 0.5-0.8 cm in, C1, 2026-11-07)
@@ -1461,7 +1473,7 @@ namespace SecondFace.Game.People
                 }
                 var ax = Vector3.Cross(arm, pushTo);
                 if (ax.sqrMagnitude < 1e-8f) continue;
-                best = a; axis = ax.normalized; _needAt = i; _needDepth = d + Margin3;
+                best = a; axis = ax.normalized; _needAt = i; _needDepth = d + m;
                 // for the gate's report: the arm's point and the body's point the push is for (the elbow slots at rest)
                 var left = first == BodySkin.Part.UpperArmL;
                 DiagAt[left ? 0 : 4] = i; DiagAt[left ? 1 : 5] = _skin.Near;

@@ -121,10 +121,22 @@ namespace SecondFace.Tests
             L("H3", -Inf, 22.1f, -Inf, 25.7f), L("F2", -Inf, 13.2f, -Inf, 14.7f), L("F3w", 16.4f, 83.2f, 1.3f, 90.5f),
         };
         private static readonly Lim[] StrikeArms = { L("A1", -Inf, 88.5f, -Inf, 112f), L("A2", 83.9f, 140.5f, 41.1f, 145.7f) };
-        /// <summary>The long-gun aim: provisional (CMU 79_96 and 80_03, two actors miming a gun; the head from 79_96 alone).</summary>
-        private static readonly Lim[] AimLegs = { L("K1", -Inf, 2.2f, -Inf, 2.5f), L("Kb", -Inf, 20.4f, -Inf, 20.7f), L("F2", -Inf, 1.9f, -Inf, 1.9f), L("F3w", 23.3f, 32.8f, 23.3f, 33.0f) };
-        private static readonly Lim[] AimHead = { L("H1", -3.0f, 1.2f, -3.0f, 1.6f), L("H2", 15.2f, 22.2f, 15.1f, 22.9f), L("H3", 10.6f, 16.6f, 10.4f, 16.7f) };
-        private static readonly Lim[] AimArms = { L("A1", 53.2f, 88.8f, 50.2f, 90.5f), L("A2", 119.6f, 143.0f, 119.5f, 146.6f) };
+        /// <summary>The long-gun aim from three actors (docs/qa/motion_calibration.md §8, combat set v4, 2026-11-17: CMU 79_96, 80_03
+        /// and 100STYLE's Swat_ID, the third bending both knees as real shooters do; the head from 79_96 and 100STYLE). It
+        /// replaced §7's provisional two-actor column (K1 ≤ 2.2, both actors standing straight) on 2026-11-18.</summary>
+        private static readonly Lim[] AimLegs = { L("K1", -Inf, 33.5f, -Inf, 34.9f), L("Kb", -Inf, 37.2f, -Inf, 38.0f), L("F2", -Inf, 1.8f, -Inf, 1.9f), L("F3w", 23.4f, 44.7f, 23.3f, 44.7f) };
+        private static readonly Lim[] AimHead = { L("H1", -7.1f, 0.6f, -7.1f, 1.6f), L("H2", 15.7f, 33.3f, 15.1f, 33.7f), L("H3", 7.9f, 16.3f, 7.8f, 16.7f) };
+        private static readonly Lim[] AimArms = { L("A1", 54.8f, 86.2f, 50.2f, 90.5f), L("A2", 119.7f, 146.1f, 119.5f, 146.6f) };
+        /// <summary>A two-handed weapon's blows from three actors (§8: CMU 79, 80, 124): the arms rise far higher than a punch's and
+        /// the elbows open, the stance wider; the head as the unarmed strike's until a two-handed actor's head can be read.</summary>
+        private static readonly Lim[] Strike2Legs = { L("K1", -Inf, 36.1f, -Inf, 39.3f), L("Kb", -Inf, 54.9f, -Inf, 57.6f), L("F2", -Inf, 15.1f, -Inf, 15.3f), L("F3w", 23.1f, 66.0f, 22.1f, 66.4f) };
+        private static readonly Lim[] Strike2Arms = { L("A1", -Inf, 122.5f, -Inf, 129.4f), L("A2", 13.8f, 128.6f, 11.6f, 135.2f) };
+        /// <summary>A slip or duck from a blow, from four actors (§8: ACCAD Male2, Male1, Female1, CMU 77).</summary>
+        private static readonly Lim[] DodgeLegsHead =
+        {
+            L("K1", -Inf, 122.6f, -Inf, 124f), L("Kb", -Inf, 127.9f, -Inf, 129.2f), L("H1", -47.5f, 3.9f, -54f, 7.9f), L("H2", -Inf, 54.4f, -Inf, 55.4f),
+            L("H3", -Inf, 18.2f, -Inf, 21f), L("F2", -Inf, 6.6f, -Inf, 10.5f), L("F3w", 13.2f, 110.8f, 7.1f, 139.8f),
+        };
         private static readonly Lim[] CrouchLimits =
         {
             L("K1", 16.7f, 147f, 16.1f, 148f), L("Kb", -Inf, 148f, -Inf, 148f), L("H1", -44.7f, 33.8f, -53.3f, 35.4f), L("H2", -Inf, 92.1f, -Inf, 93.2f),
@@ -145,6 +157,10 @@ namespace SecondFace.Tests
             "ready" => GuardLegsHead.Concat(new[] { F1, F4, C1, WG1, WG2 }).ToArray(),
             // blows (feet pivot and step: no F4, which real fighters were not measured on)
             "strike" => StrikeLegsHead.Concat(StrikeArms).Concat(new[] { F1, C1, WG1, WG2 }).ToArray(),
+            // a two-handed weapon's blows (§8): their own legs and arms, the unarmed strike's head
+            "strike2" => Strike2Legs.Concat(StrikeLegsHead.Where(l => l.M is "H1" or "H2" or "H3")).Concat(Strike2Arms).Concat(new[] { F1, C1, WG1, WG2 }).ToArray(),
+            // a slip or a duck (§8): the dodgers' legs, head and feet (the arms are thrown about)
+            "dodge" => DodgeLegsHead.Concat(new[] { F1, C1 }).ToArray(),
             // the long gun's aim and its shots (provisional)
             "aim" => AimLegs.Concat(AimHead).Concat(AimArms).Concat(new[] { F1, F4, C1, WG1, WG2 }).ToArray(),
             // the pistol's aim on the long gun's captured stance: its legs; no stock at the cheek, so the head as standing (§2.1)

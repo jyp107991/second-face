@@ -103,14 +103,17 @@ namespace SecondFace.Tests
         {
             foreach (var c in CombatMotion.Clips.Concat(CombatMotion.Spare))
                 foreach (var loop in new[] { false, true })
+                foreach (var seated in new[] { false, true })
                 {
                     var a = new ModelImporterClipAnimation();
-                    CombatImportPostprocessor.Settings(a, loop, c);
+                    CombatImportPostprocessor.Settings(a, loop, c, seated);
                     Assert.That(a.loopTime, Is.EqualTo(loop), c.Name);
                     Assert.That(a.lockRootPositionXZ, Is.EqualTo(c.XZ == RootXZ.Bake), c.Name + ": XZ");
                     Assert.That(a.lockRootHeightY, Is.True, c.Name + ": never height as root motion");
-                    Assert.That(a.keepOriginalPositionY, Is.EqualTo(c.Y == RootY.Keep), c.Name + ": Y as captured");
-                    Assert.That(a.heightFromFeet, Is.EqualTo(c.Y == RootY.Feet), c.Name + ": Y from the feet");
+                    // the take's own height over its floor (its T-pose stood on it), but a seated take's table Feet (2026-11-18)
+                    var feet = seated && c.Y == RootY.Feet;
+                    Assert.That(a.keepOriginalPositionY, Is.EqualTo(!feet), c.Name + ": Y as captured");
+                    Assert.That(a.heightFromFeet, Is.EqualTo(feet), c.Name + ": Y from the feet");
                     Assert.That(a.lockRootRotation, Is.EqualTo(!(c.Turn || c.DropTurn)), c.Name + ": the turn");
                     Assert.That(a.keepOriginalOrientation, Is.False, c.Name + ": from the body's facing, never the file's axes");
                 }
@@ -121,16 +124,19 @@ namespace SecondFace.Tests
         {
             var facts = CombatAnimatorBuild.Facts();
             Assert.That(facts.Select(f => f.Name), Is.EquivalentTo(CombatMotion.Clips.Where(c => File.Exists($"{CombatMotion.Folder}/{c.Name}.json")).Select(c => c.Name)));
-            var burst = facts.First(f => f.Name == "rifle_burst_cmu");
-            Assert.That(burst.Events.Count(e => e == "fire"), Is.EqualTo(3));
-            Assert.That(burst.Times.Zip(burst.Events, (t, e) => (t, e)).Where(x => x.e == "fire").Select(x => x.t).ToArray(),
-                Is.EqualTo(new[] { 7f / 35f, 10f / 35f, 13f / 35f }).Within(1e-4f));
+            // (a beat at its sidecar's frame over the clip's length: the jab's impact)
+            var jab = facts.First(f => f.Name == "fist_jab_accad");
+            var jabSide = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText($"{CombatMotion.Folder}/fist_jab_accad.json"));
+            Assert.That(jab.Times.Zip(jab.Events, (t, e) => (t, e)).First(x => x.e == "impact").t,
+                Is.EqualTo((float)jabSide["events"]["impact"][0] / ((int)jabSide["frames"] - 1)).Within(0.02f));
             foreach (var f in facts)
             {
                 Assert.That(f.Length, Is.GreaterThan(0.1f), f.Name);
-                Assert.That(f.Times.All(t => t > 0f && t < 1f), Is.True, f.Name + "'s beats inside it");
+                // (on the clip, its first key to its last: v4's hits start at their impact, its side steps at their lift, a dodge is
+                // clear on its last key; CombatSet.Beat reads -1 for none)
+                Assert.That(f.Times.All(t => t >= 0f && t <= 1f), Is.True, f.Name + "'s beats on it");
             }
-            foreach (var s in CombatMotion.States.Where(s => s.Gate == "strike" && !s.Name.Contains("block")))
+            foreach (var s in CombatMotion.States.Where(s => (s.Gate == "strike" || s.Gate == "strike2") && !s.Name.Contains("block")))
                 Assert.That(facts.First(f => f.Name == s.Clip).Events, Does.Contain("impact"), s.Name);
         }
 
@@ -148,9 +154,12 @@ namespace SecondFace.Tests
                 try
                 {
                     Transform Null(string n) => held.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == n);
+                    // (the main hand at the origin: the null of that name there, or where the sidecar's `hands` put the hand
+                    // instead, the bat held as real right-handed people hold it, 2026-11-18)
                     var main = Null("grip_main");
-                    if (main != null && held.transform.InverseTransformPoint(main.position).magnitude > 0.001f)
-                        wrong.Add($"{w.Id}: grip_main {held.transform.InverseTransformPoint(main.position).magnitude * 100f:0.0} cm from the hand's origin");
+                    var mainAt = w.Points().First(x => x.Name == "grip_main").At;
+                    if (main != null && (held.transform.InverseTransformPoint(main.position) - mainAt).magnitude > 0.001f)
+                        wrong.Add($"{w.Id}: grip_main {(held.transform.InverseTransformPoint(main.position) - mainAt).magnitude * 100f:0.0} cm from where the sidecar says, in the hand's frame");
                     Assert.That(w.PointNames, Is.Not.Empty, w.Id + ": its sidecar's points carried into the set");
                     foreach (var (n, p) in w.Points())
                     {
@@ -200,7 +209,7 @@ namespace SecondFace.Tests
             var world = AssetDatabase.LoadAssetAtPath<SecondFace.Game.World.WorldAssets>(CombatAnimatorBuild.WorldAssetsPath);
             if (world != null) Assert.That(world.Combat, Is.SameAs(set), "the game's fights use it");
             Assert.That(set.WeaponOf("rifle_auto"), Is.Not.Null);
-            Assert.That(set.Beat("rifle_fire", false, "fire"), Is.EqualTo(7f / 29f).Within(1e-4f));
+            Assert.That(set.Beat("unarmed_jab", false, "impact"), Is.GreaterThan(0f).And.LessThan(1f));
         }
     }
 }

@@ -130,7 +130,7 @@ namespace SecondFace.Core.Combat
     {
         /// <summary>Bump when the states or their clips change: the editor rebuilds the layers (the controller carries
         /// "combat_v&lt;Version&gt;").</summary>
-        public const int Version = 2;
+        public const int Version = 3;
         public const string FullLayer = "Combat", ArmsLayer = "CombatArms";
         public const string ArmsParam = "CombatArms", CrouchParam = "CombatCrouch", RateParam = "CombatRate", SexParam = "Sex";
         public const string None = "none";
@@ -144,48 +144,77 @@ namespace SecondFace.Core.Combat
         /// cm is applied or cut; the rest play in place).</summary>
         public static readonly MotionClip[] Clips =
         {
-            // guards and idles
-            C("fist_guard_accad", set: "m"), C("ready_crouch_cmu", y: RootY.Keep), C("pistol_idle_ual"), C("rifle_idle_ual"),
-            C("melee_idle_ual"),
-            // strikes, unarmed (men: ACCAD Male2; women: CMU 113, 141, 144)
-            C("fist_jab_accad", set: "m"), C("fist_cross_accad", set: "m"), C("fist_hook_l_accad", set: "m"), C("fist_hook_r_accad", set: "m"),
-            C("fist_uppercut_l_accad", set: "m"), C("fist_uppercut_r_accad", set: "m"),
+            // combat set v4 (2026-11-17, staging combat/v4: captured, or built on captured bodies; every clip QA'd against
+            // docs/COMBAT_ANIMATION_STANDARD.md): the clips the states play, root motion where the clip travels (its json's
+            // "root"), the height as captured for the crouched, lying and rising ones
+            C("fist_guard_accad", set: "m"), C("guard_f_cmu", set: "f"), C("ready_crouch_cmu", y: RootY.Keep),
+            C("pistol_ready_built", set: "m"), C("pistol_ready_f_built", set: "f"), C("rifle_ready_built", set: "m"),
+            C("rifle_ready_f_built", set: "f"), C("club_ready_built", set: "m"), C("club_ready_f_built", set: "f"),
+            C("fist_jab_accad", set: "m"), C("fist_cross_accad", set: "m"), C("fist_hook_l_accad", set: "m"),
+            C("fist_hook_r_accad", set: "m"), C("fist_uppercut_l_accad", set: "m"), C("fist_uppercut_r_accad", set: "m"),
             C("fist_jab_f_cmu", set: "f"), C("fist_cross_f_cmu", RootXZ.Apply, set: "f"), C("fist_combo_f_cmu", set: "f"),
-            C("fist_ready_accad", RootXZ.Apply, set: "m"), C("fist_relax_accad", set: "m"),
-            C("block_high_accad", set: "m"), C("block_high_f_cmu", set: "f"),
-            // melee
-            C("melee_strike_ual"), C("melee_block_ual"), C("club_overhead_cmu"), C("club_overhead_b_cmu"),
-            // the long gun and the pistol
-            C("rifle_raise_cmu"), C("rifle_aim_b_cmu"), C("rifle_aim_cmu"), C("rifle_fire_cmu"), C("rifle_burst_cmu"), C("rifle_lower_cmu"),
-            C("rifle_reload_ual"), C("pistol_reload_ual"),
-            // cover (the leaving clips run 2-7 m: applied, and cut at their first stride)
-            C("crouch_down_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("crouch_down_f_accad", RootXZ.Apply, RootY.Keep, set: "f"),
-            C("crouch_rifle_ual", y: RootY.Keep), C("crouch_idle_ual", y: RootY.Keep),
-            C("crouch_to_run_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("crouch_to_run_f_accad", RootXZ.Apply, RootY.Keep, set: "f"),
-            // hits and misses
-            C("stagger_cmu", RootXZ.Apply, RootY.Keep, set: "f", dropTurn: true), C("stagger_fwd_cmu", RootXZ.Apply, RootY.Keep), C("hit_chest_ual"), C("hit_head_ual"),
-            C("dodge_l_accad", set: "m"), C("dodge_r_accad", set: "m"), C("duck_cmu", y: RootY.Keep),
-            // throws
-            C("throw_overhand_ual", set: "m"), C("throw_overhand_cmu", RootXZ.Apply, set: "f"),
-            // get up (the ragdoll lays the body down; the captured get-up for the side it lies on)
-            C("getup_back_cmu", RootXZ.Apply, RootY.Keep, turn: true), C("getup_front_cmu", RootXZ.Apply, RootY.Keep, turn: true),
-            C("getup_side_cmu", RootXZ.Apply, RootY.Keep, turn: true), C("getup_f_cmu", RootXZ.Apply, RootY.Keep, turn: true, set: "f"),
-            C("getup_to_crouch_accad", RootXZ.Apply, RootY.Keep, turn: true, set: "m"), C("getup_to_crouch_f_accad", RootXZ.Apply, RootY.Keep, turn: true, set: "f"),
-            // surrender
-            C("surrender_enter_ual"), C("surrender_idle_ual"),
+            C("fist_ready_accad", RootXZ.Apply, set: "m"), C("fist_relax_accad", set: "m"), C("block_mid_r_accad", set: "m"),
+            C("melee_thrust_built", set: "m"), C("melee_thrust_f_built", RootXZ.Apply, set: "f"), C("melee_forehand_built", set: "m"),
+            C("melee_forehand_f_built", set: "f"), C("club_overhead_cmu"), C("club_thrust_f_built", set: "f"),
+            C("rifle_raise_cmu"), C("rifle_aim_b_cmu"), C("rifle_aim_cmu"),
+            C("rifle_aim_c_100s"), C("pistol_aim_built"), C("pistol_aim_c_built", set: "f"),
+            C("reload_rifle_built", set: "m"), C("reload_rifle_f_built", set: "f"), C("reload_pistol_built", set: "m"),
+            C("reload_pistol_f_built", set: "f"), C("crouch_down_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("crouch_down_f_accad", RootXZ.Apply, RootY.Keep, set: "f"),
+            C("crouch_rifle_built", y: RootY.Keep, set: "m"), C("crouch_rifle_f_built", y: RootY.Keep, set: "f"), C("crouch_to_run_accad", RootXZ.Apply, RootY.Keep, set: "m"),
+            C("crouch_to_run_f_accad", RootXZ.Apply, RootY.Keep, set: "f"), C("stagger_cmu", RootXZ.Apply, RootY.Keep, dropTurn: true, set: "f"), C("stagger_fwd_cmu", RootXZ.Apply, RootY.Keep),
+            C("hit_front_torso_built", set: "m"), C("hit_front_torso_f_built", set: "f"), C("hit_front_head_built", set: "m"),
+            C("hit_front_head_f_built", set: "f"), C("dodge_l_accad", set: "m"), C("dodge_r_accad", set: "m"),
+            C("duck_cmu", y: RootY.Keep), C("throw_overhand_m_cmu", RootXZ.Apply, set: "m"), C("throw_overhand_cmu", RootXZ.Apply, set: "f"),
+            C("getup_back_cmu", RootXZ.Apply, RootY.Keep, turn: true), C("getup_front_cmu", RootXZ.Apply, RootY.Keep, turn: true), C("getup_side_cmu", RootXZ.Apply, RootY.Keep, turn: true),
+            C("getup_f_cmu", RootXZ.Apply, RootY.Keep, turn: true, set: "f"), C("getup_to_crouch_accad", RootXZ.Apply, RootY.Keep, turn: true, set: "m"), C("getup_to_crouch_f_accad", RootXZ.Apply, RootY.Keep, turn: true, set: "f"),
+            C("prone_hold_accad", y: RootY.Keep, set: "m"), C("prone_hold_f_accad", y: RootY.Keep, set: "f"), C("surrender_enter_built", set: "m"),
+            C("surrender_enter_f_built", set: "f"), C("surrender_hold_built", set: "m"), C("surrender_hold_f_built", set: "f"),
         };
 
-        /// <summary>The clips staged but not played by any state (kept for later passes; imported with the same rules):
-        /// the hand-keyed alternatives the captured clips replace, and the cover transitions that run in from a jog.</summary>
+        /// <summary>The clips staged but not played by any state yet (the standard's variety, G2: other takes of the same action,
+        /// the footwork, side steps, turns, peeks, crawls, the other reloads and hits), imported with the same rules.</summary>
         public static readonly MotionClip[] Spare =
         {
-            C("crouch_to_walk_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("crouch_to_walk_f_accad", RootXZ.Apply, RootY.Keep, set: "f"),
-            C("run_to_crouch_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("run_to_crouch_f_accad", RootXZ.Apply, RootY.Keep, set: "f"),
-            C("walk_to_crouch_f_accad", RootXZ.Apply, RootY.Keep, set: "f"), C("cower_cmu", RootXZ.Apply, RootY.Keep, set: "f"),
-            C("duck_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("death_ual", RootXZ.Apply, RootY.Keep), C("crouch_walk_ual", y: RootY.Keep),
-            C("fist_ready_ual"), C("hit_knockback_ual"), C("hit_knockback_rm_ual", RootXZ.Apply), C("melee_combo_ual", RootXZ.Apply),
-            C("melee_slash_a_ual", RootXZ.Apply), C("melee_slash_b_ual", RootXZ.Apply), C("melee_slash_c_ual", RootXZ.Apply),
-            C("pistol_aim_ual"), C("pistol_aim_up_ual"), C("pistol_aim_down_ual"), C("pistol_fire_ual"),
+            C("block_low_r_accad", set: "m"), C("block_mid_l_accad", set: "m"), C("club_guard_cmu"),
+            C("cower_cmu", RootXZ.Apply, RootY.Keep, set: "f"), C("crawl_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("crawl_b_accad", RootXZ.Apply, RootY.Keep, set: "m"),
+            C("crawl_back_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("crawl_f_accad", RootXZ.Apply, RootY.Keep, set: "f"), C("crouch_aim_built", y: RootY.Keep, set: "m"),
+            C("crouch_down_b_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("crouch_to_guard_accad", y: RootY.Keep, set: "m"), C("crouch_to_walk_accad", RootXZ.Apply, RootY.Keep, set: "m"),
+            C("crouch_to_walk_f_accad", RootXZ.Apply, RootY.Keep, set: "f"), C("crouch_walk_100s", y: RootY.Keep), C("crouch_walk_back_cmu", y: RootY.Keep, set: "m"),
+            C("crouch_walk_cmu", y: RootY.Keep, set: "m"), C("crouch_walk_f_built", y: RootY.Keep, set: "f"), C("duck_accad", RootXZ.Apply, RootY.Keep, set: "m"),
+            C("duck_r_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("fist_backfist_l_accad", set: "m"), C("fist_backfist_r_accad", set: "m"),
+            C("fist_body_cross_f_cmu", set: "f"), C("fist_body_cross_l_accad", set: "m"), C("fist_body_cross_r_accad", set: "m"),
+            C("fist_body_hook_l_accad", set: "m"), C("fist_body_hook_r_accad", set: "m"), C("fist_body_jab_l_accad", set: "m"),
+            C("fist_body_jab_r_accad", set: "m"), C("fist_cross_b_f_cmu", set: "f"), C("fist_jab_b_f_cmu", set: "f"),
+            C("fist_uppercut_l_b_cmu", set: "m"), C("fist_uppercut_r_b_cmu", set: "m"), C("getup_e_f_cmu", RootXZ.Apply, RootY.Keep, turn: true, set: "f"),
+            C("getup_ready_back_cmu", RootXZ.Apply, RootY.Keep, turn: true), C("getup_ready_cmu", RootXZ.Apply, RootY.Keep, turn: true), C("guard_advance_accad", RootXZ.Apply, set: "m"),
+            C("guard_retreat_accad", RootXZ.Apply, set: "m"), C("guard_side_l_accad", RootXZ.Apply, set: "m"), C("guard_side_r_accad", RootXZ.Apply, set: "m"),
+            C("guard_switch_accad", set: "m"), C("guard_to_crouch_accad", y: RootY.Keep, set: "m"), C("hit_arm_l_built", set: "m"),
+            C("hit_arm_l_f_built", set: "f"), C("hit_arm_r_built", set: "m"), C("hit_arm_r_f_built", set: "f"),
+            C("hit_back_head_built", set: "m"), C("hit_back_head_f_built", set: "f"), C("hit_back_torso_built", set: "m"),
+            C("hit_back_torso_f_built", set: "f"), C("hit_left_head_built", set: "m"), C("hit_left_head_f_built", set: "f"),
+            C("hit_left_torso_built", set: "m"), C("hit_left_torso_f_built", set: "f"), C("hit_leg_l_built", set: "m"),
+            C("hit_leg_l_f_built", set: "f"), C("hit_leg_r_built", set: "m"), C("hit_leg_r_f_built", set: "f"),
+            C("hit_right_head_built", set: "m"), C("hit_right_head_f_built", set: "f"), C("hit_right_torso_built", set: "m"),
+            C("hit_right_torso_f_built", set: "f"), C("melee_backhand_built", set: "m"), C("melee_overhead_f_built", RootXZ.Apply, set: "f"),
+            C("peek_aim_l_built"), C("peek_aim_r_built"), C("peek_lean_l_100s"),
+            C("peek_lean_l_back_100s"), C("peek_lean_l_hold_100s"), C("peek_lean_r_100s"),
+            C("peek_lean_r_back_100s"), C("peek_lean_r_hold_100s"), C("pistol_aim_b_built"),
+            C("prone_down_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("prone_down_f_accad", RootXZ.Apply, RootY.Keep, set: "f"), C("reload_bolt_built", set: "m"),
+            C("reload_bolt_f_built", set: "f"), C("reload_break_built", set: "m"), C("reload_break_f_built", set: "f"),
+            C("reload_revolver_built", set: "m"), C("reload_revolver_f_built", set: "f"), C("rifle_ready_b_built", set: "m"),
+            C("rifle_walk_100s"), C("rifle_walk_back_100s"), C("run_to_crouch_accad", RootXZ.Apply, RootY.Keep, set: "m"),
+            C("run_to_crouch_f_accad", RootXZ.Apply, RootY.Keep, set: "f"), C("sidestep_l_f_accad", RootXZ.Apply, set: "f"), C("sidestep_quick_l_accad", RootXZ.Apply, set: "m"),
+            C("sidestep_quick_l_b_accad", RootXZ.Apply, set: "m"), C("sidestep_quick_l_f_accad", RootXZ.Apply, set: "f"), C("sidestep_quick_r_accad", RootXZ.Apply, set: "m"),
+            C("sidestep_quick_r_b_accad", RootXZ.Apply, set: "m"), C("sidestep_quick_r_f_accad", RootXZ.Apply, set: "f"), C("sidestep_r_f_accad", RootXZ.Apply, set: "f"),
+            C("stagger_back_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("stagger_spin_f_cmu", RootXZ.Apply, RootY.Keep, set: "f"), C("surrender_raise_accad", RootXZ.Apply, set: "m"),
+            C("throw_overhand_b_f_cmu", RootXZ.Apply, set: "f"), C("throw_overhand_m_b_cmu", RootXZ.Apply, set: "m"), C("throw_overhand_u_b_cmu", RootXZ.Apply),
+            C("throw_overhand_u_cmu", RootXZ.Apply), C("throw_underhand_u_cmu", RootXZ.Apply), C("turn_180_b_accad", RootXZ.Apply, set: "m"),
+            C("turn_180_f_accad", RootXZ.Apply, set: "f"), C("turn_guard_l_accad", RootXZ.Apply, set: "m"), C("turn_guard_r_accad", set: "m"),
+            C("turn_l90_accad", RootXZ.Apply, set: "m"), C("turn_l90_b_accad", RootXZ.Apply, set: "m"), C("turn_l90_f_accad", RootXZ.Apply, set: "f"),
+            C("turn_r90_accad", RootXZ.Apply, set: "m"), C("turn_r90_f_accad", RootXZ.Apply, set: "f"),
+            // (walk_to_crouch_accad, ACCAD Male2_B24, is out: v4's file has no Spine joint, so Unity builds no avatar from it;
+            // Male1's take of the same action, walk_to_crouch_b_accad, stays)
+            C("walk_to_crouch_b_accad", RootXZ.Apply, RootY.Keep, set: "m"), C("walk_to_crouch_f_accad", RootXZ.Apply, RootY.Keep, set: "f"),
         };
 
         private static MotionClip C(string name, RootXZ xz = RootXZ.Bake, RootY y = RootY.Feet, bool turn = false, string set = "both", bool dropTurn = false) =>
@@ -221,23 +250,21 @@ namespace SecondFace.Core.Combat
             }
             // idles (the fight's ready stance, per weapon; the women's guard is a man's take until a woman's is captured; a long
             // gun's and a two-handed club's ready hold made for each body on the stopgap's legs and trunk: HandsIk.Hold)
-            S("unarmed_idle", "fist_guard_accad", loop: true, fade: 0.35f, gate: "guard");
-            S("pistol_idle", "pistol_idle_ual", loop: true, fade: 0.35f, gate: "ready");
-            S("rifle_idle", "rifle_idle_ual", loop: true, fade: 0.35f, hands: HandsIk.Hold, gate: "ready");
-            S("melee_idle", "fist_guard_accad", loop: true, fade: 0.35f, gate: "guard");
-            S("club2_idle", "rifle_idle_ual", loop: true, fade: 0.35f, hands: HandsIk.Hold, gate: "ready");
+            S("unarmed_idle", "fist_guard_accad", "guard_f_cmu", loop: true, fade: 0.35f, gate: "guard");
+            S("pistol_idle", "pistol_ready_built", "pistol_ready_f_built", loop: true, fade: 0.35f, gate: "ready");
+            S("rifle_idle", "rifle_ready_built", "rifle_ready_f_built", loop: true, fade: 0.35f, hands: HandsIk.Hold, gate: "ready");
+            S("melee_idle", "fist_guard_accad", "guard_f_cmu", loop: true, fade: 0.35f, gate: "guard");
+            S("club2_idle", "club_ready_built", "club_ready_f_built", loop: true, fade: 0.35f, hands: HandsIk.Hold, gate: "ready");
             // the long gun: up to the shoulder, the hold, down; the reload. Its rounds are fired on the hold itself with their
-            // recoil at run time (Fighter.Recoil): rifle_fire and rifle_burst (CMU 79's aim with an authored recoil, a stance
-            // 9 cm wider than the hold's CMU 80) stay built for a later pass on one actor, unplayed by the view
+            // recoil at run time (Fighter.Recoil; combat set v4 retired the authored shot clips: the standard's S4 layer). No
+            // lowering passes the clip QA (v4 §6): the aim eases back into the ready hold, its hands on the gun by IK
             S("rifle_raise", "rifle_raise_cmu", then: "rifle_aim", from: 0.42f, speed: 1.5f, cut: 0.95f, fade: 0.15f, hands: HandsIk.OffHand, gate: "aim");
             S("rifle_aim", "rifle_aim_b_cmu", loop: true, fade: 0.2f, hands: HandsIk.OffHand, gate: "aim");
-            S("rifle_fire", "rifle_fire_cmu", then: "rifle_aim", cut: 0.9f, fade: 0.1f, hands: HandsIk.OffHand, gate: "aim");
-            S("rifle_burst", "rifle_burst_cmu", then: "rifle_aim", cut: 0.9f, fade: 0.1f, hands: HandsIk.OffHand, gate: "aim");
-            S("rifle_lower", "rifle_lower_cmu", then: ToIdle, speed: 1.5f, cut: 0.85f, fade: 0.15f, hands: HandsIk.OffHand, gate: "aim");
-            S("rifle_reload", "rifle_reload_ual", then: ToIdle, cut: 0.95f, fade: 0.2f, hands: HandsIk.Free, gate: "reload");
+            S("rifle_lower", "rifle_ready_built", "rifle_ready_f_built", then: ToIdle, cut: 0.15f, fade: 0.3f, hands: HandsIk.Hold, gate: "ready");
+            S("rifle_reload", "reload_rifle_built", "reload_rifle_f_built", then: ToIdle, cut: 0.95f, fade: 0.2f, hands: HandsIk.Free, gate: "reload");
             // the pistol: its aim on rifle_aim_b's captured legs and torso, both hands by IK (the shot is a recoil on it)
-            S("pistol_aim", "rifle_aim_b_cmu", loop: true, fade: 0.25f, hands: HandsIk.PistolAim, gate: "aim_pistol");
-            S("pistol_reload", "pistol_reload_ual", then: ToIdle, cut: 0.95f, fade: 0.2f, hands: HandsIk.Free, gate: "reload");
+            S("pistol_aim", "pistol_aim_built", "pistol_aim_c_built", loop: true, fade: 0.25f, hands: HandsIk.PistolAim, gate: "aim_pistol");
+            S("pistol_reload", "reload_pistol_built", "reload_pistol_f_built", then: ToIdle, cut: 0.95f, fade: 0.2f, hands: HandsIk.Free, gate: "reload");
             // unarmed blows (men's and women's takes are different blows: picked by sex, see Strikes)
             S("unarmed_jab", "fist_jab_accad", "fist_jab_f_cmu", fade: 0.12f, cut: 0.9f, gate: "strike");
             S("unarmed_cross", "fist_cross_accad", "fist_cross_f_cmu", fade: 0.12f, cut: 0.9f, gate: "strike");
@@ -246,18 +273,18 @@ namespace SecondFace.Core.Combat
             S("unarmed_uppercut_l", "fist_uppercut_l_accad", fade: 0.12f, cut: 0.9f, gate: "strike", only: "m");
             S("unarmed_uppercut_r", "fist_uppercut_r_accad", fade: 0.12f, cut: 0.9f, gate: "strike", only: "m");
             S("unarmed_combo", "fist_combo_f_cmu", fade: 0.12f, cut: 0.92f, gate: "strike", only: "f");
-            S("unarmed_block", "block_high_accad", "block_high_f_cmu", fade: 0.08f, cut: 0.9f, gate: "strike");
+            S("unarmed_block", "block_mid_r_accad", fade: 0.08f, cut: 0.9f, gate: "strike", only: "m");
             S("unarmed_relax", "fist_relax_accad", then: None, cut: 0.8f, fade: 0.2f, gate: "guard", only: "m");
             // one-handed melee: the strike (hand-keyed, passes), and the slash on the captured right hook's body, the weapon
             // hand along an arc
-            S("melee_strike", "melee_strike_ual", fade: 0.12f, cut: 0.92f, gate: "strike");
-            S("melee_slash", "fist_hook_r_accad", fade: 0.12f, cut: 0.9f, hands: HandsIk.Arc, gate: "strike");
-            S("melee_block", "melee_block_ual", fade: 0.08f, cut: 0.9f, gate: "strike");
+            S("melee_strike", "melee_thrust_built", "melee_thrust_f_built", fade: 0.12f, cut: 0.92f, gate: "strike");
+            S("melee_slash", "melee_forehand_built", "melee_forehand_f_built", fade: 0.12f, cut: 0.9f, gate: "strike");
+            S("melee_block", "block_mid_r_accad", fade: 0.08f, cut: 0.9f, gate: "strike", only: "m");
             // two-handed club (captured; the off hand on the handle by IK)
-            S("club2_strike", "club_overhead_cmu", fade: 0.15f, cut: 0.9f, hands: HandsIk.OffHand, gate: "strike");
-            S("club2_strike_b", "club_overhead_b_cmu", fade: 0.15f, cut: 0.9f, hands: HandsIk.OffHand, gate: "strike");
+            S("club2_strike", "club_overhead_cmu", "club_thrust_f_built", fade: 0.15f, cut: 0.9f, hands: HandsIk.OffHand, gate: "strike2");
+            S("club2_strike_b", "club_overhead_cmu", "club_thrust_f_built", fade: 0.15f, cut: 0.9f, hands: HandsIk.OffHand, gate: "strike2");
             // throws (the woman's captured; the man's a flagged hand-keyed stopgap: no man's throw is captured)
-            S("throw", "throw_overhand_ual", "throw_overhand_cmu", fade: 0.15f, cut: 0.9f, hands: HandsIk.Free, gate: "throw");
+            S("throw", "throw_overhand_m_cmu", "throw_overhand_cmu", fade: 0.15f, cut: 0.9f, hands: HandsIk.Free, gate: "throw");
             // cover: down into a crouch, held (two hands on a long gun or a club; a wary crouch otherwise), up and away (the
             // run out cut at its first stride, crossfading into the locomotion). The way down holds a two-handed weapon as the
             // stances either side of it do (HandsIk.Hold; a pistol's or a blade's hands stay the clip's): its captures are
@@ -266,31 +293,31 @@ namespace SecondFace.Core.Combat
             // crouched elbows CombatMotionPlayTests measured at 15-43° and 2-6°, 2026-11-17)
             S("cover_down", "crouch_down_accad", "crouch_down_f_accad", then: ToCover, cut: 0.92f, fade: 0.15f, hands: HandsIk.Hold, gate: "crouch");
             S("cover_hold", "ready_crouch_cmu", loop: true, fade: 0.3f, gate: "crouch");
-            S("cover_hold_long", "crouch_rifle_ual", loop: true, fade: 0.3f, hands: HandsIk.Hold, gate: "crouch");
+            S("cover_hold_long", "crouch_rifle_built", "crouch_rifle_f_built", loop: true, fade: 0.3f, hands: HandsIk.Hold, gate: "crouch");
             S("cover_leave", "crouch_to_run_accad", "crouch_to_run_f_accad", then: ToIdle, cut: 0.3f, fade: 0.15f, gate: "crouch");
             // heavy hits (with the procedural directional hit on every hit): shoved from behind; from the front a woman's
             // captured stagger, a man's hand-keyed stopgaps (no man's stagger is captured)
             S("hit_shove", "stagger_fwd_cmu", cut: 0.33f, fade: 0.08f, gate: "hit");
-            S("hit_front", "hit_chest_ual", "stagger_cmu", cut: 0.9f, fade: 0.06f, gate: "hit");
-            S("hit_head", "hit_head_ual", "stagger_cmu", cut: 0.9f, fade: 0.06f, gate: "hit");
+            S("hit_front", "hit_front_torso_built", "hit_front_torso_f_built", cut: 0.9f, fade: 0.06f, gate: "hit");
+            S("hit_head", "hit_front_head_built", "hit_front_head_f_built", cut: 0.9f, fade: 0.06f, gate: "hit");
             // a blow that misses: slipped (men's captured dodges), or ducked (everyone's captured duck, cut when it is lowest:
             // its take then holds low for seconds)
-            S("miss_left", "dodge_l_accad", cut: 0.85f, fade: 0.08f, gate: "hit", only: "m");
-            S("miss_right", "dodge_r_accad", cut: 0.85f, fade: 0.08f, gate: "hit", only: "m");
-            S("miss_duck", "duck_cmu", cut: 0.3f, fade: 0.08f, gate: "hit");
+            S("miss_left", "dodge_l_accad", cut: 0.85f, fade: 0.08f, gate: "dodge", only: "m");
+            S("miss_right", "dodge_r_accad", cut: 0.85f, fade: 0.08f, gate: "dodge", only: "m");
+            S("miss_duck", "duck_cmu", cut: 0.3f, fade: 0.08f, gate: "dodge");
             // up from the ground (after the ragdoll): the captured get-up for the side the body lies on, quicker than captured
             S("rise_back", "getup_back_cmu", "getup_f_cmu", speed: 1.3f, cut: 0.96f, fade: 0.05f, gate: "rise");
             S("rise_front", "getup_front_cmu", speed: 1.3f, cut: 0.96f, fade: 0.05f, gate: "rise");
             S("rise_side", "getup_side_cmu", speed: 1.3f, cut: 0.96f, fade: 0.05f, gate: "rise");
             S("rise_crouch", "getup_to_crouch_accad", "getup_to_crouch_f_accad", then: ToCover, speed: 1.2f, cut: 0.95f, fade: 0.05f, gate: "rise");
             // prone: the face-down get-up's first frame held (no prone clip is captured)
-            S("prone", "getup_front_cmu", then: null, speed: 0f, fade: 0.6f, gate: "rise");
+            S("prone", "prone_hold_accad", "prone_hold_f_accad", loop: true, fade: 0.6f, gate: "rise");
             // hands up
-            S("yield_enter", "surrender_enter_ual", then: "yield_hold", cut: 0.95f, fade: 0.15f, hands: HandsIk.Free, gate: "yield");
-            S("yield_hold", "surrender_idle_ual", loop: true, fade: 0.2f, hands: HandsIk.Free, gate: "yield");
+            S("yield_enter", "surrender_enter_built", "surrender_enter_f_built", then: "yield_hold", cut: 0.95f, fade: 0.15f, hands: HandsIk.Free, gate: "yield");
+            S("yield_hold", "surrender_hold_built", "surrender_hold_f_built", loop: true, fade: 0.2f, hands: HandsIk.Free, gate: "yield");
             // the weapon carried while walking or jogging (arms only, over the locomotion's legs)
-            S("carry_pistol", "pistol_idle_ual", loop: true, fade: 0.25f, gate: "carry", layer: ArmsLayer);
-            S("carry_long", "rifle_idle_ual", loop: true, fade: 0.25f, hands: HandsIk.Hold, gate: "carry", layer: ArmsLayer);
+            S("carry_pistol", "pistol_ready_built", "pistol_ready_f_built", loop: true, fade: 0.25f, gate: "carry", layer: ArmsLayer);
+            S("carry_long", "rifle_ready_built", "rifle_ready_f_built", loop: true, fade: 0.25f, hands: HandsIk.Hold, gate: "carry", layer: ArmsLayer);
             return l.ToArray();
         }
 
@@ -358,7 +385,8 @@ namespace SecondFace.Core.Combat
         /// (women: no woman's dodge is captured).</summary>
         public static string Miss(Arms a, bool female, bool fromLeft, int n)
         {
-            if ((a == Arms.Unarmed || a == Arms.Melee) && n % 2 == 0) return a == Arms.Melee ? "melee_block" : "unarmed_block";
+            // (a block is a man's: no woman's captured block passes the clip QA's timing, combat set v4 §6)
+            if (!female && (a == Arms.Unarmed || a == Arms.Melee) && n % 2 == 0) return a == Arms.Melee ? "melee_block" : "unarmed_block";
             if (female) return "miss_duck";
             return fromLeft ? "miss_right" : "miss_left";
         }
@@ -511,7 +539,9 @@ namespace SecondFace.Core.Combat
         public static readonly Grip HammerGrip = new((0, 0, 1), (-1, 0, 0), 80, 92, 52, 80, 40);
         /// <summary>The off hand under a long gun's fore-end: palm up, the index towards the muzzle (left hand).</summary>
         public static readonly Grip ForeEnd = new((0, 0, 1), (0, 1, 0), 62, 72, 40, 55, 25);
-        /// <summary>The off hand on a two-handed club's handle above the main hand (left hand, a hammer grip).</summary>
+        /// <summary>The off hand on a two-handed club's handle at the butt, below the main hand (left hand, a hammer grip): as real
+        /// right-handed people hold a bat or an axe, the dominant hand toward the head (the bat's sidecar `hands`, 2026-11-18;
+        /// until then the off hand above the main one, which no captured swing holds).</summary>
         public static readonly Grip OffHammer = new((0, 0, 1), (1, 0, 0), 80, 92, 52, 80, 40);
         /// <summary>The off hand wrapping a pistol's grip from the left (palm to the grip, the index under the guard).</summary>
         public static readonly Grip PistolSupport = new((0, 1, 0), (1, 0, 0), 70, 78, 42, 70, 20);

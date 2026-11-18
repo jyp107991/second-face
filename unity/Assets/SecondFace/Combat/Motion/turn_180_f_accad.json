@@ -1,0 +1,317 @@
+{
+ "name": "turn_180_f_accad",
+ "src": "ACCAD Female1_B15_WalkTurnAround180",
+ "loop": false,
+ "speed": 0.0,
+ "root": true,
+ "hip": 0.8747,
+ "fps": 30,
+ "frames": 318,
+ "src_fps": 30.0,
+ "sex": "f",
+ "sex_source": "ACCAD names its subjects by sex (Female1)",
+ "set": "f",
+ "licence": "ACCAD Open Motion Project (Ohio State University), CC BY 3.0",
+ "source": "https://accad.osu.edu/research/motion-lab/mocap-system-and-data (Female1_bvh.zip: Female1_B15_WalkTurnAround180.bvh)",
+ "state": "S22",
+ "gate": "turn",
+ "kind": "walk turning round (woman)",
+ "weapon": "any",
+ "two_hands": false,
+ "source_kind": "captured",
+ "authoring": "captured (feet planted)",
+ "range": [
+  0.0,
+  10.6
+ ],
+ "facing": "first",
+ "travel_m": [
+  0.045,
+  -0.097
+ ],
+ "root_note": "travels 0.11 m: apply as root motion",
+ "closed": false,
+ "flips_repaired": {
+  "LeftUpLeg": [
+   "unrepaired at 317"
+  ],
+  "LeftLeg": [
+   "unrepaired at 317"
+  ]
+ },
+ "resolved": false,
+ "floor_shift_m": -0.055,
+ "mirrored": false,
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "stature_est_m": 1.726,
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     0,
+     13
+    ],
+    [
+     32,
+     54
+    ],
+    [
+     74,
+     93
+    ],
+    [
+     112,
+     134
+    ],
+    [
+     151,
+     173
+    ],
+    [
+     177,
+     183
+    ],
+    [
+     202,
+     225
+    ],
+    [
+     243,
+     261
+    ],
+    [
+     280,
+     298
+    ]
+   ],
+   "Right": [
+    [
+     0,
+     35
+    ],
+    [
+     54,
+     75
+    ],
+    [
+     93,
+     113
+    ],
+    [
+     129,
+     156
+    ],
+    [
+     178,
+     207
+    ],
+    [
+     225,
+     243
+    ],
+    [
+     262,
+     280
+    ],
+    [
+     298,
+     317
+    ]
+   ]
+  },
+  "held_keys": 409,
+  "max_shift_cm": 4.01,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 66,
+  "foot_pitched_max_deg": 4.6,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      13
+     ],
+     [
+      32,
+      54
+     ],
+     [
+      74,
+      93
+     ],
+     [
+      112,
+      134
+     ],
+     [
+      151,
+      173
+     ],
+     [
+      177,
+      183
+     ],
+     [
+      202,
+      225
+     ],
+     [
+      243,
+      261
+     ],
+     [
+      280,
+      298
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      35
+     ],
+     [
+      54,
+      75
+     ],
+     [
+      93,
+      113
+     ],
+     [
+      129,
+      156
+     ],
+     [
+      178,
+      207
+     ],
+     [
+      225,
+      243
+     ],
+     [
+      262,
+      280
+     ],
+     [
+      298,
+      317
+     ]
+    ]
+   },
+   "held_keys": 386,
+   "max_shift_cm": 0.71,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 32,
+   "foot_pitched_max_deg": 0.1
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      13
+     ],
+     [
+      32,
+      54
+     ],
+     [
+      74,
+      93
+     ],
+     [
+      112,
+      134
+     ],
+     [
+      151,
+      173
+     ],
+     [
+      177,
+      183
+     ],
+     [
+      202,
+      225
+     ],
+     [
+      243,
+      261
+     ],
+     [
+      280,
+      298
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      35
+     ],
+     [
+      54,
+      75
+     ],
+     [
+      93,
+      113
+     ],
+     [
+      129,
+      156
+     ],
+     [
+      178,
+      207
+     ],
+     [
+      225,
+      243
+     ],
+     [
+      262,
+      280
+     ],
+     [
+      298,
+      317
+     ]
+    ]
+   },
+   "held_keys": 379,
+   "max_shift_cm": 0.55,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 21,
+   "foot_pitched_max_deg": 0.3
+  }
+ }
+}

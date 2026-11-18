@@ -1,0 +1,166 @@
+{
+ "name": "getup_e_f_cmu",
+ "src": "CMU 114_02",
+ "loop": false,
+ "speed": 0.0,
+ "root": true,
+ "hip": 0.961,
+ "fps": 30,
+ "frames": 244,
+ "src_fps": 120,
+ "sex": "f",
+ "sex_source": "CMU subject title: pregnant woman",
+ "set": "f",
+ "licence": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses, may not be resold as data",
+ "source": "http://mocap.cs.cmu.edu/search.php?subjectnumber=114 (trial 114_02)",
+ "state": "S15",
+ "gate": "rise",
+ "kind": "get up from lying (woman, a second subject)",
+ "weapon": "any",
+ "two_hands": false,
+ "source_kind": "captured",
+ "authoring": "captured (as captured)",
+ "range": [
+  2.975,
+  11.092
+ ],
+ "facing": "last",
+ "travel_m": [
+  -0.096,
+  -0.417
+ ],
+ "root_note": "travels 0.43 m: apply as root motion",
+ "closed": false,
+ "flips_repaired": {
+  "lthumb": [
+   [
+    456,
+    466
+   ],
+   [
+    627,
+    636
+   ]
+  ]
+ },
+ "inbetween": {
+  "LeftHipJoint": {
+   "rest_lcl_quat": [
+    0.4374154,
+    0.3563442,
+    0.0,
+    -0.8256432
+   ],
+   "kept": "under the root, never turned: at its rest in the bind and the take"
+  },
+  "RightHipJoint": {
+   "rest_lcl_quat": [
+    0.4531043,
+    0.328435,
+    0.0,
+    0.8287503
+   ],
+   "kept": "under the root, never turned: at its rest in the bind and the take"
+  },
+  "Neck2": {
+   "rest_lcl_quat": [
+    0.9830424,
+    -0.1815495,
+    0.0014457,
+    -0.0257953
+   ],
+   "mode": "rest",
+   "into": [
+    "Neck",
+    "Head"
+   ],
+   "parent_swung_max_deg": 25.2,
+   "child_joint_moved_max_mm": 7.03
+  },
+  "LeftWristTwist": {
+   "rest_lcl_quat": [
+    1.0,
+    0.0,
+    -0.0,
+    0.0
+   ],
+   "mode": "straight",
+   "into": [
+    "LeftLowerArm",
+    "LeftHand"
+   ],
+   "parent_swung_max_deg": 0.0,
+   "child_joint_moved_max_mm": 0.0
+  },
+  "RightWristTwist": {
+   "rest_lcl_quat": [
+    1.0,
+    -0.0,
+    0.0,
+    -0.0
+   ],
+   "mode": "straight",
+   "into": [
+    "RightLowerArm",
+    "RightHand"
+   ],
+   "parent_swung_max_deg": 0.0,
+   "child_joint_moved_max_mm": 0.0
+  }
+ },
+ "resolved": false,
+ "floor_shift_m": 0.0,
+ "mirrored": false,
+ "events": {
+  "stand": [
+   212
+  ]
+ },
+ "events_kind": "rise",
+ "timing": {
+  "what": "whole get-up",
+  "lo": 4.4,
+  "hi": 8.5,
+  "src": "[here] the staged captured get-ups run 4.4-8.5 s with their lead-ins (standard S15)",
+  "ref": "rise",
+  "measured": {
+   "beat_s": 7.058,
+   "span_s": 8.117
+  }
+ },
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [
+   "LeftHipJoint",
+   "LeftWristTwist",
+   "Neck2",
+   "RightHipJoint",
+   "RightWristTwist"
+  ],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "stature_est_m": 1.614
+}

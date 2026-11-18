@@ -14,7 +14,8 @@ namespace SecondFace.Tests
         {
             var people = PeopleImportPostprocessor.GroundAll();
             var clips = MotionImportPostprocessor.ConfigureAll();
-            Debug.Log($"GateBatchSetup: {people} people grounded, {clips} clips configured");
+            CombatAnimatorBuild.Rebuild();
+            Debug.Log($"GateBatchSetup: {people} people grounded, {clips} clips configured, the fight's layers rebuilt");
         }
     }
 }

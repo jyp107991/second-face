@@ -13,10 +13,13 @@
  "set": "m",
  "licence": "ACCAD Open Motion Project (Ohio State University), CC BY 3.0",
  "source": "https://accad.osu.edu/research/motion-lab/mocap-system-and-data (Male2_bvh.zip: Male2_E5_HookLeft.bvh)",
- "kind": "A4 left hook",
- "weapon": "none",
+ "state": "S7",
+ "gate": "strike",
+ "kind": "left hook",
+ "weapon": "unarmed",
  "two_hands": false,
- "authoring": "captured (optical mocap, no fingers)",
+ "source_kind": "captured",
+ "authoring": "captured (feet planted)",
  "range": [
   0.3,
   2.0
@@ -28,15 +31,146 @@
  ],
  "root_note": "in place",
  "closed": false,
- "cycle": null,
- "flips_repaired": null,
- "inbetween": null,
  "resolved": true,
  "floor_shift_m": 0.0,
- "group": "use",
+ "mirrored": false,
  "events": {
   "impact": [
-   18
+   20
   ]
+ },
+ "events_kind": "strike:L",
+ "timing": {
+  "what": "onset->impact (hand)",
+  "lo": 0.105,
+  "hi": 0.705,
+  "src": "R1/R2: punch delivery 405 +/- 150 ms (mean +/- 2 SD); hooks deliver slower [R2] (no figure: held to the same span)",
+  "ref": "punch",
+  "measured": {
+   "onset_s": 0.233,
+   "beat_s": 0.667,
+   "span_s": 0.433,
+   "peak_mps": 8.47
+  }
+ },
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "stature_est_m": 1.366,
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     0,
+     17
+    ],
+    [
+     20,
+     22
+    ],
+    [
+     24,
+     50
+    ]
+   ],
+   "Right": [
+    [
+     0,
+     8
+    ],
+    [
+     13,
+     50
+    ]
+   ]
+  },
+  "held_keys": 100,
+  "max_shift_cm": 3.97,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 0,
+  "foot_pitched_max_deg": 0.0,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      17
+     ],
+     [
+      20,
+      50
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      8
+     ],
+     [
+      13,
+      50
+     ]
+    ]
+   },
+   "held_keys": 96,
+   "max_shift_cm": 2.09,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      17
+     ],
+     [
+      20,
+      50
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      8
+     ],
+     [
+      13,
+      50
+     ]
+    ]
+   },
+   "held_keys": 96,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  }
  }
 }

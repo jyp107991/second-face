@@ -31,10 +31,22 @@
     "unity/Assets/SecondFace/Editor/Build/CombatImportPostprocessor.cs",
     "unity/Assets/SecondFace/Combat/Motion/*.fbx",
     "unity/Assets/SecondFace/Combat/Motion/*.json",
-    "unity/Assets/SecondFace/Combat/CombatArms.mask"
+    "unity/Assets/SecondFace/Combat/CombatArms.mask",
+    "unity/Assets/SecondFace/Editor/Build/TakeStance.cs",
+    "unity/Assets/SecondFace/Editor/Build/PeopleImportPostprocessor.cs",
+    "unity/Assets/SecondFace/People/Rocketbox/*/*.fbx.meta",
+    "unity/Assets/SecondFace/Combat/Motion/*.fbx.meta",
+    "unity/Assets/SecondFace/Combat/Weapons/*/*.json"
   ],
   "measures": [
     "unity/Assets/SecondFace/Tests/PlayMode/MotionProbe.cs",
     "unity/Assets/SecondFace/Tests/PlayMode/HumanMotionGateTests.cs"
-  ]
+  ],
+  "aliases": {
+    "combat:strike2": "combat:strike",
+    "combat:dodge": "combat:hit"
+  },
+  "aliases_about": "A fight's state set introduced after a baseline verdict, and the set it was measured under before (its baseline key). tools/qa/people_gate.mjs compares a new verdict with the one it replaces on the baseline's keys: each measure's failing cells of an aliased set are summed into the baseline set's (e.g. 'A1 combat:strike2' into 'A1 combat:strike'), so a state moved to a set of its own is never compared against nothing. Introduced with combat set v4 (2026-11-18): its two-handed weapon blows (club2_strike, club2_strike_b) went from 'strike' to 'strike2' and the slips and ducks (miss_left, miss_right, miss_duck) from 'hit' to 'dodge', each to the limits real actors of that action set (docs/qa/motion_calibration.md §8; docs/PEOPLE_MOTION.md §2.7, §1.9). Never alias a set to hide a regression: a set is aliased only to the one its states were measured under in the baseline.",
+  "remeasured": {},
+  "remeasured_about": "Measures whose definition or limit was made stricter in the gate's code since the verdict before (by name, with why): only these are left out of the never-worse comparison while the two verdicts' measures hashes differ. Empty for combat set v4 (2026-11-18): its limit changes (§8's aim, two-handed blows, dodge) only loosen or add."
 }

@@ -79,8 +79,15 @@ It is binding. It sits beside the face and skin gate (`docs/PEOPLE_QA.md`) and i
    1073 and 1085, 174 lines apart, 2026-11-07); a check of the gate itself is two runs of the same code, line for line
    the same. **Green means the whole cast** (`EveryPersonStandsAndMovesLikePeople`, every body of the
    catalogue, one verdict): the quick ten are a working check and never count as green. **No commit makes people
-   worse**: a verdict with more failures than the one it replaces on any measure (the same measures, the same set)
-   fails `npm run check` and CI; a regression is fixed or reverted, never committed. Files are added to the inputs
+   worse**: a verdict with more failures than the one it replaces on any measure (the same set) fails `npm run check`
+   and CI; a regression is fixed or reverted, never committed. Since 2026-11-18 the comparison holds when the gate's own
+   code changed too (a change of the measures' code is no exemption: only a measure made stricter, named in the inputs'
+   `remeasured` with its why, is left out until a verdict on the new code is committed); a set the verdict before did not
+   measure at all is not compared. **A fight's state set introduced after a baseline is compared on the set its states
+   were measured under there** (the inputs' `aliases`: each measure's failing cells of the new set summed into the
+   baseline set's): introduced with combat set v4, whose two-handed blows went from `strike` to `strike2` and whose slips
+   and ducks from `hit` to `dodge`, each to the limits of real actors of that action (§2.7; `docs/qa/motion_calibration.md`
+   §8). A set is aliased only to the one its states were measured under, never to hide a regression. Files are added to the inputs
    when they start to decide how people look or move, and never taken out to make a verdict fresh. **Every report
    to the owner starts with the gate's state** as `npm run people-gate` prints it (green, or red with the failing
    measures and their counts, or stale), and never calls people work done while it is not green.
@@ -205,23 +212,25 @@ The combat states the game shows, measured on people made as the game makes them
 code (`CombatViews.ForBody`: the fighter on the animator, the weapon from the pack), every runtime system on, every frame,
 like the walks. Their limits are real fighters', measured with this gate's own measures on the actors' own skeletons at their
 true frame rates and accepted for WP2: **source: `docs/qa/motion_calibration.md` §7** (ACCAD Male2 and Female1, CMU 144,
-141_14, 113_13, 13_17, 79_96, 80_03, 77_03/77_09; `motion_calibration_combat.json`). Each limit is the real fighters' p98
-(and p2 where a lower bound applies), each cap their max (and min), the trials of the state pooled. **The long-gun aim is
-provisional**: two actors miming a gun (the head from one), to be replaced by a captured long-gun take with a real weapon.
+141_14, 113_13, 13_17, 79_96, 80_03, 77_03/77_09; `motion_calibration_combat.json`), and **§8 for combat set v4** (applied
+2026-11-18: the long-gun aim from three actors, CMU 79_96, 80_03 and 100STYLE's Swat_ID, replacing §7's provisional two-actor
+column; a two-handed weapon's blows from three, CMU 79, 80 and 124; slips and ducks from four, ACCAD Male2, Male1, Female1 and
+CMU 77; the peek, from one actor, stays provisional and is not held). Each limit is the real fighters' p98 (and p2 where a
+lower bound applies), each cap their max (and min), the trials of the state pooled.
 These limits apply only while the game shows the fight's own stance (the gate's states `combat:<set>:<what>`); quiet
 standing's (§2.1) and walking's (§2.4) limits are never loosened by them.
 
-| Measure | Guard | Strike | Aim, long gun (provisional) | Crouch / cover |
-|---|---|---|---|---|
-| K1 straighter knee ° | ≤ 67 (81) | ≤ 82 (89) | ≤ 2.2 (2.5) | 16.7 … 147 (16.1 … 148) |
-| Kb more bent knee ° | ≤ 75.5 (94.5) | ≤ 90.5 (97.1) | ≤ 20.4 (20.7) | ≤ 148 (148) |
-| H1 head pitch ° | −26.9 … +10.3 (−33.0 … +14.0) | −41.9 … +16.8 (−53.3 … +22.9) | −3.0 … +1.2 (−3.0 … +1.6) | −44.7 … +33.8 (−53.3 … +35.4) |
-| H2 head yaw on chest ° | ≤ 55.9 (59.5) | ≤ 56.8 (65.9) | 15.2 … 22.2 (15.1 … 22.9) | ≤ 92.1 (93.2) |
-| H3 head roll ° | ≤ 19.5 (21.5) | ≤ 22.1 (25.7) | 10.6 … 16.6 (10.4 … 16.7) | ≤ 36.7 (45.6) |
-| F2 heel lift, cm | ≤ 9.8 (14.4) | ≤ 13.2 (14.7) | ≤ 1.9 (1.9) | ≤ 17.1 (17.2) |
-| F3w stance width, cm | 21.2 … 70.4 (3.9 … 79.2) | 16.4 … 83.2 (1.3 … 90.5) | 23.3 … 32.8 (23.3 … 33.0) | 18.9 … 50.6 (16.0 … 51.0) |
-| A1 upper arm from hanging ° | ≤ 103 (119) | ≤ 88.5 (112) | 53.2 … 88.8 (50.2 … 90.5) | ≤ 134 (135) |
-| A2 elbow bend ° | 112.8 … 146.9 (109.3 … 149.9) | 83.9 … 140.5 (41.1 … 145.7) | 119.6 … 143.0 (119.5 … 146.6) | ≤ 140.7 (141.5) |
+| Measure | Guard | Strike | Strike, two-handed (§8) | Aim, long gun (§8) | Dodge (§8) | Crouch / cover |
+|---|---|---|---|---|---|---|
+| K1 straighter knee ° | ≤ 67 (81) | ≤ 82 (89) | ≤ 36.1 (39.3) | ≤ 33.5 (34.9) | ≤ 122.6 (124) | 16.7 … 147 (16.1 … 148) |
+| Kb more bent knee ° | ≤ 75.5 (94.5) | ≤ 90.5 (97.1) | ≤ 54.9 (57.6) | ≤ 37.2 (38.0) | ≤ 127.9 (129.2) | ≤ 148 (148) |
+| H1 head pitch ° | −26.9 … +10.3 (−33.0 … +14.0) | −41.9 … +16.8 (−53.3 … +22.9) | as strike | −7.1 … +0.6 (−7.1 … +1.6) | −47.5 … +3.9 (−54 … +7.9) | −44.7 … +33.8 (−53.3 … +35.4) |
+| H2 head yaw on chest ° | ≤ 55.9 (59.5) | ≤ 56.8 (65.9) | as strike | 15.7 … 33.3 (15.1 … 33.7) | ≤ 54.4 (55.4) | ≤ 92.1 (93.2) |
+| H3 head roll ° | ≤ 19.5 (21.5) | ≤ 22.1 (25.7) | as strike | 7.9 … 16.3 (7.8 … 16.7) | ≤ 18.2 (21) | ≤ 36.7 (45.6) |
+| F2 heel lift, cm | ≤ 9.8 (14.4) | ≤ 13.2 (14.7) | ≤ 15.1 (15.3) | ≤ 1.8 (1.9) | ≤ 6.6 (10.5) | ≤ 17.1 (17.2) |
+| F3w stance width, cm | 21.2 … 70.4 (3.9 … 79.2) | 16.4 … 83.2 (1.3 … 90.5) | 23.1 … 66.0 (22.1 … 66.4) | 23.4 … 44.7 (23.3 … 44.7) | 13.2 … 110.8 (7.1 … 139.8) | 18.9 … 50.6 (16.0 … 51.0) |
+| A1 upper arm from hanging ° | ≤ 103 (119) | ≤ 88.5 (112) | ≤ 122.5 (129.4) | 54.8 … 86.2 (50.2 … 90.5) | (thrown about) | ≤ 134 (135) |
+| A2 elbow bend ° | 112.8 … 146.9 (109.3 … 149.9) | 83.9 … 140.5 (41.1 … 145.7) | 13.8 … 128.6 (11.6 … 135.2) | 119.7 … 146.1 (119.5 … 146.6) | (thrown about) | ≤ 140.7 (141.5) |
 
 Limit p2 … p98 (cap min … max). New measures for these states: **Kb**, the more bent knee (the angle between thigh and shin,
 as K1 for the straighter); **WG1**, the weapon's main grip from the palm's centre (≤ 1 cm, cap 2: the weapon stays in the hand,
@@ -235,7 +244,9 @@ Which limits each state is held to (`HumanMotionGateTests.CombatLimits`), and C1
 | guard | the unarmed and one-handed guard | Guard, all of it; F1, F4, WG1 |
 | ready | a gun's or a two-handed club's ready stance | Guard's legs, head and feet (the arms are on the weapon); F1, F4, WG1, WG2 |
 | strike | blows, a block | Strike, all of it; F1, WG1, WG2 (no F4: fighters pivot and step on their blows, and were not measured for it) |
-| aim | a long gun's aim, its shot and its burst | Aim, all of it (provisional); F1, F4, WG1, WG2 |
+| strike2 | a two-handed weapon's blows | Strike, two-handed, and the strike's head; F1, WG1, WG2 |
+| dodge | a slip or a duck from a blow | Dodge's legs, head and feet; F1 (the arms are thrown about) |
+| aim | a long gun's aim, its shot and its burst | Aim, all of it (§8, three actors); F1, F4, WG1, WG2 |
 | aim_pistol | a pistol's aim and shots (both hands by IK on the long gun's captured stance) | Aim's legs and feet and H1; H2 and H3 as standing (§2.1: no stock at the cheek); F1, F4, WG1, WG2 |
 | crouch | down into cover, the crouch held | Crouch / cover, all of it; F1, F4, WG1, WG2 |
 | reload | a reload | as a gesture (§2.2): F1, F2, F4, H1 −25 … +15, H2, S1 ≤ 10; WG1 |

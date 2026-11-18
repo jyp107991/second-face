@@ -113,10 +113,33 @@ function prior() {
   } catch { return null; }
 }
 const before = prior();
-if (before && before.byMeasure && verdict.byMeasure && before.measures === verdict.measures && before.set === verdict.set) {
-  for (const [m, n] of Object.entries(verdict.byMeasure)) {
-    const was = before.byMeasure[m] ?? 0;
-    if (n > was) problems.push(`people made worse: ${m} ${was} -> ${n} failures (${before.date} -> ${verdict.date}); fix it or revert, never commit a regression`);
+// a fight's state set introduced after the baseline is compared on the set its states were measured under there
+// (motion_gate_inputs.json `aliases`, combat set v4 2026-11-18: strike2 -> strike, dodge -> hit): each measure's failing
+// cells summed into the baseline's key, so a state moved to a set of its own is never compared against nothing
+const ALIASES = spec.aliases ?? {};
+function folded(byMeasure) {
+  const out = {};
+  for (const [k, n] of Object.entries(byMeasure ?? {})) {
+    let key = k;
+    for (const [from, to] of Object.entries(ALIASES)) if (k.endsWith(' ' + from)) key = k.slice(0, k.length - from.length) + to;
+    out[key] = (out[key] ?? 0) + n;
+  }
+  return out;
+}
+// (compared whenever both are the same set, the gate's own code changed or not: the owner's rule is that no commit makes any
+// measure worse, and a change of the measures' code is no exemption; a measure whose definition was made stricter is named in
+// motion_gate_inputs.json `remeasured` with its why, and only those are left out until a verdict on the new code is committed)
+const REMEASURED = new Set(Object.keys(spec.remeasured ?? {}));
+// a key's set ('' for the standing and walking states, 'combat:<set>' for a fight's): a set the verdict before did not
+// measure at all (no key of it there: the fight's states before dfc732a4) is not compared
+const setOf = (k) => k.split(' ')[1] ?? '';
+if (before && before.byMeasure && verdict.byMeasure && before.set === verdict.set) {
+  const was = folded(before.byMeasure), now = folded(verdict.byMeasure);
+  const measuredBefore = new Set(Object.keys(was).map(setOf));
+  for (const [m, n] of Object.entries(now)) {
+    if (!measuredBefore.has(setOf(m))) continue;
+    if (before.measures !== verdict.measures && REMEASURED.has(m.split(' ')[0])) continue;
+    if (n > (was[m] ?? 0)) problems.push(`people made worse: ${m} ${was[m] ?? 0} -> ${n} failures (${before.date} -> ${verdict.date}); fix it or revert, never commit a regression`);
   }
 }
 

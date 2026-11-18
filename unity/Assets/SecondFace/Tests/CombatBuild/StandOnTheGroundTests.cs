@@ -31,7 +31,7 @@ namespace SecondFace.Tests
         {
             var wrong = new List<string>(); var report = new List<string>();
             var n = 0;
-            foreach (var path in Directory.GetFiles(Motion, "*.fbx").Select(p => p.Replace('\\', '/')).OrderBy(p => p))
+            foreach (var path in Directory.GetFiles(Motion, "*.fbx").Concat(Directory.GetFiles(CombatImportPostprocessor.MotionDir, "*.fbx")).Select(p => p.Replace('\\', '/')).OrderBy(p => p))
             {
                 n++;
                 var name = Path.GetFileNameWithoutExtension(path);
@@ -47,9 +47,15 @@ namespace SecondFace.Tests
                     // T-pose by, keeps the converters' T-pose and its feet on the floor at its first key, as before 2026-11-18)
                     var st0 = TakeStance.Measure(path, TakeStance.Leg(imp.humanDescription, model));
                     if (seated && st0.Standing) wrong.Add($"{name}: marked seated but stands ({st0.Keys[0]}/{st0.Keys[1]} standing keys)");
+                    // (the everyday motion's fall keeps its height as root motion; the fight's travelling clips bake it as
+                    // captured, CombatImportPostprocessor: never from the feet)
+                    var fight = path.StartsWith(CombatImportPostprocessor.MotionDir);
                     foreach (var clip in clips)
-                        if (travels && (AnimationUtility.GetAnimationClipSettings(clip).heightFromFeet || AnimationUtility.GetAnimationClipSettings(clip).keepOriginalPositionY))
-                            wrong.Add($"{name}: travels, its height not root motion");
+                    {
+                        var st1 = AnimationUtility.GetAnimationClipSettings(clip);
+                        if (travels && !fight && (st1.heightFromFeet || st1.keepOriginalPositionY)) wrong.Add($"{name}: travels, its height not root motion");
+                        if (travels && fight && (st1.heightFromFeet || !st1.keepOriginalPositionY)) wrong.Add($"{name}: travels, its height not as captured");
+                    }
                     report.Add($"{name}: {(travels ? "travels" : "seated")}, the converters' T-pose");
                     continue;
                 }

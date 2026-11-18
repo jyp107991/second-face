@@ -1,0 +1,148 @@
+{
+ "name": "peek_lean_l_back_100s",
+ "src": "100STYLE LeanLeft_ID",
+ "loop": false,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.871,
+ "fps": 30,
+ "frames": 73,
+ "src_fps": 60.0,
+ "sex": "u",
+ "sex_source": "not recorded (100STYLE: one actor, 182 cm)",
+ "set": "both",
+ "licence": "The 100STYLE Dataset - Ian Mason, CC BY 4.0 (https://www.ianxmason.com/100style/)",
+ "source": "https://www.ianxmason.com/100style/ (LeanLeft_ID.bvh)",
+ "state": "S18",
+ "gate": "peek",
+ "kind": "full cover: back from the left lean (peek stop)",
+ "weapon": "any",
+ "two_hands": false,
+ "source_kind": "captured",
+ "authoring": "captured (feet planted)",
+ "range": [
+  29.8,
+  32.2
+ ],
+ "facing": "first",
+ "travel_m": [
+  -0.023,
+  -0.004
+ ],
+ "root_note": "in place",
+ "closed": false,
+ "inbetween": {
+  "Chest3": {
+   "rest_lcl_quat": [
+    1.0,
+    -0.0,
+    0.0,
+    0.0
+   ],
+   "mode": "rest",
+   "into": [
+    "Chest",
+    "UpperChest"
+   ],
+   "parent_swung_max_deg": 3.42,
+   "child_joint_moved_max_mm": 0.33
+  }
+ },
+ "resolved": false,
+ "floor_shift_m": 0.0,
+ "mirrored": false,
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [
+   "Chest3"
+  ],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "stature_est_m": 1.776,
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     0,
+     72
+    ]
+   ],
+   "Right": [
+    [
+     0,
+     72
+    ]
+   ]
+  },
+  "held_keys": 146,
+  "max_shift_cm": 0.62,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 37,
+  "foot_pitched_max_deg": 1.4,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      72
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      72
+     ]
+    ]
+   },
+   "held_keys": 146,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 1,
+   "foot_pitched_max_deg": 0.0
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      72
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      72
+     ]
+    ]
+   },
+   "held_keys": 146,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 15,
+   "foot_pitched_max_deg": 0.0
+  }
+ }
+}

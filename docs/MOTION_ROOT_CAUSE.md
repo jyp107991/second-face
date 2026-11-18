@@ -404,3 +404,35 @@ own frame, each foot's own lowest skin point in its stance (within 4 cm of its l
   The converters should write the same T-pose (`t_pose_key`: the hips and feet as `TakeStance` measures them) and plant both
   feet of a take on one floor (offline helper). FootPlant's hold and lift of the bearing foot are traced next on this
   reference, frame by frame, for what remains.
+- **The 14-person pick on this reference (2026-11-18, against the same people in dfc732a4, the states measured before: 4
+  there):** 87 on the T-pose batch → **74** (A1 57, W6 16 → 7: every jog and sneak passes, the men's walks left at p2 −1.5 … −1.9;
+  W3 7, W1 1; A4 and C1 back to the base, Medical_Male_02's look135 A4 6.2 → 3.7 and Medical_Male_03's wave C1 3.3 → 0.0 fixed).
+- **W6's remainder: FootPlant held the foot by four fixed sole points, not by its underside.** In the walks the gate's lowest foot
+  vertex stood 1.5-1.6 cm under the ground while the heel point FootPlant holds read 0.0 and its ball 0.5 (Medical_Male_02's right
+  foot, `walk:walk`, the soles' trace): pitched toes-up at heel strike, the heel's rounded back and the shoe's rear edge go lower
+  than any of the four points (the heel, the sole's rear end within 2 cm of its lowest, the ball, the tip). **Fix:** FootPlant
+  reads each foot's underside from the body's own mesh at the bind (its vertices under the ankle within 5 cm of the sole's
+  lowest, one a 1.5 cm cell, in the foot's and the toes' frames) and lifts and holds a foot by whichever of them is lowest
+  (`SoleOver`, `Lowest`). Pick: **W6 7 → 0** (and `W6 combat:carry` 2 → 0).
+- **A1's cause, traced step by step (`ArmClearance`'s trace: the hand's depth after each step, what each turn was for, how deep).**
+  On Construction_Male_02 (idle) the third step (the shoulder's remainder, +1.9°) was for a forearm point 0.32 cm into the thigh
+  14 cm under the hips; on cap_Military_Male_03n and Medical_Male_02 the first turn (3.8° idle, 5.8° in the looks) was for the
+  upper arm's third by the elbow, 1-2 cm into the flank 27-29 cm over the hips. Every resting contact was pushed until it stood
+  0.3 cm off the skin: an outward offset at rest. A real arm rests against the hip and the flank with the soft tissue giving
+  (the thigh's fat and muscle shear at 0.5-1.7 kPa, Segain et al. 2024; the gate's own C1 takes a contact to 0.5 cm), and hangs
+  from the shoulders: when the gaze turns the chest, the hand goes with the shoulder (Yoshida et al. 2022: at rest the elbow
+  bends 15.5°, the shoulder abducts 4.5°). **Fix:** at rest the forearm and hand may press into the hip and thigh by
+  `RestGive` (0.25 cm: the skin's points read a contact 0.1-0.25 cm shallower than the gate's mesh on the broad men, so 0.4 read
+  0.5-0.7 cm on the mesh, C1), the upper arm by the elbow lies on the flank at contact (no offset), and nothing that stands
+  clear moves; the resting hand is placed in the shoulders' frame, not the hips'. Pick: **A1 57 → 3** (cap_Police_Male_03n's
+  looks, 21.7: his left forearm by the elbow 2.5 cm into the belly's front-left where the gaze turns his chest, the first turn
+  4.6°; open).
+- **C1's cause on the way: the upper arm divided differently from the gate.** ArmClearance gave the chest's soft contact
+  (`UpperGive`, 2.5 cm) to the upper arm above its third by the elbow by the distance to the elbow joint; the gate divides it by
+  the share along the bone from the shoulder (0.65): a surface point 4-5 cm off the bone near the boundary was the chest's
+  contact for the one and the elbow's third for the other (Construction_Male_02 idle1: the upper arm 1.6 cm into the chest,
+  unmoved, C1 1.6). **Fix:** the same division as the gate's.
+- **W3's cause: the swinging arm pushed out for a contact C1 leaves out.** Walking, the left arm of Medical_Male_02 and
+  cap_Police_Male_03n was turned out 16-20° (median; p98 24-26°) for the upper arm's upper two-thirds 6 cm into the torso at the
+  armpit (the trace's first-turn depth): the contact both soft tissues take, which C1 does not count. **Fix:** moving, that part
+  of the arm is never a reason to swing the arm out.

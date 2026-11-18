@@ -57,7 +57,7 @@ namespace SecondFace.EditorTools
         /// T-pose kept and its height read from the feet as before.</summary>
         private static bool Done(string userData, string stamp) => userData == stamp || userData == stamp + " seated";
 
-        private static bool Seated(ModelImporter imp) => imp.userData != null && imp.userData.EndsWith(" seated");
+        public static bool Seated(ModelImporter imp) => imp.userData != null && imp.userData.EndsWith(" seated");
 
         private static bool Travels(string path)
         {
@@ -91,6 +91,22 @@ namespace SecondFace.EditorTools
             // (v6.1's first keys raised every jogger's stance sole about 1 cm and moved the CMU gaits' strides 2-7 %,
             // 2026-11-17). The second (<see cref="Configure"/>) puts <see cref="Mapped"/> over that configuration, kept, and
             // imports the take.
+            var first = Prepare(imp, assetPath);
+            imp.animationType = ModelImporterAnimationType.Human;
+            imp.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
+            imp.importAnimation = !first;
+            imp.animationCompression = ModelImporterAnimationCompression.Optimal;
+            imp.animationRotationError = 0.3f; imp.animationPositionError = 0.3f;
+            imp.materialImportMode = ModelImporterMaterialImportMode.None;
+            imp.isReadable = false;
+            imp.resampleCurves = true;
+        }
+
+        /// <summary>A captured clip's model import (the everyday motion's and the fight's, CombatImportPostprocessor): its
+        /// configuration emptied when the file's bytes changed so Unity fills it from the file's T-pose, the second import
+        /// (<see cref="Configure"/>) asked for; true for that first, take-less import.</summary>
+        public static bool Prepare(ModelImporter imp, string assetPath)
+        {
             var stamp = Stamp(assetPath);
             var hd = imp.humanDescription;
             if (!Done(imp.userData, stamp) && imp.userData != "fresh " + stamp)
@@ -106,14 +122,7 @@ namespace SecondFace.EditorTools
                 var path = assetPath;
                 EditorApplication.delayCall += () => Configure(path);
             }
-            imp.animationType = ModelImporterAnimationType.Human;
-            imp.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
-            imp.importAnimation = !first;
-            imp.animationCompression = ModelImporterAnimationCompression.Optimal;
-            imp.animationRotationError = 0.3f; imp.animationPositionError = 0.3f;
-            imp.materialImportMode = ModelImporterMaterialImportMode.None;
-            imp.isReadable = false;
-            imp.resampleCurves = true;
+            return first;
         }
 
         /// <summary>The second of a changed clip's two imports (outside the import: from the editor's next update, or by
@@ -153,7 +162,8 @@ namespace SecondFace.EditorTools
         /// <summary>Every clip whose configuration is not yet its file's T-pose and mapping (a batch run's first step: the
         /// editor's delayed calls do not run before -executeMethod or the tests).</summary>
         public static int ConfigureAll() =>
-            Directory.GetFiles("Assets/SecondFace/Motion/", "*.fbx").Select(p => p.Replace('\\', '/')).Count(Configure);
+            Directory.GetFiles("Assets/SecondFace/Motion/", "*.fbx").Concat(Directory.GetFiles(CombatImportPostprocessor.MotionDir, "*.fbx"))
+                .Select(p => p.Replace('\\', '/')).Count(Configure);
 
         private void OnPreprocessAnimation()
         {

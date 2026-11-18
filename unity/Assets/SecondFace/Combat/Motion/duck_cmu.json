@@ -13,10 +13,13 @@
  "set": "both",
  "licence": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses, may not be resold as data",
  "source": "http://mocap.cs.cmu.edu/search.php?subjectnumber=77 (trial 77_09)",
- "kind": "A5/A6 duck from something thrown, hold low, rise",
- "weapon": "none",
+ "state": "S9",
+ "gate": "dodge",
+ "kind": "duck from something thrown, hold low, rise",
+ "weapon": "any",
  "two_hands": false,
- "authoring": "captured (optical mocap, no fingers)",
+ "source_kind": "captured",
+ "authoring": "captured (feet planted)",
  "range": [
   3.4,
   8.6
@@ -28,18 +31,48 @@
  ],
  "root_note": "in place",
  "closed": false,
- "cycle": null,
- "flips_repaired": null,
  "inbetween": {
+  "LeftHipJoint": {
+   "rest_lcl_quat": [
+    0.408023,
+    0.5765333,
+    0.0,
+    -0.707903
+   ],
+   "kept": "under the root, never turned: at its rest in the bind and the take"
+  },
+  "RightHipJoint": {
+   "rest_lcl_quat": [
+    0.4080312,
+    0.5765039,
+    -0.0,
+    0.7079222
+   ],
+   "kept": "under the root, never turned: at its rest in the bind and the take"
+  },
   "Neck2": {
+   "rest_lcl_quat": [
+    0.9747719,
+    -0.2228083,
+    0.0011574,
+    -0.0132272
+   ],
+   "mode": "rest",
    "into": [
     "Neck",
     "Head"
    ],
-   "parent_swung_max_deg": 16.52,
-   "child_joint_moved_max_mm": 7.95
+   "parent_swung_max_deg": 24.8,
+   "child_joint_moved_max_mm": 4.95
   },
   "LeftWristTwist": {
+   "rest_lcl_quat": [
+    1.0,
+    -0.0,
+    0.0,
+    -0.0
+   ],
+   "mode": "straight",
    "into": [
     "LeftLowerArm",
     "LeftHand"
@@ -48,6 +81,13 @@
    "child_joint_moved_max_mm": 0.0
   },
   "RightWristTwist": {
+   "rest_lcl_quat": [
+    1.0,
+    -0.0,
+    0.0,
+    0.0
+   ],
+   "mode": "straight",
    "into": [
     "RightLowerArm",
     "RightHand"
@@ -58,5 +98,141 @@
  },
  "resolved": false,
  "floor_shift_m": 0.0,
- "group": "use"
+ "mirrored": false,
+ "events": {
+  "clear": [
+   27
+  ]
+ },
+ "events_kind": "dodge",
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [
+   "LeftHipJoint",
+   "LeftWristTwist",
+   "Neck2",
+   "RightHipJoint",
+   "RightWristTwist"
+  ],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "stature_est_m": 1.607,
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     0,
+     19
+    ],
+    [
+     22,
+     142
+    ],
+    [
+     147,
+     155
+    ]
+   ],
+   "Right": [
+    [
+     0,
+     155
+    ]
+   ]
+  },
+  "held_keys": 312,
+  "max_shift_cm": 5.99,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 0,
+  "foot_pitched_max_deg": 0.0,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      19
+     ],
+     [
+      22,
+      142
+     ],
+     [
+      147,
+      155
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      9
+     ],
+     [
+      11,
+      155
+     ]
+    ]
+   },
+   "held_keys": 309,
+   "max_shift_cm": 1.22,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      19
+     ],
+     [
+      22,
+      142
+     ],
+     [
+      147,
+      155
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      9
+     ],
+     [
+      11,
+      155
+     ]
+    ]
+   },
+   "held_keys": 306,
+   "max_shift_cm": 0.69,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  }
+ }
 }

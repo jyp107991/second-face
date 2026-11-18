@@ -221,7 +221,9 @@ namespace SecondFace.Tests
                     if (f.Held.Shown && !f.InHand) wrong.Add($"{who}: the weapon not back in hand after the throw");
                     // hands up
                     seen.Clear();
-                    yield return Seen(v, Do(v.OnYield), seen, 1.5f);
+                    // (to the hold: the way up as long as its clip plays to its cut, and its fade; v4's take 2 s, the old one 0.8)
+                    var up = CombatMotion.State("yield_enter");
+                    yield return Seen(v, Do(v.OnYield), seen, f.Set.Length("yield_enter", f.Female) * (up.Cut - up.From) / up.Speed + up.Fade + 0.4f);
                     if (f.Current != "yield_hold") wrong.Add($"{who}: hands up played {string.Join(",", seen)}, holds {f.Current}");
                     v.OnEnd();
                     yield return Wait(1.5f);
@@ -637,7 +639,10 @@ namespace SecondFace.Tests
                     if (clip.loopTime != loop) wrong.Add($"{c.Name}: loops {clip.loopTime}, its sidecar {loop}");
                     if (clip.lockRootPositionXZ != (c.XZ == RootXZ.Bake)) wrong.Add($"{c.Name}: XZ baked {clip.lockRootPositionXZ}, the table {c.XZ}");
                     if (!clip.lockRootHeightY) wrong.Add($"{c.Name}: its height is root motion");
-                    if (clip.keepOriginalPositionY != (c.Y == RootY.Keep)) wrong.Add($"{c.Name}: Y as captured {clip.keepOriginalPositionY}, the table {c.Y}");
+                    // (the take's own height over its floor, its T-pose stood on it; a seated take, with no standing stance, the
+                    // table's: CombatImportPostprocessor.FromFeet, 2026-11-18)
+                    var feet = imp.userData != null && imp.userData.EndsWith(" seated") && c.Y == RootY.Feet;
+                    if (clip.keepOriginalPositionY == feet) wrong.Add($"{c.Name}: Y as captured {clip.keepOriginalPositionY}, the table {c.Y}{(feet ? " (seated)" : "")}");
                     if (clip.lockRootRotation == (c.Turn || c.DropTurn)) wrong.Add($"{c.Name}: turn baked {clip.lockRootRotation}");
                 }
                 // the whole take its sidecar describes, at its capture's own rate

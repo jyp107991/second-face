@@ -1,0 +1,236 @@
+{
+ "name": "throw_overhand_u_b_cmu",
+ "src": "CMU 34_01",
+ "loop": false,
+ "speed": 0.0,
+ "root": true,
+ "hip": 0.9752,
+ "fps": 30,
+ "frames": 51,
+ "src_fps": 60,
+ "sex": "u",
+ "sex_source": "not recorded (CMU records sex only in a subject title)",
+ "set": "both",
+ "licence": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses, may not be resold as data",
+ "source": "http://mocap.cs.cmu.edu/search.php?subjectnumber=34 (trial 34_01)",
+ "state": "S19",
+ "gate": "throw",
+ "kind": "overhand throw (a football; a second actor, sex not recorded)",
+ "weapon": "thrown",
+ "two_hands": false,
+ "source_kind": "captured",
+ "authoring": "captured (feet planted)",
+ "range": [
+  5.9,
+  7.6
+ ],
+ "facing": "strike_R",
+ "travel_m": [
+  0.026,
+  0.047
+ ],
+ "root_note": "travels 0.05 m: apply as root motion",
+ "closed": false,
+ "flips_repaired": {
+  "lthumb": [
+   [
+    13,
+    17
+   ],
+   [
+    31,
+    35
+   ],
+   [
+    43,
+    47
+   ]
+  ]
+ },
+ "inbetween": {
+  "LeftHipJoint": {
+   "rest_lcl_quat": [
+    0.4232936,
+    0.3424813,
+    -0.0,
+    -0.8387665
+   ],
+   "kept": "under the root, never turned: at its rest in the bind and the take"
+  },
+  "RightHipJoint": {
+   "rest_lcl_quat": [
+    0.4051403,
+    0.3746006,
+    -0.0,
+    0.8339878
+   ],
+   "kept": "under the root, never turned: at its rest in the bind and the take"
+  },
+  "Neck2": {
+   "rest_lcl_quat": [
+    0.9976507,
+    -0.0607988,
+    0.0010716,
+    0.0315508
+   ],
+   "mode": "rest",
+   "into": [
+    "Neck",
+    "Head"
+   ],
+   "parent_swung_max_deg": 6.21,
+   "child_joint_moved_max_mm": 0.55
+  },
+  "LeftWristTwist": {
+   "rest_lcl_quat": [
+    1.0,
+    -0.0,
+    0.0,
+    -0.0
+   ],
+   "mode": "straight",
+   "into": [
+    "LeftLowerArm",
+    "LeftHand"
+   ],
+   "parent_swung_max_deg": 0.0,
+   "child_joint_moved_max_mm": 0.0
+  },
+  "RightWristTwist": {
+   "rest_lcl_quat": [
+    1.0,
+    -0.0,
+    0.0,
+    0.0
+   ],
+   "mode": "straight",
+   "into": [
+    "RightLowerArm",
+    "RightHand"
+   ],
+   "parent_swung_max_deg": 0.0,
+   "child_joint_moved_max_mm": 0.0
+  }
+ },
+ "resolved": false,
+ "floor_shift_m": 0.0,
+ "mirrored": false,
+ "events": {
+  "release": [
+   25
+  ]
+ },
+ "events_kind": "throw:R",
+ "timing": {
+  "what": "whole throw",
+  "lo": 1.0,
+  "hi": 2.3,
+  "src": "design 1-2 s whole; the staged woman's overhand runs 2.3 s with settling (standard S19)",
+  "design": true,
+  "ref": "throw",
+  "measured": {
+   "onset_s": 0.0,
+   "beat_s": 0.833,
+   "span_s": 1.7,
+   "peak_mps": 3.18
+  }
+ },
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [
+   "LeftHipJoint",
+   "LeftWristTwist",
+   "Neck2",
+   "RightHipJoint",
+   "RightWristTwist"
+  ],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "stature_est_m": 1.648,
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     0,
+     50
+    ]
+   ],
+   "Right": [
+    [
+     0,
+     50
+    ]
+   ]
+  },
+  "held_keys": 102,
+  "max_shift_cm": 2.69,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 0,
+  "foot_pitched_max_deg": 0.0,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      50
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      50
+     ]
+    ]
+   },
+   "held_keys": 102,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      50
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      50
+     ]
+    ]
+   },
+   "held_keys": 102,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  }
+ }
+}

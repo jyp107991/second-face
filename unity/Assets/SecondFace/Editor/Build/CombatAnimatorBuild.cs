@@ -249,11 +249,17 @@ namespace SecondFace.EditorTools
                 if (!File.Exists(jsonPath) || !File.Exists(fbx)) { Debug.LogWarning($"CombatAnimatorBuild: weapon {id} not staged"); continue; }
                 var j = JObject.Parse(File.ReadAllText(jsonPath));
                 var pts = (JObject)j["points_unity"];
-                Vector3 P(string k) => pts?[k] is JArray a ? new Vector3(a[0].Value<float>(), a[1].Value<float>(), a[2].Value<float>()) : Vector3.zero;
+                Vector3 V(JToken t) => t is JArray a ? new Vector3(a[0].Value<float>(), a[1].Value<float>(), a[2].Value<float>()) : Vector3.zero;
+                // where the hands hold, if not on the nulls of those names (`hands`: a two-handed club held as real right-handed
+                // people hold it, the dominant hand toward the head and the off hand at the butt, 2026-11-18): the weapon's frame
+                // is the main hand's, so every point is taken from there
+                var hands = (JObject)j["hands"];
+                var main = hands?["main"] != null ? V(hands["main"]) : Vector3.zero;
+                Vector3 P(string k) => (pts?[k] is JArray ? V(pts[k]) : Vector3.zero) - (pts?[k] is JArray ? main : Vector3.zero);
                 var w = new CombatSet.Weapon
                 {
                     Id = id, HasOff = pts?["grip_off"] != null, HasMuzzle = pts?["muzzle"] != null,
-                    GripOff = P("grip_off"), Muzzle = P("muzzle"), Tip = pts?["tip"] != null ? P("tip") : P("muzzle"),
+                    GripOff = hands?["off"] != null ? V(hands["off"]) - main : P("grip_off"), Muzzle = P("muzzle"), Tip = pts?["tip"] != null ? P("tip") : P("muzzle"),
                     HasButt = pts?["butt"] != null, Butt = P("butt"),
                     PointNames = pts != null ? pts.Properties().Select(x => x.Name).ToArray() : new string[0],
                 };

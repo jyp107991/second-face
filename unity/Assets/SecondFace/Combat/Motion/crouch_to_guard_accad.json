@@ -1,0 +1,172 @@
+{
+ "name": "crouch_to_guard_accad",
+ "src": "ACCAD Male2_D13_CrouchToReady",
+ "loop": false,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.9082,
+ "fps": 30,
+ "frames": 72,
+ "src_fps": 30.0,
+ "sex": "m",
+ "sex_source": "ACCAD names its subjects by sex (Male2)",
+ "set": "m",
+ "licence": "ACCAD Open Motion Project (Ohio State University), CC BY 3.0",
+ "source": "https://accad.osu.edu/research/motion-lab/mocap-system-and-data (Male2_bvh.zip: Male2_D13_CrouchToReady.bvh)",
+ "state": "S17",
+ "gate": "crouch",
+ "kind": "up from a crouch into the guard (the half-cover rise to fire)",
+ "weapon": "any",
+ "two_hands": false,
+ "source_kind": "captured",
+ "authoring": "captured (feet planted)",
+ "range": [
+  0.7,
+  3.1
+ ],
+ "facing": "mean",
+ "travel_m": [
+  -0.08,
+  0.02
+ ],
+ "root_note": "in place",
+ "closed": false,
+ "resolved": true,
+ "floor_shift_m": 0.0,
+ "mirrored": false,
+ "timing": {
+  "what": "down or up",
+  "lo": 0.3,
+  "hi": 3.6,
+  "src": "design 0.3-0.8 s; captured crouch-downs 2.6-3.6 s with settling (standard S16)",
+  "ref": "crouch"
+ },
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "stature_est_m": 1.366,
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     5,
+     20
+    ],
+    [
+     33,
+     57
+    ],
+    [
+     61,
+     71
+    ]
+   ],
+   "Right": [
+    [
+     0,
+     40
+    ],
+    [
+     48,
+     71
+    ]
+   ]
+  },
+  "held_keys": 128,
+  "max_shift_cm": 2.06,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 5,
+  "foot_pitched_max_deg": 2.6,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      21
+     ],
+     [
+      33,
+      57
+     ],
+     [
+      61,
+      71
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      43
+     ],
+     [
+      48,
+      71
+     ]
+    ]
+   },
+   "held_keys": 131,
+   "max_shift_cm": 1.87,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 5,
+   "foot_pitched_max_deg": 0.6
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      21
+     ],
+     [
+      33,
+      57
+     ],
+     [
+      61,
+      71
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      43
+     ],
+     [
+      48,
+      71
+     ]
+    ]
+   },
+   "held_keys": 126,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 5,
+   "foot_pitched_max_deg": 0.0
+  }
+ }
+}

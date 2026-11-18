@@ -72,5 +72,18 @@
   "originals": "raw/weapons_pre_lore/bat/",
   "painted_out": "nothing found (every map checked by eye and by a high-pass of the normal map)",
   "mask_occlusion": "G now carries the mesh AO and cavities where the staged mask had none"
+ },
+ "hands": {
+  "main": [
+   -0.0001,
+   0.0008,
+   0.09
+  ],
+  "off": [
+   -0.0,
+   0.0,
+   -0.0
+  ],
+  "note": "as real right-handed people hold a bat or an axe (the actors of CMU 80_71, 124_07 and 79_01): the dominant right hand toward the head, the off hand at the butt; the nulls grip_main and grip_off stay where the model has them (the fit's evidence), the hands hold the other way round (2026-11-18)"
  }
 }

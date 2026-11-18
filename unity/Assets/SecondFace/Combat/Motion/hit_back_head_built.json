@@ -1,0 +1,175 @@
+{
+ "name": "hit_back_head_built",
+ "src": "ACCAD Male2_A1_Stand",
+ "loop": false,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.9082,
+ "fps": 30,
+ "frames": 28,
+ "src_fps": 30.0,
+ "sex": "m",
+ "sex_source": "ACCAD names its subjects by sex (Male2)",
+ "set": "m",
+ "licence": "ACCAD Open Motion Project (Ohio State University), CC BY 3.0",
+ "source": "https://accad.osu.edu/research/motion-lab/mocap-system-and-data (Male2_bvh.zip: Male2_A1_Stand.bvh)",
+ "state": "S10",
+ "gate": "hit",
+ "kind": "hit from the back, head (built: a flinch layered on a captured stance)",
+ "weapon": "any",
+ "two_hands": false,
+ "source_kind": "built",
+ "authoring": "built on capture ACCAD Male2_A1_Stand (hit layer; feet planted)",
+ "evidence": [
+  "R19",
+  "R20",
+  "R21",
+  "R22",
+  "B11",
+  "B12",
+  "src B1 (XCOM 2 HurtFront/Back/Left/Right)"
+ ],
+ "range": [
+  0.2,
+  3.8
+ ],
+ "facing": "mean",
+ "travel_m": [
+  0.001,
+  0.005
+ ],
+ "root_note": "in place",
+ "closed": false,
+ "resolved": true,
+ "floor_shift_m": 0.0,
+ "mirrored": false,
+ "events": {
+  "impact": [
+   0
+  ],
+  "recovered": [
+   19
+  ]
+ },
+ "events_kind": "hit",
+ "timing": {
+  "what": "impact->onset of the struck part",
+  "lo": 0.0,
+  "hi": 0.1,
+  "src": "R21/R22: startle-driven neck activity within ~0.1 s, the startle reflex within 120 ms",
+  "ref": "hit_onset"
+ },
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "replaces": [
+  "hit_chest_ual",
+  "hit_head_ual"
+ ],
+ "stature_est_m": 1.366,
+ "layer_hit": {
+  "zone": "head",
+  "dir": "back",
+  "push_unity": [
+   -0.0,
+   0.0,
+   1.0
+  ],
+  "head": 20.0,
+  "neck": 8.0,
+  "chest": 5.0,
+  "spine": 2.0,
+  "yaw": 0.0,
+  "t_on": 0.05,
+  "t_pk": 0.13,
+  "t_end": 0.62
+ },
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     0,
+     27
+    ]
+   ],
+   "Right": [
+    [
+     0,
+     27
+    ]
+   ]
+  },
+  "held_keys": 56,
+  "max_shift_cm": 0.6,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 0,
+  "foot_pitched_max_deg": 0.0,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      27
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      27
+     ]
+    ]
+   },
+   "held_keys": 56,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      27
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      27
+     ]
+    ]
+   },
+   "held_keys": 56,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  }
+ }
+}

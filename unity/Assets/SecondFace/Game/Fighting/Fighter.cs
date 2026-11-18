@@ -593,8 +593,9 @@ namespace SecondFace.Game.Fighting
         private (float Yaw, float Roll) HeadLimits(string gate) => gate switch
         {
             "guard" or "ready" => (53f, 18f),
-            "strike" or "hit" or "throw" => (54f, 20f),
-            "aim" => (21f, 16f),
+            "strike" or "strike2" or "hit" or "throw" => (54f, 20f),
+            "dodge" => (52f, 17f),
+            "aim" => (31f, 16f),
             "crouch" or "rise" => (88f, 34f),
             _ => (_gazeYaw0, _gazeRoll0),
         };

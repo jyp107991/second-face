@@ -1,0 +1,390 @@
+{
+ "name": "stagger_spin_f_cmu",
+ "src": "CMU 105_59",
+ "loop": false,
+ "speed": 0.0,
+ "root": true,
+ "hip": 0.8556,
+ "fps": 30,
+ "frames": 62,
+ "src_fps": 120,
+ "sex": "f",
+ "sex_source": "the take's own file names its subject Female1 (E:\\emotionWalksFemale\\...\\Female1.ASF); CMU's title records no sex",
+ "set": "f",
+ "licence": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses, may not be resold as data",
+ "source": "http://mocap.cs.cmu.edu/search.php?subjectnumber=105 (trial 105_59)",
+ "state": "S11",
+ "gate": "hit",
+ "kind": "a small stumble turning (woman)",
+ "weapon": "any",
+ "two_hands": false,
+ "source_kind": "captured",
+ "authoring": "captured (feet planted)",
+ "range": [
+  0.158,
+  2.225
+ ],
+ "facing": "first",
+ "travel_m": [
+  0.304,
+  -0.155
+ ],
+ "root_note": "travels 0.34 m: apply as root motion",
+ "closed": false,
+ "flips_repaired": {
+  "lfoot": [
+   [
+    78,
+    78
+   ],
+   [
+    82,
+    82
+   ]
+  ],
+  "ltoes": [
+   [
+    74,
+    77
+   ],
+   [
+    84,
+    84
+   ],
+   [
+    86,
+    87
+   ],
+   [
+    89,
+    89
+   ],
+   [
+    92,
+    92
+   ],
+   [
+    100,
+    100
+   ],
+   [
+    108,
+    108
+   ]
+  ],
+  "rfoot": [
+   [
+    80,
+    80
+   ],
+   [
+    104,
+    106
+   ]
+  ],
+  "rtoes": [
+   [
+    104,
+    104
+   ],
+   [
+    106,
+    106
+   ],
+   [
+    108,
+    109
+   ]
+  ],
+  "rhand": [
+   [
+    77,
+    77
+   ],
+   [
+    164,
+    164
+   ]
+  ],
+  "rthumb": [
+   [
+    50,
+    50
+   ],
+   [
+    54,
+    55
+   ],
+   [
+    71,
+    72
+   ],
+   [
+    75,
+    76
+   ],
+   [
+    97,
+    101
+   ],
+   [
+    103,
+    112
+   ],
+   [
+    120,
+    122
+   ],
+   [
+    126,
+    146
+   ],
+   [
+    154,
+    164
+   ],
+   [
+    173,
+    182
+   ]
+  ]
+ },
+ "inbetween": {
+  "LeftHipJoint": {
+   "rest_lcl_quat": [
+    0.4334405,
+    0.363913,
+    -0.0,
+    -0.8244372
+   ],
+   "kept": "under the root, never turned: at its rest in the bind and the take"
+  },
+  "RightHipJoint": {
+   "rest_lcl_quat": [
+    0.4402088,
+    0.3515335,
+    0.0,
+    0.8262206
+   ],
+   "kept": "under the root, never turned: at its rest in the bind and the take"
+  },
+  "Neck2": {
+   "rest_lcl_quat": [
+    0.9963415,
+    -0.0759638,
+    -0.0004343,
+    0.0391519
+   ],
+   "mode": "rest",
+   "into": [
+    "Neck",
+    "Head"
+   ],
+   "parent_swung_max_deg": 10.17,
+   "child_joint_moved_max_mm": 4.04
+  },
+  "LeftWristTwist": {
+   "rest_lcl_quat": [
+    1.0,
+    0.0,
+    0.0,
+    -0.0
+   ],
+   "mode": "straight",
+   "into": [
+    "LeftLowerArm",
+    "LeftHand"
+   ],
+   "parent_swung_max_deg": 0.0,
+   "child_joint_moved_max_mm": 0.0
+  },
+  "RightWristTwist": {
+   "rest_lcl_quat": [
+    1.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "mode": "straight",
+   "into": [
+    "RightLowerArm",
+    "RightHand"
+   ],
+   "parent_swung_max_deg": 0.0,
+   "child_joint_moved_max_mm": 0.0
+  }
+ },
+ "resolved": false,
+ "floor_shift_m": 0.0,
+ "mirrored": false,
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [
+   "LeftHipJoint",
+   "LeftWristTwist",
+   "Neck2",
+   "RightHipJoint",
+   "RightWristTwist"
+  ],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "stature_est_m": 1.473,
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     0,
+     7
+    ],
+    [
+     9,
+     18
+    ],
+    [
+     34,
+     38
+    ],
+    [
+     43,
+     47
+    ],
+    [
+     49,
+     61
+    ]
+   ],
+   "Right": [
+    [
+     0,
+     17
+    ],
+    [
+     32,
+     38
+    ],
+    [
+     50,
+     61
+    ]
+   ]
+  },
+  "held_keys": 87,
+  "max_shift_cm": 5.85,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 0,
+  "foot_pitched_max_deg": 0.0,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      7
+     ],
+     [
+      9,
+      18
+     ],
+     [
+      34,
+      37
+     ],
+     [
+      43,
+      47
+     ],
+     [
+      49,
+      61
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      17
+     ],
+     [
+      32,
+      38
+     ],
+     [
+      50,
+      61
+     ]
+    ]
+   },
+   "held_keys": 77,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      7
+     ],
+     [
+      9,
+      18
+     ],
+     [
+      34,
+      37
+     ],
+     [
+      43,
+      47
+     ],
+     [
+      49,
+      61
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      17
+     ],
+     [
+      32,
+      38
+     ],
+     [
+      50,
+      61
+     ]
+    ]
+   },
+   "held_keys": 77,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  }
+ }
+}
