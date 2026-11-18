@@ -112,8 +112,11 @@ fight's layer.**
   it: 24-25° on the man, against 7.2° before `Feet`. Settled, the aim's straighter knee is 1.8° median, 8.6° / 9.6° max.
 - Real actors' aim K1 is up to 33.5° (`docs/qa/motion_calibration.md` §8), so the gate's limit holds it. The test's "within 6°
   of the clip's own" does not, during the step.
-- Not changed here. The candidates at the source are one stance for the two takes, or the hips held over the planted feet
-  while a foot steps.
+- The two stances are two actors'. `rifle_ready_built` is built on ACCAD Male2_A1_Stand (the women's `rifle_ready_f_built`
+  on Female1_A01_Stand); `rifle_aim_b_cmu` is CMU 80_03, for both sexes. Their stance widths are 14.5 cm (ready) and 22.1
+  cm (aim) on the women.
+- Not an IK item. The fix is a matched pair, made in staging (`combat_v4.py`): an aim built on the ready's own captured
+  stance, as the ready itself is built, or CMU 79_96's own captured pair (`rifle_raise_cmu` → `rifle_aim_cmu`).
 
 **6. "Hands up played yield_enter, holds yield_enter" (every weapon, both sexes).**
 - Cause: the test waited 1.5 s for the hold. The old way up (`surrender_enter_ual`) was 0.8 s; v4's

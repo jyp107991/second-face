@@ -439,6 +439,22 @@ own frame, each foot's own lowest skin point in its stance (within 4 cm of its l
   only from 45°), and gaze shifts up to 90° are made mainly by the eyes and head (Cinelli, Patla & Stuart 2007, Exp Brain Res).
   **Fix:** `Gaze.BodyWeight` 0: a look is the eyes' and the head's (the head on the chest stays within H2: 18-21° at a 20°
   look, the limit 30). The arm hangs where the clip has it; nothing in ArmClearance changes for it.
+- **What it leaves: the broad men's resting arms at the edge of A1 (pick v4a, 15 cells at 20.0-23.7).**
+  - The men: Construction_Male_02, Medical_Male_02, cap_Military_Male_03n, cap_PM02m, in idles, looks and the moments after
+    gestures.
+  - The gaze's body weight does not decide it. On the same men, 0.25 against 0, A1 p98 moves ±1° either way: 17.0-21.1 and
+    17.1-21.0.
+  - Neither the hand's place nor the elbow's bend reaches it. `RestFront` 15/30/45° and `RestFlex` 15/22° move A1 p98 by at
+    most 0.1°.
+  - The contact is the forearm by the elbow, 1.3-3.0 cm into the waist and its gear, with the upper arm already at
+    `AbdMax` (17°).
+  - On a waist's elliptic section, moving the elbow forward clears less per degree of A1 than moving it out: 5 cm forward
+    (10°) clears about 1.2 cm, which 2.4° outward also clears. So a forward-first order would raise A1, not lower it.
+  - The geometry is T5's (`docs/qa/body_geometry_audit.md`): these bases' waists at the elbow are at real men's 98th
+    percentile, and with their sleeves and gear the least hang is 14-17°, where a real man in a jacket needs at most about
+    11°.
+  - For a decision by the coordinator or the owner, not a silent change: the garments brought to real thickness
+    (`BodySlim`, as for cap_Police_Male_03n's sleeve). The limit stays.
 - **Found on the way, open (the people's own states):** with the references consistent, Unity's Foot IK (on in every locomotion
   state) still bends a straight leg: on Male_Adult_08 and Female_Adult_01 the standing idle's straighter knee is 0.0° played
   bare and 18.9° / 21.0° with Foot IK, the ankles moving under 0.4 cm (the goal is the take's foot by the humanScale ratio, and
