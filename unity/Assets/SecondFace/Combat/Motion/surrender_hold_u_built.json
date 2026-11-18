@@ -140,13 +140,17 @@
  "root_basis": "take",
  "chain": "long_u",
  "frame": {
-  "yaw_deg": -1.097,
+  "yaw_deg": 178.903,
   "origin_m": [
    -0.0245,
    0.32
   ],
   "ref": "rifle_ready_u_built",
-  "note": "origin: rifle_ready_u_built's first-key centre of mass; +Z: rifle_aim_cmu's gun line"
+  "note": "origin: rifle_ready_u_built's first-key centre of mass; +Z: rifle_aim_cmu's gun line",
+  "front": {
+   "by": "gun line",
+   "clip": "rifle_aim_cmu"
+  }
  },
  "plant_record": {
   "stances": {

@@ -70,6 +70,21 @@
   "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
  },
  "stature_est_m": 1.366,
+ "root_travel": {
+  "applied": true,
+  "basis": "centre of mass and body orientation at the first key (as imported now)",
+  "cut": 0.92,
+  "root_at_cut_m": [
+   -0.0762,
+   -0.1183
+  ],
+  "root_at_end_m": [
+   -0.0716,
+   -0.1177
+  ],
+  "then": "crouch_rifle_built, crouch_hold_built",
+  "note": "the holds that follow are written with their origin where this clip's root stands at its cut (root_basis: take): import this clip as now (root motion applied), the holds based upon Original"
+ },
  "plant_record": {
   "stances": {
    "Left": [

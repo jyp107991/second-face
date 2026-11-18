@@ -402,7 +402,12 @@ namespace SecondFace.Game.Fighting
         private IEnumerator RiseUnlessMoving(int moves)
         {
             yield return Wait(Mathf.Max(0.15f, Secs(0.3f)));
-            if (_moves == moves && !_down && !_yielded && _stance == "stand") Fighter.Play(CombatMotion.Idle(Fighter.Arms), 0.45f);
+            if (_moves != moves || _down || _yielded || _stance != "stand") yield break;
+            // (combat set v4.4: up from the crouched hold through the hold's own actor's rise on the hold's feet, then the
+            // standing state; from anywhere else, as before)
+            var from = Fighter.Current;
+            if (from != null && from.StartsWith("cover_hold")) Fighter.Play(CombatMotion.StandUp(Fighter.Arms), 0.2f);
+            else Fighter.Play(CombatMotion.Idle(Fighter.Arms), 0.45f);
         }
 
         public IEnumerator OnThrow(IReadOnlyList<Vector3> arc, string item = null)
@@ -417,7 +422,11 @@ namespace SecondFace.Game.Fighting
             Fighter.Play("throw", null, restart: true);
             var release = Fighter.Set != null ? Fighter.Set.Beat("throw", Fighter.Female, "release") : -1f;
             if (release < 0f) release = 0.35f;
-            yield return Fighter.Until("throw", release, 2.5f);
+            // (combat set v4.5: a throw from a still stance resolves at its release, CombatMotion.ResolveAt: 2.4 s into the
+            // men's, 1.9 s into the women's; the wait reaches it at any pace, and the recovery plays on after)
+            var st = CombatMotion.State("throw");
+            var toRelease = Fighter.Set != null && st != null ? Mathf.Max(0f, release - st.From) * Fighter.Set.Length("throw", Fighter.Female) / Mathf.Max(0.1f, st.Speed) : 1f;
+            yield return Fighter.Until("throw", release, Mathf.Max(2.5f, Secs(toRelease) + 1f));
             var t = Fighter.Release();
             var flight = Mathf.Max(0.15f, Secs(0.65f));
             if (t != null) yield return Fly(t, arc, flight);

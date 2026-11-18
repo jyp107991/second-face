@@ -72,13 +72,17 @@
  "root_basis": "take",
  "chain": "stand_m",
  "frame": {
-  "yaw_deg": 4.952,
+  "yaw_deg": 184.952,
   "origin_m": [
    -0.5421,
    0.4545
   ],
   "ref": "pistol_ready_built",
-  "note": "origin and +Z: pistol_ready_built's first-key centre of mass and body orientation"
+  "note": "origin and +Z: pistol_ready_built's first-key centre of mass and body orientation",
+  "front": {
+   "by": "body",
+   "clip": "pistol_ready_built"
+  }
  },
  "plant_record": {
   "stances": {

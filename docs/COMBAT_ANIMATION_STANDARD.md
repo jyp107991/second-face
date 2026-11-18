@@ -485,6 +485,14 @@ Fighter.Feet stepping the feet, until a capture that is not on disk is found):
 - the rise into the pistol ready and aim (men and women: 4), her guard (1) and her long gun's ready and aim (2): no rise that
   ends in those stances.
 
+**v4.6 (`/home/user/second-face-staging/combat/v4_6/`: v4.1-v4.5 as one set, imported in their place).** Found in Unity: every
+take-basis clip played turned 178-180° from the root's front, because Unity's Original basis puts the file's +Z on its -Z.
+The take frames are now written with their front on the file's -Z (`stance_continuity.TAKE_FRONT`; G13's "front of a take
+frame"), positions and rotations together, and the build's two world-fixed choices (a knee's pole, the pistol aim's line)
+follow the clip's front. The same 124 clips under the same names: clip QA 124 of 124, the facing check 117 of 117 take-basis
+clips (it reads 172-180° on v4.1-v4.5), and every G13 pair within 0.3 cm and 0.5° of before (83 pass, 29 on the blend
+fallback).
+
 ## 5. Proposals for the gate's owner (from the evidence; none applied)
 1. **The long-gun aim limits.** The provisional column (K1 ≤ 2.2, H1 −3…+1.2, H2 15.2-22.2, H3 10.6-16.6) is two mimed actors'
    own values, the head from one. Real shooters bend the knees (isosceles 15 ± 10° [R8]; the fighter stance [R7]; 100STYLE's

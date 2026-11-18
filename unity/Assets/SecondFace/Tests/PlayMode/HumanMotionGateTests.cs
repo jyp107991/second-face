@@ -246,9 +246,24 @@ namespace SecondFace.Tests
             _ => StandLimits,
         };
 
+        /// <summary>Facing the fight's target (FY1 the pelvis, FY2 the chest, degrees, + clockwise from above; 2026-11-18, a new
+        /// measure): the §8 actors' own (docs/qa/motion_calibration.md §11, tools/qa/calibration/facing.py), the long gun's aim from
+        /// three, its ready from two (no pistol's or club's ready facing is captured), the blows from ten takes.</summary>
+        private static readonly Lim[] AimFacing = { L("FY1", 45.3f, 60.4f, 44.9f, 68.7f), L("FY2", 56.3f, 76.5f, 56.1f, 84.6f) };
+        private static readonly Lim[] ReadyLongFacing = { L("FY1", 22.3f, 42.4f, 22.3f, 42.5f), L("FY2", 15.4f, 44.3f, 14.9f, 44.3f) };
+        private static readonly Lim[] StrikeFacing = { L("FY1", -69.5f, 47.6f, -87.2f, 109.5f), L("FY2", -64.4f, 50.4f, -80.3f, 99.0f) };
+
         private static Lim[] LimitsFor(string state)
         {
-            if (state.StartsWith("combat:")) return CombatLimits(state.Split(':')[1]);
+            if (state.StartsWith("combat:"))
+            {
+                var set = state.Split(':')[1];
+                var lims = CombatLimits(set);
+                if (set == "aim") return lims.Concat(AimFacing).ToArray();
+                if (set == "strike") return lims.Concat(StrikeFacing).ToArray();
+                if (state == "combat:ready:rifle") return lims.Concat(ReadyLongFacing).ToArray();
+                return lims;
+            }
             if (state.StartsWith("gesture:")) return GestureLimits(state.Substring(8));
             if (state == "pace:walk") return PaceWalkLimits;
             if (state == "pace:jog") return PaceJogLimits;
@@ -1040,6 +1055,8 @@ namespace SecondFace.Tests
             yield return Wait(1f);
             var fx = new CombatFx(root.transform);
             var ahead = Vector3.forward * 8f;
+            // every fight here is at the body's front: what each fighter faces is measured against it (FY1, FY2)
+            foreach (var s in people) s.Probe.FaceTarget = ahead;
             var views = new List<AnimatedUnitView>();
             Camera cam = null;
             if (captures)
@@ -1154,7 +1171,10 @@ namespace SecondFace.Tests
                         yield return Measure("combat:crouch:rifle", 3.5f, v => Then(() => v.OnStance("crouch"), 0.1f));
                         yield return Shot("crouch_rifle", 0);
                         foreach (var v in views) v?.OnStance("stand");
-                        yield return Wait(1.2f);
+                        // (up through the rise, combat set v4.4, before the next order: as the game's next turn)
+                        yield return Wait(0.5f);
+                        for (var rise = 0f; rise < 5f && views.Any(v => v != null && v.Fighter.Current != null && v.Fighter.Current.StartsWith("cover_rise")); rise += Time.deltaTime) yield return null;
+                        yield return Wait(0.7f);
                         yield return Measure("combat:throw:rifle", 0f, Throw);
                         yield return Measure("combat:hit:rifle", 2.5f, v => Then(() => v.OnHit(v.Body.position + ahead, "torso", "crit"), 0.1f));
                     }
@@ -1185,6 +1205,7 @@ namespace SecondFace.Tests
                 yield return Wait(0.5f);
             }
             if (cam != null) Object.Destroy(cam.gameObject);
+            foreach (var s in people) s.Probe.FaceTarget = null;
         }
 
         private static IEnumerator Counted(IEnumerator inner, System.Action done)

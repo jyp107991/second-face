@@ -75,8 +75,8 @@ namespace SecondFace.Tests
             flat.transform.SetParent(root.transform);
             flat.transform.localScale = new Vector3(200f, 1f, 70f); flat.transform.position = new Vector3(0f, -0.5f, 0f);
             var sb = new StringBuilder();
-            sb.AppendLine("person,state,t,gateC1,gateWorstTri,gateWorstRuntimeAtVertex,gateWorstRuntimeNearestPt,ptToVertexCm,trueC1,trueWorstGate,runtimeMax,runtimeMaxTrue,armPts,bodyPtSpacingNear");
-            var ids = (System.Environment.GetEnvironmentVariable("PROBE_PEOPLE") ?? "Business_Male_05,Business_Female_03,Business_Male_02").Split(',');
+            sb.AppendLine("person,state,t,drawnWorst,nonArmAtWorst,runtimeAtWorstPt,worstPt,worstV,gateC1,gateWorstTri,gateWorstRuntimeAtVertex,gateWorstRuntimeNearestPt,ptToVertexCm,trueC1,trueWorstGate,runtimeMax,runtimeMaxTrue,armPts,bodyPtSpacingNear");
+            var ids = (System.Environment.GetEnvironmentVariable("PROBE_PEOPLE") ?? "Business_Male_05,Business_Male_03").Split(',');
             foreach (var id in ids)
             {
                 var go = Object.Instantiate(cat.Get(id), Vector3.zero, Quaternion.identity, root.transform);
@@ -98,13 +98,15 @@ namespace SecondFace.Tests
                 bool Arm(int i) => seg[i] >= 5 && seg[i] <= 8;
                 var tris = new List<int>();
                 { smr.BakeMesh(baked, true); var all = baked.triangles; for (var t = 0; t + 2 < all.Length; t += 3) if (Body(all[t]) && Body(all[t + 1]) && Body(all[t + 2])) { tris.Add(all[t]); tris.Add(all[t + 1]); tris.Add(all[t + 2]); } }
+                var nonArm = new List<int>();
+                { var all = baked.triangles; bool ArmV(int i) => seg[i] >= 3 && seg[i] <= 8; for (var t = 0; t + 2 < all.Length; t += 3) if (!ArmV(all[t]) && !ArmV(all[t + 1]) && !ArmV(all[t + 2])) { nonArm.Add(all[t]); nonArm.Add(all[t + 1]); nonArm.Add(all[t + 2]); } }
                 var bodyIdx = Enumerable.Range(0, seg.Length).Where(Body).ToArray();
                 var armIdx = Enumerable.Range(0, seg.Length).Where(Arm).ToArray();
                 string state = null; var frame = 0; var t0 = 0f;
                 var after = a.gameObject.AddComponent<After>();
                 after.Do = () =>
                 {
-                    if (state == null || (frame++ % 6) != 0) return;
+                    if (state == null || (frame++ % 3) != 0) return;
                     smr.BakeMesh(baked, true);
                     var v = baked.vertices; var n = baked.normals;
                     var l2w = Matrix4x4.TRS(smr.transform.position, smr.transform.rotation, Vector3.one);
@@ -158,11 +160,14 @@ namespace SecondFace.Tests
                     float gateC1 = 0f, gateTri = -1f, rtAtV = -9f, rtNearest = -9f, ptCm = -1f;
                     float trueC1 = 0f, trueGate = 0f;
                     var checkedN = 0;
+                    float NonArm(Vector3 q) { var b = float.MaxValue; for (var t = 0; t < nonArm.Count; t += 3) { var c = Closest(q, v[nonArm[t]], v[nonArm[t + 1]], v[nonArm[t + 2]]); b = Mathf.Min(b, (c - q).sqrMagnitude); } return Mathf.Sqrt(b); }
+                    var worstV = -1; var worstTri = 0f;
                     foreach (var (i, d) in cands)
                     {
                         if (checkedN++ > 60) break;
                         var tri = InsideTrue(v[i], out var inside);
                         if (!inside) continue;
+                        if (tri > worstTri) { worstTri = tri; worstV = i; }
                         if (gateC1 == 0f)
                         {
                             gateC1 = d; gateTri = tri;
@@ -188,16 +193,25 @@ namespace SecondFace.Tests
                         }
                         if (bestK >= 0) { var tr = InsideTrue(skin.P[bestK], out var ins); rtMaxTrue = ins ? tr : -tr; }
                     }
-                    sb.AppendLine(string.Join(",", new object[] { id, state, (Time.time - t0).ToString("0.00"), (gateC1 * 100f).ToString("0.00"), (gateTri * 100f).ToString("0.00"),
+                    var nonArmD = worstV >= 0 ? NonArm(v[worstV]) : -1f;
+                    float rtW = -9f; var under = "";
+                    if (worstV >= 0 && skin != null && skin.Ready)
+                    {
+                        int best = -1; var bd = float.MaxValue;
+                        for (int k = skin.Begin(BodySkin.Part.UpperArmL), to = skin.End(BodySkin.Part.HandR); k < to; k++) { var e = (skin.P[k] - v[worstV]).sqrMagnitude; if (e < bd) { bd = e; best = k; } }
+                        rtW = skin.Depth(skin.P[best], out var dw, out _) ? dw : -9f;
+                        under = $"pt{best}@{Mathf.Sqrt(bd) * 100f:0.0}cm near{skin.Near}";
+                    }
+                    sb.AppendLine(string.Join(",", new object[] { id, state, (Time.time - t0).ToString("0.00"), (worstTri * 100f).ToString("0.00"), (nonArmD * 100f).ToString("0.00"), (rtW * 100f).ToString("0.00"), under, worstV, (gateC1 * 100f).ToString("0.00"), (gateTri * 100f).ToString("0.00"),
                         (rtAtV * 100f).ToString("0.00"), (rtNearest * 100f).ToString("0.00"), ptCm.ToString("0.0"), (trueC1 * 100f).ToString("0.00"), (trueGate * 100f).ToString("0.00"),
                         (rtMax * 100f).ToString("0.00"), (rtMaxTrue * 100f).ToString("0.00"), armPts, "" }));
                 };
-                for (var idle = 0; idle < 2; idle++)
+                for (var idle = 0; idle < 1; idle++)
                 {
                     a.SetFloat("Idle", Mathf.Min(idle, Ambient.IdlesOf(a) - 1));
                     yield return Wait(1.2f);
                     state = "idle" + idle; t0 = Time.time;
-                    yield return Wait(4f);
+                    yield return Wait(6.5f);
                     state = null;
                 }
                 Object.Destroy(go);

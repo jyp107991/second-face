@@ -29,8 +29,8 @@
  ],
  "facing": "mean",
  "travel_m": [
-  -0.009,
-  0.005
+  0.009,
+  -0.005
  ],
  "root_note": "in place",
  "closed": false,
@@ -148,13 +148,17 @@
  "root_basis": "take",
  "chain": "club_u",
  "frame": {
-  "yaw_deg": -1.097,
+  "yaw_deg": 178.903,
   "origin_m": [
    -0.0245,
    0.32
   ],
   "ref": "rifle_ready_u_built",
-  "note": "long_u's frame (the same actor, session and marks)"
+  "note": "long_u's frame (the same actor, session and marks)",
+  "front": {
+   "by": "gun line",
+   "clip": "rifle_aim_cmu"
+  }
  },
  "plant_record": {
   "stances": {
