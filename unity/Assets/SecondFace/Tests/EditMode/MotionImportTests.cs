@@ -75,7 +75,7 @@ namespace SecondFace.Tests
             ("Hips", "Spine"), ("Spine", "Chest"), ("Chest", "UpperChest"), ("UpperChest", "Neck"), ("Neck", "Head"),
             ("LeftUpperArm", "LeftLowerArm"), ("LeftLowerArm", "LeftHand"), ("RightUpperArm", "RightLowerArm"), ("RightLowerArm", "RightHand"),
             ("LeftUpperLeg", "LeftLowerLeg"), ("LeftLowerLeg", "LeftFoot"), ("RightUpperLeg", "RightLowerLeg"), ("RightLowerLeg", "RightFoot"),
-            ("LeftFoot", "LeftToes"), ("RightFoot", "RightToes"),
+            // (the feet: each take's own flat stance since 2026-11-18, TakeStance; StandOnTheGroundTests holds them)
         };
 
         private static IEnumerable<string> Clips() => Directory.GetFiles(Dir, "*.fbx").Select(p => p.Replace('\\', '/')).OrderBy(p => p);
@@ -92,14 +92,15 @@ namespace SecondFace.Tests
                 var imp = (ModelImporter)AssetImporter.GetAtPath(path);
                 using (var sha = System.Security.Cryptography.SHA256.Create())
                 {
-                    var stamp = "rest " + System.BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(path))).Replace("-", "").ToLowerInvariant();
-                    if (imp.userData != stamp) wrong.Add($"{name}: configured for other bytes than its file's ({imp.userData?.Split(' ').FirstOrDefault()})");
+                    var stamp = "stood-2 " + System.BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(path))).Replace("-", "").ToLowerInvariant();
+                    if (imp.userData != stamp && imp.userData != stamp + " seated") wrong.Add($"{name}: configured for other bytes than its file's ({imp.userData?.Split(' ').FirstOrDefault()})");
                 }
                 var hd = imp.humanDescription;
                 if (hd.human.Length != Mapped.Length || hd.human.Any(h => h.boneName != h.humanName || !Mapped.Contains(h.humanName)))
                     wrong.Add($"{name}: mapped {string.Join(", ", hd.human.Where(h => h.boneName != h.humanName).Select(h => h.humanName + "=" + h.boneName))} ({hd.human.Length} bones)");
                 var byName = TPose(path);
-                foreach (var b in hd.skeleton.Skip(1).Where(b => !Normalised.Contains(b.name)))
+                // (the feet: stood at the actor's own flat-foot turn, checked by TheClipsAndTheBodiesStandOnTheirGround)
+                foreach (var b in hd.skeleton.Skip(1).Where(b => !Normalised.Contains(b.name) && b.name != "LeftFoot" && b.name != "RightFoot"))
                 {
                     if (!byName.TryGetValue(b.name, out var t)) { wrong.Add($"{name}: {b.name} in the configuration, not in the model"); continue; }
                     var deg = Quaternion.Angle(b.rotation, t.r);

@@ -513,12 +513,12 @@ ModelImporter:
       scale: {x: 1, y: 1, z: 1}
     - name: Bip01 Pelvis
       parentName: Bip01
-      position: {x: 8.653789e-10, y: 0.0000000037252903, z: 0.029037297}
+      position: {x: -7.392211e-10, y: 5.160902e-10, z: 0.0021165777}
       rotation: {x: 0.5, y: -0.5, z: -0.5, w: -0.5}
       scale: {x: 1, y: 1, z: 1}
     - name: Bip01 Spine
       parentName: Bip01 Pelvis
-      position: {x: -0.12025947, y: -0.0016285804, z: 0.00000014418445}
+      position: {x: -0.12025947, y: -0.0016285803, z: 0.00000014418445}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 0.9999999, y: 0.99999994, z: 0.9999999}
     - name: Bip01 Spine1
@@ -528,7 +528,7 @@ ModelImporter:
       scale: {x: 1.0000002, y: 1.0000002, z: 1}
     - name: Bip01 Spine2
       parentName: Bip01 Spine1
-      position: {x: -0.15317583, y: -0.000121918914, z: -0.0000000011485258}
+      position: {x: -0.15317582, y: -0.000121918914, z: -0.0000000011485258}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000002, y: 1.0000002, z: 1.0000001}
     - name: Bip01 Neck
@@ -538,7 +538,7 @@ ModelImporter:
       scale: {x: 1.0000002, y: 1.0000002, z: 1.0000004}
     - name: Bip01 Head
       parentName: Bip01 Neck
-      position: {x: -0.06926522, y: 0.00000000953385, z: -0.000000019513088}
+      position: {x: -0.06926522, y: 0.00000000953385, z: -0.000000019513086}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000002, y: 1.0000002, z: 1.0000004}
     - name: Bip01 REye
@@ -553,12 +553,12 @@ ModelImporter:
       scale: {x: 1, y: 1, z: 0.99999994}
     - name: Bip01 MJaw
       parentName: Bip01 Head
-      position: {x: -0.03289448, y: 0.012400212, z: 0.000000017830542}
+      position: {x: -0.03289448, y: 0.012400211, z: 0.000000017830542}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 0.9999998, z: 1}
     - name: Bip01 MBottomLip
       parentName: Bip01 MJaw
-      position: {x: -0.1055405, y: -0.023332056, z: -0.00089006976}
+      position: {x: -0.1055405, y: -0.023332056, z: -0.0008900697}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000005, y: 1.000001, z: 1.0000002}
     - name: Bip01 MTongue
@@ -568,12 +568,12 @@ ModelImporter:
       scale: {x: 1.0000002, y: 1, z: 1}
     - name: Bip01 LMouthBottom
       parentName: Bip01 MJaw
-      position: {x: -0.10335305, y: -0.024357587, z: 0.013072653}
+      position: {x: -0.103353046, y: -0.024357587, z: 0.013072652}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1.0000007, z: 1.0000006}
     - name: Bip01 RMouthBottom
       parentName: Bip01 MJaw
-      position: {x: -0.10314965, y: -0.024215592, z: -0.01482495}
+      position: {x: -0.103149645, y: -0.024215592, z: -0.01482495}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000002, y: 1.0000002, z: 0.99999994}
     - name: Bip01 RMasseter
@@ -588,7 +588,7 @@ ModelImporter:
       scale: {x: 0.9999998, y: 0.99999994, z: 0.99999994}
     - name: Bip01 MUpperLip
       parentName: Bip01 Head
-      position: {x: -0.050816417, y: 0.11831405, z: 0.00000017147194}
+      position: {x: -0.050816417, y: 0.11831404, z: 0.00000017147194}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 0.99999994, y: 1.0000004, z: 1}
     - name: Bip01 RCaninus
@@ -618,22 +618,22 @@ ModelImporter:
       scale: {x: 0.9999996, y: 0.99999994, z: 0.99999994}
     - name: Bip01 LUpperlip
       parentName: Bip01 Head
-      position: {x: -0.050248798, y: 0.11684225, z: 0.014256271}
+      position: {x: -0.050248798, y: 0.11684224, z: 0.01425627}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 0.9999998, y: 0.99999994, z: 0.99999994}
     - name: Bip01 RMouthCorner
       parentName: Bip01 Head
-      position: {x: -0.040826015, y: 0.10714228, z: -0.027700918}
+      position: {x: -0.040826015, y: 0.10714227, z: -0.027700918}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1.0000001, z: 0.99999994}
     - name: Bip01 LMouthCorner
       parentName: Bip01 Head
-      position: {x: -0.040825937, y: 0.10714213, z: 0.02770152}
+      position: {x: -0.040825937, y: 0.10714213, z: 0.027701518}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000002, y: 1.0000005, z: 1.0000002}
     - name: Bip01 RCheek
       parentName: Bip01 Head
-      position: {x: -0.08475452, y: 0.096537665, z: -0.041373722}
+      position: {x: -0.08475452, y: 0.096537665, z: -0.04137372}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 0.99999994, y: 0.9999998, z: 0.9999998}
     - name: Bip01 LCheek
@@ -643,7 +643,7 @@ ModelImporter:
       scale: {x: 0.99999994, y: 0.9999998, z: 0.99999994}
     - name: Bip01 REyeBlinkTop
       parentName: Bip01 Head
-      position: {x: -0.11867821, y: 0.08439641, z: -0.03335811}
+      position: {x: -0.11867821, y: 0.08439641, z: -0.033358105}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000001, y: 1.0000001, z: 1}
     - name: Bip01 LEyeBlinkTop
@@ -653,17 +653,17 @@ ModelImporter:
       scale: {x: 0.99999994, y: 0.99999994, z: 0.9999998}
     - name: Bip01 RInnerEyebrow
       parentName: Bip01 Head
-      position: {x: -0.13005345, y: 0.09465069, z: -0.026413154}
+      position: {x: -0.13005345, y: 0.09465069, z: -0.026413152}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 0.99999994}
     - name: Bip01 LInnerEyebrow
       parentName: Bip01 Head
-      position: {x: -0.13005343, y: 0.09465056, z: 0.026413698}
+      position: {x: -0.13005343, y: 0.09465056, z: 0.026413696}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 0.9999997, y: 0.9999997, z: 0.9999996}
     - name: Bip01 MMiddleEyebrow
       parentName: Bip01 Head
-      position: {x: -0.12706482, y: 0.100129046, z: 0.00000014592518}
+      position: {x: -0.12706482, y: 0.10012904, z: 0.00000014592518}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000001, y: 1.0000002, z: 0.99999994}
     - name: Bip01 ROuterEyebrow
@@ -673,17 +673,17 @@ ModelImporter:
       scale: {x: 1.0000001, y: 0.99999994, z: 1.0000001}
     - name: Bip01 LOuterEyebrow
       parentName: Bip01 Head
-      position: {x: -0.12541573, y: 0.082929485, z: 0.049267154}
+      position: {x: -0.12541573, y: 0.082929485, z: 0.04926715}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000001, y: 1.0000002, z: 1}
     - name: Bip01 MNose
       parentName: Bip01 Head
-      position: {x: -0.08708137, y: 0.12193281, z: 0.00000017386188}
+      position: {x: -0.08708137, y: 0.12193281, z: 0.00000017386186}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1.0000004, z: 0.99999994}
     - name: Bip01 L Clavicle
       parentName: Bip01 Neck
-      position: {x: 0.062065423, y: 0.007088291, z: 0.0728219}
+      position: {x: 0.06206542, y: 0.007088291, z: 0.0728219}
       rotation: {x: 0.7071068, y: -0.000000030908623, z: -0.7071068, w: 0.000000030908623}
       scale: {x: 1.0000002, y: 1, z: 1.0000001}
     - name: Bip01 L UpperArm
@@ -703,12 +703,12 @@ ModelImporter:
       scale: {x: 0.9999997, y: 0.9999996, z: 1}
     - name: Bip01 L Finger0
       parentName: Bip01 L Hand
-      position: {x: -0.026760807, y: 0.006282232, z: -0.031982508}
+      position: {x: -0.026760805, y: 0.0062822313, z: -0.031982508}
       rotation: {x: 0, y: 0.3826835, z: 0, w: -0.9238795}
       scale: {x: 1.0000002, y: 1.0000001, z: 1.0000001}
     - name: Bip01 L Finger01
       parentName: Bip01 L Finger0
-      position: {x: -0.028278206, y: 0.0000000333786, z: 0.000000059604645}
+      position: {x: -0.028278204, y: 0.0000000333786, z: 0.000000059604645}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000001, y: 0.9999998, z: 0.9999997}
     - name: Bip01 L Finger02
@@ -733,7 +733,7 @@ ModelImporter:
       scale: {x: 1.0000001, y: 1.0000002, z: 1.0000004}
     - name: Bip01 L Finger2
       parentName: Bip01 L Hand
-      position: {x: -0.09559286, y: -0.0018641305, z: 0.0014535522}
+      position: {x: -0.09559285, y: -0.0018641305, z: 0.0014535522}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 0.99999994, y: 1, z: 1.0000001}
     - name: Bip01 L Finger21
@@ -743,12 +743,12 @@ ModelImporter:
       scale: {x: 1.0000004, y: 1.0000004, z: 1.0000007}
     - name: Bip01 L Finger22
       parentName: Bip01 L Finger21
-      position: {x: -0.028487949, y: -0.0000000109151, z: -0.0000000047683715}
+      position: {x: -0.028487947, y: -0.000000010915099, z: -0.0000000047683715}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000001, y: 1.0000006, z: 1.0000012}
     - name: Bip01 L Finger3
       parentName: Bip01 L Hand
-      position: {x: -0.08993635, y: 0.002269901, z: 0.023016857}
+      position: {x: -0.089936346, y: 0.002269901, z: 0.023016855}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000001, y: 1.0000004, z: 1.0000005}
     - name: Bip01 L Finger31
@@ -758,12 +758,12 @@ ModelImporter:
       scale: {x: 1, y: 1.0000004, z: 1.0000006}
     - name: Bip01 L Finger32
       parentName: Bip01 L Finger31
-      position: {x: -0.0244423, y: 0.0000000029243528, z: 0.000000028014183}
+      position: {x: -0.024442298, y: 0.0000000029243528, z: 0.000000028014183}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000001, y: 0.9999997, z: 1.0000004}
     - name: Bip01 L Finger4
       parentName: Bip01 L Hand
-      position: {x: -0.08023814, y: 0.012019252, z: 0.03974733}
+      position: {x: -0.08023813, y: 0.0120192515, z: 0.03974733}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000001, y: 1.0000001, z: 1.0000001}
     - name: Bip01 L Finger41
@@ -773,22 +773,22 @@ ModelImporter:
       scale: {x: 1.0000005, y: 1.0000006, z: 1.0000007}
     - name: Bip01 L Finger42
       parentName: Bip01 L Finger41
-      position: {x: -0.0153580615, y: -0.000000045746564, z: -0.000000005364418}
+      position: {x: -0.015358061, y: -0.00000004574656, z: -0.000000005364418}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 0.99999994, y: 0.9999998, z: 1.0000004}
     - name: Bip01 R Clavicle
       parentName: Bip01 Neck
-      position: {x: 0.062065363, y: 0.007088707, z: -0.07282183}
+      position: {x: 0.062065363, y: 0.0070887064, z: -0.072821826}
       rotation: {x: 0.7071068, y: -0.000000030908623, z: 0.7071068, w: -0.000000030908623}
       scale: {x: 1.0000004, y: 1.0000001, z: 1.0000001}
     - name: Bip01 R UpperArm
       parentName: Bip01 R Clavicle
-      position: {x: -0.14107981, y: -0.000000011324882, z: 0.00000004723668}
+      position: {x: -0.1410798, y: -0.000000011324882, z: 0.000000047236675}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000001, y: 1.0000001, z: 1.0000002}
     - name: Bip01 R Forearm
       parentName: Bip01 R UpperArm
-      position: {x: -0.28580165, y: -0.000000028610229, z: 0.00000018417835}
+      position: {x: -0.28580165, y: -0.000000028610229, z: 0.00000018417833}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000005, y: 1.0000006, z: 1.0000004}
     - name: Bip01 R Hand
@@ -808,12 +808,12 @@ ModelImporter:
       scale: {x: 1.0000004, y: 1, z: 1.0000004}
     - name: Bip01 R Finger02
       parentName: Bip01 R Finger01
-      position: {x: -0.031003451, y: -0.000000035762785, z: -0.000000042915342}
+      position: {x: -0.03100345, y: -0.000000035762785, z: -0.000000042915342}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1.0000001, z: 1.0000007}
     - name: Bip01 R Finger1
       parentName: Bip01 R Hand
-      position: {x: -0.09438964, y: -0.0020391583, z: 0.022424484}
+      position: {x: -0.09438963, y: -0.0020391583, z: 0.022424482}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000002, y: 1.0000004, z: 0.9999998}
     - name: Bip01 R Finger11
@@ -828,17 +828,17 @@ ModelImporter:
       scale: {x: 1.0000001, y: 1.0000002, z: 1.0000001}
     - name: Bip01 R Finger2
       parentName: Bip01 R Hand
-      position: {x: -0.095592886, y: -0.0018641317, z: -0.0014535344}
+      position: {x: -0.09559288, y: -0.0018641317, z: -0.0014535344}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000004, y: 1.0000002, z: 0.9999998}
     - name: Bip01 R Finger21
       parentName: Bip01 R Finger2
-      position: {x: -0.038014095, y: -0.000000064671035, z: 0.0000000023841857}
+      position: {x: -0.03801409, y: -0.000000064671035, z: 0.0000000023841857}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000008, y: 1.0000005, z: 1.0000002}
     - name: Bip01 R Finger22
       parentName: Bip01 R Finger21
-      position: {x: -0.028487954, y: 0.000000053718686, z: -0.000000012516975}
+      position: {x: -0.028487952, y: 0.000000053718686, z: -0.000000012516975}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 0.99999994, y: 0.9999997, z: 1}
     - name: Bip01 R Finger3
@@ -853,7 +853,7 @@ ModelImporter:
       scale: {x: 1, y: 1.0000005, z: 1}
     - name: Bip01 R Finger32
       parentName: Bip01 R Finger31
-      position: {x: -0.024442289, y: 0.00000003000721, z: 0.0000000166893}
+      position: {x: -0.024442287, y: 0.00000003000721, z: 0.0000000166893}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000001, y: 1.0000001, z: 0.9999997}
     - name: Bip01 R Finger4
@@ -873,7 +873,7 @@ ModelImporter:
       scale: {x: 1.0000002, y: 1, z: 0.9999997}
     - name: Bip01 L Thigh
       parentName: Bip01 Spine
-      position: {x: 0.1202128, y: -0.0037249317, z: 0.08836846}
+      position: {x: 0.1202128, y: -0.0037249315, z: 0.08836846}
       rotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
       scale: {x: 0.99999976, y: 1.0000001, z: 0.9999997}
     - name: Bip01 L Calf
@@ -883,12 +883,12 @@ ModelImporter:
       scale: {x: 1.0000002, y: 1.0000004, z: 1.0000007}
     - name: Bip01 L Foot
       parentName: Bip01 L Calf
-      position: {x: -0.39668915, y: -0.0000000667572, z: -0.000000058114527}
+      position: {x: -0.39668912, y: -0.0000000667572, z: -0.000000058114523}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 0.99999976, y: 0.9999999, z: 0.9999998}
     - name: Bip01 L Toe0
       parentName: Bip01 L Foot
-      position: {x: -0.10162384, y: 0.13629575, z: 0.000000012144446}
+      position: {x: -0.10162383, y: 0.13629575, z: 0.000000012144446}
       rotation: {x: 0, y: 0, z: 0.7071068, w: -0.7071068}
       scale: {x: 1.0000004, y: 0.99999976, z: 1.0000002}
     - name: Bip01 R Thigh
@@ -908,7 +908,7 @@ ModelImporter:
       scale: {x: 0.9999998, y: 1.0000004, z: 0.99999994}
     - name: Bip01 R Toe0
       parentName: Bip01 R Foot
-      position: {x: -0.10162378, y: 0.13629578, z: 0.000000007227063}
+      position: {x: -0.10162377, y: 0.13629578, z: 0.0000000072270625}
       rotation: {x: 0, y: 0, z: 0.7071068, w: -0.7071068}
       scale: {x: 1, y: 1, z: 1.0000002}
     - name: m017_hipoly_81_bones_opacity
@@ -923,7 +923,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0
+    globalScale: 1
     rootMotionBoneName: 
     hasTranslationDoF: 1
     hasExtraRoot: 0
@@ -937,6 +937,6 @@ ModelImporter:
   importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0
   additionalBone: 0
-  userData: 
+  userData: ground 7f1c1c18cfedd81af405bad710778e7160e38230503518f74258f020c6badf7a
   assetBundleName: 
   assetBundleVariant: 

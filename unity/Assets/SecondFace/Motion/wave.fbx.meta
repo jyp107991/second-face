@@ -49,9 +49,9 @@ ModelImporter:
       loopBlendPositionY: 1
       loopBlendPositionXZ: 1
       keepOriginalOrientation: 0
-      keepOriginalPositionY: 0
+      keepOriginalPositionY: 1
       keepOriginalPositionXZ: 0
-      heightFromFeet: 1
+      heightFromFeet: 0
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
@@ -297,7 +297,7 @@ ModelImporter:
       scale: {x: 1, y: 1, z: 1}
     - name: Hips
       parentName: wave(Clone)
-      position: {x: 0, y: -0.00000011920929, z: -1.0619342}
+      position: {x: 0, y: -0.00000012111042, z: -1.077882}
       rotation: {x: -0.00041571306, y: -0.7071067, z: 0.7071067, w: 0.00041571306}
       scale: {x: 1, y: 1, z: 1}
     - name: LeftHipJoint
@@ -318,7 +318,7 @@ ModelImporter:
     - name: LeftFoot
       parentName: LeftLowerLeg
       position: {x: -0.000000052848716, y: 0.45855108, z: 0.0000000059742513}
-      rotation: {x: 0.00000060532744, y: 0.7817005, z: -0.61994624, w: -0.067904435}
+      rotation: {x: -0.07960005, y: -0.7868762, z: 0.5856811, w: 0.1773919}
       scale: {x: 1, y: 0.99999994, z: 1.0000001}
     - name: LeftToes
       parentName: LeftFoot
@@ -343,7 +343,7 @@ ModelImporter:
     - name: RightFoot
       parentName: RightLowerLeg
       position: {x: -0.000000023150559, y: 0.4633482, z: -0.000000004338349}
-      rotation: {x: -0.000000056111443, y: 0.81182545, z: -0.5737598, w: 0.10834727}
+      rotation: {x: -0.08239266, y: 0.7984481, z: -0.54992914, w: 0.23080377}
       scale: {x: 1.0000004, y: 1.0000001, z: 1.0000001}
     - name: RightToes
       parentName: RightFoot
@@ -451,6 +451,6 @@ ModelImporter:
   importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0
   additionalBone: 0
-  userData: rest 200a3dbd35da78de6fd1e8fb4d851fc0bfa05049a87b4dd7e5f2c75be48d7d3c
+  userData: stood-2 200a3dbd35da78de6fd1e8fb4d851fc0bfa05049a87b4dd7e5f2c75be48d7d3c
   assetBundleName: 
   assetBundleVariant: 

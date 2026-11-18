@@ -587,7 +587,7 @@ ModelImporter:
       scale: {x: 1, y: 1, z: 1}
     - name: Hips
       parentName: player_m
-      position: {x: 0, y: 0.064178005, z: -0.938516}
+      position: {x: 0, y: 0.064178005, z: -0.93851656}
       rotation: {x: -0.061151378, y: -0.7044574, z: 0.061153345, w: 0.70445776}
       scale: {x: 1.0000023, y: 1.0000019, z: 0.99998754}
     - name: Spine
@@ -862,7 +862,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0
+    globalScale: 1
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0
@@ -876,6 +876,6 @@ ModelImporter:
   importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0
   additionalBone: 0
-  userData: 
+  userData: ground b0e2caca9294037a6d10075171c1405cc955c80d515c3e724c902d06cd7dd877
   assetBundleName: 
   assetBundleVariant: 

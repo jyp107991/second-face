@@ -17,12 +17,14 @@ namespace SecondFace.EditorTools
     /// the imported clip itself (<see cref="OnPostprocessAnimation"/>). The gate checks every clip against its sidecar
     /// (HumanMotionGateTests.TheCapturedClipsLoopAsTheirSidecarsSay).
     /// The avatar each clip is retargeted from is built from the clip's own file whenever the file changes, with the
-    /// Humanoid hand on the hand bone itself (<see cref="Mapped"/>, <see cref="OnPreprocessModel"/>).
+    /// Humanoid hand on the hand bone itself (<see cref="Mapped"/>, <see cref="OnPreprocessModel"/>), and its T-pose stood on
+    /// the take's floor as the actor stands there (<see cref="TakeStance"/>, version 13); the take keeps its own height over
+    /// that floor (Root Transform Position Y: Original).
     /// </summary>
     public sealed class MotionImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change: Unity reimports affected assets only on a new version (cached Libraries otherwise keep stale imports).</summary>
-        public override uint GetVersion() => 12;
+        public override uint GetVersion() => 13;
 
         private bool IsClip => assetPath.StartsWith("Assets/SecondFace/Motion/") && assetPath.EndsWith(".fbx");
 
@@ -51,13 +53,25 @@ namespace SecondFace.EditorTools
             "LeftUpperLeg", "LeftLowerLeg", "LeftFoot", "LeftToes", "RightUpperLeg", "RightLowerLeg", "RightFoot", "RightToes",
         };
 
+        /// <summary>Configured for these bytes: stood on the take's floor, or (" seated") a take with no standing stance, its
+        /// T-pose kept and its height read from the feet as before.</summary>
+        private static bool Done(string userData, string stamp) => userData == stamp || userData == stamp + " seated";
+
+        private static bool Seated(ModelImporter imp) => imp.userData != null && imp.userData.EndsWith(" seated");
+
+        private static bool Travels(string path)
+        {
+            var sidecar = Path.ChangeExtension(path, ".json");
+            return File.Exists(sidecar) && (JObject.Parse(File.ReadAllText(sidecar)).Value<bool?>("root") ?? false);
+        }
+
         private static bool MappedAsWanted(HumanDescription hd) =>
             hd.human != null && hd.human.Length == Mapped.Length && hd.human.All(h => h.boneName == h.humanName && Mapped.Contains(h.humanName));
 
         private static string Stamp(string path)
         {
             using var sha = System.Security.Cryptography.SHA256.Create();
-            return "rest " + System.BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(path))).Replace("-", "").ToLowerInvariant();
+            return "stood-2 " + System.BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(path))).Replace("-", "").ToLowerInvariant();
         }
 
         private void OnPreprocessModel()
@@ -79,7 +93,7 @@ namespace SecondFace.EditorTools
             // imports the take.
             var stamp = Stamp(assetPath);
             var hd = imp.humanDescription;
-            if (imp.userData != stamp && imp.userData != "fresh " + stamp)
+            if (!Done(imp.userData, stamp) && imp.userData != "fresh " + stamp)
             {
                 hd.human = new HumanBone[0];
                 hd.skeleton = new SkeletonBone[0];
@@ -111,12 +125,27 @@ namespace SecondFace.EditorTools
             if (imp == null) return false;
             var stamp = Stamp(path);
             var hd = imp.humanDescription;
-            if (imp.userData == stamp && MappedAsWanted(hd)) return false;
-            if (imp.userData != stamp && imp.userData != "fresh " + stamp) { imp.SaveAndReimport(); return Configure(path); }
+            if (Done(imp.userData, stamp) && MappedAsWanted(hd)) return false;
+            if (!Done(imp.userData, stamp) && imp.userData != "fresh " + stamp) { imp.SaveAndReimport(); return Configure(path); }
             if (hd.skeleton == null || hd.skeleton.Length == 0) { Debug.LogError($"{path}: Unity filled no configuration from its T-pose"); return false; }
             hd.human = Mapped.Select(n => new HumanBone { boneName = n, humanName = n, limit = new HumanLimit { useDefaultValues = true } }).ToArray();
+            // the T-pose stood as the actor stands in the take (TakeStance): Unity grounds the take against it. A take that
+            // travels (a fall: its height is root motion) keeps the converters' T-pose; so does one with no standing stance
+            // (a seated hold), which reads its height from its feet as before (its first key sits with them on the floor).
+            var seated = false;
+            if (!Travels(path))
+            {
+                var model = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                var st = TakeStance.Measure(path, TakeStance.Leg(hd, model));
+                if (st.Standing)
+                {
+                    hd = TakeStance.Stood(hd, model, st, out var stood);
+                    Debug.Log($"MotionImportPostprocessor: {path}: {stood}");
+                }
+                else { seated = true; Debug.Log($"MotionImportPostprocessor: {path}: no standing stance, the T-pose kept"); }
+            }
             imp.humanDescription = hd;
-            imp.userData = stamp;
+            imp.userData = stamp + (seated ? " seated" : "");
             imp.SaveAndReimport();
             return true;
         }
@@ -153,7 +182,12 @@ namespace SecondFace.EditorTools
                 // their mean the same way (motion set v2, 2026-11-17: as root motion the sway was dropped and the body stood
                 // still over feet that shifted); only a clip that travels (a fall) keeps its root's way
                 c.lockRootPositionXZ = gait || !root; c.keepOriginalPositionXZ = false;
-                c.lockRootHeightY = !root; c.keepOriginalPositionY = false; c.heightFromFeet = !root;
+                // the height as the take has it over its own floor (the T-pose stood on that floor: TakeStance), never "from
+                // the feet": Unity reads that at the take's first key, and a gait's first key is a touchdown or a flight (the
+                // jog's left ankle 14.4 cm up against 8.7 in mid-stance: every stance sole 8 cm into the floor, 2026-11-18); a
+                // seated take (no standing stance: its T-pose kept) reads it from its first key's feet, on the floor, as before
+                var feet = !root && Seated(imp);
+                c.lockRootHeightY = !root; c.keepOriginalPositionY = !root && !feet; c.heightFromFeet = feet;
             }
             imp.clipAnimations = clips;
         }
@@ -166,7 +200,8 @@ namespace SecondFace.EditorTools
             s.loopTime = loop; s.loopBlend = loop;
             s.loopBlendOrientation = false; s.keepOriginalOrientation = false;
             s.loopBlendPositionXZ = gait || !travels; s.keepOriginalPositionXZ = false;
-            s.loopBlendPositionY = !travels; s.keepOriginalPositionY = false; s.heightFromFeet = !travels;
+            var feet = !travels && Seated((ModelImporter)assetImporter);
+            s.loopBlendPositionY = !travels; s.keepOriginalPositionY = !travels && !feet; s.heightFromFeet = feet;
             AnimationUtility.SetAnimationClipSettings(clip, s);
         }
     }

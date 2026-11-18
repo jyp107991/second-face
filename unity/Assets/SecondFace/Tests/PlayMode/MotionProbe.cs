@@ -593,7 +593,7 @@ namespace SecondFace.Tests
         private string HoldTrace()
         {
             var sk = GetComponent<SecondFace.Game.People.BodySkin>();
-            var a4 = $",{_traceA4L:0.0},{_traceA4R:0.0},{(sk != null ? sk.FlankL : -1f):0.00},{(sk != null ? sk.FlankR : -1f):0.00},{_traceOutL:0.0},{_traceFwdL:0.0},{_traceOutR:0.0},{_traceFwdR:0.0}," + (_ac != null && _ac.StageA1 != null ? string.Join(",", _ac.StageA1.Select(x => x.ToString("0.0"))) + $",{_ac.HoldFlank[0]:0.00},{_ac.HoldFlank[1]:0.00}" : ",,,,,,,,,,,,,,,") + "," + _traceK + $",{(_fp != null ? _fp.Sink * 100f : 0f):0.0}" + (_ac != null ? $",{_ac.PushPart[0]},{_ac.PushDeg[0]:0.0},{_ac.PushPart[1]},{_ac.PushDeg[1]:0.0}" : ",,,,");
+            var a4 = $",{_traceA4L:0.0},{_traceA4R:0.0},{(sk != null ? sk.FlankL : -1f):0.00},{(sk != null ? sk.FlankR : -1f):0.00},{_traceOutL:0.0},{_traceFwdL:0.0},{_traceOutR:0.0},{_traceFwdR:0.0}," + (_ac != null && _ac.StageA1 != null ? string.Join(",", _ac.StageA1.Select(x => x.ToString("0.0"))) + $",{_ac.HoldFlank[0]:0.00},{_ac.HoldFlank[1]:0.00}" : ",,,,,,,,,,,,,,,") + "," + _traceK + $",{(_fp != null ? _fp.Sink * 100f : 0f):0.0}" + (_ac != null ? $",{_ac.PushPart[0]},{_ac.PushDeg[0]:0.0},{_ac.PushPart[1]},{_ac.PushDeg[1]:0.0},{_ac.RestPart[0]},{_ac.RestDepth[0]:0.00},{_ac.RestBody[0]},{_ac.RestBodyY[0]:0.0},{_ac.RestDeg[0]:0.0},{_ac.RestPart[1]},{_ac.RestDepth[1]:0.00},{_ac.RestBody[1]},{_ac.RestBodyY[1]:0.0},{_ac.RestDeg[1]:0.0}" : ",,,,,,,,,,,,,,");
             if (_ac == null || _ac.Hold == null || _ac.Hold.Length < 8) return ",,,,,,," + a4;
             return string.Join(",", _ac.Hold.Select(x => x.ToString("0.00"))) + a4;
         }

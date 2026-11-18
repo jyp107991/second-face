@@ -114,7 +114,7 @@ namespace SecondFace.Tests
             return hd;
         }
 
-        private static AnimationClip Import(string src, string tag, HumanDescription hd, bool original)
+        internal static AnimationClip Import(string src, string tag, HumanDescription hd, bool original)
         {
             var dst = $"Assets/ProbeTmp/fix_{Path.GetFileNameWithoutExtension(src)}_{tag}.fbx";
             AssetDatabase.DeleteAsset(dst);

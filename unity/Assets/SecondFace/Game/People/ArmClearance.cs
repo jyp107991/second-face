@@ -110,6 +110,13 @@ namespace SecondFace.Game.People
         /// size (degrees, the passes summed).</summary>
         [System.NonSerialized] public int[] PushPart = { -1, -1 };
         [System.NonSerialized] public float[] PushDeg = new float[2];
+        /// <summary>For the gate's trace: what the shoulder's remainder (the third step at rest) was for, each side (left 0,
+        /// right 1): the arm's part as <see cref="PushPart"/>, the depth of that point past its margin (cm), the body's part
+        /// (0 the torso, 1 or 2 a thigh), its height over the hips (cm), and the remainder's size (degrees).</summary>
+        [System.NonSerialized] public int[] RestPart = { -1, -1 };
+        [System.NonSerialized] public float[] RestDepth = new float[2], RestBodyY = new float[2], RestDeg = new float[2];
+        [System.NonSerialized] public int[] RestBody = { -1, -1 };
+        private float _needDepth;
         private int _gapArm = -1, _gapBody = -1;
 
         /// <summary>The turn given to each upper arm this frame, degrees (tests read it).</summary>
@@ -1290,15 +1297,26 @@ namespace SecondFace.Game.People
             // (at most RestCap° in all: for a man whose gear held the hand, three turns stood the forearm 60-67° off the
             // vertical, A3, and the hand off the thigh, A4, 2026-11-07)
             var restDone = 0f;
+            if (TraceStages) { var k0 = left ? 0 : 1; RestPart[k0] = -1; RestDeg[k0] = 0f; RestDepth[k0] = 0f; RestBody[k0] = -1; RestBodyY[k0] = 0f; }
             for (var rPass = 0; rPass < 3 && restDone < RestCap; rPass++)
             {
                 var (rest, dirR) = SkinNeed(upper, first);
                 if (rest <= 0.01f) break;
+                if (TraceStages && rPass == 0 && _needAt >= 0)
+                {
+                    var k0 = left ? 0 : 1;
+                    RestPart[k0] = _needAt >= _skin.Begin(first + 2) ? 3 : _needAt >= _skin.Begin(first + 1) ? 2
+                        : lower != null && (_skin.P[_needAt] - lower.position).magnitude > (lower.position - upper.position).magnitude / 3f ? 0 : 1;
+                    RestDepth[k0] = _needDepth * 100f;
+                    var nb = _skin.Near;
+                    if (nb >= 0) { var bp = _skin.PartOf(nb); RestBody[k0] = bp == BodySkin.Part.Torso ? 0 : bp == BodySkin.Part.ThighL ? 1 : bp == BodySkin.Part.ThighR ? 2 : 3; RestBodyY[k0] = _hips != null ? (_skin.P[nb].y - _hips.position.y) * 100f : 0f; }
+                }
                 rest = Mathf.Min(rest, RestCap - restDone);
                 TurnArm(upper, first, rest, dirR);
                 restDone += rest;
             }
             Diag[left ? 5 : 11] = pushed + restDone;
+            if (TraceStages) RestDeg[left ? 0 : 1] = restDone;
             Stage(first, 3);
         }
 
@@ -1426,7 +1444,7 @@ namespace SecondFace.Game.People
                 }
                 var ax = Vector3.Cross(arm, pushTo);
                 if (ax.sqrMagnitude < 1e-8f) continue;
-                best = a; axis = ax.normalized; _needAt = i;
+                best = a; axis = ax.normalized; _needAt = i; _needDepth = d + Margin3;
                 // for the gate's report: the arm's point and the body's point the push is for (the elbow slots at rest)
                 var left = first == BodySkin.Part.UpperArmL;
                 DiagAt[left ? 0 : 4] = i; DiagAt[left ? 1 : 5] = _skin.Near;

@@ -339,3 +339,68 @@ those states; only then a whole-cast run.
   (anatomy 0-5°): one documented correction is applied to every standing idle alike (knee p98 to ≤ 5°, feet kept, pelvis
   by IK, the size recorded per clip). K1 stays at 8° for the game and the clips. Men's stretch and yawn come from CMU 143_30
   (sex unrecorded) until a documented man's take is found; no free man's chair-sit exists.
+
+## 9. The stance soles' ground: what Unity reads, measured at the source (editor owner, 2026-11-18)
+Gate: red, 6460 (dfc732a4; the batch's tree unmeasured). The bare retarget (the Animator alone: no FootPlant, ArmClearance,
+Gaze or Pace; EditMode probes `SoleProbe*Tests`, diagnostics not committed; `unity/test-results/sole_probe*.txt`), each clip on
+its own avatar and on Sports_Male_04, Construction_Male_02, cap_Military_Male_03n, Medical_Female_01, Business_Female_01 and
+Female_Adult_07 (one skeleton per sex: the men's ankles read the same to 0.1 cm on all three), every height in the Animator's
+own frame, each foot's own lowest skin point in its stance (within 4 cm of its lowest, rising or falling under 0.2 m/s).
+- **What Unity reads as an avatar's feet-bottom height: its configured T-pose ankle's height over the model's root.** On all 15
+  clips tested and both body avatars, `Animator.leftFeetBottomHeight`/`rightFeetBottomHeight` equal the configured T-pose
+  ankles' heights (the `.meta`'s `humanDescription.skeleton`, chained from the root) to 0.01 cm: `jog` 6.86/5.34, `jog_f`
+  3.03/3.58, `sneak` 6.78/4.44, `walk_b` 5.68/3.40, `idle_m` and `run_c` (ACCAD Male2) 8.58/8.53, the men's bodies 12.85, the
+  women's 12.75. Nothing else moves it: a proxy sole (a skinned plate under each foot 6, 9 or 12 cm under the ankle, built
+  into the avatar by `AvatarBuilder`) changes nothing, nor do the toes moved 1.5 times further out, nor the bodies built
+  without their meshes. `humanScale` is the T-pose's centre of mass over the same root: raising a clip's T-pose hips by d
+  raises it by d (jog +2.21 cm, humanScale 1.0029 → 1.0249).
+- **Cause 1, the bodies' T-pose stands 2.69 cm (men) and 2.78 cm (women) over their own bind.** Unity's own avatar setup put
+  the Rocketbox T-pose's hips 92.42 cm over the root against the bind's 89.5 (the T-pose ankle 12.85 against the bind's
+  10.16, which stands its soles on the root within 0.3 cm). So the feet-bottom height is 2.7 cm too large and the humanScale
+  2.6 % too tall: under "from the feet" every clip stands every body 2.6 cm over its ground (the idles' soles +2.0-2.6 cm on
+  the bare retarget; `docs/PEOPLE_MOTION.md` §2.7's "the clips as retargeted stand 2.5-4 cm up" in every fight stance, which
+  `Fighter.Feet` takes out by bringing the hips down). Stood on the root (the hips lowered by the difference, the bones'
+  turns as Unity set them): feet-bottom 10.16/9.97 cm, humanScale 1.0433 → 1.0164 (men), 1.0355 → 1.0077 (women), and
+  `idle_m`'s soles +2.6/+2.2 → 0.0/−0.4 cm (Sports_Male_04), `idle_f`'s +2.3/+2.2 → −0.3/−0.4.
+- **Cause 2, "Root Transform Position (Y): based upon Feet" is read at the take's first key.** The motion clips import with
+  `heightFromFeet` (the lowest feet-bottom at the start on the root's ground). A gait's take begins where its loop was cut:
+  `jog`'s first key is the left foot's touchdown, its ankle 14.4 cm over the capture's floor against 8.7 in mid-stance, so
+  the whole clip sat 8 cm low on its own avatar (the stance ankle 0.6/1.8 cm over the ground, the toe joints −3.6/−4.4) and
+  every body's stance sole −9 cm. The same clip with its loop started at the left foot's mid-stance: its own stance ankle
+  7.6/8.2 cm and Sports_Male_04's stance sole −2.1 cm; with the capture's own height (Original) −0.6 cm. Bare stance soles
+  (p50, left/right, Sports_Male_04) as imported: `jog` −9.0/−9.3, `jog_b` −8.8/−7.7, `run` −6.2/−4.5, `run_c` −19.6/−15.9,
+  `walk` −4.7/−2.7, `walk_b` −2.9/−6.5, `walk_slow` −3.9/−6.5, `sneak` −7.0/−4.8, `idle_m` +2.6/+2.2.
+- **Cause 3, each clip's T-pose stands where the capture's base pose put it, not where its actor stands in the take.** The
+  converters' `t_pose_key` stands the T-pose with its ankles 3.0-9.5 cm over the root (left and right up to 2.3 cm apart),
+  where the actors' flat feet (the ankle and the toe joint each within 1.5 cm of their own floors) stand 4.8-12.3 cm over
+  their takes' floors (`jog` 7.80/8.82, `walk` 9.11/8.18, `jog_f` 6.47/8.51, ACCAD Female1's idles 12.1-12.3: her capture's floor
+  is 4-5 cm under her soles), and the CMU T-pose feet are pitched 12-17° where the actors stand on them at 14-29° (ACCAD's
+  agree within 2°). Unity maps every frame against the T-pose, so with the take's own height a T-pose 3 cm under the take
+  sinks every body 3 cm, one over it floats them, and a flatter T-pose foot turns every body's stance foot toes-down. With the
+  T-pose stood as the actor stands in the take (the hips so the T-pose ankles' mean is the take's flat-foot mean; each foot at
+  the take's flat-foot pitch and roll, the T-pose's heading kept) and the bodies stood on their root, the take's floor no longer
+  matters: `idle_f` (her floor 4-5 cm low) +4.2/+4.1 → +0.1/−0.5, `idle_f_c` +5.7/+4.4 → +0.6/+0.1, `jog_f` (CMU 141, its floor
+  low) +3.7/+6.5 → −0.6/+0.6, `idle_m` −1.2/−1.6 → −0.1/−0.5.
+- **Unity's Foot IK (on in every locomotion state since P4.8) is right only on that consistent reference.** On the clips as
+  imported it reached the feet below the floor (the jog −6.5 cm p50, MOTION_ROOT_CAUSE §7); on the stood T-poses with the
+  bodies grounded and the take's own height it takes out the stance flexion's mismatch (the humanScale ratio is not the legs'):
+  stance soles p50 (left/right; p2 the lowest), Sports_Male_04 / Medical_Female_01: `jog` −0.9/+1.0, −1.3/+2.0 (p2 −1.6, −1.8);
+  `jog_b` −1.3/+1.3, +1.7/+1.0; `jog_f` −1.0/+1.6, −1.1/+1.5 (p2 −3.1, −2.5); `run` +0.7, −0.7; `walk` +0.3/−0.6, 0.0/−0.8; `walk_d`
+  −1.0/+0.4, −1.3/+0.4; `walk_brisk_b` −0.2/−0.8, −0.4/−1.0; `walk_slow_b` +0.9/−1.3, +0.6/−1.0; `walk_slow` −1.1/−0.7, −1.4/+0.4;
+  `walk_f_b` 0.0/+0.2, −0.2/−0.2; `sneak` −1.6/+1.2, −1.9/+0.9 (p2 −3.6, −3.1; −8.7/−7.7 without the IK); `idle_m` +0.3/−0.2,
+  −0.1/−0.6; `idle_f` +0.3/−0.3, −0.1/−0.7. **Left:** `walk_b`'s right foot −6.4 and −5.2 (its T-pose right ankle 2.3 cm under
+  the left where in the take it stands 1.7 cm over it: the capture's two feet on floors of their own, a converter item: one
+  floor for both feet) and `run_c` −2.6/−4.1, −2.7/+0.6 (ACCAD Male2's run, the deepest stance flexion of the set).
+- **Fix, at the source (what Unity reads), in this batch:** (1) `MotionImportPostprocessor` version 13 stands each clip's
+  configured T-pose as its actor stands in the take (`TakeStance`, measured on the file as recorded: each foot's flattest
+  standing keys, the larger of its ankle's and toe joint's heights over their own floors within 1 cm of its least, the hips
+  over the floor at least 0.75 of the T-pose's leg; CMU 07's and 08's right feet never reach both floors together, by 1.4-1.8
+  cm) and imports every clip that plays in place with the take's own height (Original; never from the feet). Two kinds keep the
+  converters' T-pose: a take that travels (`fall`: its height is root motion) and a seated take with no standing stance
+  (`sit`, `sit_ground`, `sit_stool`: their height from their first key's feet on the floor, as before; stamped " seated"); (2) `PeopleImportPostprocessor` stands each
+  body's configured T-pose on the model's root as its bind does (`Ground`, the cast's and the player's base models); (3)
+  `StandOnTheGroundTests` (EditMode, CombatBuild assembly) holds both: each clip's feet-bottom heights the take's flat feet
+  within 1 mm and its feet at their pitch within 0.5°, each body's the bind's ankles within 1 mm, no clip read from the feet.
+  The converters should write the same T-pose (`t_pose_key`: the hips and feet as `TakeStance` measures them) and plant both
+  feet of a take on one floor (offline helper). FootPlant's hold and lift of the bearing foot are traced next on this
+  reference, frame by frame, for what remains.
