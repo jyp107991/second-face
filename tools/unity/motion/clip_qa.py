@@ -27,6 +27,10 @@ Checks, per clip (the converter's FBX + json) and per source trial (CMU ASF/AMC,
             ankle and the ball and of the contact point (the lower sole point); fails where the slowest of the three moves
             over 0.1 m/s from the second key after touchdown to toe-off (plant.py: stance_measure)
 
+  stance    combat v4.1 (--combat --stance <dumps>:<jsons>[:<mapping>]; stance_continuity.py, the standard's G13): every pair of
+            states the game blends, the clips over the set they are staged over; a clip in a one-class pair whose feet stand
+            over 1.5 cm or turn over 5° apart as the game places each clip fails (the pairs and the whole audit in
+            <out>_stance.json)
   combat v4 (--combat on a json with `source_kind`; combat_v4_qa.py): the weight-bearing feet still (G4), the main hand's palm
             on grip_main within 1 cm and the off hand's on grip_off within 2 cm wherever the sidecar's IK track holds them (WG1,
             WG2), the weapon's line out of the trunk and the head (C1), the FBX's default pose the converters' shared T-pose
@@ -39,7 +43,7 @@ Checks, per clip (the converter's FBX + json) and per source trial (CMU ASF/AMC,
     # 2. the gate (numpy)
     python3 -I tools/unity/motion/clip_qa.py qa <dump_dir> <clip json dir> <out.json> [--cmu <dirs>] [--accad <dir>]
         [--project <the Unity project's Motion folder>: judge the configuration against the .meta files there]
-        [--combat] [--style <100STYLE BVH folder>]
+        [--combat] [--style <100STYLE BVH folder>] [--stance <extra dump dirs>:<extra json dirs>[:<mapping.json>]]
     # 3. two sets' stance measures side by side (each a qa output)
     python3 -I tools/unity/motion/clip_qa.py compare <qa_a.json> <qa_b.json> [<out.json>]
 """
@@ -744,6 +748,28 @@ def combat_checks(m, meta, r, fails, source):
         r['stance'] = {'error': str(e)[:80]}
 
 
+def stance_continuity(rows, dump_dir, json_dir, stance):
+    """G13 (combat v4.1, stance_continuity.py): every pair of states the game blends, with these clips over the set they
+    are staged over (`stance`: extra dump dirs, extra json dirs, an optional proposed mapping); each clip carries its pairs,
+    and a clip in a 'same' pair (one weapon class's chain) whose feet stand over 1.5 cm or turn over 5° apart fails."""
+    import stance_continuity as SC
+    extra_d, extra_j, mp = stance
+    states, pairs = SC.with_mapping(json.load(open(mp))) if mp else (None, None)
+    res = SC.audit([dump_dir] + list(extra_d), [json_dir] + list(extra_j), states, pairs)
+    by = {r['clip']: r for r in rows}
+    for r in rows: r['checks']['stance_continuity'] = []
+    for x in res:
+        if x.get('missing'): continue
+        for c in set(x['clips']):
+            if c not in by: continue
+            by[c]['checks']['stance_continuity'].append({k: x[k] for k in ('pair', 'sex', 'kind', 'verdict', 'left_cm', 'right_cm', 'left_yaw_deg', 'right_yaw_deg', 'takes', 'basis')})
+            if x['kind'] == 'same' and not x['pass']:
+                by[c]['fail'].append(f"stance (G13): {x['pair']} ({x['sex']}): the feet {x['left_cm']:.1f}/{x['right_cm']:.1f} cm and "
+                                     f"{x['left_yaw_deg']:.1f}/{x['right_yaw_deg']:.1f}° apart ({' -> '.join(x['takes'])}; limit {SC.LIMIT_CM} cm, {SC.LIMIT_DEG}°)")
+                by[c]['pass'] = False
+    return res
+
+
 def qa_clips(dump_dir, json_dir, cmu_dirs=(), accad_dir=None, combat=False, project=None):
     """combat: the combat set's checks besides (every clip's planted feet, each one-shot's travel against its root flag, a
     two-handed grip's hands at a near-constant distance, the clip's set against its source's sex, the stance measures).
@@ -996,6 +1022,14 @@ if __name__ == '__main__':
         accad = a[a.index('--accad') + 1].split(',') if '--accad' in a else None
         if '--style' in a: STYLE_DIR = a[a.index('--style') + 1]
         rows = qa_clips(a[1], a[2], cmu, accad, combat='--combat' in a, project=a[a.index('--project') + 1] if '--project' in a else None)
+        if '--combat' in a and '--stance' in a:
+            # --stance <extra dump dirs>:<extra json dirs>[:<mapping.json>] (comma-separated dirs; the set staged under these)
+            parts = a[a.index('--stance') + 1].split(':')
+            st = (parts[0].split(',') if parts[0] else [], parts[1].split(',') if len(parts) > 1 and parts[1] else [], parts[2] if len(parts) > 2 else None)
+            res = stance_continuity(rows, a[1], a[2], st)
+            json.dump(res, open(os.path.splitext(a[3])[0] + '_stance.json', 'w'), indent=1)
+            same = [x for x in res if x.get('kind') == 'same' and not x.get('missing')]
+            print(f"G13 stance continuity: {sum(x['pass'] for x in same)} of {len(same)} one-class pairs pass over the whole set")
         json.dump(rows, open(a[3], 'w'), indent=1)
         for r in rows:
             print(f"{r['clip']:11s} {'PASS' if r['pass'] else 'FAIL'} {r['src']:12s} {r['sex']:14s} " + ('; '.join(r['fail']) if r['fail'] else ''))

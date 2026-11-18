@@ -144,3 +144,20 @@ fight's layer.**
   Male1's take of the same action stays.
 - v4's beats may sit on a clip's first or last key: the hits start at their impact, the side steps at their lift, and a dodge
   is clear on its last key. `TheBeatsComeFromTheSidecars` holds them on the clip ([0, 1]; `CombatSet.Beat` reads −1 for none).
+
+**9. The gate measured v4's new sets against the old ones' limits (pick v4a: "A1 combat:strike 42 → 50" and the like).**
+- Cause: `HumanMotionGateTests.Fighting` named every record by the gate's action, not by the state the table plays:
+  - v4's two-handed blows (gate `strike2`) were measured as `combat:strike:club2`, against the unarmed strike's limits;
+  - every miss (a block for a man with fists or a blade, otherwise a slip or a duck: gate `dodge`) was measured as
+    `combat:strike:<arms>_block`.
+  - So the real actors' limits of `docs/qa/motion_calibration.md` §8 for those sets were never applied.
+- Fix: each person's records are named by the gate of the state the table plays for them (`CombatMotion.Strike` and
+  `CombatMotion.Miss` by sex and weapon).
+- The ratchet's alias for `dodge` is `strike`, not `hit`. The baseline measured every miss under the strike action, whatever
+  the table's own gate for misses was then (`hit`). (`motion_gate_inputs.json` `aliases_about`; `docs/PEOPLE_MOTION.md` §1.9;
+  `tests/people_gate_ratchet.test.ts`.)
+- Pick v4b, on the same tree with the labels:
+  - better: A1 strike 50 → 22, A2 strike 84 → 58;
+  - still worse than dfc732a4, from the dodges: F2 strike 1 → 20, H3 strike 0 → 18, Kb strike 20 → 38. These are mostly
+    women's `miss_duck` (CMU 77): Kb 152.7° against that actor's own 129.2 (§8 dodge, unisex). Being traced: the runtime adds
+    23° to a captured knee.
