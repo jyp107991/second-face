@@ -405,11 +405,25 @@ touches passes (ankles within 1.4 cm, feet within 3.9°).
   women on ACCAD Female1_A01_Stand, with their reloads and hands up on the same frames.
 - *Two-handed club, men:* CMU 79_01's captured chop and a ready and hands-up hold built on the rest it comes back to (u: the
   long gun's actor, the same session).
-- *Still unmatched:* the women's club (her ready on Female1, her thrust built on CMU 144_20: no capture of her in one take);
-  every unarmed and one-handed blow against its guard (each man's blow is its own take; the women's guard and jab, one take,
-  CMU 144_13, still part by 15-19 cm as the game places them, each at its own first key);
-  the crouch into cover (the crouch takes' first keys stand and turn differently from the crouched hold); hands up from a guard
-  and the hits (stance changes or unpinned, reported).
+- *Left by v4.1:* the women's club, the blows against their guard, the crouch into cover (v4.2 below).
+
+**v4.2 (a delta over v4.1; `/home/user/second-face-staging/combat/v4_2/`).** 61 of 69 one-class pairs stand within G13 (the
+routing removes pairs the game no longer plays), and every pair v4.2 touches within 0.8 cm and 3.8°.
+- *Why the blows parted from their guard:* every ACCAD Male2 blow is its own take and he set his stance anew in each (2-30 cm and
+  up to 50° apart after the best rigid fit); the women's guard (CMU 144_13) was cut while she stepped into her stance, and every
+  jab of that take pumps her lead foot out 2-8 cm, so the take never holds a still guard and drifts 16-25 cm over the sequence.
+- *Unarmed blows:* men from CMU 143_23 (a man by his file's label: eight punches on one planted stance, the guard held between
+  them), each cut from the guard before it to the guard after it; women from CMU 144_21, whose guard holds still once (0.23 s,
+  after her last punch). Her sequence's punches start with the rear foot still turned 5-8° from the one before, so her cross's
+  first key is set on her guard's feet and blended into the capture by its cut (built, at most 3.3 cm and 7°). The women's jab
+  and the men's right hook leave the blow pools until a take holds them with a still guard; a man's unarmed miss slips.
+- *Root motion into a hold (cover):* a clip whose root motion the game applies ends against that key's own centre of mass, its
+  turn baked at its first key; the hold after it is written with its origin there (`root_travel` in the clip's json, `after` in
+  the hold's). Two clips cut from one take can still part where each one's foot planting held its own contact points (the
+  crouch-down and its hold, 1.5-6 cm): the hold's ankles are then set where the clip before leaves them (built).
+- *Still unmatched:* the men's one-handed weapons (a blade built on 143_23's blows puts the pommel 3-7 cm into the chest at his
+  boxer's guard: C1) and the women's club (a thrust built on her 144_21 cross loses its delivery in the two-handed fit: timing);
+  both stay v4's. Every hit and stance-change pair (39) would fail G13 if judged: the next step's input.
 
 ## 5. Proposals for the gate's owner (from the evidence; none applied)
 1. **The long-gun aim limits.** The provisional column (K1 ≤ 2.2, H1 −3…+1.2, H2 15.2-22.2, H3 10.6-16.6) is two mimed actors'

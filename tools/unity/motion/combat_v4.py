@@ -833,14 +833,15 @@ def head_gap(rig, o, f, model, u=None):
     return min((p - c).length - 0.09 for p in _wpts(o, f, u, model))
 
 
-def clear_body(rig, W, model, nrm=None, need=0.02):
-    """A weapon whose line would pass into the trunk or the head turned out of them about its grip, 3° at a time up to 45°,
-    about the swing's normal (or the axis across the line and the vertical), whichever way clears both first (C1)."""
+def clear_body(rig, W, model, nrm=None, need=0.02, top=45):
+    """A weapon whose line would pass into the trunk or the head turned out of them about its grip, 3° at a time up to `top`
+    (45°; a v4.2 blade held at a boxer's chin up to 90°), about the swing's normal (or the axis across the line and the
+    vertical), whichever way clears both first (C1)."""
     o, f, u = W
     ok = lambda f_, u_=None: trunk_gap(rig, o, f_, model, u_) >= need and head_gap(rig, o, f_, model, u_) >= need
     if ok(f, u): return W
     axes = [a_ for a_ in (nrm, f.cross(UP), f.cross(FWD)) if a_ is not None and a_.length > 1e-6]
-    for deg in range(3, 46, 3):
+    for deg in range(3, int(top) + 1, 3):
         for ax_ in axes:
             for sg in (1.0, -1.0):
                 q = Quaternion(ax_.normalized(), math.radians(sg * deg)); f2 = (q @ f).normalized(); u2 = (q @ u).normalized()
@@ -915,7 +916,7 @@ def op_arc(rig, rows, d, fps, club=False):
             if cut == 'thrust':
                 u = UP - f * UP.dot(f); u = u.normalized() if u.length > 1e-4 else ahead.copy()
         if cut != 'block':
-            f, u = clear_body(rig, (rig.palm('Right'), f, u), model, nrm)[1:]
+            f, u = clear_body(rig, (rig.palm('Right'), f, u), model, nrm, top=b.get('clear_to', 45))[1:]
         gn, ga = (u.cross(f), f)                                     # HammerGrip: across f, palm normal -r = u x f
         rig.set_wrot('RightHand', rig.hand_rot('Right', gn, ga))
         W = (rig.palm('Right'), f, u)
@@ -1170,6 +1171,49 @@ def evidence_for(d):
     return ev.get(d.get('state'), [])
 
 
+def pin_feet(rig, rows, pin):
+    """combat v4.2 (G13): a held stance's ankles set, every key, where the clip it follows leaves them (`pin`: Left/Right
+    ankle positions in this clip's file frame, metres; `from`: that clip). For a hold cut from the same take as the clip
+    before it, whose two plantings differ (the crouch-down's held contact points against the hold's own): the legs by
+    two-bone IK, each foot's turn kept as captured. Returns the record (the largest move)."""
+    worst = 0.0
+    for k in range(len(rows)):
+        rig.pose(rows[k])
+        for s in ('Left', 'Right'):
+            T = from_file(pin[s]); R0 = rig.wrot(s + 'Foot')
+            worst = max(worst, (T - rig.head(s + 'Foot')).length)
+            rig.two_bone(s + 'UpperLeg', s + 'LowerLeg', s + 'Foot', T, rig.head(s + 'LowerLeg') - rig.head(s + 'UpperLeg') + FWD * 0.05)
+            rig.set_wrot(s + 'Foot', R0)
+        rows[k] = rig.capture()
+    return {'from': pin['from'], 'max_move_cm': round(worst * 100, 2)}
+
+
+def lead_in(rig, rows, pin, fps):
+    """combat v4.2 (G13): a blow cut from the middle of a captured sequence starts where the sequence left the feet, not
+    where the guard sets them (CMU 144_21's punches every half second: the rear foot still turned 5-8° from the punch
+    before). Its first key's feet are set on the guard's (`pin`: each foot's ankle and toe joint in the shared frame, the
+    guard's first key), blending into the capture's own footwork by `until_s` (the blow's cut: the rear foot pivots through
+    it anyway, and the shift stays a slow one): the ankle by two-bone IK, the foot turned about up toward the guard's line.
+    Returns the record."""
+    T_end = float(pin['until_s']); worst, wturn = 0.0, 0.0
+    for k in range(len(rows)):
+        t = k / fps; w = 1.0 - smooth(t / max(1e-6, T_end))
+        if w <= 0.0: break
+        rig.pose(rows[k])
+        for s in ('Left', 'Right'):
+            A = rig.head(s + 'Foot'); To = rig.head(s + 'Toes')
+            tA, tT = from_file(pin[s]['ankle']), from_file(pin[s]['toe'])
+            cur = Vector((To.x - A.x, To.y - A.y, 0.0)); tgt = Vector((tT.x - tA.x, tT.y - tA.y, 0.0))
+            ang = math.atan2(cur.x * tgt.y - cur.y * tgt.x, cur.dot(tgt))     # from the foot's line to the guard's, about up
+            R0 = Quaternion(UP, ang * w) @ rig.wrot(s + 'Foot')
+            T = A.lerp(tA, w)
+            worst = max(worst, (T - A).length); wturn = max(wturn, abs(math.degrees(ang * w)))
+            rig.two_bone(s + 'UpperLeg', s + 'LowerLeg', s + 'Foot', T, rig.head(s + 'LowerLeg') - rig.head(s + 'UpperLeg') + FWD * 0.05)
+            rig.set_wrot(s + 'Foot', R0)
+        rows[k] = rig.capture()
+    return {'from': pin['from'], 'until_s': T_end, 'max_move_cm': round(worst * 100, 2), 'max_turn_deg': round(wturn, 1)}
+
+
 def build_framed(d, take):
     """combat2fbx.build in a chain's shared frame (combat v4.1, docs/COMBAT_ANIMATION_STANDARD.md G13): every clip of one
     take's chain turned by the same yaw about the same origin (`frame`: yaw in radians about +Y, origin x, z in the take's
@@ -1194,6 +1238,16 @@ def build_framed(d, take):
         # 0.55 s cycle, under a breath): played forward and back, a closed loop of twice its length whose turns, on a stance
         # that barely moves, are under the capture's own sway
         out = C.resample_loop([{'loc': r['loc'], 'pos': r['pos']} for r in rows + rows[-2:0:-1]], C.OUT_FPS)
+    elif d.get('loop') == 'pingpong_ease':
+        # (v4.2) a guard held still between blows (0.2-0.7 s) whose hands still drift: forward and back as above, its time eased
+        # at both turns (smoothstep) so it turns at rest, not with a jerk (the plain turn read 2-7 cm against the 0.5 limit)
+        # (`stretch`: a window too short to turn at rest in its own time, 0.23 s, played that many times slower: a held guard)
+        n = len(rows); fwd = []; N = max(2, int(round(n * float(d.get('stretch', 1.0)))))
+        for i in range(N):
+            t = (n - 1) * (lambda x: x * x * (3.0 - 2.0 * x))(i / max(1, N - 1)); a_ = int(min(n - 2, t)); f_ = t - a_
+            ra, rb = rows[a_], rows[a_ + 1]
+            fwd.append({'loc': {k: C.slerp(ra['loc'][k], rb['loc'][k], f_) for k in ra['loc']}, 'pos': ra['pos'].lerp(rb['pos'], f_)})
+        out = C.resample_loop(fwd + fwd[-2:0:-1], C.OUT_FPS)
     else:
         out = C.resample([{'loc': r['loc'], 'pos': r['pos']} for r in rows], C.OUT_FPS)
     a, b = out[0]['pos'], out[-1]['pos']
@@ -1236,6 +1290,10 @@ def make(d, out_dir):
         side['plant_record']['second_pass'] = plant(rig, rows, fps)     # the stances the planted clip shows, held too
         side['plant_record']['third_pass'] = plant(rig, rows, fps)
         ops.append('feet planted')
+    if d.get('pin_feet'):
+        side['pin_feet'] = pin_feet(rig, rows, d['pin_feet']); ops.append('ankles set where ' + d['pin_feet']['from'] + ' leaves them')
+    if d.get('lead_in'):
+        side['lead_in'] = lead_in(rig, rows, d['lead_in'], fps); ops.append('first key\'s feet on ' + d['lead_in']['from'] + "'s, into the capture's by its cut")
     op = b.get('op')
     info = None
     if d.get('ik'): track, info = op_grip(rig, rows, d, fps); ops.append('weapon hands by IK (' + d['ik']['mode'] + ')')
@@ -1293,6 +1351,13 @@ def make(d, out_dir):
         js['chain'] = d.get('chain')
         js['frame'] = {'yaw_deg': round(math.degrees(float(d['frame']['yaw'])), 3), 'origin_m': [round(float(v), 4) for v in d['frame']['origin']],
                        'ref': d['frame'].get('ref'), 'note': d['frame'].get('note')}
+    if d.get('root_travel'):
+        # combat v4.2 (G13): a clip whose root motion the game applies, and where its root stands at the cut the next state
+        # is written (that state's `after`)
+        js['root_travel'] = d['root_travel']
+    if d.get('after'):
+        js['after'] = {'clip': d['after'], 'note': "written with its origin where that clip's applied root motion leaves the root at its cut, "
+                                                  "+Z that clip's first-key body orientation (root_basis: take)"}
     if d.get('loop') == 'gait':
         # the body's facing against its travel (+Z): 0 walking forward, 180 backward, +/-90 sideways (the editor turns the root)
         rig.pose(rows[len(rows) // 2]); acc = Vector((0.0, 0.0, 0.0))
