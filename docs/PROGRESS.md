@@ -717,6 +717,55 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-25, resume after a usage pause: the container was rebuilt from scratch.**
+  Gate: red, 6460 (dfc732a4; nothing of the batch committed).
+  - Lost with the old container: the local Unity editor and its Library, dotnet, the scratchpad tools (runfull.sh,
+    gcmp.py, v42_patch.py, the editor hand-off notes), the staging folder (`second-face-staging`: combat v4–v4.6 stages,
+    the raw CMU/ACCAD/100STYLE downloads) and the session's Blender. Nothing committed or pushed was lost.
+  - The batch survives as `wip/gate-batch` 16e8a386 (main 27135d80 is its ancestor). Restore it into a fresh clone with
+    `git fetch origin wip/gate-batch && git read-tree -u --reset FETCH_HEAD && git reset -q` (HEAD stays on main).
+  - State of the batch at the last backup: combat v4.6 imported in place of v4.1–v4.5 (the take frames' half turn fixed
+    at the source; clip_qa facing check), Core `ChooseStep` (15 cases) and `resolve_at`, the cover_leave importer
+    exception, C1 measured on the drawn surface (`MotionProbe.DrawnDepth`), the facing measure FY1/FY2 (declared
+    `introduced`), A1 by build, the waiver policy in the ratchet, the resumable whole cast.
+  - Open, in order: the C1 traces (a gap in one man's torso/thigh triangle set; one real runtime under-read 0.4 cm off
+    the contact); the combat EditMode/PlayMode re-measure on the healthy controller; chunk 0 against dfc732a4; then the
+    whole cast and the waiver judgement.
+  - Blocked: the editor is not installed in the new container and installing it needs the owner's permission.
+- **2026-11-18, the gate batch with combat v4: causes fixed, not committed (WIP `wip/gate-batch`, the coordinator's backups).**
+  Gate: red, 6460 (dfc732a4; the tree unmeasured on the whole cast).
+  - In the tree: the stood T-poses and grounded bodies (MOTION_ROOT_CAUSE §9), FootPlant's underside hull, ArmClearance's
+    resting give, combat v4 imported.
+  - Causes fixed this round (COMBAT_ROOT_CAUSE 5-9; MOTION_ROOT_CAUSE §9):
+    - Unity's Foot IK applied by the base layer under the fight's layer (the base state `fight_stand`);
+    - `AimFix` steering a long gun by the main wrist (now by the trunk, near the aim only);
+    - the gaze turning the trunk (`Gaze.BodyWeight` 0);
+    - the gate's fight records named by the action, not the state played (now per person by the state's gate; the `dodge`
+      alias is `strike`);
+    - the hands-up test window, `walk_to_crouch_accad` (no Spine), the beats' range.
+  - The ratchet is `tools/qa/gate_ratchet.mjs` with `tests/people_gate_ratchet.test.ts`.
+  - Garments at real thickness on six broad bases (`BodySlim`: jacket ease 1.0 cm, flank gear drawn in;
+    `docs/qa/body_geometry_audit.md` §6).
+  - Picks against dfc732a4 (existing states, base 4): v4a 26, v4b 26 (fight keys under their own sets). v4c (the garments)
+    is measuring.
+  - **Open:**
+    - the long-gun chain's two actors' stances (the coordinator's helper is re-staging it as combat v4_1, one actor per sex);
+    - the women's duck Kb 152.7 against its actor's 129.2 (the runtime adds 23°);
+    - the guard's F1/F4, C1 rise, H2 strike;
+    - the broad men's A1 after the garments.
+  - Later the same day:
+    - combat v4.1 imported (take-basis importer, the 79_96 long-gun chain, per-class hands up, routing);
+    - the waiver policy in `gate_ratchet.mjs` (13 tests);
+    - A1 by build (e from the body's breadth less the baked top's allowance; `motion_build_tops.json`);
+    - the walking swing turned sagittal first;
+    - the whole cast made resumable by chunk (`HumanMotionGateTests.Chunks`, hash-stamped).
+    The 07:14 whole cast found the people's controller emptied by a rebuild (COMBAT_ROOT_CAUSE item 10); fixed, and
+    re-running.
+  - **Next:**
+    - the whole cast's verdict and the waiver judgement;
+    - then v4.2-v4.5 together (patch for v4.2 prepared; v4.3 ChooseStep and v4.5 resolve_at to implement in Core with
+      their case tables);
+    - then the resumable whole cast.
 - **2026-11-17 (night), the v6.1 batch: measured, not committed (WIP `wip/gate-batch` 5e87de78).** Gate: red, 6460
   (dfc732a4; the tree unmeasured). In the batch: motion set v6.1 imported (38 clips, same GUIDs); `MotionImportPostprocessor`
   v12 builds each clip's avatar configuration from its own file's T-pose (first import without the take, then the explicit
