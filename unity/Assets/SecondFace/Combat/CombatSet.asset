@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fda4a04fb9695ad04d9a8139cc44df8c, type: 3}
   m_Name: CombatSet
   m_EditorClassIdentifier: SecondFace.Game::SecondFace.Game.Fighting.CombatSet
-  Version: 4
+  Version: 8
   Controller: {fileID: 9100000, guid: d48b81ce77cb2e95c8b00171183ffc6e, type: 2}
   Weapons:
   - Id: bat
@@ -357,13 +357,13 @@ MonoBehaviour:
     Loop: 1
     Events: []
     Times: []
-  - Name: guard_f_cmu
-    Length: 0.5
+  - Name: guard_m_built
+    Length: 1.2666668
     Loop: 1
     Events: []
     Times: []
-  - Name: ready_crouch_cmu
-    Length: 3.7000003
+  - Name: guard_f2_built
+    Length: 0.9333334
     Loop: 1
     Events: []
     Times: []
@@ -392,27 +392,34 @@ MonoBehaviour:
     Loop: 1
     Events: []
     Times: []
-  - Name: fist_jab_accad
-    Length: 1.6666667
+  - Name: fist_jab_m_cmu
+    Length: 1.2666668
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.4473684
+  - Name: fist_cross_m_cmu
+    Length: 1.1333334
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.47058824
+  - Name: fist_cross_b_m_cmu
+    Length: 1.3333334
     Loop: 0
     Events:
     - impact
     Times:
     - 0.4
-  - Name: fist_cross_accad
-    Length: 1.6000001
+  - Name: fist_hook_l_m_cmu
+    Length: 1.4666667
     Loop: 0
     Events:
     - impact
     Times:
-    - 0.39583334
-  - Name: fist_hook_l_accad
-    Length: 1.6666667
-    Loop: 0
-    Events:
-    - impact
-    Times:
-    - 0.4
+    - 0.5
   - Name: fist_hook_r_accad
     Length: 1.6666667
     Loop: 0
@@ -420,34 +427,13 @@ MonoBehaviour:
     - impact
     Times:
     - 0.42
-  - Name: fist_uppercut_l_accad
-    Length: 1.6666667
+  - Name: fist_cross_c_f_built
+    Length: 0.6
     Loop: 0
     Events:
     - impact
     Times:
-    - 0.4
-  - Name: fist_uppercut_r_accad
-    Length: 1.5666667
-    Loop: 0
-    Events:
-    - impact
-    Times:
-    - 0.29787233
-  - Name: fist_jab_f_cmu
-    Length: 1.1333334
-    Loop: 0
-    Events:
-    - impact
-    Times:
-    - 0.7352941
-  - Name: fist_cross_f_cmu
-    Length: 2.3666668
-    Loop: 0
-    Events:
-    - impact
-    Times:
-    - 0.3943662
+    - 0.3888889
   - Name: fist_combo_f_cmu
     Length: 2.8666668
     Loop: 0
@@ -455,6 +441,44 @@ MonoBehaviour:
     - impact
     Times:
     - 0.7906977
+  - Name: melee_forehand_f2_built
+    Length: 0.6
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.3888889
+  - Name: melee_thrust_f2_built
+    Length: 0.6
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.3888889
+  - Name: fist_uppercut_l_b_cmu
+    Length: 1.5666667
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.4680851
+  - Name: fist_uppercut_r_b_cmu
+    Length: 1.5333334
+    Loop: 0
+    Events:
+    - impact
+    Times:
+    - 0.47826087
+  - Name: crouch_hold_built
+    Length: 0.73333335
+    Loop: 1
+    Events: []
+    Times: []
+  - Name: crouch_hold_f_built
+    Length: 0.73333335
+    Loop: 1
+    Events: []
+    Times: []
   - Name: fist_ready_accad
     Length: 2.6333334
     Loop: 0
@@ -479,13 +503,6 @@ MonoBehaviour:
     - impact
     Times:
     - 0.39583334
-  - Name: melee_thrust_f_built
-    Length: 2.3666668
-    Loop: 0
-    Events:
-    - impact
-    Times:
-    - 0.3943662
   - Name: melee_forehand_built
     Length: 1.6666667
     Loop: 0
@@ -493,13 +510,6 @@ MonoBehaviour:
     - impact
     Times:
     - 0.42
-  - Name: melee_forehand_f_built
-    Length: 0.86666673
-    Loop: 0
-    Events:
-    - impact
-    Times:
-    - 0.61538464
   - Name: club_overhead_cmu
     Length: 2.1666667
     Loop: 0
@@ -597,16 +607,6 @@ MonoBehaviour:
     Loop: 1
     Events: []
     Times: []
-  - Name: crouch_to_run_accad
-    Length: 1.9333334
-    Loop: 0
-    Events: []
-    Times: []
-  - Name: crouch_to_run_f_accad
-    Length: 2.8666668
-    Loop: 0
-    Events: []
-    Times: []
   - Name: stagger_cmu
     Length: 2.5666668
     Loop: 0
@@ -674,20 +674,6 @@ MonoBehaviour:
     - clear
     Times:
     - 0.17419355
-  - Name: throw_overhand_m_cmu
-    Length: 1.7666668
-    Loop: 0
-    Events:
-    - release
-    Times:
-    - 0.49056605
-  - Name: throw_overhand_cmu
-    Length: 2.266667
-    Loop: 0
-    Events:
-    - release
-    Times:
-    - 0.45588234
   - Name: getup_back_cmu
     Length: 7.466667
     Loop: 0
@@ -780,3 +766,540 @@ MonoBehaviour:
     Loop: 1
     Events: []
     Times: []
+  - Name: rise_m_built
+    Length: 2.7
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: rise_f_built
+    Length: 1.5333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: rise_long_m_built
+    Length: 2.7
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: rise_long_f_built
+    Length: 1.5333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: duck_f_built
+    Length: 3.3333335
+    Loop: 0
+    Events:
+    - clear
+    Times:
+    - 0.65
+  - Name: throw_full_m_cmu
+    Length: 4.366667
+    Loop: 0
+    Events:
+    - release
+    Times:
+    - 0.55725193
+  - Name: throw_full_f_cmu
+    Length: 3.6333334
+    Loop: 0
+    Events:
+    - release
+    Times:
+    - 0.51376146
+  - Name: cover_leave_m_built
+    Length: 1.9333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: cover_leave_f_built
+    Length: 2.8666668
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_back_f_7604
+    Length: 0.8333334
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.48
+    - 0.6
+  - Name: step_back_f_76042
+    Length: 1.1333334
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.5
+    - 0.64705884
+  - Name: step_back_f_76042_mir
+    Length: 1.1333334
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.5
+    - 0.64705884
+  - Name: step_back_f_7604_mir
+    Length: 0.8333334
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.48
+    - 0.6
+  - Name: step_back_m_14320
+    Length: 0.7666667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_back_m_14320_mir
+    Length: 0.7666667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_back_m_m2e2turnar
+    Length: 0.73333335
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.36363637
+    - 0.5
+  - Name: step_back_u_3301
+    Length: 1.1
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.24242425
+    - 0.42424244
+  - Name: step_back_u_3301_mir
+    Length: 1.1
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.24242425
+    - 0.42424244
+  - Name: step_back_u_3401
+    Length: 1.4000001
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.2857143
+    - 0.47619048
+  - Name: step_back_u_3401_mir
+    Length: 1.4000001
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.2857143
+    - 0.47619048
+  - Name: step_fwd_m_m2e2turnar
+    Length: 0.70000005
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_fwd_m_m2e2turnar2
+    Length: 0.70000005
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_fwd_m_m2e2turnar2_mir
+    Length: 0.70000005
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_fwd_m_m2e2turnar_mir
+    Length: 0.70000005
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_fwd_u_7703
+    Length: 0.73333335
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_fwd_u_7703_mir
+    Length: 0.73333335
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_fwd_u_7717
+    Length: 0.8333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_fwd_u_7717_mir
+    Length: 0.8333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_left_f_11411
+    Length: 0.7666667
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.47826087
+    - 0.6086956
+  - Name: step_left_f_11411_mir
+    Length: 0.7666667
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.47826087
+    - 0.6086956
+  - Name: step_left_m_m2e2jabrig
+    Length: 1.0333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_left_m_m2e2jabrig_mir
+    Length: 1.0333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_left_u_7709
+    Length: 0.9333334
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.25
+    - 0.78571427
+  - Name: step_narrow_m_14320
+    Length: 0.6333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_narrow_m_14320_mir
+    Length: 0.6333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_narrow_u_7718
+    Length: 0.8333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_narrow_u_7718_mir
+    Length: 0.8333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_narrow_u_crouchedid
+    Length: 0.8333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_narrow_u_crouchedid_mir
+    Length: 0.8333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_right_m_14320
+    Length: 0.8333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_right_m_14320_mir
+    Length: 0.8333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_turnL45_f_11411
+    Length: 1.3000001
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.46153846
+    - 0.6666667
+  - Name: step_turnL45_f_11411_mir
+    Length: 1.3000001
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.46153846
+    - 0.6666667
+  - Name: step_turnL45_m_m2e2turnar
+    Length: 0.6333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_turnL45_m_m2e2turnar2
+    Length: 0.70000005
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.33333334
+    - 0.47619048
+  - Name: step_turnL45_m_m2e2turnar2_mir
+    Length: 0.70000005
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.33333334
+    - 0.47619048
+  - Name: step_turnL45_m_m2e2turnar_mir
+    Length: 0.6333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_turnL90_m_m2e2turnar
+    Length: 1.1333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_turnL90_m_m2e2turnar2
+    Length: 1.3333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_turnL90_m_m2e2turnar2_mir
+    Length: 1.3333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_turnL90_m_m2e2turnar_mir
+    Length: 1.1333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_turnR45_f_11133
+    Length: 0.96666664
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.44827586
+    - 0.5862069
+  - Name: step_turnR45_f_11133_mir
+    Length: 0.96666664
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.44827586
+    - 0.5862069
+  - Name: step_turnR45_f_11313
+    Length: 0.90000004
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.44444445
+    - 0.5555556
+  - Name: step_turnR45_f_11313_mir
+    Length: 0.90000004
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.44444445
+    - 0.5555556
+  - Name: step_turnR45_m_m2e1turnar
+    Length: 0.5666667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_turnR45_m_m2e1turnar2
+    Length: 0.53333336
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_turnR45_m_m2e1turnar2_mir
+    Length: 0.53333336
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_turnR45_m_m2e1turnar_mir
+    Length: 0.5666667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_widen_f_14426
+    Length: 1.6333334
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.2857143
+    - 0.3469388
+  - Name: step_widen_f_14426_mir
+    Length: 1.6333334
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.2857143
+    - 0.3469388
+  - Name: step_widen_m_m2e6quickr
+    Length: 0.99999994
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_widen_m_m2e6quickr_mir
+    Length: 0.99999994
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_guardin_f_14413
+    Length: 1.1333334
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.32352942
+    - 0.5588235
+  - Name: step_guardin_f_14413_mir
+    Length: 1.1333334
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.32352942
+    - 0.5588235
+  - Name: step_guardin_f_14427
+    Length: 0.8333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_guardin_f_14427_mir
+    Length: 0.8333334
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_guardout_f_14413
+    Length: 1.6333334
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0
+    - 0.18367347
+  - Name: step_guardout_f_14413_mir
+    Length: 1.6333334
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0
+    - 0.18367347
+  - Name: step_guardout_f_14421
+    Length: 1.1
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.27272728
+    - 0.7878788
+  - Name: step_guardout_f_14421_mir
+    Length: 1.1
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.27272728
+    - 0.7878788
+  - Name: step_pivot_f_11107
+    Length: 0.6333334
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.47368422
+    - 1
+  - Name: step_pivot_f_11107_mir
+    Length: 0.6333334
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.47368422
+    - 1
+  - Name: step_pivot_u_1323
+    Length: 0.86666673
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.3846154
+    - 0.53846157
+  - Name: step_pivot_u_1323_mir
+    Length: 0.86666673
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.3846154
+    - 0.53846157
+  - Name: step_pivot_u_swatfw
+    Length: 0.7666667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_pivot_u_swatfw_mir
+    Length: 0.7666667
+    Loop: 0
+    Events: []
+    Times: []
+  - Name: step_right_f_11128b
+    Length: 0.90000004
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.44444445
+    - 0.6296296
+  - Name: step_right_f_11128b_mir
+    Length: 0.90000004
+    Loop: 0
+    Events:
+    - lift
+    - set
+    Times:
+    - 0.44444445
+    - 0.6296296

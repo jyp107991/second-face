@@ -717,6 +717,21 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-25, resume after a usage pause: the container was rebuilt from scratch.**
+  Gate: red, 6460 (dfc732a4; nothing of the batch committed).
+  - Lost with the old container: the local Unity editor and its Library, dotnet, the scratchpad tools (runfull.sh,
+    gcmp.py, v42_patch.py, the editor hand-off notes), the staging folder (`second-face-staging`: combat v4–v4.6 stages,
+    the raw CMU/ACCAD/100STYLE downloads) and the session's Blender. Nothing committed or pushed was lost.
+  - The batch survives as `wip/gate-batch` 16e8a386 (main 27135d80 is its ancestor). Restore it into a fresh clone with
+    `git fetch origin wip/gate-batch && git read-tree -u --reset FETCH_HEAD && git reset -q` (HEAD stays on main).
+  - State of the batch at the last backup: combat v4.6 imported in place of v4.1–v4.5 (the take frames' half turn fixed
+    at the source; clip_qa facing check), Core `ChooseStep` (15 cases) and `resolve_at`, the cover_leave importer
+    exception, C1 measured on the drawn surface (`MotionProbe.DrawnDepth`), the facing measure FY1/FY2 (declared
+    `introduced`), A1 by build, the waiver policy in the ratchet, the resumable whole cast.
+  - Open, in order: the C1 traces (a gap in one man's torso/thigh triangle set; one real runtime under-read 0.4 cm off
+    the contact); the combat EditMode/PlayMode re-measure on the healthy controller; chunk 0 against dfc732a4; then the
+    whole cast and the waiver judgement.
+  - Blocked: the editor is not installed in the new container and installing it needs the owner's permission.
 - **2026-11-18, the gate batch with combat v4: causes fixed, not committed (WIP `wip/gate-batch`, the coordinator's backups).**
   Gate: red, 6460 (dfc732a4; the tree unmeasured on the whole cast).
   - In the tree: the stood T-poses and grounded bodies (MOTION_ROOT_CAUSE §9), FootPlant's underside hull, ArmClearance's
