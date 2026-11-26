@@ -457,6 +457,28 @@ namespace SecondFace.Game.People
                 return across <= math.max(math.min(Spacing[c], PatchMax), math.min(DeepAcross * d, DeepAcrossMax)) ? d : -1f;
             }
 
+            // (as BodySkin.Surface, point for point in the same order)
+            private float Surface(float3 p, int c0, int cx, int cy, int cz)
+            {
+                var h = math.clamp(Spacing[c0], SurfaceHMin, SurfaceHMax);
+                var reach = math.min(SurfaceReach * h, Cell); var reach2 = reach * reach; var ih2 = 1f / (h * h);
+                float num = 0f, den = 0f;
+                for (var dx = -1; dx <= 1; dx++)
+                    for (var dy = -1; dy <= 1; dy++)
+                        for (var dz = -1; dz <= 1; dz++)
+                            for (var j = Head[Hash(cx + dx, cy + dy, cz + dz)]; j >= 0; j = Next[j])
+                            {
+                                var cj = Cells[j];
+                                if (cj.x != cx + dx || cj.y != cy + dy || cj.z != cz + dz) continue;
+                                var v = p - P[j];
+                                var r2 = Sq(v);
+                                if (r2 > reach2) continue;
+                                var w = math.exp(-r2 * ih2);
+                                num += w * -Dot(v, N[j]); den += w;
+                            }
+                return den > 0f ? num / den : 0f;
+            }
+
             private int One(float3 p, out float depth, out float3 normal)
             {
                 depth = 0f; normal = float3.zero;
@@ -481,6 +503,7 @@ namespace SecondFace.Game.People
                 float u0 = Under(p, c0), u1 = c1 >= 0 ? Under(p, c1) : -1f, u2 = c2 >= 0 ? Under(p, c2) : -1f;
                 var ins = (u0 > 0f ? 1 : 0) + (u1 > 0f ? 1 : 0) + (u2 > 0f ? 1 : 0);
                 var inside = ins >= 2 ? math.min(u0 > 0f ? u0 : float.MaxValue, math.min(u1 > 0f ? u1 : float.MaxValue, u2 > 0f ? u2 : float.MaxValue)) : -1f;
+                if (inside > 0f) inside = math.max(Surface(p, c0, cx, cy, cz), DeepMin);
                 var nn = N[c0] + (c1 >= 0 ? N[c1] : float3.zero) + (c2 >= 0 ? N[c2] : float3.zero);
                 normal = Sq(nn) > 1e-8f ? Norm(nn) : N[c0];
                 var v0 = p - P[c0];
@@ -538,6 +561,8 @@ namespace SecondFace.Game.People
             float u0 = Under(c0), u1 = c1 >= 0 ? Under(c1) : -1f, u2 = c2 >= 0 ? Under(c2) : -1f;
             var ins = (u0 > 0f ? 1 : 0) + (u1 > 0f ? 1 : 0) + (u2 > 0f ? 1 : 0);
             var inside = ins >= 2 ? Mathf.Min(u0 > 0f ? u0 : float.MaxValue, Mathf.Min(u1 > 0f ? u1 : float.MaxValue, u2 > 0f ? u2 : float.MaxValue)) : -1f;
+            // how deep: the drawn surface's depth as the points near read it (Surface); the vote above only says whether
+            if (inside > 0f) inside = Mathf.Max(Surface(p, c0), DeepMin);
             var nn = N[c0] + (c1 >= 0 ? N[c1] : Vector3.zero) + (c2 >= 0 ? N[c2] : Vector3.zero);
             normal = nn.sqrMagnitude > 1e-8f ? nn.normalized : N[c0];
             // outside: the gap to the surface's plane at the nearest point (never more than to the point itself)
@@ -551,6 +576,43 @@ namespace SecondFace.Game.People
             depth = inside > 0f ? inside : -gap;
             return true;
         }
+
+        /// <summary>
+        /// How deep a point the vote finds inside lies under the drawn surface (m), read from every body point within
+        /// <see cref="SurfaceReach"/> of its bandwidth: each point's tangent plane, weighted by a Gaussian of its distance (the
+        /// implicit moving-least-squares surface of oriented points: Kolluri 2008, ACM Trans. Algorithms 4(2):18; Shen, O'Brien
+        /// and Shewchuk 2004). The least of the three nearest points' planes, the rule before, under-reads wherever the skin
+        /// curves or creases: a forearm resting 1.1 cm into the hip's side was read 0.2 cm deep by a point 2 cm off on a
+        /// facet turned 25-40° (Business_Male_05's side, Business_Male_03's crease under the waist), under the arm clearance's
+        /// resting give, so it stayed in (C1 0.8-1.2 cm, the gate's drawn surface; docs/MOTION_ROOT_CAUSE.md §9, 2026-11-25).
+        /// The bandwidth is the nearest point's own spacing (its fourth neighbour), within 1.5-3 cm.
+        /// </summary>
+        private float Surface(Vector3 p, int c0)
+        {
+            var h = Mathf.Clamp(_spacing[c0], SurfaceHMin, SurfaceHMax);
+            // (within the 27 cells about it, whatever its place in its own: a reach past a cell's width would count a far point or not by where the query stands)
+            var reach = Mathf.Min(SurfaceReach * h, Cell); var reach2 = reach * reach; var ih2 = 1f / (h * h);
+            float num = 0f, den = 0f;
+            var c = CellOf(p);
+            for (var dx = -1; dx <= 1; dx++)
+                for (var dy = -1; dy <= 1; dy++)
+                    for (var dz = -1; dz <= 1; dz++)
+                        for (var j = _head[Hash(c.x + dx, c.y + dy, c.z + dz)]; j >= 0; j = _next[j])
+                        {
+                            var cj = _cell[j];
+                            if (cj.x != c.x + dx || cj.y != c.y + dy || cj.z != c.z + dz) continue;
+                            var v = p - P[j];
+                            var r2 = v.sqrMagnitude;
+                            if (r2 > reach2) continue;
+                            var w = Mathf.Exp(-r2 * ih2);
+                            num += w * -Vector3.Dot(v, N[j]); den += w;
+                        }
+            return den > 0f ? num / den : 0f;
+        }
+
+        /// <summary>The surface reading's bandwidth bounds (m) and its reach (bandwidths; past 2 a point weighs under 2 %), and
+        /// the least depth a point the vote finds inside is given (m).</summary>
+        public const float SurfaceHMin = 0.015f, SurfaceHMax = 0.03f, SurfaceReach = 2f, DeepMin = 1e-5f;
 
         /// <summary>For the gate's report: the three nearest points <see cref="Depth"/> judges <paramref name="p"/> by, each with
         /// its part, place relative to <paramref name="origin"/> in <paramref name="frame"/> (cm), normal, clothes' offset,
@@ -588,6 +650,8 @@ namespace SecondFace.Game.People
                 var r = inv * (P[k] - origin) * 100f; var nn = inv * N[k];
                 parts.Add($"{PartOf(k)} {k} ({r.x:0},{r.y:0},{r.z:0}) n ({nn.x:0.0},{nn.y:0.0},{nn.z:0.0}) off {Off(k) * 100f:0.0} sp {_spacing[k] * 100f:0.0} {Mathf.Sqrt((P[k] - p).sqrMagnitude) * 100f:0.0} cm away: {verdict}");
             }
+            // (and the depth the surface reading gives, which Depth reports when the vote is inside)
+            if (c0 >= 0) parts.Add($"surface {Surface(p, c0) * 100f:0.0}");
             return string.Join(" | ", parts);
         }
 

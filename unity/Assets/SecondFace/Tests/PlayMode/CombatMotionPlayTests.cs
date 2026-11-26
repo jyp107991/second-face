@@ -210,7 +210,10 @@ namespace SecondFace.Tests
                     yield return Seen(v, Do(() => v.OnStance("crouch")), seen, 3.5f);
                     if (!seen.Contains("cover_down") || f.Current != CombatMotion.Cover(arms)) wrong.Add($"{who}: a crouch played {string.Join(",", seen)}, holds {f.Current}");
                     v.OnStance("stand");
-                    yield return Returns("standing up", 2f);
+                    // (as long as the way up plays to its cut, and its fade: combat set v4.4's men's rise is ACCAD Male2_D13's own,
+                    // 2.7 s, against the 2 s this waited for the old one)
+                    var rise = CombatMotion.State(CombatMotion.StandUp(f.Arms));
+                    yield return Returns("standing up", f.Set.Length(rise.Name, f.Female) * (rise.Cut - rise.From) / rise.Speed + rise.Fade + 0.4f);
                     // a throw (the weapon back in hand after it)
                     seen.Clear();
                     var arc = new List<Vector3>();

@@ -512,3 +512,37 @@ own frame, each foot's own lowest skin point in its stance (within 4 cm of its l
   cap_Police_Male_03n was turned out 16-20° (median; p98 24-26°) for the upper arm's upper two-thirds 6 cm into the torso at the
   armpit (the trace's first-turn depth): the contact both soft tissues take, which C1 does not count. **Fix:** moving, that part
   of the arm is never a reason to swing the arm out.
+
+## 10. C1's two traces from chunk 0 (editor owner, 2026-11-25, a fresh container)
+Gate: red, 6460 (dfc732a4; the batch's tree unmeasured). The gate's own run on the two men (`PickedPeopleStandAndMove`), every
+state's worst contact written by `MotionProbe.DumpC1` (env `C1_DUMP=1`: the arm vertex, every mesh triangle within 8 cm with its
+corners' parts and normals, the inside test's three rays and their crossings; a diagnostic, never a measure).
+- **Reproduced:** Business_Male_03's left forearm (vertex 698) 0.9-1.16 cm under the drawn surface in idle0, slope, look0 and
+  the moments after the gestures, where the three nearest vertices' planes read 0.2-0.4; Business_Male_05's right forearm
+  (vertex 879) 0.8-1.05 cm, the planes 1.0-1.2. 12 everyday C1 cells between them.
+- **The hole in the triangle set: refuted.** In all 24 dumped worst contacts (the two men's everyday and fight states) the
+  nearest triangle of the whole mesh that has no arm corner is the gate's own body triangle, at the same distance, and each
+  of the three level rays crosses the surface once (inside). The drawn depth is the real distance to the body's surface.
+- **The cause, both men: the runtime's skin reading.** `BodySkin.Depth` gave a point the vote finds inside the least of its
+  three nearest skin points' plane depths. Where the skin curves or creases one of the three stands on a facet turned away:
+  - Business_Male_05: 1.1 / 1.4 / 0.2 cm, the 0.2 from a point 2.2 cm off on the hip's side turned 25° back;
+  - Business_Male_03: 0.2 / 1.2 / 0.7, the 0.2 from a crease vertex whose normal points down (the hip's top under the waist);
+  - read 0.2 cm, under the arm clearance's resting give (0.25 cm): the forearm stayed 1.1 cm in.
+  The gate's own vertex-plane reading before 2026-11-18 had the same fault (0.2-0.35 cm on the same contacts).
+- **Offline, on the dumps:** Kolluri's implicit moving-least-squares surface (each nearby point's tangent plane weighted by a
+  Gaussian of its distance; Kolluri 2008, ACM Trans. Algorithms 4(2):18) reads the resting contacts within 0.1-0.3 cm of the
+  drawn depth at bandwidths of 1.5-2.5 cm, where the least of three is 0.6-0.9 cm short. At the fights' deep torso contacts
+  (1.1-3.2 cm) neither reading is right (least of three 0.1-0.5 cm over on four, 1.5 short on one; the surface reading 0.3-0.7
+  over on four, short on two).
+- **Fix (coordinator's decision: the cause is general):** `BodySkin.Depth` and its Burst job read a point the vote finds
+  inside by that surface (`BodySkin.Surface`: every body point within two bandwidths, the bandwidth the nearest point's
+  spacing within 1.5-3 cm, never past a cell), in every band; the inside/outside vote is unchanged. Measured below.
+- **Open, recorded (not this batch's cause): the gate's armpit part filing.** `MotionProbe` files each vertex by its nearest
+  bone line in the neutral pose alone; the runtime's skin (`RocketboxLayers`, 2026-11-08) gives a vertex nearer an arm's line
+  to the torso when the arm's bones weigh it under half. Read from the skin's own response (the upper arm turned 20° about two
+  axes, each vertex's move over a rigid arm's: the arm bones' weight; the meshes are not readable in play mode), every person
+  of the 79 has such vertices: 3,784 in all (13-254 a person, median 36; Police_Male_06 166, cap_Fire_Male_07n 254,
+  cap_Military_Male_03n 143, Medical_Male_01/03 136), all filed under an upper arm (6 of cap_Fire_Male_07n's in its third by the elbow, which C1 counts); the gate's
+  body set drops 3,808 triangles for them (16-197 a person), all 20-60 cm over the hips (30-50 cm on every one of the 79): the
+  chest's side under the armpit. None of the two men's 24 worst contacts lies there. Item: file the gate's vertices as the runtime's skin
+  does (an arm part only when the arm moves it half), with the cells it moves listed.

@@ -184,9 +184,11 @@ namespace SecondFace.Tests
         {
             var facts = CombatAnimatorBuild.Facts();
             Assert.That(facts.Select(f => f.Name), Is.EquivalentTo(CombatMotion.Clips.Where(c => File.Exists($"{CombatMotion.Folder}/{c.Name}.json")).Select(c => c.Name)));
-            // (a beat at its sidecar's frame over the clip's length: the jab's impact)
-            var jab = facts.First(f => f.Name == "fist_jab_accad");
-            var jabSide = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText($"{CombatMotion.Folder}/fist_jab_accad.json"));
+            // (a beat at its sidecar's frame over the clip's length: the jab's impact; the men's jab the table plays, CMU's since
+            // combat set v4, the ACCAD take a spare)
+            var jabName = CombatMotion.State(CombatMotion.Strike(Arms.Unarmed, false, 0)).ClipFor(false);
+            var jab = facts.First(f => f.Name == jabName);
+            var jabSide = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText($"{CombatMotion.Folder}/{jabName}.json"));
             Assert.That(jab.Times.Zip(jab.Events, (t, e) => (t, e)).First(x => x.e == "impact").t,
                 Is.EqualTo((float)jabSide["events"]["impact"][0] / ((int)jabSide["frames"] - 1)).Within(0.02f));
             foreach (var f in facts)
