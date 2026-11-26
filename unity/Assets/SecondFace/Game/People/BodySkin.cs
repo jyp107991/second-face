@@ -343,6 +343,7 @@ namespace SecondFace.Game.People
         private NativeArray<int> _nHead, _nNext, _qNear;
         private NativeArray<int3> _nCell;
         private NativeArray<float> _nSpacing, _qD;
+        private NativeArray<byte> _nFlags;
         private int _nBody = -1;
         private static readonly bool CheckBatch = System.Environment.GetEnvironmentVariable("SKIN_CHECK") == "1";
         private static int _checks;
@@ -355,6 +356,7 @@ namespace SecondFace.Game.People
                 _nP = new NativeArray<float3>(body, Allocator.Persistent); _nN = new NativeArray<float3>(body, Allocator.Persistent);
                 _nNext = new NativeArray<int>(body, Allocator.Persistent); _nCell = new NativeArray<int3>(body, Allocator.Persistent);
                 _nSpacing = new NativeArray<float>(body, Allocator.Persistent); _nHead = new NativeArray<int>(Buckets, Allocator.Persistent);
+                _nFlags = new NativeArray<byte>(body, Allocator.Persistent);
                 _nBody = body;
             }
             NativeArray<Vector3>.Copy(P, 0, _nP.Reinterpret<Vector3>(), 0, body);
@@ -362,12 +364,13 @@ namespace SecondFace.Game.People
             NativeArray<int>.Copy(_next, 0, _nNext, 0, body);
             NativeArray<Vector3Int>.Copy(_cell, 0, _nCell.Reinterpret<Vector3Int>(), 0, body);
             NativeArray<float>.Copy(_spacing, 0, _nSpacing, 0, body);
+            NativeArray<byte>.Copy(_set.Flags, 0, _nFlags, 0, body);
             _nHead.CopyFrom(_head);
         }
 
         private void Release()
         {
-            if (_nP.IsCreated) { _nP.Dispose(); _nN.Dispose(); _nNext.Dispose(); _nCell.Dispose(); _nSpacing.Dispose(); _nHead.Dispose(); }
+            if (_nP.IsCreated) { _nP.Dispose(); _nN.Dispose(); _nNext.Dispose(); _nCell.Dispose(); _nSpacing.Dispose(); _nHead.Dispose(); _nFlags.Dispose(); }
             if (_qIn.IsCreated) { _qIn.Dispose(); _qNo.Dispose(); _qNear.Dispose(); _qD.Dispose(); }
             _nBody = -1;
         }
@@ -391,7 +394,7 @@ namespace SecondFace.Game.People
             var qv = _qIn.Reinterpret<Vector3>();
             var k = 0;
             for (var i = from; i < to; i += stride) qv[k++] = P[i];
-            new DepthJob { P = _nP, N = _nN, Head = _nHead, Next = _nNext, Cells = _nCell, Spacing = _nSpacing, Q = _qIn, D = _qD, No = _qNo, Near = _qNear, Count = m }.Run();
+            new DepthJob { P = _nP, N = _nN, Head = _nHead, Next = _nNext, Cells = _nCell, Spacing = _nSpacing, Flags = _nFlags, Q = _qIn, D = _qD, No = _qNo, Near = _qNear, Count = m }.Run();
             var nv = _qNo.Reinterpret<Vector3>();
             k = 0;
             for (var i = from; i < to; i += stride) { QD[i] = _qD[k]; QN[i] = nv[k]; QNear[i] = _qNear[k]; k++; }
@@ -428,6 +431,7 @@ namespace SecondFace.Game.People
             [ReadOnly] public NativeArray<int> Head, Next;
             [ReadOnly] public NativeArray<int3> Cells;
             [ReadOnly] public NativeArray<float> Spacing;
+            [ReadOnly] public NativeArray<byte> Flags;
             public NativeArray<float> D;
             public NativeArray<float3> No;
             public NativeArray<int> Near;
@@ -503,7 +507,7 @@ namespace SecondFace.Game.People
                 float u0 = Under(p, c0), u1 = c1 >= 0 ? Under(p, c1) : -1f, u2 = c2 >= 0 ? Under(p, c2) : -1f;
                 var ins = (u0 > 0f ? 1 : 0) + (u1 > 0f ? 1 : 0) + (u2 > 0f ? 1 : 0);
                 var inside = ins >= 2 ? math.min(u0 > 0f ? u0 : float.MaxValue, math.min(u1 > 0f ? u1 : float.MaxValue, u2 > 0f ? u2 : float.MaxValue)) : -1f;
-                if (inside > 0f) inside = math.max(Surface(p, c0, cx, cy, cz), DeepMin);
+                if (inside > 0f && (Flags[c0] & LowFlag) != 0) inside = math.max(Surface(p, c0, cx, cy, cz), DeepMin);
                 var nn = N[c0] + (c1 >= 0 ? N[c1] : float3.zero) + (c2 >= 0 ? N[c2] : float3.zero);
                 normal = Sq(nn) > 1e-8f ? Norm(nn) : N[c0];
                 var v0 = p - P[c0];
@@ -561,8 +565,9 @@ namespace SecondFace.Game.People
             float u0 = Under(c0), u1 = c1 >= 0 ? Under(c1) : -1f, u2 = c2 >= 0 ? Under(c2) : -1f;
             var ins = (u0 > 0f ? 1 : 0) + (u1 > 0f ? 1 : 0) + (u2 > 0f ? 1 : 0);
             var inside = ins >= 2 ? Mathf.Min(u0 > 0f ? u0 : float.MaxValue, Mathf.Min(u1 > 0f ? u1 : float.MaxValue, u2 > 0f ? u2 : float.MaxValue)) : -1f;
-            // how deep: the drawn surface's depth as the points near read it (Surface); the vote above only says whether
-            if (inside > 0f) inside = Mathf.Max(Surface(p, c0), DeepMin);
+            // against the hips and thighs, how deep: the drawn surface's depth as the points near read it (Surface); the vote
+            // above only says whether
+            if (inside > 0f && (_set.Flags[c0] & LowFlag) != 0) inside = Mathf.Max(Surface(p, c0), DeepMin);
             var nn = N[c0] + (c1 >= 0 ? N[c1] : Vector3.zero) + (c2 >= 0 ? N[c2] : Vector3.zero);
             normal = nn.sqrMagnitude > 1e-8f ? nn.normalized : N[c0];
             // outside: the gap to the surface's plane at the nearest point (never more than to the point itself)
@@ -578,14 +583,17 @@ namespace SecondFace.Game.People
         }
 
         /// <summary>
-        /// How deep a point the vote finds inside lies under the drawn surface (m), read from every body point within
+        /// How deep a point the vote finds inside lies under the drawn surface where it meets the hips and thighs (the low band,
+        /// <see cref="LowFlag"/>: where a resting forearm and hand hang), read from every body point within
         /// <see cref="SurfaceReach"/> of its bandwidth: each point's tangent plane, weighted by a Gaussian of its distance (the
         /// implicit moving-least-squares surface of oriented points: Kolluri 2008, ACM Trans. Algorithms 4(2):18; Shen, O'Brien
-        /// and Shewchuk 2004). The least of the three nearest points' planes, the rule before, under-reads wherever the skin
-        /// curves or creases: a forearm resting 1.1 cm into the hip's side was read 0.2 cm deep by a point 2 cm off on a
+        /// and Shewchuk 2004). The least of the three nearest points' planes, the rule elsewhere, under-reads where the hip's
+        /// skin creases or turns: a forearm resting 1.1 cm into the hip's side was read 0.2 cm deep by a point 2 cm off on a
         /// facet turned 25-40° (Business_Male_05's side, Business_Male_03's crease under the waist), under the arm clearance's
         /// resting give, so it stayed in (C1 0.8-1.2 cm, the gate's drawn surface; docs/MOTION_ROOT_CAUSE.md §9, 2026-11-25).
-        /// The bandwidth is the nearest point's own spacing (its fourth neighbour), within 1.5-3 cm.
+        /// The bandwidth is the nearest point's own spacing (its fourth neighbour), within 1.5-3 cm. Not on the chest and the
+        /// waist above: read so in every band, the same seven men's everyday cells went 11 -> 38 (A1 7 -> 28 where the upper arm
+        /// rests on the flank, C1 0 -> 6 in the talk gesture), 2026-11-26.
         /// </summary>
         private float Surface(Vector3 p, int c0)
         {
