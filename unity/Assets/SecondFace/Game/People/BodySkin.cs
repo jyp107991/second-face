@@ -269,6 +269,7 @@ namespace SecondFace.Game.People
             // (after the filing: mirrored before it, the batch read last frame's cells and an empty table, and found no body
             // point near any arm's, 2026-11-08)
             Mirror(body);
+            _pose++;
         }
 
         /// <summary>One point's posing, for a report: its bones, their places, its stored offsets and where it is now.</summary>
@@ -331,7 +332,10 @@ namespace SecondFace.Game.People
         public const float DeepAcross = 3f, DeepAcrossMax = 0.04f;
 
         /// <summary>For the gate's report: how often <see cref="Depth"/> was asked, and how often the robust reading's passes ran.</summary>
-        [System.NonSerialized] public long DepthCalls, RobustRuns;
+        [System.NonSerialized] public long DepthCalls, RobustRuns, DepthKept;
+        // (each asked point's place when it was last asked, and the pose it was asked against: the same place against the same
+        // posed body is the same answer, so it is not reckoned again)
+        private Vector3[] _askedAt; private int[] _askedPose; private int[] _askIdx; private int _pose = 1;
 
         // ---- many points at once (the arm clearance asks thousands a frame: 12-14 ms a person in the editor, 2026-11-08):
         // the body's points, their filing and spacing mirrored once a frame, and a range of points asked in one Burst job,
@@ -392,18 +396,24 @@ namespace SecondFace.Game.People
                 _qIn = new NativeArray<float3>(cap, Allocator.Persistent); _qNo = new NativeArray<float3>(cap, Allocator.Persistent);
                 _qNear = new NativeArray<int>(cap, Allocator.Persistent); _qD = new NativeArray<float>(cap, Allocator.Persistent);
             }
-            if (QD == null || QD.Length != P.Length) { QD = new float[P.Length]; QN = new Vector3[P.Length]; QNear = new int[P.Length]; }
+            if (QD == null || QD.Length != P.Length) { QD = new float[P.Length]; QN = new Vector3[P.Length]; QNear = new int[P.Length]; _askedAt = new Vector3[P.Length]; _askedPose = new int[P.Length]; }
+            if (_askIdx == null || _askIdx.Length < m) _askIdx = new int[Mathf.Max(m, 512)];
             var qv = _qIn.Reinterpret<Vector3>();
             var k = 0;
-            for (var i = from; i < to; i += stride) qv[k++] = P[i];
+            for (var i = from; i < to; i += stride)
+            {
+                var at = P[i]; var was = _askedAt[i];
+                if (_askedPose[i] == _pose && at.x == was.x && at.y == was.y && at.z == was.z) continue;
+                _askIdx[k] = i; qv[k++] = at;
+            }
+            DepthCalls += m; DepthKept += m - k;
+            if (k == 0) return;
             if (!_runs.IsCreated) _runs = new NativeArray<int>(1, Allocator.Persistent);
             _runs[0] = 0;
-            new DepthJob { P = _nP, N = _nN, Head = _nHead, Next = _nNext, Cells = _nCell, Spacing = _nSpacing, Flags = _nFlags, Q = _qIn, D = _qD, No = _qNo, Near = _qNear, Runs = _runs, Count = m }.Run();
+            new DepthJob { P = _nP, N = _nN, Head = _nHead, Next = _nNext, Cells = _nCell, Spacing = _nSpacing, Flags = _nFlags, Q = _qIn, D = _qD, No = _qNo, Near = _qNear, Runs = _runs, Count = k }.Run();
             RobustRuns += _runs[0];
             var nv = _qNo.Reinterpret<Vector3>();
-            k = 0;
-            for (var i = from; i < to; i += stride) { QD[i] = _qD[k]; QN[i] = nv[k]; QNear[i] = _qNear[k]; k++; }
-            DepthCalls += m;
+            for (var j = 0; j < k; j++) { var i = _askIdx[j]; QD[i] = _qD[j]; QN[i] = nv[j]; QNear[i] = _qNear[j]; _askedAt[i] = qv[j]; _askedPose[i] = _pose; }
             if (CheckBatch && _checks < 40)
                 for (var i = from; i < to; i += stride)
                 {

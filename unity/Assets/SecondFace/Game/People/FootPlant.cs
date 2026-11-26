@@ -86,7 +86,33 @@ namespace SecondFace.Game.People
         private Vector3 _lastL, _lastR; private bool _haveLast;
         // moving, a foot down on the ground is held where it came down until the clip lifts it (W1: a planted foot
         // does not creep; the clips' strides never quite match the body's pace): its place, and a short release after
-        private struct Lock { public bool On, HaveTurn, NoRelock; public Vector3 At, From, Fwd; public Quaternion Rest, Corr; public float Release, Last, Min, W, Drop, Wait; public int Pivot; }
+        private struct Lock { public bool On, HaveTurn, NoRelock; public Vector3 At, From, Fwd, ToeAxis; public Quaternion Rest, Corr; public float Release, Last, Min, W, Drop, Wait, ToeBend, ToeRate; public int Pivot; }
+
+        /// <summary>A held foot's toes are bent up at the toe joint, as far as this from their rest (degrees), to lie along the
+        /// ground they would otherwise turn into as the heel rises: the first toe reaches 40-65° at toe-off in real walking
+        /// (Nawoczenski, Baumhauer and Umberger 1999). Held rigid with the foot and turned about the ball as the heel rose, the
+        /// toes' row 3.3 cm ahead of the ball swept along the ground at 0.16-0.36 m/s through a jog's push-off (W1,
+        /// Female_Adult_01, 2026-11-26); bent, it moves only as the toe joint does, 1.5 cm ahead of the ball.</summary>
+        public float ToeBendMax = 50f;
+        private float _toeSlopeL, _toeSlopeR;
+
+        /// <summary>A held foot's toes bent up at their joint until their sole lies as it did with the foot flat (its slope from the
+        /// toe joint to the tip, <paramref name="slope0"/>, degrees down), never further than <see cref="ToeBendMax"/> from their rest.</summary>
+        private static void ToesDown(Transform foot, Transform toe, Vector3 tip, Quaternion toeRest, float slope0, float max)
+        {
+            var j = toe.position; var d = toe.TransformPoint(tip) - j;
+            var flat = new Vector3(d.x, 0f, d.z);
+            if (flat.sqrMagnitude < 1e-6f) return;
+            var a = Mathf.Atan2(-d.y, flat.magnitude) * Mathf.Rad2Deg - slope0;
+            if (a <= 0.01f) return;
+            var axis = Vector3.Cross(d, Vector3.up);
+            if (axis.sqrMagnitude < 1e-10f) return;
+            axis.Normalize();
+            var to = Quaternion.AngleAxis(a, axis) * toe.rotation;
+            var bend = Quaternion.Angle(toeRest, Quaternion.Inverse(foot.rotation) * to);
+            if (bend > max) { a = Mathf.Max(0f, a - (bend - max)); to = Quaternion.AngleAxis(a, axis) * toe.rotation; }
+            if (a > 0.01f) toe.rotation = to;
+        }
         private Lock _lockL, _lockR;
         /// <summary>A foot locks when its sole is this near the ground and slower than <see cref="SwingSlow"/>; it lets go
         /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
@@ -181,6 +207,15 @@ namespace SecondFace.Game.People
                 if (skin.SoleR is { Length: 4 }) { _heelR = skin.SoleR[0]; _backR = skin.SoleR[1]; _ballR = skin.SoleR[2]; _tipR = skin.SoleR[3]; }
             }
             Hull();
+            _toeSlopeL = ToeSlope(_toeL, _tipL); _toeSlopeR = ToeSlope(_toeR, _tipR);
+        }
+
+        private static float ToeSlope(Transform toe, Vector3 tip)
+        {
+            if (toe == null) return 0f;
+            var d = toe.TransformPoint(tip) - toe.position;
+            var flat = new Vector3(d.x, 0f, d.z);
+            return flat.sqrMagnitude < 1e-6f ? 0f : Mathf.Atan2(-d.y, flat.magnitude) * Mathf.Rad2Deg;
         }
 
         /// <summary>A foot's sole at rest (flat on the floor at height <paramref name="floor"/>): the heel's contact a fifth
@@ -624,14 +659,44 @@ namespace SecondFace.Game.People
             // jog's held feet about their pinned point and swung the gate's other sole point along the ground at 0.2-0.4
             // m/s, W1, 2026-11-06); let go, the clip's turn comes back over the release
             var turned = false;
+            var left = foot == _footL;
+            var toeRest = left ? _toeRestL : _toeRestR; var slope0 = left ? _toeSlopeL : _toeSlopeR;
+            // (let go, the toes' bend eases back to the clip's over the release: at once, they would snap down as the foot left)
+            if (!k.On && k.ToeBend > 0f && toe != null)
+            {
+                k.ToeBend = Mathf.MoveTowards(k.ToeBend, 0f, k.ToeRate * dt);
+                if (k.ToeBend > 0f) toe.localRotation = Quaternion.AngleAxis(k.ToeBend, k.ToeAxis) * toe.localRotation;
+            }
             if (k.On)
             {
                 if (!k.HaveTurn) Hold(ref k, foot, toe);
+                // held, the toes lie on the ground, bent at their joint, before the sole's height is taken and again on the held
+                // turn (a child of the foot, they turned with it)
+                var toe0 = toe != null ? toe.localRotation : Quaternion.identity;
+                // (and the foot kept as low as with its toes rigid: laid down, they lifted the sole's lowest point off the
+                // ground they had been pressed into, and the stance foot stood 1-3 cm up, W6 0.3 -> 1.1-2.9 cm at the p98 in
+                // four of twelve people's walks and jogs, 2026-11-26)
+                var toesLift = 0f;
+                if (toe != null && ToeBendMax > 0f)
+                {
+                    var rigid = Lowest(foot, toe, heel, ball, tip);
+                    ToesDown(foot, toe, tip, toeRest, slope0, ToeBendMax);
+                    toesLift = Mathf.Max(0f, Lowest(foot, toe, heel, ball, tip) - rigid);
+                }
                 // (the sole kept as high over the ground as the clip's turn had it: turned about the ankle, the jog's held
                 // foot went 6-7 cm into the ground and stood 5 cm over it, W6, 2026-11-06)
                 var before = Lowest(foot, toe, heel, ball, tip);
                 foot.rotation = Pitched(ref k, foot.rotation);
-                want.y += before - Lowest(foot, toe, heel, ball, tip);
+                if (toe != null && ToeBendMax > 0f) ToesDown(foot, toe, tip, toeRest, slope0, ToeBendMax);
+                want.y += before - Lowest(foot, toe, heel, ball, tip) - toesLift;
+                if (toe != null)
+                {
+                    (toe.localRotation * Quaternion.Inverse(toe0)).ToAngleAxis(out var bentBy, out var bentAx);
+                    if (bentBy > 180f) bentBy -= 360f;
+                    k.ToeBend = Mathf.Abs(bentBy) > 0.01f && bentAx.sqrMagnitude > 0.5f ? Mathf.Abs(bentBy) : 0f;
+                    k.ToeAxis = bentBy >= 0f ? bentAx : -bentAx;
+                    k.ToeRate = k.ToeBend / Mathf.Max(0.02f, LockRelease);
+                }
                 turned = true;
             }
             // the sole point now lowest, where the clip has it with the ankle at the place wanted

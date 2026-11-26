@@ -764,6 +764,10 @@ namespace SecondFace.Game.People
                 // the whole move, else half, else a quarter (all or none, a hand drawn in from a forearm the elbow had turned
                 // out round the hip swung the forearm back into it, was left where it was, 6-6.4 cm off the thigh, A4, 2026-11-08)
                 var moved = false;
+                // (and never back into the body: no deeper than the clearance left it, and never more than half a degree in;
+                // by the half degree alone, the hand set at its gap after the clearance took the forearm by the elbow back
+                // into the hip by up to 0.25-0.33 cm, the shoulder's half degree at the forearm)
+                var inBefore = SkinNeed(lower, first, true).Angle;
                 foreach (var share in SetShares)
                 {
                     var to = W + dir * (move * share);
@@ -779,8 +783,9 @@ namespace SecondFace.Game.People
                     // (nor straightened: moved out from an elbow already out, the arm stood 4° from straight, A2)
                     if (bendTo < BendFloor && bendTo < Vector3.Angle(upperDir, W - E)) return;
                     TurnForearm(lower, first, a, ax);
-                    // (and never back into the body: the forearm by the hip)
-                    if (SkinNeed(lower, first, true).Angle > 0.5f) { TurnForearm(lower, first, -a, ax); continue; }
+                    var inAfter = SkinNeed(lower, first, true).Angle;
+                    if (inAfter > Mathf.Min(0.5f, inBefore + 0.01f)) { TurnForearm(lower, first, -a, ax); continue; }
+                    inBefore = inAfter;
                     moved = true;
                     break;
                 }

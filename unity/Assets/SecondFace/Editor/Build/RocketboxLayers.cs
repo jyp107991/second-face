@@ -339,8 +339,11 @@ namespace SecondFace.EditorTools
         /// <summary>The body's skin points filled in every this far (m) over its triangles, where no vertex stands within
         /// <see cref="FillGap"/>.</summary>
         private const float FillStep = 0.025f, FillGap = 0.02f;
-        /// <summary>How far an arm's vertex may stand out of its cell's point's tangent plane before it is a skin point of its own
-        /// (m): the resting give (ArmClearance.RestGive).</summary>
+        /// <summary>How far a forearm's or lower upper arm's vertex may stand from each point its cell keeps, and a hand's vertex out
+        /// of its cell's point's tangent plane, before it is a skin point of its own (m): the resting give (ArmClearance.RestGive).
+        /// (The drawn arm is flat between its vertices, so its deepest point in a body is one of them: where the arm meets the body
+        /// obliquely the depth grows along the arm's own plane, and a vertex the cell's point stood for 0.35 cm off in that plane
+        /// lay 0.32 cm deeper than it, C1, Business_Male_01, 2026-11-26.)</summary>
         private const float ArmStandOut = 0.0025f;
         /// <summary>The covered test's cell and reach (m): a surface over a point, facing its way, this near hides it.</summary>
         private const float CovCell = 0.04f, CovReach = 0.05f;
@@ -730,16 +733,26 @@ namespace SecondFace.EditorTools
             // out, and a resting arm held at contact by its points pressed them in (a sleeve's seam 0.65 cm from its cell's point
             // and 0.6 cm out of its plane lay 0.35-0.58 cm into the chest's side all through the talk, C1, Female_Adult_01,
             // 2026-11-26)
+            // (and the forearm's and the lower upper arm's every vertex further than the resting give from each point its cell keeps,
+            // in any direction: where the arm meets the hip obliquely the depth grows along the arm's own plane, 0.9 cm a centimetre
+            // at 67°, and one point a cell, nearest its centre, read a forearm 0.31 cm in while its vertex 0.35 cm off in that plane
+            // lay 0.63 cm in, C1, Business_Male_01, eleven resting states, 2026-11-26)
             var standOut = new List<(int I, SkinPart Part)>();
+            var keptIn = new Dictionary<(int, int, int, SkinPart), List<int>>();
             foreach (var (i, key) in armCell)
             {
                 var r0 = cells[key].I;
                 if (r0 == i) continue;
-                if (Vector3.Dot(world[i] - world[r0], wnor[r0]) <= ArmStandOut) continue;
+                var hand = key.Item4 is SkinPart.HandL or SkinPart.HandR;
+                if (hand ? Vector3.Dot(world[i] - world[r0], wnor[r0]) <= ArmStandOut : (world[i] - world[r0]).sqrMagnitude <= ArmStandOut * ArmStandOut) continue;
+                if (!keptIn.TryGetValue(key, out var kept)) keptIn[key] = kept = new List<int> { r0 };
+                var near = false;
+                if (!hand) foreach (var j in kept) if ((world[j] - world[i]).sqrMagnitude <= ArmStandOut * ArmStandOut) { near = true; break; }
                 // (a seam's split vertices once)
-                var dup = false;
-                foreach (var (j, _) in standOut) if ((world[j] - world[i]).sqrMagnitude < 1e-6f) { dup = true; break; }
-                if (!dup) standOut.Add((i, key.Item4));
+                if (!near) foreach (var (j, _) in standOut) if ((world[j] - world[i]).sqrMagnitude < 1e-6f) { near = true; break; }
+                if (near) continue;
+                kept.Add(i);
+                standOut.Add((i, key.Item4));
             }
             // each vertex's foot as the gate tells it (MotionProbe: the nearest of its segments in the neutral pose, the foot's
             // being the foot to the toes and on 7 cm past them): the soles' points are chosen from these, as the gate's are
