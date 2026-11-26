@@ -182,7 +182,12 @@ namespace SecondFace.Tests
         public sealed class Marked : MonoBehaviour
         {
             public string Person; public BodySkin Skin;
-            private void OnDestroy() { if (Skin != null) Debug.Log($"STAGEPROBE skin {Person}: depth asks {Skin.DepthCalls}, robust passes run {Skin.RobustRuns} ({(Skin.DepthCalls > 0 ? 100.0 * Skin.RobustRuns / Skin.DepthCalls : 0):0.0} %), kept from the pose {Skin.DepthKept} ({(Skin.DepthCalls > 0 ? 100.0 * Skin.DepthKept / Skin.DepthCalls : 0):0.0} %)"); }
+            private void OnDestroy()
+            {
+                if (Skin == null) return;
+                long V(string n) { var f = typeof(BodySkin).GetField(n, BindingFlags.Public | BindingFlags.Instance); return f != null ? (long)f.GetValue(Skin) : -1; }
+                Debug.Log($"STAGEPROBE skin {Person}: depth asks {V("DepthCalls")}, robust passes run {V("RobustRuns")}, kept from the pose {V("DepthKept")}");
+            }
         }
 
         [UnityTest, Timeout(3600000)]

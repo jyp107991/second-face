@@ -33,6 +33,23 @@ namespace SecondFace.Tests
             finally { Time.captureDeltaTime = keep; }
         }
 
+        // (the bisect's switches, TEMP: ArmClearance.BisectEnv when the tree carries them; every FootPlant's ToeBendMax held at 0 for "toes")
+        private static void SetBisect(string switches)
+        {
+            var f = typeof(ArmClearance).GetField("BisectEnv", Any);
+            if (f != null) f.SetValue(null, switches ?? (System.Environment.GetEnvironmentVariable("BISECT") ?? ""));
+            else if (!string.IsNullOrEmpty(switches) && switches != "toes") Debug.LogWarning("EVERYDAY SCREEN: no ArmClearance.BisectEnv in this tree: switches " + switches + " not applied");
+        }
+
+        public sealed class ToeSwitch : MonoBehaviour
+        {
+            public bool Off;
+            private void Update()
+            {
+                foreach (var fp in Object.FindObjectsByType<FootPlant>(FindObjectsSortMode.None)) fp.ToeBendMax = Off ? 0f : 50f;
+            }
+        }
+
         [UnityTest, Timeout(14400000)]
         public IEnumerator EverydayScreen() => Fixed(Screen());
 
@@ -72,31 +89,40 @@ namespace SecondFace.Tests
             }
             var combat = assets.Combat;
             var everyday = new List<string>();
+            var configs = (System.Environment.GetEnvironmentVariable("SCREEN_CONFIGS") ?? "").Split('|').Select(x => x.Trim()).Where(x => x.Length > 0)
+                .Select(x => { var c = x.Split(':'); return (Label: c[0], Switches: c.Length > 1 ? c[1] : ""); }).ToList();
+            if (configs.Count == 0) configs.Add(("", null));
+            var toes = new GameObject("toe switch"); Object.DontDestroyOnLoad(toes); var ts = toes.AddComponent<ToeSwitch>();
             try
             {
                 assets.Combat = null;
+                foreach (var (label, switches) in configs)
                 foreach (var k in want.OrderBy(x => x))
                 {
+                    if (switches != null) { SetBisect(switches); ts.Off = ("," + switches + ",").Contains(",toes,"); }
+                    var tag = (only.Length > 0 ? "motion_screen_p" : $"motion_screen_{k}") + (label.Length > 0 ? "_" + label : "");
                     if (k < 0 || k >= batches.Length) continue;
                     buildCm.Clear(); buildTop.Clear();
                     var failed = new List<string>();
                     var measured = new int[1];
                     var t0 = System.DateTime.UtcNow;
-                    var inner = (IEnumerator)gate.Invoke(new HumanMotionGateTests(), new object[] { batches[k], only.Length > 0 ? "motion_screen_p" : $"motion_screen_{k}", false, failed, false, measured });
+                    var inner = (IEnumerator)gate.Invoke(new HumanMotionGateTests(), new object[] { batches[k], tag, false, failed, false, measured });
                     while (inner.MoveNext()) yield return inner.Current;
                     var secs = (System.DateTime.UtcNow - t0).TotalSeconds;
                     var ev = failed.Where(f => !f.Contains(" combat:")).ToList();
                     everyday.AddRange(ev);
-                    File.WriteAllText(Path.Combine(dir, only.Length > 0 ? "motion_screen_p.chunk.json" : $"motion_screen_{k}.chunk.json"), JsonConvert.SerializeObject(new Dictionary<string, object>
+                    File.WriteAllText(Path.Combine(dir, tag + ".chunk.json"), JsonConvert.SerializeObject(new Dictionary<string, object>
                     {
-                        ["Hash"] = hash, ["Ids"] = batches[k], ["Measured"] = measured[0], ["Failures"] = failed, ["Seconds"] = secs,
+                        ["Hash"] = hash, ["Ids"] = batches[k], ["Measured"] = measured[0], ["Failures"] = failed, ["Seconds"] = secs, ["Switches"] = switches ?? "",
                     }, Formatting.Indented));
-                    Debug.Log($"EVERYDAY SCREEN chunk {k}: {batches[k].Length} people, {measured[0]} measures, {ev.Count} everyday failures, {secs:0} s\n" + string.Join("\n", ev));
+                    Debug.Log($"EVERYDAY SCREEN {tag} [{switches}]: {batches[k].Length} people, {measured[0]} measures, {ev.Count} everyday failures, {secs:0} s\n" + string.Join("\n", ev));
                 }
             }
             finally
             {
                 assets.Combat = combat;
+                SetBisect(null);
+                Object.Destroy(toes);
                 if (watch != null) Object.Destroy(watch);
             }
             Debug.Log($"EVERYDAY SCREEN total: {everyday.Count} everyday failures\n" + string.Join("\n", everyday));
