@@ -8,9 +8,9 @@ namespace SecondFace.Game.People
     /// towards <see cref="Target"/> (a conversation partner, the player) when one is given. The look is held within what a
     /// real head does on a still body: at most <see cref="MaxYaw"/> round from the body's front and <see cref="MaxUp"/> /
     /// <see cref="MaxDown"/> up and down (the eyes take a gaze shift up to about 30° before the head joins; further round, a
-    /// person turns the body, which the game does for a conversation). Humanoid look-at in the base layer's IK pass: the
-    /// head and the eyes, no clamp of Unity's own (the aim is already held in range), and the trunk not at all
-    /// (<see cref="BodyWeight"/>).
+    /// person turns the body, which the game does for a conversation). The head turns at its own joint after the animation
+    /// (<see cref="Look"/>), the neck and the shoulders as the clip has them; Unity's look-at in the base layer's IK pass
+    /// turns only the eyes, and the trunk not at all (<see cref="BodyWeight"/>).
     /// </summary>
     [RequireComponent(typeof(Animator))]
     public sealed class Gaze : MonoBehaviour
@@ -44,8 +44,27 @@ namespace SecondFace.Game.People
             _chest = _animator != null && _animator.isHuman
                 ? _animator.GetBoneTransform(HumanBodyBones.UpperChest) ?? _animator.GetBoneTransform(HumanBodyBones.Chest) ?? _animator.GetBoneTransform(HumanBodyBones.Spine)
                 : null;
-            if (_head != null) _faceOff = Quaternion.Inverse(_head.rotation) * transform.rotation;
+            if (_head == null) return;
+            // (in the avatar's neutral pose, every muscle at nought: Unity's human reference, by which the gate measures the
+            // face (MotionProbe), not the pose the model was saved in: levelled by the saved head's axes, Female_Adult_01's
+            // face stood 15.3-16.1° under the horizon in every idle, H1, 2026-11-26)
+            HumanPoseHandler hp = null; var pose = new HumanPose(); float[] saved = null;
+            if (_animator.avatar != null && _animator.avatar.isHuman)
+            {
+                hp = new HumanPoseHandler(_animator.avatar, transform);
+                hp.GetHumanPose(ref pose);
+                saved = (float[])pose.muscles.Clone();
+                for (var i = 0; i < pose.muscles.Length; i++) pose.muscles[i] = 0f;
+                hp.SetHumanPose(ref pose);
+            }
+            _faceOff = Quaternion.Inverse(_head.rotation) * transform.rotation;
             if (_chest != null) _chestOff = Quaternion.Inverse(_chest.rotation) * transform.rotation;
+            if (hp != null)
+            {
+                for (var i = 0; i < saved.Length; i++) pose.muscles[i] = saved[i];
+                hp.SetHumanPose(ref pose);
+                hp.Dispose();
+            }
         }
 
         /// <summary>After the animation: a head turned on the chest beyond <see cref="MaxNeckYaw"/> is brought back to it
@@ -54,6 +73,7 @@ namespace SecondFace.Game.People
         private void LateUpdate()
         {
             if (_head == null || !enabled) return;
+            Look();
             if (_chest != null)
             {
                 var chest = _chest.rotation * _chestOff;
@@ -71,23 +91,55 @@ namespace SecondFace.Game.People
             _head.rotation = Quaternion.AngleAxis(-fix, q * Vector3.forward) * _head.rotation;
         }
 
-        private void OnAnimatorIK(int layer)
+        /// <summary>Where the face is to look from <paramref name="from"/>: towards <see cref="Target"/>, or level ahead, held
+        /// within <see cref="MaxYaw"/> of the body's front and <see cref="MaxUp"/> / <see cref="MaxDown"/>.</summary>
+        private Vector3 Aim(Vector3 from, out float reach)
         {
-            if (layer != 0 || _animator == null) return;
-            var head = _animator.GetBoneTransform(HumanBodyBones.Head);
-            if (head == null) return;
             var front = transform.forward; front.y = 0f;
             front = front.sqrMagnitude > 1e-6f ? front.normalized : Vector3.forward;
-            var to = Target != null ? Target.position - head.position : front;
+            var to = Target != null ? Target.position - from : front;
             var flat = new Vector3(to.x, 0f, to.z);
             var yaw = flat.sqrMagnitude > 1e-6f ? Vector3.SignedAngle(front, flat, Vector3.up) : 0f;
             var pitch = Mathf.Atan2(to.y, Mathf.Max(flat.magnitude, 1e-4f)) * Mathf.Rad2Deg;
             yaw = Mathf.Clamp(yaw, -MaxYaw, MaxYaw);
             pitch = Mathf.Clamp(pitch, -MaxDown, MaxUp);
             var dir = Quaternion.AngleAxis(yaw, Vector3.up) * front;
-            dir = dir * Mathf.Cos(pitch * Mathf.Deg2Rad) + Vector3.up * Mathf.Sin(pitch * Mathf.Deg2Rad);
-            var reach = Target != null ? Mathf.Max(1.5f, to.magnitude) : 4f;
-            _animator.SetLookAtWeight(1f, BodyWeight, HeadWeight, 1f, 0f);
+            reach = Target != null ? Mathf.Max(1.5f, to.magnitude) : 4f;
+            return dir * Mathf.Cos(pitch * Mathf.Deg2Rad) + Vector3.up * Mathf.Sin(pitch * Mathf.Deg2Rad);
+        }
+
+        /// <summary>
+        /// The head turned towards <see cref="Aim"/> at its own joint, by <see cref="HeadWeight"/> of the way: round the
+        /// vertical, then up or down about the face's level right. The neck is left as the clip has it: on the Rocketbox
+        /// (3ds Max Biped) skeleton both clavicles hang from the neck, so Unity's look-at, which gives the neck a share of the
+        /// head's turn, carried both shoulders round on a still chest (the line between the shoulders 7.1° -> 16.4° for a look
+        /// held at 20°, the chest unmoved; the right arm swung back behind the flank and was turned out 5°: A1 18.2 -> 22.8 on
+        /// cap_Police_Male_01n and cap_Security_Male_01n, 2026-11-26). A real head's axial turn is made mostly at C1-C2, and
+        /// the shoulders ride on the thorax, not on the cervical spine.
+        /// </summary>
+        private void Look()
+        {
+            var dir = Aim(_head.position, out _);
+            var face = _head.rotation * _faceOff * Vector3.forward;
+            var fFlat = new Vector3(face.x, 0f, face.z); var dFlat = new Vector3(dir.x, 0f, dir.z);
+            if (fFlat.sqrMagnitude > 1e-6f && dFlat.sqrMagnitude > 1e-6f)
+                _head.rotation = Quaternion.AngleAxis(Vector3.SignedAngle(fFlat, dFlat, Vector3.up) * HeadWeight, Vector3.up) * _head.rotation;
+            face = _head.rotation * _faceOff * Vector3.forward;
+            var right = Vector3.Cross(Vector3.up, face);
+            if (right.sqrMagnitude < 1e-6f) return;
+            var up = Mathf.Asin(Mathf.Clamp(dir.y, -1f, 1f)) - Mathf.Asin(Mathf.Clamp(face.y, -1f, 1f));
+            // (a turn about the face's right by +a tips it down: up by -a)
+            _head.rotation = Quaternion.AngleAxis(-up * Mathf.Rad2Deg * HeadWeight, right.normalized) * _head.rotation;
+        }
+
+        private void OnAnimatorIK(int layer)
+        {
+            if (layer != 0 || _animator == null) return;
+            var head = _animator.GetBoneTransform(HumanBodyBones.Head);
+            if (head == null) return;
+            var dir = Aim(head.position, out var reach);
+            // (the eyes only, and the trunk by BodyWeight: the head is turned in LateUpdate, Look)
+            _animator.SetLookAtWeight(1f, BodyWeight, 0f, 1f, 0f);
             _animator.SetLookAtPosition(head.position + dir * reach);
         }
     }

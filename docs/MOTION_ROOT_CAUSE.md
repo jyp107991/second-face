@@ -534,9 +534,20 @@ corners' parts and normals, the inside test's three rays and their crossings; a 
   drawn depth at bandwidths of 1.5-2.5 cm, where the least of three is 0.6-0.9 cm short. At the fights' deep torso contacts
   (1.1-3.2 cm) neither reading is right (least of three 0.1-0.5 cm over on four, 1.5 short on one; the surface reading 0.3-0.7
   over on four, short on two).
-- **Fix (coordinator's decision: the cause is general):** `BodySkin.Depth` and its Burst job read a point the vote finds
-  inside by that surface (`BodySkin.Surface`: every body point within two bandwidths, the bandwidth the nearest point's
-  spacing within 1.5-3 cm, never past a cell), in every band; the inside/outside vote is unchanged. Measured below.
+- **Fix:** `BodySkin.Depth` and its Burst job read a point the vote finds inside against the hips and thighs (the low band,
+  `LowFlag`: torso and thigh points from 45 cm under the hips to 15 cm over them, where resting forearms and hands hang) by
+  that surface (`BodySkin.Surface`: every body point within two bandwidths, the bandwidth the nearest point's spacing within
+  1.5-3 cm, never past a cell); the inside/outside vote is unchanged, and the chest and waist above keep the least of three.
+  - Measured on the two men (the gate's pick): everyday C1 12 -> 0 (Business_Male_03 0.9-1.16 -> 0.0 cm, Business_Male_05
+    0.8-1.05 -> 0.33-0.44), no other cell moved; the arm clearance's cost unchanged (14.7 / 7.7 ms a person a frame in the
+    editor, against 13.9-15.3 / 8.7-9.5).
+  - **Read so in every band (the coordinator's first instruction, since withdrawn), it made things worse:** the whole cast's
+    chunks 1-3 went 2 -> 47 everyday cells, and an A/B on seven of their men (the same group, only `BodySkin.cs` swapped)
+    read 11 cells with the least of three against 38 with the surface everywhere: A1 7 -> 28 (cap_Police_Male_01n,
+    cap_Security_Male_01n in every standing state, p98 20.3-20.5 against limits of 20.3-20.4: the upper arm on the flank read
+    deeper and pushed out), C1 0 -> 6 (the talk gesture's upper arm against the chest's side on cap_Fire_Male_07n,
+    cap_Military_Male_02n, cap_Police_Male_03n). With the surface only in the low band the same seven read 13 (A1 9: the
+    two extra are Construction_Male_02's looks at 20.5 against his 20.1, his forearm now held out of his hip), no C1.
 - **Open, recorded (not this batch's cause): the gate's armpit part filing.** `MotionProbe` files each vertex by its nearest
   bone line in the neutral pose alone; the runtime's skin (`RocketboxLayers`, 2026-11-08) gives a vertex nearer an arm's line
   to the torso when the arm's bones weigh it under half. Read from the skin's own response (the upper arm turned 20° about two
