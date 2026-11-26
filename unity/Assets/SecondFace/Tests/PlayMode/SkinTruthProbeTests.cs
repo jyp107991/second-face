@@ -210,8 +210,42 @@ namespace SecondFace.Tests
             }
         }
 
+        /// <summary>FOOT_TRACE="<id>": that person's feet in the walks, every frame after everything: each foot's own
+        /// side-to-side axis's tilt from level (its roll), its lock (FootPlant's, by reflection) and pivot, and the foot plant's
+        /// ball against the gate's ball (MotionProbe's sole points).</summary>
+        [DefaultExecutionOrder(10003)]
+        public sealed class FootRoll : MonoBehaviour
+        {
+            public MotionProbe Probe; public FootPlant Plant; private StreamWriter _w; private Vector3 _sideL, _sideR; private Transform _fl, _fr;
+            private static readonly FieldInfo LockL = typeof(FootPlant).GetField("_lockL", BindingFlags.NonPublic | BindingFlags.Instance), LockR = typeof(FootPlant).GetField("_lockR", BindingFlags.NonPublic | BindingFlags.Instance);
+            private void Start()
+            {
+                var a = GetComponent<Animator>(); _fl = a.GetBoneTransform(HumanBodyBones.LeftFoot); _fr = a.GetBoneTransform(HumanBodyBones.RightFoot);
+                // (the bind's side axes: the body's right in each foot's frame at rest, from FootPlant's rest turns)
+                var rl = (Quaternion)typeof(FootPlant).GetField("_restL", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Plant);
+                var rr = (Quaternion)typeof(FootPlant).GetField("_restR", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Plant);
+                _sideL = (Quaternion.Inverse(rl) * Vector3.right).normalized; _sideR = (Quaternion.Inverse(rr) * Vector3.right).normalized;
+                Directory.CreateDirectory(Out);
+                _w = new StreamWriter(Path.Combine(Out, $"foot_{Probe.Person}.csv")) { AutoFlush = true };
+                _w.WriteLine("state,t,rollL,rollR,lockL,lockR,pivotL,pivotR,ballLx,ballLz,ballRx,ballRz");
+            }
+            private void LateUpdate()
+            {
+                if (_w == null || Probe.State == null || !Probe.State.Contains("walk") && !Probe.State.Contains("jog")) return;
+                float Roll(Transform f, Vector3 side) { var ax = f.rotation * side; return Mathf.Asin(Mathf.Clamp(ax.y, -1f, 1f)) * Mathf.Rad2Deg; }
+                object l = LockL.GetValue(Plant), r = LockR.GetValue(Plant);
+                bool On(object k) => (bool)k.GetType().GetField("On").GetValue(k);
+                int Piv(object k) => (int)k.GetType().GetField("Pivot").GetValue(k);
+                _w.WriteLine($"{Probe.State},{Time.time:0.000},{Roll(_fl, _sideL):0.0},{Roll(_fr, _sideR):0.0},{(On(l) ? 1 : 0)},{(On(r) ? 1 : 0)},{Piv(l)},{Piv(r)},{Plant.BallL.x:0.0000},{Plant.BallL.z:0.0000},{Plant.BallR.x:0.0000},{Plant.BallR.z:0.0000}");
+            }
+            private void OnDestroy() { _w?.Close(); _w = null; }
+        }
+
         public sealed class Watcher : MonoBehaviour
         {
+            private static readonly string FootTrace = System.Environment.GetEnvironmentVariable("FOOT_TRACE") ?? "";
+            // GAZE_BODY=<w>: every person's Gaze.BodyWeight set to w (an A/B of the trunk's share of the look)
+            private static readonly float GazeBody = float.TryParse(System.Environment.GetEnvironmentVariable("GAZE_BODY") ?? "", System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var gb) ? gb : -1f;
             // SOLE_MIRROR="<id>:R" (or :L): that person's foot plant holds the named foot by the other foot's sole points, mirrored
             // across the foot's own side-to-side axis (z), for an A/B of the sole points' choice
             private static readonly string Mirror = System.Environment.GetEnvironmentVariable("SOLE_MIRROR") ?? "";
@@ -221,6 +255,9 @@ namespace SecondFace.Tests
                 {
                     if (p.GetComponent<Truth>() != null) continue;
                     p.gameObject.AddComponent<Truth>().Probe = p;
+                    if (GazeBody >= 0f && p.GetComponent<Gaze>() is { } gz) { gz.BodyWeight = GazeBody; Debug.Log($"GAZE_BODY {p.Person}: {GazeBody}"); }
+                    if (FootTrace.Length > 0 && p.Person != null && FootTrace.Split(',').Any(x => p.Person.StartsWith(x)))
+                    { var fr = p.gameObject.AddComponent<FootRoll>(); fr.Probe = p; fr.Plant = p.GetComponent<FootPlant>(); }
                     foreach (var m in Mirror.Split(','))
                     {
                         var kv = m.Split(':');

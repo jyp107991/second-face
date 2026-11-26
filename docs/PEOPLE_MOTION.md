@@ -141,11 +141,13 @@ behind both their planes, so the planes read a penetration the drawn surface doe
 the runtime's `BodySkin.Depth` reads 0.53 and 0.28-0.40 there. The limit stays at 0.5 cm and the runtime keeps its own reading.
 **The runtime reads the same surface (2026-11-25).** The least of three planes also under-reads where the skin creases or turns:
 forearms resting 0.8-1.2 cm into two men's hips were read 0.2 cm deep by a point on a facet turned 25-40°, under the arm
-clearance's resting give. Against the hips and thighs (the band where resting forearms and hands hang) `BodySkin.Depth` now gives
-a point its vote finds inside the depth of the implicit moving-least-squares surface of its skin points (`BodySkin.Surface`: each
-point's tangent plane weighted by a Gaussian of its distance, Kolluri 2008), within 0.1-0.3 cm of the drawn depth on the traced
-contacts; the vote itself is unchanged, and the chest and waist above keep the least of three (read so there too, seven men's
-everyday cells went 11 -> 38; `docs/MOTION_ROOT_CAUSE.md` §10).
+clearance's resting give. Against the hips and thighs (the band where resting forearms and hands hang) `BodySkin.Depth` reads
+whether a point is inside and how deep from the robust implicit surface of its skin points (`BodySkin.Robust`: RIMLS, Öztireli et
+al. 2009, each point's tangent plane weighted by its distance, its plane's residual and its normal's agreement; since 2026-11-26,
+in place of the plain IMLS of Kolluri 2008, which blurred a belt pouch's corner, and of the nearest-three vote there); the chest
+and waist above keep the vote and the least of three (read by the IMLS there too, seven men's everyday cells went 11 -> 38;
+`docs/MOTION_ROOT_CAUSE.md` §10). The skin's filled points lie on the drawn triangles with the faces' own normals since 2026-11-26
+(on the curved surface of their corners' normals they stood p50 0.6, p90 1.3 cm outside the drawn body; §12).
 The depth is `MotionProbe.DrawnDepth` (exact point-to-triangle distance over the triangles the inside test counts), held by
 `MotionProbeDepthTests` (known penetrations of 0, 0.3, 0.5, 1 and 2 cm under a convex patch with vertices 8 cm apart and under a
 flat one, read within 0.05 cm). The planes' reading is still written beside every report (`<report>_c1v.json`, never judged)

@@ -717,6 +717,19 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-26, the gate batch: the skin's filled points on the drawn surface, the hips read by a robust surface (editor owner;
+  not committed, the batch on `wip/gate-batch`).**
+  Gate: red, 6460 (dfc732a4).
+  - Whole cast of the batch's tree before this round (hash 8d5742a5): overall 6460 -> 3815 (the fight's states), but the everyday
+    states 4 -> 22 (W3 12 in the walks, C1 5 on one man's hip pouch, A1 2, A4 1, W1 1, W6 1): the waiver rule needs both to fall.
+  - Causes found and removed at their sources (`docs/MOTION_ROOT_CAUSE.md` §12): the skin's filled points stood off the drawn body
+    (p50 0.6, p90 1.3 cm; now on the drawn triangles, every person's skin points rebuilt with `RocketboxPeopleBuild.BuildSkins`);
+    the hips and thighs read by the robust implicit surface (RIMLS) where the nearest-three vote and the IMLS failed at a belt
+    pouch's facets.
+  - On a pick of 18 people (the failing ones and controls) everyday 22 -> 17 and fight 896 -> 722; open, traced, with their
+    source items in §12: one man's forearm through his pouch at rest (C1), the women's walking right arm through the back flank
+    (W3, not the gaze: A/B), one woman's right foot held by a pivot off its hinge in the jog (W1). The arm clearance's cost about
+    doubled in the editor (the robust reading near the hips): to bring down before the whole cast.
 - **2026-11-25, resume after a usage pause: the container was rebuilt from scratch.**
   Gate: red, 6460 (dfc732a4; nothing of the batch committed).
   - Lost with the old container: the local Unity editor and its Library, dotnet, the scratchpad tools (runfull.sh,

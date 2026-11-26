@@ -579,3 +579,61 @@ and look135 (their build limits 20.3-20.4; idle 18-19), Construction_Male_02 20.
   27 -> 0, H3 aim 9 -> 0, H2 strike 16 -> 8, H1 aim_pistol 3 -> 0; worse: A1 combat:aim 2 -> 23 (the rifle aim's upper arm
   41-49° at p2 against 54.8: the neck's swing had been raising the shoulders; dfc732a4's key stands at 237) and FY2 strike 0
   -> 8.
+
+## 12. The runtime's skin against the drawn surface: filled points off it, and gear's sharp features (editor owner, 2026-11-26)
+Gate: red, 6460 (dfc732a4). The whole cast of the batch's tree before this round (hash 8d5742a5, three runs of resumable
+chunks): every fight key but a few far down (overall 6460 -> 3815), but the everyday states 4 -> 22: C1 5 (Construction_Male_06's
+right forearm at the hip, 0.5-0.8 cm, slope, look90, after:argue, turn, talk), A1 2 (Construction_Male_02/03 in the second
+men's idle, 21.3/21.5 against 20.1/20.0), A4 1 (cap_DM01s, second idle, 6.6), W1 1 (Female_Adult_01's jog, 6 %), W6 1
+(Medical_Female_01's jog, max 4.4), W3 12 (the women's walks: Female_Adult_15 3, Medical_Female_02 2, Medical_Female_03 3,
+rel_FA06k 2; Police_Male_06 1, cap_Police_Male_03n 1).
+- **Trace (`SkinTruthProbeTests`, temporary: the gate's own pick with a watcher that measures each of the runtime's arm
+  points against the drawn surface every second frame, inside by the gate's ray parity, beside `BodySkin.Depth`, and dumps each
+  state's worst frame with the runtime's body points and the drawn triangles; offline readings of the dumps):**
+  - Construction_Male_06's forearm point 3608 (its sleeve 0.4 cm) stood 0.9-1.03 cm inside the drawn hip while the runtime
+    read it 0.53 cm (the low band's IMLS) in some frames and outside in others. The body points there are a belt pouch's facets
+    (split vertices, the pouch's top facing up 2 cm under the contact, an inward-tilted face kept by the inside-faces test at
+    -0.18 against its -0.2): the three nearest stand within 0.06 cm of one another's distance and vote either way, and the IMLS
+    averages the pouch's top into the trousers' side (a concave corner, which a smoothing kernel under-reads).
+  - **The filled points stood off the drawn surface.** On every body traced the skin's points on mesh vertices sit on the drawn
+    surface (0.00 cm), but the filled points (every 2.5 cm on the big triangles: most of a coarse hip's and flank's points)
+    stood outside it along their normals, less their clothes, by p50 0.58, p90 1.27, p98 1.59 cm (2440 points of
+    Business_Male_03/05, Construction_Male_06, cap_DM01s, Female_Adult_01). RocketboxLayers put them on the curved (Phong)
+    surface of their corners' normals on 2026-11-08, when the gate read the vertices' planes; the gate reads the drawn, flat
+    triangles since 2026-11-18. The arm clearance held elbows, forearms and hands off a surface that is not drawn: the
+    second idle's elbow against Construction_Male_02's flank read 1.3 cm in (the push 4.1°, A1 21.4), cap_DM01s's forearm at
+    the thigh's pocket 2.1 cm (the shoulder's remainder 6.6°, the hand thrown 5.7 cm off the thigh, A4 6.7).
+- **Fix, at the sources:** (1) `RocketboxLayers.Skin`: the filled points on the triangle as drawn, with the face's own normal;
+  every person's skin points rebuilt (`RocketboxPeopleBuild.BuildSkins`: the layers and skin points only, no prefab saved; the
+  79 `_skin.bytes` changed, the layers byte for byte the same). Measured on the rebuilt bodies (2511 filled points of twelve
+  people): off the drawn surface p50 0.00, p90 0.08, p98 0.22 cm. (2) `BodySkin.Depth` in the low band (the hips and thighs):
+  whether a point is inside and how deep from the robust implicit surface of the points near (RIMLS: Öztireli, Guennebaud and
+  Gross 2009, Computer Graphics Forum 28(2), a moving-least-squares surface that keeps sharp features by reweighting each
+  point by its plane's residual and its normal's agreement), in place of the nearest-three vote and the IMLS there. Offline on
+  the first dumps (659 arm points of five people, 75 contacts): under-reads past 0.2 cm 22 -> 4, the inside test wrong 71 ->
+  59 (the rest are the filled points' over-reads, which (1) removes).
+- **Measured in the game (the gate's pick of 18 people: the failing ones and controls; not a verdict):** everyday cells 22 -> 17
+  on those people (the whole cast's run before against the pick after), their fight cells 896 -> 722. Gone: Construction_Male_02's
+  A1 (21.4 -> 18.4, the push 4.1 -> 1.3°), cap_DM01s's A4 (6.7 -> 3.7, the shoulder's remainder 6.6 -> 1.3°),
+  Medical_Female_02's and rel_FA06k's W3, Construction_Male_06's slope, look90 and turn. Lower but still over: Construction_Male_03's
+  A1 21.5 -> 20.5 (his 20.0), Medical_Female_03's W3 39.6/36.8/39.1 -> 36.2/35.1/35.9, Police_Male_06 35.6 -> 35.1,
+  cap_Police_Male_03n 36.3 -> 35.0. The arm clearance's cost in the editor rose from 7.7-8.0 to 13.5-15.2 ms a person a frame in
+  the idles (the robust reading on every query near the hips).
+- **Open (traced, not fixed this round):**
+  - Construction_Male_06's resting right forearm passes 0.6-0.7 cm through the bottom of his hip pouch (idle1, after:argue,
+    after:drink, after:wave; talk 0.51). The runtime reads the contact at the sleeve's point within 0.1 cm of the truth, but the
+    resting give (0.25 cm and half the 0.4 cm sleeve) is set for a sleeve between the arm and the body; here the arm's normal at
+    the deepest vertex points out through the pouch's bottom, so the bare arm lies 0.2 cm deeper than its sleeve's point. Item:
+    the sleeve's and clothes' give only for the share of their offsets that lies along the contact's normal.
+  - W3 in the women's walks (Female_Adult_15 35.7, Medical_Female_03 35.1-36.2): the clip's right upper arm swings back into the
+    back flank (the push at the shoulder p98 32° for a point 8 cm past its margin, Female_Adult_15, whose coat stands 1.9 cm
+    there). Not the gaze: with `Gaze.BodyWeight` back at main's 0.25 (an A/B on the same tree, eight people) Female_Adult_15 reads
+    35.5-35.6 (35.7 at 0), Medical_Female_03 passes, and the men's walks get worse (Police_Male_06 35.1 -> 36.6-37.3,
+    cap_Police_Male_03n 35.0 -> 36.6-39.6). Item: the women's walk (`walk_f_b`, ACCAD Female1) retargeted onto broader, coated
+    bodies swings the right upper arm through the back flank; the contact-preserving retarget (§8) or a re-cut of the walk.
+  - W1 Female_Adult_01's jog (6 %): only her right foot slides (the ball at push-off 0.16-0.34 m/s while held, the heel at
+    touchdown). Its held pivot (the skin's sole point) lies 4.7 cm across the sole from the gate's ball; the hold pitches the foot
+    about the level axis across its heading through that one point, so a sole point off that line circles it as the heel rises.
+    Mirroring the right sole's points from the left's did not change it (6 %); no roll at touchdown (both feet within 1.5°).
+    Item: pitch a held forefoot about its own hinge (the line through the ball band's lowest underside points).
+  - W6 Medical_Female_01's jog (a single frame 4.4 cm, the cap 4.0) and Female_Adult_01's talk C1 0.55: not traced.
