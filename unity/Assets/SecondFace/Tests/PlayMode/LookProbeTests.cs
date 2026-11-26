@@ -46,8 +46,8 @@ namespace SecondFace.Tests
             flat.transform.SetParent(root.transform);
             flat.transform.localScale = new Vector3(200f, 1f, 70f); flat.transform.position = new Vector3(0f, -0.5f, 0f);
             var sb = new StringBuilder();
-            sb.AppendLine("person,bodyW,angle,spineYaw,chestYaw,upperChestYaw,headYawOnChest,headYawWorld,headPitch,a1L_med,a1L_p98,a1R_med,a1R_p98,pushDepL,pushDegL,pushDepR,pushDegR,handFwdL");
-            var ids = new[] { "cap_Police_Male_03n", "Business_Male_01", "Female_Adult_01" };
+            sb.AppendLine("person,bodyW,angle,spineYaw,chestYaw,upperChestYaw,headYawOnChest,headYawWorld,headPitch,a1L_med,a1L_p98,a1R_med,a1R_p98,pushDepL,pushDegL,pushDepR,pushDegR,handFwdL,shoulderYaw,fwdR,outR");
+            var ids = (System.Environment.GetEnvironmentVariable("PROBE_PEOPLE") ?? "cap_Police_Male_01n,cap_Security_Male_01n,Construction_Male_02").Split(',');
             for (var i = 0; i < ids.Length; i++)
             {
                 var prefab = cat.Get(ids[i]);
@@ -68,14 +68,14 @@ namespace SecondFace.Tests
                 var mark = new GameObject("mark").transform; mark.SetParent(root.transform);
                 yield return Wait(1f);
                 foreach (var bw in new[] { 0.25f, 0.1f, 0f })
-                    foreach (var angle in new[] { 0, 45 })
+                    foreach (var angle in new[] { 0, 45, -45 })
                     {
                         if (gaze != null) { gaze.BodyWeight = bw; gaze.Target = mark; }
                         mark.position = go.transform.position + Quaternion.Euler(0f, angle, 0f) * Vector3.forward * 1.3f + Vector3.up * 1.6f;
                         yield return Wait(1.2f);
                         var y = bones.ToDictionary(b => b, b => new List<float>());
                         var hoc = new List<float>(); var hw = new List<float>(); var hp = new List<float>();
-                        var a1L = new List<float>(); var a1R = new List<float>(); var pdl = new List<float>(); var pgl = new List<float>(); var pdr = new List<float>(); var pgr = new List<float>(); var hf = new List<float>();
+                        var a1L = new List<float>(); var a1R = new List<float>(); var pdl = new List<float>(); var pgl = new List<float>(); var pdr = new List<float>(); var pgr = new List<float>(); var hf = new List<float>(); var sy = new List<float>(); var fr = new List<float>(); var orr = new List<float>();
                         var after = a.gameObject.AddComponent<After>();
                         after.Do = () =>
                         {
@@ -101,6 +101,9 @@ namespace SecondFace.Tests
                             var hand = a.GetBoneTransform(HumanBodyBones.LeftHand).position;
                             var hipsP = a.GetBoneTransform(HumanBodyBones.Hips).position;
                             hf.Add(Vector3.Dot(hand - hipsP, front) * 100f);
+                            sy.Add(Vector3.SignedAngle(go.transform.right, Vector3.ProjectOnPlane(ur - ul, Vector3.up), Vector3.up));
+                            var dR = (er - ur).normalized; var rightW = go.transform.right; rightW.y = 0f; rightW.Normalize();
+                            fr.Add(Mathf.Atan2(Vector3.Dot(dR, front), -dR.y) * Mathf.Rad2Deg); orr.Add(Mathf.Atan2(Vector3.Dot(dR, rightW), -dR.y) * Mathf.Rad2Deg);
                             if (ac != null) { pdl.Add(ac.PushDepth[0] * 100f); pgl.Add(ac.PushDeg[0]); pdr.Add(ac.PushDepth[1] * 100f); pgr.Add(ac.PushDeg[1]); }
                         };
                         yield return Wait(2.5f);
@@ -109,7 +112,7 @@ namespace SecondFace.Tests
                             Med(y[HumanBodyBones.Spine]).ToString("0.0"), Med(y[HumanBodyBones.Chest]).ToString("0.0"), Med(y[HumanBodyBones.UpperChest]).ToString("0.0"),
                             Med(hoc).ToString("0.0"), Med(hw).ToString("0.0"), Med(hp).ToString("0.0"),
                             Med(a1L).ToString("0.0"), P98(a1L).ToString("0.0"), Med(a1R).ToString("0.0"), P98(a1R).ToString("0.0"),
-                            Med(pdl).ToString("0.00"), Med(pgl).ToString("0.0"), Med(pdr).ToString("0.00"), Med(pgr).ToString("0.0"), Med(hf).ToString("0.0") }));
+                            Med(pdl).ToString("0.00"), Med(pgl).ToString("0.0"), Med(pdr).ToString("0.00"), Med(pgr).ToString("0.0"), Med(hf).ToString("0.0"), Med(sy).ToString("0.0"), Med(fr).ToString("0.0"), Med(orr).ToString("0.0") }));
                     }
                 Object.Destroy(go);
                 yield return null;
