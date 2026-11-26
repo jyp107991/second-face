@@ -660,9 +660,7 @@ namespace SecondFace.Game.People
         /// <summary>The drawn reading answers for an asked point the vote reads deeper than this outside the body (m), and finds a
         /// triangle within <see cref="DrawnReach"/> of it (m).</summary>
         public const float DrawnBand = 0.025f, DrawnReach = 0.06f;
-        // TEMP (A/B only; never committed): SKIN_DRAWN=off reads by the vote alone (the everyday screen sets it per config)
-        private static bool DrawnOff = System.Environment.GetEnvironmentVariable("SKIN_DRAWN") == "off";
-        private bool DrawnOn => !DrawnOff && _set != null && _set.DN > 0 && _set.DT > 0;
+        private bool DrawnOn => _set != null && _set.DN > 0 && _set.DT > 0;
         /// <summary>For reports: drawn readings asked, found within reach, inside, inside by the face and refused by the rays;
         /// the time the drawn body's posing and its readings have taken (ms) and how often it was posed.</summary>
         [System.NonSerialized] public long DrawnAsks, DrawnFound, DrawnInside, DrawnRefused;
@@ -674,7 +672,7 @@ namespace SecondFace.Game.People
         private NativeArray<float3> _dPos, _dDelta, _dV, _hLo, _hHi, _dq, _dqN;
         private NativeArray<int4> _dB; private NativeArray<float4> _dW;
         private NativeArray<int> _dK, _dWeld, _dFanStart, _dFan, _hLeft, _hRight, _hStart, _hCount, _hOrder, _dqF;
-        private NativeArray<byte> _dFl, _dFlip;
+        private NativeArray<byte> _dFl, _dFlip, _dqV;
         private NativeArray<int3> _dTri;
         private NativeArray<float4x4> _dM;
         private NativeArray<float> _dOff, _dqL, _dqB;
@@ -741,7 +739,7 @@ namespace SecondFace.Game.People
                 _dWeld.Dispose(); _dFanStart.Dispose(); _dFan.Dispose(); _hLeft.Dispose(); _hRight.Dispose(); _hStart.Dispose(); _hCount.Dispose();
                 _hOrder.Dispose(); _dFl.Dispose(); _dFlip.Dispose(); _dTri.Dispose(); _dM.Dispose(); _dOff.Dispose();
             }
-            if (_dq.IsCreated) { _dq.Dispose(); _dqN.Dispose(); _dqF.Dispose(); _dqL.Dispose(); _dqB.Dispose(); }
+            if (_dq.IsCreated) { _dq.Dispose(); _dqN.Dispose(); _dqF.Dispose(); _dqL.Dispose(); _dqB.Dispose(); _dqV.Dispose(); }
             _drawnAt = -1; _dOffDirty = true;
         }
 
@@ -790,10 +788,11 @@ namespace SecondFace.Game.People
         {
             if (!_dq.IsCreated || _dq.Length < m)
             {
-                if (_dq.IsCreated) { _dq.Dispose(); _dqN.Dispose(); _dqF.Dispose(); _dqL.Dispose(); _dqB.Dispose(); }
+                if (_dq.IsCreated) { _dq.Dispose(); _dqN.Dispose(); _dqF.Dispose(); _dqL.Dispose(); _dqB.Dispose(); _dqV.Dispose(); }
                 var cap = Mathf.Max(m, 256);
                 _dq = new NativeArray<float3>(cap, Allocator.Persistent); _dqN = new NativeArray<float3>(cap, Allocator.Persistent);
                 _dqF = new NativeArray<int>(cap, Allocator.Persistent); _dqL = new NativeArray<float>(cap, Allocator.Persistent); _dqB = new NativeArray<float>(cap, Allocator.Persistent);
+                _dqV = new NativeArray<byte>(cap, Allocator.Persistent);
             }
         }
 
@@ -803,7 +802,7 @@ namespace SecondFace.Game.People
             new DrawnJob
             {
                 V = _dV, Lo = _hLo, Hi = _hHi, Q = _dq, Tri = _dTri, Flip = _dFlip, Left = _hLeft, Right = _hRight, Start = _hStart, Cnt = _hCount,
-                Order = _hOrder, Weld = _dWeld, FanStart = _dFanStart, Fan = _dFan, Off = _dOff, Layered = _dqL, Bare = _dqB, Normal = _dqN, Found = _dqF,
+                Order = _hOrder, Weld = _dWeld, FanStart = _dFanStart, Fan = _dFan, Off = _dOff, VoteIn = _dqV, Layered = _dqL, Bare = _dqB, Normal = _dqN, Found = _dqF,
                 Hips = hips, Right3 = transform.right, Reach = DrawnReach, Count = m, AlwaysRays = alwaysRays ? 1 : 0,
             }.Run();
         }
@@ -825,9 +824,8 @@ namespace SecondFace.Game.People
             _drawnCost.Restart();
             DrawnQueries(m);
             var qv = _dq.Reinterpret<Vector3>();
-            for (var j = 0; j < m; j++) qv[j] = P[_dqIdx[j]];
+            for (var j = 0; j < m; j++) { qv[j] = P[_dqIdx[j]]; _dqV[j] = (byte)(QD[_dqIdx[j]] > 0f ? 1 : 0); }
             RunDrawn(m, false);
-            var nv = _dqN.Reinterpret<Vector3>();
             for (var j = 0; j < m; j++)
             {
                 var f = _dqF[j];
@@ -836,7 +834,12 @@ namespace SecondFace.Game.People
                 DrawnFound++;
                 if ((f & 2) != 0 && (f & 4) == 0) DrawnRefused++;
                 var i = _dqIdx[j];
-                QD[i] = _dqL[j]; QN[i] = nv[j];
+                // the depth from the drawn body; the way out (the contact's normal) stays the skin points': they keep the body's
+                // outer surface only (a garment's inside, a pouch's back, the skin a coat covers left out at build), where the
+                // nearest drawn triangle can be an inner wall turned toward the body, and the push along it took the arm into
+                // the body (a resting forearm through a belt pouch: the shoulder turned it 12° in, the hand 5 cm into the thigh,
+                // C1, cap_Police_Male_03n talk, turn, 2026-11-27)
+                QD[i] = _dqL[j];
                 if (QD[i] > 0f) DrawnInside++;
             }
             DrawnReadMs += _drawnCost.Elapsed.TotalMilliseconds;
@@ -847,10 +850,10 @@ namespace SecondFace.Game.People
         {
             EnsureDrawn();
             DrawnQueries(1);
-            _dq[0] = p;
+            _dq[0] = p; _dqV[0] = (byte)(depth > 0f ? 1 : 0);
             RunDrawn(1, false);
             if ((_dqF[0] & 1) == 0) return;
-            depth = _dqL[0]; normal = _dqN[0];
+            depth = _dqL[0];
         }
 
         /// <summary>For probes: point <paramref name="p"/> against the drawn body: its signed depth in the bare body (m, positive
@@ -862,7 +865,7 @@ namespace SecondFace.Game.People
             if (_set == null || _set.DN == 0 || _set.DT == 0 || !Ready) return false;
             EnsureDrawn();
             DrawnQueries(1);
-            _dq[0] = p;
+            _dq[0] = p; _dqV[0] = 0;
             RunDrawn(1, true);
             var f = _dqF[0];
             if ((f & 1) == 0) return false;
@@ -944,6 +947,8 @@ namespace SecondFace.Game.People
             [ReadOnly] public NativeArray<byte> Flip;
             [ReadOnly] public NativeArray<int> Left, Right, Start, Cnt, Order, Weld, FanStart, Fan;
             [ReadOnly] public NativeArray<float> Off;
+            /// <summary>Each asked point the vote (the skin points) reads inside.</summary>
+            [ReadOnly] public NativeArray<byte> VoteIn;
             public NativeArray<float> Layered, Bare;
             public NativeArray<float3> Normal;
             /// <summary>Bits: 1 a triangle within reach, 2 inside by the nearest feature's face, 4 inside by the rays (asked when
@@ -1131,13 +1136,17 @@ namespace SecondFace.Game.People
                     var dist = math.sqrt(best);
                     var pn = PseudoNormal(bt, br);
                     var faceIn = dist > 0f && math.dot(p - bq, pn) < 0f;
-                    var flags = 1 | (faceIn ? 2 : 0);
+                    // (the rays asked where the nearest face or the vote finds the point inside: where the nearest triangle is an
+                    // inner layer turned toward the point, between a garment and what it covers, the face says out and the skin
+                    // points, the outer layer's alone, say in; the gate's rays decide)
+                    var voteIn = VoteIn[k] != 0;
+                    var flags = 1 | (faceIn ? 2 : 0) | (voteIn ? 8 : 0);
                     var inside = false;
-                    if (faceIn || AlwaysRays != 0)
+                    if (faceIn || voteIn || AlwaysRays != 0)
                     {
                         var rayIn = Rays(p);
                         if (rayIn) flags |= 4;
-                        inside = AlwaysRays != 0 ? rayIn : rayIn && faceIn;
+                        inside = rayIn;
                     }
                     var c3 = Tri[bt];
                     var off = bb.x * Off[c3.x] + bb.y * Off[c3.y] + bb.z * Off[c3.z];
