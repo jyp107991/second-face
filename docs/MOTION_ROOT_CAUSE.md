@@ -557,3 +557,25 @@ corners' parts and normals, the inside test's three rays and their crossings; a 
   body set drops 3,808 triangles for them (16-197 a person), all 20-60 cm over the hips (30-50 cm on every one of the 79): the
   chest's side under the armpit. None of the two men's 24 worst contacts lies there. Item: file the gate's vertices as the runtime's skin
   does (an arm part only when the arm moves it half), with the cells it moves listed.
+
+## 11. The looks' A1: the shoulders hang from the neck (editor owner, 2026-11-26)
+Gate: red, 6460. In the batch's chunks 1-3, cap_Police_Male_01n and cap_Security_Male_01n read A1 23.1-23.4 in look45, look90
+and look135 (their build limits 20.3-20.4; idle 18-19), Construction_Male_02 20.2-21.3 (his 20.1); dfc732a4 passed them all.
+- **Trace (`LookProbeTests`, temporary: each trunk bone's yaw on the pelvis, the line between the shoulders, the right upper
+  arm's forward and outward angles, the arm clearance's push; Gaze.BodyWeight 0.25, 0.1 and 0; looks at 0 and ±45°):** at
+  BodyWeight 0 the spine, chest and upper chest do not turn (the upper chest 2.0° at every angle), yet the line between the
+  shoulders turns 7.1° -> 16.4° for a look right held at 20° (-> -1.8° for one left); the right upper arm swings back (-2.2° ->
+  -6.4°) behind the flank's widest part, the arm clearance pushes it 5.8° out for a contact 1.8 cm deep (0.4-0.8 in the idle),
+  and A1R 18.2 -> 22.8. At BodyWeight 0.25 the chest turned with the shoulders (14.9°), which hid it: dfc732a4's value.
+- **Cause:** the Rocketbox skeleton is 3ds Max's Biped, whose clavicles hang from the neck (`Bip01 L/R Clavicle`, parent
+  `Bip01 Neck`, in every body's `.fbx.meta`), and Unity's look-at gives the neck a share of the head's turn: every look carried
+  both shoulders round on a still chest. A real head's axial turn is made mostly at C1-C2, and the shoulder girdle rides on the
+  thorax, not on the cervical spine.
+- **Fix (`Gaze`):** the head is turned at its own joint after the animation (round the vertical, then up or down about the
+  face's level right, by `HeadWeight`, within the same clamps); Unity's look-at turns only the eyes (and the trunk by
+  `BodyWeight`, 0). The face's axis is taken in the avatar's neutral pose, as the gate takes it (taken from the pose the model
+  was saved in, Female_Adult_01's levelled face stood 15.3-16.1° low, H1). On the nine picked people: the line between the
+  shoulders 0.9° at every look angle, A1R in the looks 17.7-18.0; everyday 13 -> 3 (A1 9 -> 1, W3 3 -> 1); the fight's H2 aim
+  27 -> 0, H3 aim 9 -> 0, H2 strike 16 -> 8, H1 aim_pistol 3 -> 0; worse: A1 combat:aim 2 -> 23 (the rifle aim's upper arm
+  41-49° at p2 against 54.8: the neck's swing had been raising the shoulders; dfc732a4's key stands at 237) and FY2 strike 0
+  -> 8.
