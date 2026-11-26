@@ -329,8 +329,8 @@ namespace SecondFace.Game.People
         /// 30-40°, A1, 2026-11-08 (the case it was for: 1.6 cm deep, 3.2 cm across).</summary>
         public const float DeepAcross = 3f, DeepAcrossMax = 0.04f;
 
-        /// <summary>For the gate's report: how often <see cref="Depth"/> was asked.</summary>
-        [System.NonSerialized] public long DepthCalls;
+        /// <summary>For the gate's report: how often <see cref="Depth"/> was asked, and how often the robust reading's passes ran.</summary>
+        [System.NonSerialized] public long DepthCalls, RobustRuns;
 
         // ---- many points at once (the arm clearance asks thousands a frame: 12-14 ms a person in the editor, 2026-11-08):
         // the body's points, their filing and spacing mirrored once a frame, and a range of points asked in one Burst job,
@@ -340,7 +340,7 @@ namespace SecondFace.Game.People
         /// Depth's false).</summary>
         [System.NonSerialized] public float[] QD; [System.NonSerialized] public Vector3[] QN; [System.NonSerialized] public int[] QNear;
         private NativeArray<float3> _nP, _nN, _qIn, _qNo;
-        private NativeArray<int> _nHead, _nNext, _qNear;
+        private NativeArray<int> _nHead, _nNext, _qNear, _runs;
         private NativeArray<int3> _nCell;
         private NativeArray<float> _nSpacing, _qD;
         private NativeArray<byte> _nFlags;
@@ -372,6 +372,7 @@ namespace SecondFace.Game.People
         {
             if (_nP.IsCreated) { _nP.Dispose(); _nN.Dispose(); _nNext.Dispose(); _nCell.Dispose(); _nSpacing.Dispose(); _nHead.Dispose(); _nFlags.Dispose(); }
             if (_qIn.IsCreated) { _qIn.Dispose(); _qNo.Dispose(); _qNear.Dispose(); _qD.Dispose(); }
+            if (_runs.IsCreated) _runs.Dispose();
             _nBody = -1;
         }
 
@@ -394,7 +395,10 @@ namespace SecondFace.Game.People
             var qv = _qIn.Reinterpret<Vector3>();
             var k = 0;
             for (var i = from; i < to; i += stride) qv[k++] = P[i];
-            new DepthJob { P = _nP, N = _nN, Head = _nHead, Next = _nNext, Cells = _nCell, Spacing = _nSpacing, Flags = _nFlags, Q = _qIn, D = _qD, No = _qNo, Near = _qNear, Count = m }.Run();
+            if (!_runs.IsCreated) _runs = new NativeArray<int>(1, Allocator.Persistent);
+            _runs[0] = 0;
+            new DepthJob { P = _nP, N = _nN, Head = _nHead, Next = _nNext, Cells = _nCell, Spacing = _nSpacing, Flags = _nFlags, Q = _qIn, D = _qD, No = _qNo, Near = _qNear, Runs = _runs, Count = m }.Run();
+            RobustRuns += _runs[0];
             var nv = _qNo.Reinterpret<Vector3>();
             k = 0;
             for (var i = from; i < to; i += stride) { QD[i] = _qD[k]; QN[i] = nv[k]; QNear[i] = _qNear[k]; k++; }
@@ -435,6 +439,7 @@ namespace SecondFace.Game.People
             public NativeArray<float> D;
             public NativeArray<float3> No;
             public NativeArray<int> Near;
+            public NativeArray<int> Runs;
             public int Count;
 
             public void Execute()
@@ -461,21 +466,31 @@ namespace SecondFace.Game.People
                 return across <= math.max(math.min(Spacing[c], PatchMax), math.min(DeepAcross * d, DeepAcrossMax)) ? d : -1f;
             }
 
-            // (as BodySkin.Robust, point for point in the same order: the points within a cell gathered by the nearest-three
-            // search, in its order)
-            private float Robust(float3 p, int c0, ref FixedList512Bytes<int> nb, ref FixedList512Bytes<float> r2s, out bool ok)
+            // (as BodySkin.Robust, point for point in the same order: the points within its reach gathered in the nearest-three
+            // search's order)
+            private float Robust(float3 p, int c0, int cx, int cy, int cz, out bool ok)
             {
                 var h = math.clamp(Spacing[c0], SurfaceHMin, SurfaceHMax);
                 var reach = math.min(SurfaceReach * h, Cell); var reach2 = reach * reach; var ih2 = 1f / (h * h);
                 var isr2 = 1f / (RobustResidual * RobustResidual * h * h); var isn2 = 1f / (RobustNormal * RobustNormal);
                 var f = 0f; var g = float3.zero; ok = false;
+                var nb = new FixedList512Bytes<int>(); var r2s = new FixedList512Bytes<float>();
+                for (var dx = -1; dx <= 1; dx++)
+                    for (var dy = -1; dy <= 1; dy++)
+                        for (var dz = -1; dz <= 1; dz++)
+                            for (var j = Head[Hash(cx + dx, cy + dy, cz + dz)]; j >= 0; j = Next[j])
+                            {
+                                var cj = Cells[j];
+                                if (cj.x != cx + dx || cj.y != cy + dy || cj.z != cz + dz) continue;
+                                var d = Sq(P[j] - p);
+                                if (d <= reach2 && nb.Length < RobustMax) { nb.Add(j); r2s.Add(d); }
+                            }
                 for (var it = 0; it < RobustIters; it++)
                 {
                     float sw = 0f, sf = 0f; float3 sg = float3.zero, sgf = float3.zero, sn = float3.zero;
                     for (var k = 0; k < nb.Length; k++)
                     {
                         var r2 = r2s[k];
-                        if (r2 > reach2) continue;
                         var j = nb[k];
                         var px = p - P[j];
                         var nj = N[j];
@@ -497,7 +512,7 @@ namespace SecondFace.Game.People
                 int c0 = -1, c1 = -1, c2 = -1;
                 float d0 = float.MaxValue, d1 = float.MaxValue, d2 = float.MaxValue;
                 int cx = (int)math.floor(p.x / Cell), cy = (int)math.floor(p.y / Cell), cz = (int)math.floor(p.z / Cell);
-                var nb = new FixedList512Bytes<int>(); var r2s = new FixedList512Bytes<float>();
+                var behind2 = float.MaxValue;
                 for (var dx = -1; dx <= 1; dx++)
                     for (var dy = -1; dy <= 1; dy++)
                         for (var dz = -1; dz <= 1; dz++)
@@ -507,7 +522,8 @@ namespace SecondFace.Game.People
                                 var cj = Cells[j];
                                 if (cj.x != cx + dx || cj.y != cy + dy || cj.z != cz + dz) continue;
                                 var d = Sq(P[j] - p);
-                                if (d <= Cell * Cell && nb.Length < RobustMax) { nb.Add(j); r2s.Add(d); }
+                                // (the nearest point within a cell that has it behind its plane, for the robust reading's sign)
+                                if (d < behind2 && d <= Cell * Cell && Dot(p - P[j], N[j]) < 0f) behind2 = d;
                                 if (d >= d2) continue;
                                 if (d < d0) { c2 = c1; d2 = d1; c1 = c0; d1 = d0; c0 = j; d0 = d; }
                                 else if (d < d1) { c2 = c1; d2 = d1; c1 = j; d1 = d; }
@@ -520,8 +536,13 @@ namespace SecondFace.Game.People
                 var hr = math.clamp(Spacing[c0], SurfaceHMin, SurfaceHMax); var rr = math.min(SurfaceReach * hr, Cell);
                 if ((Flags[c0] & LowFlag) != 0 && d0 <= rr * rr)
                 {
-                    var f = Robust(p, c0, ref nb, ref r2s, out var ok);
-                    if (ok) inside = f < 0f ? math.max(-f, DeepMin) : -1f;
+                    if (behind2 > rr * rr) inside = -1f;
+                    else
+                    {
+                        var f = Robust(p, c0, cx, cy, cz, out var ok);
+                        if (ok) inside = f < 0f ? math.max(-f, DeepMin) : -1f;
+                        Runs[0]++;
+                    }
                 }
                 var nn = N[c0] + (c1 >= 0 ? N[c1] : float3.zero) + (c2 >= 0 ? N[c2] : float3.zero);
                 normal = Sq(nn) > 1e-8f ? Norm(nn) : N[c0];
@@ -543,7 +564,7 @@ namespace SecondFace.Game.People
             int c0 = -1, c1 = -1, c2 = -1;
             float d0 = float.MaxValue, d1 = float.MaxValue, d2 = float.MaxValue;
             var c = CellOf(p);
-            var m = 0;
+            var behind2 = float.MaxValue;
             for (var dx = -1; dx <= 1; dx++)
                 for (var dy = -1; dy <= 1; dy++)
                     for (var dz = -1; dz <= 1; dz++)
@@ -553,8 +574,8 @@ namespace SecondFace.Game.People
                             var cj = _cell[j];
                             if (cj.x != c.x + dx || cj.y != c.y + dy || cj.z != c.z + dz) continue;   // another cell in the bucket
                             var d = (P[j] - p).sqrMagnitude;
-                            // (the points within a cell, for the robust reading)
-                            if (d <= Cell * Cell && m < RobustMax) { _nb[m] = j; _r2[m] = d; m++; }
+                            // (the nearest point within a cell that has it behind its plane, for the robust reading's sign)
+                            if (d < behind2 && d <= Cell * Cell && Vector3.Dot(p - P[j], N[j]) < 0f) behind2 = d;
                             if (d >= d2) continue;
                             if (d < d0) { c2 = c1; d2 = d1; c1 = c0; d1 = d0; c0 = j; d0 = d; }
                             else if (d < d1) { c2 = c1; d2 = d1; c1 = j; d1 = d; }
@@ -587,8 +608,16 @@ namespace SecondFace.Game.People
             // above is fooled by the gear's own facets
             if ((_set.Flags[c0] & LowFlag) != 0 && d0 <= RobustNear2(_spacing[c0]))
             {
-                var f = Robust(p, c0, m, out var ok);
-                if (ok) inside = f < 0f ? Mathf.Max(-f, DeepMin) : -1f;
+                // the surface is a weighted mean of the points' plane distances (every weight positive): when no point within its
+                // reach has the arm's point behind its plane it cannot either, and the point is outside without the passes, the
+                // answer exactly as they give it
+                if (behind2 > RobustNear2(_spacing[c0])) inside = -1f;
+                else
+                {
+                    var f = RobustAt(p, c0, out var ok);
+                    if (ok) inside = f < 0f ? Mathf.Max(-f, DeepMin) : -1f;
+                    RobustRuns++;
+                }
             }
             var nn = N[c0] + (c1 >= 0 ? N[c1] : Vector3.zero) + (c2 >= 0 ? N[c2] : Vector3.zero);
             normal = nn.sqrMagnitude > 1e-8f ? nn.normalized : N[c0];
@@ -631,7 +660,6 @@ namespace SecondFace.Game.People
                 for (var k = 0; k < m; k++)
                 {
                     var r2 = _r2[k];
-                    if (r2 > reach2) continue;
                     var j = _nb[k];
                     var px = p - P[j];
                     var nj = N[j];
@@ -647,9 +675,11 @@ namespace SecondFace.Game.People
             return f;
         }
 
-        /// <summary>For the reports: the robust reading at <paramref name="p"/>, its points gathered as Depth gathers them.</summary>
+        /// <summary>The robust reading at <paramref name="p"/>: the body points within its reach of it gathered (in the nearest-three
+        /// search's order), then the passes.</summary>
         private float RobustAt(Vector3 p, int c0, out bool ok)
         {
+            var reach2 = RobustNear2(_spacing[c0]);
             var c = CellOf(p); var m = 0;
             for (var dx = -1; dx <= 1; dx++)
                 for (var dy = -1; dy <= 1; dy++)
@@ -659,7 +689,7 @@ namespace SecondFace.Game.People
                             var cj = _cell[j];
                             if (cj.x != c.x + dx || cj.y != c.y + dy || cj.z != c.z + dz) continue;
                             var d = (P[j] - p).sqrMagnitude;
-                            if (d <= Cell * Cell && m < RobustMax) { _nb[m] = j; _r2[m] = d; m++; }
+                            if (d <= reach2 && m < RobustMax) { _nb[m] = j; _r2[m] = d; m++; }
                         }
             return Robust(p, c0, m, out ok);
         }

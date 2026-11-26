@@ -86,7 +86,7 @@ namespace SecondFace.Game.People
         private Vector3 _lastL, _lastR; private bool _haveLast;
         // moving, a foot down on the ground is held where it came down until the clip lifts it (W1: a planted foot
         // does not creep; the clips' strides never quite match the body's pace): its place, and a short release after
-        private struct Lock { public bool On, HaveTurn, NoRelock; public Vector3 At, From, Fwd; public Quaternion Rest, Corr; public float Release, Last, Min, W, Drop, Wait; public int Pivot; }
+        private struct Lock { public bool On, HaveTurn, NoRelock, HavePad; public Vector3 At, From, Fwd, PadAt, ToeAx; public Quaternion Rest, Corr; public float Release, Last, Min, W, Drop, Wait, ToeTurn; public int Pivot, Pad; }
         private Lock _lockL, _lockR;
         /// <summary>A foot locks when its sole is this near the ground and slower than <see cref="SwingSlow"/>; it lets go
         /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
@@ -599,6 +599,7 @@ namespace SecondFace.Game.People
                 wantR = Reachable(_upR, _loR, _footR, wantR);
                 if ((wantL - _footL.position).sqrMagnitude > 4e-6f) Solve(_upL, _loL, _footL, wantL);
                 if ((wantR - _footR.position).sqrMagnitude > 4e-6f) Solve(_upR, _loR, _footR, wantR);
+                if (ToesHeld) { HoldToes(ref _lockL, _toeL, _hullTL, dt); HoldToes(ref _lockR, _toeR, _hullTR, dt); }
                 _shownLastL = _shownL; _shownLastR = _shownR; _shownL = _footL.position; _shownR = _footR.position; _shownFrames++;
                 // for the gate's trace: how far each held foot's pivot ended from where it is held (m; -1 not held)
                 Diag[14] = Slip(_lockL, _footL, _toeL, _heelL, _ballL, _tipL); Diag[15] = Slip(_lockR, _footR, _toeR, _heelR, _ballR, _tipR);
@@ -724,6 +725,48 @@ namespace SecondFace.Game.People
             }
             k.Drop = 0f;
             return want;
+        }
+
+        /// <summary>While a foot is held on its ball its toes stay where they came down on the ground: the toe bone turned at its joint,
+        /// about the foot's side-to-side axis, so that its lowest underside point (the toes' pad, from the foot's own underside,
+        /// <see cref="Hull"/>) stays where it was as the heel rises about the ball; let go, the toes come back to the clip's turn at
+        /// <see cref="ToeRelease"/>° a second. Real toes bend up at the ball of the foot through push-off and stay on the ground until
+        /// toe-off (the windlass: Hicks 1954, J. Anat. 88(1); the MTP joints dorsiflex to 50-60° by toe-off). Turned with the foot
+        /// (straightened toward their rest while the ankle is low, Toes, or as the clip had them) the toes' row of the sole swept
+        /// along the ground at 0.16-0.36 m/s as the heel rose about the ball at 500-650° a second (W1, Female_Adult_01's jog, whose
+        /// gate's ball point lies on the toes' row, 1.9 cm past the toe joint; 2026-11-26).</summary>
+        public bool ToesHeld = true;
+        public float ToeRelease = 360f, ToeBendMax = 60f;
+        private void HoldToes(ref Lock k, Transform toe, Vector3[] pads, float dt)
+        {
+            if (toe == null || pads == null || pads.Length == 0) { k.HavePad = false; k.ToeTurn = 0f; return; }
+            if (k.On && k.Pivot == 1)
+            {
+                var ax = Vector3.Cross(Vector3.up, k.Fwd);
+                if (ax.sqrMagnitude < 1e-8f) return;
+                ax.Normalize();
+                if (!k.HavePad || k.Pad < 0 || k.Pad >= pads.Length)
+                {
+                    // the toes' lowest underside point as the ball comes down to bear the weight, held where it is
+                    var lo = float.MaxValue; k.Pad = 0;
+                    for (var i = 0; i < pads.Length; i++) { var y = toe.TransformPoint(pads[i]).y; if (y < lo) { lo = y; k.Pad = i; } }
+                    k.PadAt = toe.TransformPoint(pads[k.Pad]); k.ToeAx = ax; k.ToeTurn = 0f; k.HavePad = true;
+                    return;
+                }
+                var j = toe.position;
+                var now = Vector3.ProjectOnPlane(toe.TransformPoint(pads[k.Pad]) - j, ax);
+                var want = Vector3.ProjectOnPlane(k.PadAt - j, ax);
+                if (now.sqrMagnitude < 1e-8f || want.sqrMagnitude < 1e-8f) return;
+                var turn = Mathf.Clamp(Vector3.SignedAngle(now, want, ax), -ToeBendMax, ToeBendMax);
+                toe.rotation = Quaternion.AngleAxis(turn, ax) * toe.rotation;
+                k.ToeAx = ax; k.ToeTurn = turn;
+                return;
+            }
+            k.HavePad = false;
+            // let go: the turn the toes were last held by, given back
+            if (Mathf.Abs(k.ToeTurn) < 0.01f) { k.ToeTurn = 0f; return; }
+            k.ToeTurn = Mathf.MoveTowards(k.ToeTurn, 0f, ToeRelease * dt);
+            toe.rotation = Quaternion.AngleAxis(k.ToeTurn, k.ToeAx) * toe.rotation;
         }
 
         private static float Slip(Lock k, Transform foot, Transform toe, Vector3 heel, Vector3 ball, Vector3 tip)

@@ -124,7 +124,7 @@ namespace SecondFace.Game.People
         [System.NonSerialized] public int[] RestPart = { -1, -1 };
         [System.NonSerialized] public float[] RestDepth = new float[2], RestBodyY = new float[2], RestDeg = new float[2];
         [System.NonSerialized] public int[] RestBody = { -1, -1 };
-        private float _needDepth, _firstDepth;
+        private float _needDepth, _firstDepth, _pushFwd;
         /// <summary>For the gate's trace: how deep the point the shoulder's first turn was for stood past its margin (cm; left,
         /// right).</summary>
         [System.NonSerialized] public float[] PushDepth = new float[2];
@@ -134,6 +134,19 @@ namespace SecondFace.Game.People
         /// <summary>Moving, a swing across the trunk is turned toward the sagittal plane before the shoulder turns the arm out,
         /// by these shares of the whole turn in turn, until it clears.</summary>
         public bool SwingFirst = true;
+        /// <summary>For the gate's trace (with <see cref="TraceStages"/>): a moving arm's upper arm through the clearance, each side
+        /// (left 0-9, right 10-19): its angle from down, its swing forward (+) or back (-) and its stand out to the side (degrees)
+        /// as the clearance found it; its angle after the turn toward the sagittal plane; its angle, swing and stand after the
+        /// shoulder's push out of the body; the push's direction's share forward (+) or back (-); the stride's ease's turn; its
+        /// angle at the end.</summary>
+        [System.NonSerialized] public float[] SwingTrace = new float[20];
+        private void Angles(Transform upper, Transform lower, out float a, out float sag, out float side)
+        {
+            var dir = (lower.position - upper.position).normalized;
+            a = Vector3.Angle(dir, Vector3.down);
+            sag = Mathf.Atan2(Vector3.Dot(dir, transform.forward), Mathf.Max(1e-4f, -dir.y)) * Mathf.Rad2Deg;
+            side = Mathf.Asin(Mathf.Clamp(Mathf.Abs(Vector3.Dot(dir, transform.right)), 0f, 1f)) * Mathf.Rad2Deg;
+        }
         private static readonly float[] SwingShares = { 0.25f, 0.5f, 0.75f, 1f };
         private int _gapArm = -1, _gapBody = -1;
 
@@ -357,6 +370,7 @@ namespace SecondFace.Game.People
                 // shoulder, a bent arm's forearm barely moves, C1, 2026-11-08)
                 if (ElbowFirst && _restW < 0.99f) { MoveElbowClear(_ll, BodySkin.Part.UpperArmL); MoveElbowClear(_rl, BodySkin.Part.UpperArmR); }
                 Mark(6);
+                LateTrace();
                 if (!RestReach) { Diag[4] = _restL; Diag[5] = _fwdL; Diag[10] = _restR; Diag[11] = _fwdR; }
                 Diag[6] = _carryL; Diag[7] = _angleL; Diag[8] = _carryR; Diag[9] = _angleR;
                 if (!RestReach) { Diag[12] = _twistL; Diag[13] = _twistR; }
@@ -878,6 +892,25 @@ namespace SecondFace.Game.People
         /// waists at the 17° cap, were held 1-2.2 cm into them through a shirt's sleeve and side, and the shoulder turned them out
         /// to 21-26°, A1, 2026-11-16; the gate's C1 is skin on skin, so the cloth pressed between them is not a clip.)</summary>
         public float SleeveGive = 0.5f;
+
+        /// <summary>How much of the clothes between the arm's point <paramref name="i"/> and the body's point <see cref="BodySkin.Near"/>
+        /// may be pressed in at rest (m): the shares <paramref name="cloth"/> of the body's clothes and <paramref name="sleeve"/> of
+        /// the arm's own, each only for the part of its thickness that lies between the two along the contact's normal
+        /// <paramref name="n"/> (the body's clothes stand out along the body's normal, the sleeve along the arm's); and where the
+        /// sleeve's offset points away from the body, the bare arm lies deeper than its point by that share of it (negative). Given
+        /// whole, a sleeve whose point stood out through the bottom of a belt pouch (the arm's normal there turned away from the
+        /// contact) was given half its thickness as if pressed between, and the bare forearm rested 0.6-0.7 cm in the pouch, 0.2 cm
+        /// deeper than its sleeve's point (C1, Construction_Male_06, five states, 2026-11-26; with the give only for the share
+        /// between, three of them passed and the two left stood 0.62 cm in, the bare arm still under its sleeve's point).</summary>
+        private float Give(int i, Vector3 n, float cloth, float sleeve)
+        {
+            var g = 0f;
+            var near = _skin.Near;
+            if (cloth > 0f && near >= 0) g += cloth * _skin.Off(near) * Mathf.Max(0f, Vector3.Dot(_skin.N[near], n));
+            var s = -Vector3.Dot(_skin.N[i], n);
+            if (sleeve > 0f) g += _skin.Off(i) * (s >= 0f ? sleeve * s : s);
+            return g;
+        }
         /// <summary>At rest, how far the upper arm above its third by the elbow may press into the chest's side before it is turned out (m).</summary>
         public float UpperGive = 0.025f;
         private int _needFirst = -1;
@@ -975,6 +1008,7 @@ namespace SecondFace.Game.People
             var turn = sag - Mathf.Sign(sag) * keep;   // about the body's right: + moves the arm back
             var left = first == BodySkin.Part.UpperArmL;
             Diag[left ? 16 : 17] = turn;
+            if (TraceStages) SwingTrace[(left ? 0 : 10) + 8] = turn;
             if (!skin) { upper.rotation = Quaternion.AngleAxis(turn, right) * upper.rotation; return; }
             // eased, then pushed out of the body; when that push is large (the ease took the hand into the back), half the
             // ease is tried and whichever leaves the arm nearer the vertical kept (an arm swung 70° back on a curve was
@@ -987,6 +1021,13 @@ namespace SecondFace.Game.People
             Back(upper, lower, from, to, 0);
             var aHalf = EaseOut(upper, lower, first, turn * 0.5f, right, left, out _);
             if (aHalf >= aFull) Back(upper, lower, from, to, 1);
+        }
+
+        private void LateTrace()
+        {
+            if (!TraceStages) return;
+            if (_lu != null && _ll != null) SwingTrace[9] = Vector3.Angle(_ll.position - _lu.position, Vector3.down);
+            if (_ru != null && _rl != null) SwingTrace[19] = Vector3.Angle(_rl.position - _ru.position, Vector3.down);
         }
 
         /// <summary>A push out of the body after the stride's ease past which a gentler ease is tried (degrees).</summary>
@@ -1125,9 +1166,9 @@ namespace SecondFace.Game.People
             for (var i = from; i < to; i += stride)
             {
                 if (within.HasValue && (_skin.P[i] - within.Value).sqrMagnitude > radius * radius) continue;
-                if (!_skin.Got(i, out var d, out _)) continue;
+                if (!_skin.Got(i, out var d, out var cn)) continue;
                 // soft: a share of the clothes' thickness there may be pressed in (canvas and webbing give under an arm)
-                var g = -d + (soft > 0f && _skin.Near >= 0 ? soft * _skin.Off(_skin.Near) : 0f) + (soft > 0f ? SleeveGive * _skin.Off(i) : 0f);
+                var g = -d + (soft > 0f ? Give(i, cn, soft, SleeveGive) : 0f);
                 if (g < gap) { gap = g; _gapArm = i; _gapBody = _skin.Near; }
             }
             return gap == float.MaxValue ? far : gap;
@@ -1249,6 +1290,8 @@ namespace SecondFace.Game.People
             var elbowFirst = ElbowFirst && UpperFirst && RestReach && _restW > 0.99f && lower != null && handT != null;
             var wrist0 = handT != null ? handT.position : Vector3.zero;
             var elbowForearm = elbowFirst && ElbowForearm;
+            var st = left ? 0 : 10;
+            if (TraceStages && lower != null) { Angles(upper, lower, out SwingTrace[st], out SwingTrace[st + 1], out SwingTrace[st + 2]); for (var q = 3; q < 10; q++) SwingTrace[st + q] = 0f; }
             var (need, dir) = SkinNeed(upper, first, false, elbowFirst, elbowForearm);
             // moving, the swing turned toward the sagittal plane first: a broad walker swings his arm forward and back, less
             // across the front of his trunk (the coordinator on docs/qa/arm_build_evidence.md, 2026-11-18: the walking left arm
@@ -1278,7 +1321,7 @@ namespace SecondFace.Game.People
                     swung = Mathf.Abs(done);
                 }
             }
-            if (TraceStages) SwingDeg[left ? 0 : 1] = swung;
+            if (TraceStages) { SwingDeg[left ? 0 : 1] = swung; if (lower != null) SwingTrace[st + 3] = Vector3.Angle(lower.position - upper.position, Vector3.down); }
             _needFirst = need > 0f ? _needAt : -1; _firstDepth = _needDepth;
             var forUpper = _needAt >= _skin.Begin(first) && _needAt < _skin.Begin(first + 1);
             if (need > 0f) axis = dir;
@@ -1299,6 +1342,11 @@ namespace SecondFace.Game.People
                 // placed: the forearm turned back to it at the elbow, within the elbow's bend (turned out at the shoulder, the
                 // whole arm carried the hand 5-9 cm off the thigh, A4, 2026-11-07)
                 if (KeepHand && forUpper && _restW >= 0.99f && lower != null && handT != null) KeepHandAt(upper, lower, handT, first, wrist0);
+            }
+            if (TraceStages && lower != null)
+            {
+                Angles(upper, lower, out SwingTrace[st + 4], out SwingTrace[st + 5], out SwingTrace[st + 6]);
+                SwingTrace[st + 7] = _pushFwd;
             }
             Stage(first, 1);
             if (TraceStages)
@@ -1438,7 +1486,7 @@ namespace SecondFace.Game.People
                 // the hand 10-20 cm off the thigh, A4, 2026-11-07; those are left to the shoulder)
                 if (arm.sqrMagnitude < 0.0144f) continue;
                 if (!_skin.Got(i, out var d, out var n)) continue;
-                if (i < hand && _skin.Near >= 0 && arm.sqrMagnitude < 0.0064f) d -= ClothGive * _skin.Off(_skin.Near);
+                if (i < hand && _skin.Near >= 0 && arm.sqrMagnitude < 0.0064f) d -= Give(i, n, ClothGive, 0f);
                 if (d + ElbowMargin <= 0f) continue;
                 var a = Mathf.Atan2(d + ElbowMargin, arm.magnitude) * Mathf.Rad2Deg;
                 if (a <= best) continue;
@@ -1469,6 +1517,7 @@ namespace SecondFace.Game.People
             // (counted whole, that contact stood the gear-held men's resting arms 22-25° off the vertical, the held 17°, A1,
             // 2026-11-16)
             var upperLen = (elbowAt - shoulder).magnitude;
+            var striding = _restW < 0.01f && Striding();
             _skin.DepthRange(from, to);
             for (var i = from; i < to; i++)
             {
@@ -1480,7 +1529,7 @@ namespace SecondFace.Game.People
                 // (at rest, the whole forearm: given by the elbow only, a hand that would come in to the thigh pressed the forearm's
                 // lower half into the hip's clothes and was refused, the hand left 5-5.5 cm off the thigh after the gestures, A4,
                 // 2026-11-09)
-                if (_restW > 0.99f && i < hand && _skin.Near >= 0) d -= ClothGive * _skin.Off(_skin.Near) + SleeveGive * _skin.Off(i);
+                if (_restW > 0.99f && i < hand && _skin.Near >= 0) d -= Give(i, n, ClothGive, SleeveGive);
                 // the upper arm by its share along the bone from the shoulder, as the gate's C1 divides it (its third by the
                 // elbow from 0.65: by the distance to the elbow joint, the surface's own 4-5 cm off the bone counted, a point the
                 // gate holds in the third by the elbow was given the chest's contact, and an arm 1.6 cm into the chest stood
@@ -1507,9 +1556,33 @@ namespace SecondFace.Game.People
                     var nh = new Vector3(n.x, 0f, n.z);
                     pushTo = nh.sqrMagnitude > 0.09f ? nh.normalized : Outward(first == BodySkin.Part.UpperArmL ? -1 : 1);
                 }
+                // striding, the push along the contact's normal or straight out from the body, whichever leaves the upper arm
+                // nearer the vertical (as the stride's ease's push, EaseOut): along the normal at the back flank or the belly the
+                // push lies along the swing itself and carried it on (the women's walk, a right arm swung 18.8° back, its third
+                // by the elbow 6.8 cm into a coated back flank, was pushed 32° along a normal 74 % backward to 46° and eased to
+                // 36°, W3, 2026-11-26); out from the body, the clip's swing stays and the arm stands out for the body's breadth
+                if (striding)
+                {
+                    var o = Outward(first == BodySkin.Part.UpperArmL ? -1 : 1);
+                    var axN = Vector3.Cross(arm, pushTo); var axO = Vector3.Cross(arm, o);
+                    if (axN.sqrMagnitude > 1e-8f && axO.sqrMagnitude > 1e-8f)
+                    {
+                        // each push's turn for this point (its depth over how far the point moves along the contact's normal a
+                        // radian), and the upper arm's angle from down after it
+                        float After(Vector3 turnAx)
+                        {
+                            turnAx.Normalize();
+                            var mv = Vector3.Dot(Vector3.Cross(turnAx, arm), n);
+                            if (mv <= 1e-4f) return float.MaxValue;
+                            var deg = Mathf.Atan2(d + m, mv) * Mathf.Rad2Deg;
+                            return Vector3.Angle(Quaternion.AngleAxis(deg, turnAx) * (elbowAt - shoulder), Vector3.down);
+                        }
+                        if (After(axO) < After(axN)) pushTo = o;
+                    }
+                }
                 var ax = Vector3.Cross(arm, pushTo);
                 if (ax.sqrMagnitude < 1e-8f) continue;
-                best = a; axis = ax.normalized; _needAt = i; _needDepth = d + m;
+                best = a; axis = ax.normalized; _needAt = i; _needDepth = d + m; _pushFwd = Vector3.Dot(pushTo, transform.forward);
                 // for the gate's report: the arm's point and the body's point the push is for (the elbow slots at rest)
                 var left = first == BodySkin.Part.UpperArmL;
                 DiagAt[left ? 0 : 4] = i; DiagAt[left ? 1 : 5] = _skin.Near;
