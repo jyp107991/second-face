@@ -660,7 +660,9 @@ namespace SecondFace.Game.People
         /// <summary>The drawn reading answers for an asked point the vote reads deeper than this outside the body (m), and finds a
         /// triangle within <see cref="DrawnReach"/> of it (m).</summary>
         public const float DrawnBand = 0.025f, DrawnReach = 0.06f;
-        private bool DrawnOn => _set != null && _set.DN > 0 && _set.DT > 0;
+        // TEMP (bisect only; restore BodySkin.cs.final): the screen's "drawnoff" token
+        private static bool DrawnOff;
+        private bool DrawnOn => !DrawnOff && _set != null && _set.DN > 0 && _set.DT > 0;
         /// <summary>For reports: drawn readings asked, found within reach, inside, inside by the face and refused by the rays;
         /// the time the drawn body's posing and its readings have taken (ms) and how often it was posed.</summary>
         [System.NonSerialized] public long DrawnAsks, DrawnFound, DrawnInside, DrawnRefused;
