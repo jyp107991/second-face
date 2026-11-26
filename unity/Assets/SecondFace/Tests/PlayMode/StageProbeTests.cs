@@ -142,6 +142,7 @@ namespace SecondFace.Tests
             private static readonly string[] Swing = (System.Environment.GetEnvironmentVariable("W3_TRACE") ?? "").Split(',').Where(x => x.Length > 0).ToArray();
             private static readonly string[] Foot = (System.Environment.GetEnvironmentVariable("FOOT_TRACE") ?? "").Split(',').Where(x => x.Length > 0).ToArray();
             private static readonly string Mode = System.Environment.GetEnvironmentVariable("W3_MODE") ?? "";
+            private static readonly string FootMode = System.Environment.GetEnvironmentVariable("FOOT_MODE") ?? "";
             private void Update()
             {
                 foreach (var p in Object.FindObjectsByType<MotionProbe>(FindObjectsSortMode.None))
@@ -159,6 +160,18 @@ namespace SecondFace.Tests
                             if (f.FieldType == typeof(bool)) f.SetValue(ac, x[1] == "1" || x[1] == "true");
                             else if (f.FieldType == typeof(float)) f.SetValue(ac, float.Parse(x[1], System.Globalization.CultureInfo.InvariantCulture));
                             Debug.Log($"W3_MODE {p.Person}: {x[0]} = {f.GetValue(ac)}");
+                        }
+                    var fp = p.GetComponent<FootPlant>();
+                    if (fp != null && FootMode.Length > 0)
+                        foreach (var kv in FootMode.Split(';'))
+                        {
+                            var x = kv.Split('=');
+                            if (x.Length != 2) continue;
+                            var f = typeof(FootPlant).GetField(x[0], BindingFlags.Public | BindingFlags.Instance);
+                            if (f == null) { Debug.LogWarning($"FOOT_MODE: no field {x[0]}"); continue; }
+                            if (f.FieldType == typeof(bool)) f.SetValue(fp, x[1] == "1" || x[1] == "true");
+                            else if (f.FieldType == typeof(float)) f.SetValue(fp, float.Parse(x[1], System.Globalization.CultureInfo.InvariantCulture));
+                            Debug.Log($"FOOT_MODE {p.Person}: {x[0]} = {f.GetValue(fp)}");
                         }
                     if (ac != null && Swing.Any(x => p.Person == x)) { var s = p.gameObject.AddComponent<SwingRec>(); s.Probe = p; s.Ac = ac; }
                     if (Foot.Any(x => p.Person == x)) { var f = p.gameObject.AddComponent<FootRec>(); f.Probe = p; f.Plant = p.GetComponent<FootPlant>(); }
