@@ -361,14 +361,13 @@ namespace SecondFace.EditorTools
             return dist > 0f;
         }
 
-        /// <summary>The point at (<paramref name="u"/>, <paramref name="v"/>, <paramref name="w"/>) of a triangle on the curved
-        /// surface its corners' normals make (Phong tessellation: the flat point projected onto each corner's tangent plane,
-        /// blended).</summary>
-        private static Vector3 Phong(Vector3 a, Vector3 b, Vector3 c, Vector3 na, Vector3 nb, Vector3 nc, float u, float v, float w)
+        /// <summary>A triangle's own normal, turned to the side its corners' normals face (<paramref name="corners"/>, their sum):
+        /// the face as it is drawn. A degenerate triangle takes its corners' normal.</summary>
+        private static Vector3 FaceNormal(Vector3 a, Vector3 b, Vector3 c, Vector3 corners)
         {
-            var p = a * u + b * v + c * w;
-            Vector3 On(Vector3 q, Vector3 n) { n = n.sqrMagnitude > 1e-8f ? n.normalized : Vector3.zero; return p - Vector3.Dot(p - q, n) * n; }
-            return On(a, na) * u + On(b, nb) * v + On(c, nc) * w;
+            var n = Vector3.Cross(b - a, c - a);
+            if (n.sqrMagnitude < 1e-12f) return corners.normalized;
+            return (Vector3.Dot(n, corners) < 0f ? -n : n).normalized;
         }
 
         private static BoneWeight BlendWeights(BoneWeight a, float wa, BoneWeight b, float wb, BoneWeight c, float wc)
@@ -467,11 +466,13 @@ namespace SecondFace.EditorTools
                     {
                         var (a, b, c, u, v, w) = fillOf[k];
                         var i = n0 + k;
-                        // on the surface the vertices' facings make (Phong): on the flat triangle, a thigh's filled point lay up
-                        // to 0.4 cm under the planes the gate measures by, and a hand held off it by 2 mm lay 0.6 cm in (C1,
-                        // 2026-11-08)
-                        pos[i] = Phong(pos[a], pos[b], pos[c], nor[a], nor[b], nor[c], u, v, w);
-                        nor[i] = (nor[a] * u + nor[b] * v + nor[c] * w).normalized;
+                        // on the triangle as it is drawn, facing as its face does: the gate's C1 and A4 read the drawn (flat)
+                        // triangles since 2026-11-18. On the curved surface the corners' normals make (Phong, set for the gate's
+                        // vertex planes on 2026-11-08) the filled points of the coarse hips and flanks stood 0.5-0.9 cm (p50) and
+                        // up to 1.0-1.75 cm (p90) outside the drawn surface, and the arm clearance held forearms, hands and
+                        // elbows off a surface that is not there (docs/MOTION_ROOT_CAUSE.md §12, 2026-11-26)
+                        pos[i] = pos[a] * u + pos[b] * v + pos[c] * w;
+                        nor[i] = FaceNormal(pos[a], pos[b], pos[c], nor[a] + nor[b] + nor[c]);
                         bw[i] = BlendWeights(bw[a], u, bw[b], v, bw[c], w);
                         world[i] = (bones[bw[i].boneIndex0].localToWorldMatrix * bp[bw[i].boneIndex0]).MultiplyPoint3x4(pos[i]);
                         foreach (var x in keepsX) x[i] = (x[a] ? 1 : 0) + (x[b] ? 1 : 0) + (x[c] ? 1 : 0) >= 2;
@@ -520,7 +521,7 @@ namespace SecondFace.EditorTools
                         {
                             var (a, b, c, u, v, w) = fillOf[k];
                             lpx[n0 + k] = lp[a] * u + lp[b] * v + lp[c] * w;
-                            if (lnx != null) lnx[n0 + k] = (ln[a] * u + ln[b] * v + ln[c] * w).normalized;
+                            if (lnx != null) lnx[n0 + k] = FaceNormal(lp[a], lp[b], lp[c], ln[a] + ln[b] + ln[c]);
                         }
                         lp = lpx; ln = lnx;
                     }

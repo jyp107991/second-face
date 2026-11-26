@@ -461,12 +461,13 @@ namespace SecondFace.Game.People
                 return across <= math.max(math.min(Spacing[c], PatchMax), math.min(DeepAcross * d, DeepAcrossMax)) ? d : -1f;
             }
 
-            // (as BodySkin.Surface, point for point in the same order)
-            private float Surface(float3 p, int c0, int cx, int cy, int cz)
+            // (as BodySkin.Robust, point for point in the same order)
+            private float Robust(float3 p, int c0, int cx, int cy, int cz, out bool ok)
             {
                 var h = math.clamp(Spacing[c0], SurfaceHMin, SurfaceHMax);
                 var reach = math.min(SurfaceReach * h, Cell); var reach2 = reach * reach; var ih2 = 1f / (h * h);
-                float num = 0f, den = 0f;
+                var isr2 = 1f / (RobustResidual * RobustResidual * h * h); var isn2 = 1f / (RobustNormal * RobustNormal);
+                var nb = new FixedList512Bytes<int>(); var phis = new FixedList512Bytes<float>();
                 for (var dx = -1; dx <= 1; dx++)
                     for (var dy = -1; dy <= 1; dy++)
                         for (var dz = -1; dz <= 1; dz++)
@@ -474,13 +475,31 @@ namespace SecondFace.Game.People
                             {
                                 var cj = Cells[j];
                                 if (cj.x != cx + dx || cj.y != cy + dy || cj.z != cz + dz) continue;
-                                var v = p - P[j];
-                                var r2 = Sq(v);
-                                if (r2 > reach2) continue;
-                                var w = math.exp(-r2 * ih2);
-                                num += w * -Dot(v, N[j]); den += w;
+                                var r2 = Sq(p - P[j]);
+                                if (r2 > reach2 || nb.Length >= RobustMax) continue;
+                                nb.Add(j); phis.Add(math.exp(-r2 * ih2));
                             }
-                return den > 0f ? num / den : 0f;
+                var f = 0f; var g = float3.zero; ok = false;
+                for (var it = 0; it < RobustIters; it++)
+                {
+                    float sw = 0f, sf = 0f; float3 sg = float3.zero, sgf = float3.zero, sn = float3.zero;
+                    for (var k = 0; k < nb.Length; k++)
+                    {
+                        var j = nb[k];
+                        var px = p - P[j];
+                        var nj = N[j];
+                        var fx = Dot(px, nj);
+                        var a = 1f;
+                        if (it > 0) { var e = fx - f; var dn = nj - g; a = math.exp(-e * e * isr2) * math.exp(-Sq(dn) * isn2); }
+                        var phi = phis[k];
+                        var w = a * phi;
+                        var dw = px * (-2f * a * phi * ih2);
+                        sw += w; sf += w * fx; sg += dw; sgf += dw * fx; sn += nj * w;
+                    }
+                    if (sw <= 1e-20f) break;
+                    f = sf / sw; g = (sgf - sg * f + sn) / sw; ok = true;
+                }
+                return f;
             }
 
             private int One(float3 p, out float depth, out float3 normal)
@@ -507,7 +526,12 @@ namespace SecondFace.Game.People
                 float u0 = Under(p, c0), u1 = c1 >= 0 ? Under(p, c1) : -1f, u2 = c2 >= 0 ? Under(p, c2) : -1f;
                 var ins = (u0 > 0f ? 1 : 0) + (u1 > 0f ? 1 : 0) + (u2 > 0f ? 1 : 0);
                 var inside = ins >= 2 ? math.min(u0 > 0f ? u0 : float.MaxValue, math.min(u1 > 0f ? u1 : float.MaxValue, u2 > 0f ? u2 : float.MaxValue)) : -1f;
-                if (inside > 0f && (Flags[c0] & LowFlag) != 0) inside = math.max(Surface(p, c0, cx, cy, cz), DeepMin);
+                var hr = math.clamp(Spacing[c0], SurfaceHMin, SurfaceHMax); var rr = math.min(SurfaceReach * hr, Cell);
+                if ((Flags[c0] & LowFlag) != 0 && d0 <= rr * rr)
+                {
+                    var f = Robust(p, c0, cx, cy, cz, out var ok);
+                    if (ok) inside = f < 0f ? math.max(-f, DeepMin) : -1f;
+                }
                 var nn = N[c0] + (c1 >= 0 ? N[c1] : float3.zero) + (c2 >= 0 ? N[c2] : float3.zero);
                 normal = Sq(nn) > 1e-8f ? Norm(nn) : N[c0];
                 var v0 = p - P[c0];
@@ -565,9 +589,13 @@ namespace SecondFace.Game.People
             float u0 = Under(c0), u1 = c1 >= 0 ? Under(c1) : -1f, u2 = c2 >= 0 ? Under(c2) : -1f;
             var ins = (u0 > 0f ? 1 : 0) + (u1 > 0f ? 1 : 0) + (u2 > 0f ? 1 : 0);
             var inside = ins >= 2 ? Mathf.Min(u0 > 0f ? u0 : float.MaxValue, Mathf.Min(u1 > 0f ? u1 : float.MaxValue, u2 > 0f ? u2 : float.MaxValue)) : -1f;
-            // against the hips and thighs, how deep: the drawn surface's depth as the points near read it (Surface); the vote
-            // above only says whether
-            if (inside > 0f && (_set.Flags[c0] & LowFlag) != 0) inside = Mathf.Max(Surface(p, c0), DeepMin);
+            // against the hips and thighs, whether and how deep: the robust surface of the points near (Robust), where the vote
+            // above is fooled by the gear's own facets
+            if ((_set.Flags[c0] & LowFlag) != 0 && d0 <= RobustNear2(_spacing[c0]))
+            {
+                var f = Robust(p, c0, out var ok);
+                if (ok) inside = f < 0f ? Mathf.Max(-f, DeepMin) : -1f;
+            }
             var nn = N[c0] + (c1 >= 0 ? N[c1] : Vector3.zero) + (c2 >= 0 ? N[c2] : Vector3.zero);
             normal = nn.sqrMagnitude > 1e-8f ? nn.normalized : N[c0];
             // outside: the gap to the surface's plane at the nearest point (never more than to the point itself)
@@ -583,25 +611,28 @@ namespace SecondFace.Game.People
         }
 
         /// <summary>
-        /// How deep a point the vote finds inside lies under the drawn surface where it meets the hips and thighs (the low band,
-        /// <see cref="LowFlag"/>: where a resting forearm and hand hang), read from every body point within
-        /// <see cref="SurfaceReach"/> of its bandwidth: each point's tangent plane, weighted by a Gaussian of its distance (the
-        /// implicit moving-least-squares surface of oriented points: Kolluri 2008, ACM Trans. Algorithms 4(2):18; Shen, O'Brien
-        /// and Shewchuk 2004). The least of the three nearest points' planes, the rule elsewhere, under-reads where the hip's
-        /// skin creases or turns: a forearm resting 1.1 cm into the hip's side was read 0.2 cm deep by a point 2 cm off on a
-        /// facet turned 25-40° (Business_Male_05's side, Business_Male_03's crease under the waist), under the arm clearance's
-        /// resting give, so it stayed in (C1 0.8-1.2 cm, the gate's drawn surface; docs/MOTION_ROOT_CAUSE.md §9, 2026-11-25).
-        /// The bandwidth is the nearest point's own spacing (its fourth neighbour), within 1.5-3 cm. Not on the chest and the
-        /// waist above: read so in every band, the same seven men's everyday cells went 11 -> 38 (A1 7 -> 28 where the upper arm
-        /// rests on the flank, C1 0 -> 6 in the talk gesture), 2026-11-26.
+        /// Where a point near the hips and thighs (the low band, <see cref="LowFlag"/>: where a resting forearm and hand hang) is
+        /// against the surface of the body points within <see cref="SurfaceReach"/> bandwidths of it: the signed distance (m,
+        /// negative inside) of the robust implicit moving-least-squares surface (RIMLS: Oztireli, Guennebaud and Gross 2009,
+        /// "Feature preserving point set surfaces based on non-linear kernel regression", Computer Graphics Forum 28(2)): each
+        /// point's tangent plane weighted by a Gaussian of its distance, then, over <see cref="RobustIters"/> passes, by how far its
+        /// plane disagrees with the surface found so far and how far its normal is from that surface's gradient. It decides both
+        /// whether the point is inside and how deep. The least of the three nearest points' planes under-read where the hip's
+        /// skin creases or turns (a forearm 1.1 cm into the hip read 0.2 cm, 2026-11-25); the plain IMLS that replaced it there
+        /// blurs a sharp feature: where a belt pouch's top meets the trousers' side (Construction_Male_06) a forearm 1.0 cm inside
+        /// the drawn hip read 0.53 cm, and in other frames the three nearest points (two on the pouch's facets) voted it outside
+        /// (C1 0.5-0.8 cm in five states, 2026-11-26). Read against the drawn surface at the runtime's own arm points (five
+        /// people's worst frames, 75 contacts): under-reads past 0.2 cm 22 -> 4, the inside test wrong on 71 -> 59 of 659 points
+        /// (docs/MOTION_ROOT_CAUSE.md §12). <paramref name="ok"/>: false when no point is near enough to weigh.
         /// </summary>
-        private float Surface(Vector3 p, int c0)
+        private float Robust(Vector3 p, int c0, out bool ok)
         {
             var h = Mathf.Clamp(_spacing[c0], SurfaceHMin, SurfaceHMax);
             // (within the 27 cells about it, whatever its place in its own: a reach past a cell's width would count a far point or not by where the query stands)
             var reach = Mathf.Min(SurfaceReach * h, Cell); var reach2 = reach * reach; var ih2 = 1f / (h * h);
-            float num = 0f, den = 0f;
+            var isr2 = 1f / (RobustResidual * RobustResidual * h * h); var isn2 = 1f / (RobustNormal * RobustNormal);
             var c = CellOf(p);
+            var m = 0;
             for (var dx = -1; dx <= 1; dx++)
                 for (var dy = -1; dy <= 1; dy++)
                     for (var dz = -1; dz <= 1; dz++)
@@ -609,14 +640,44 @@ namespace SecondFace.Game.People
                         {
                             var cj = _cell[j];
                             if (cj.x != c.x + dx || cj.y != c.y + dy || cj.z != c.z + dz) continue;
-                            var v = p - P[j];
-                            var r2 = v.sqrMagnitude;
-                            if (r2 > reach2) continue;
-                            var w = Mathf.Exp(-r2 * ih2);
-                            num += w * -Vector3.Dot(v, N[j]); den += w;
+                            var r2 = (p - P[j]).sqrMagnitude;
+                            if (r2 > reach2 || m >= RobustMax) continue;
+                            _nb[m] = j; _phi[m] = Mathf.Exp(-r2 * ih2); m++;
                         }
-            return den > 0f ? num / den : 0f;
+            var f = 0f; var g = Vector3.zero; ok = false;
+            for (var it = 0; it < RobustIters; it++)
+            {
+                float sw = 0f, sf = 0f; Vector3 sg = Vector3.zero, sgf = Vector3.zero, sn = Vector3.zero;
+                for (var k = 0; k < m; k++)
+                {
+                    var j = _nb[k];
+                    var px = p - P[j];
+                    var nj = N[j];
+                    var fx = Vector3.Dot(px, nj);
+                    var a = 1f;
+                    if (it > 0) { var e = fx - f; var dn = nj - g; a = Mathf.Exp(-e * e * isr2) * Mathf.Exp(-dn.sqrMagnitude * isn2); }
+                    var phi = _phi[k];
+                    var w = a * phi;
+                    var dw = px * (-2f * a * phi * ih2);
+                    sw += w; sf += w * fx; sg += dw; sgf += dw * fx; sn += nj * w;
+                }
+                if (sw <= 1e-20f) break;
+                f = sf / sw; g = (sgf - sg * f + sn) / sw; ok = true;
+            }
+            return f;
         }
+        private readonly int[] _nb = new int[RobustMax];
+        private readonly float[] _phi = new float[RobustMax];
+
+        /// <summary>The robust reading's passes, its residual scale (bandwidths) and its normals' scale (Oztireli et al. 2009's
+        /// 0.5-1.5 for both; the readings above moved under 0.05 cm across 2-4 passes, 0.3-0.75 and 0.5-1.0), and how near the
+        /// nearest body point must be for it (its reach: beyond, the vote's answer stands).</summary>
+        public const int RobustIters = 3;
+        /// <summary>The most body points the robust reading weighs (within its reach of an arm point near the hips there are
+        /// 1-38, median 8, on the dumps of 2026-11-26).</summary>
+        public const int RobustMax = 120;
+        public const float RobustResidual = 0.5f, RobustNormal = 0.75f;
+        public static float RobustNear2(float spacing) { var h = Mathf.Clamp(spacing, SurfaceHMin, SurfaceHMax); var r = Mathf.Min(SurfaceReach * h, Cell); return r * r; }
 
         /// <summary>The surface reading's bandwidth bounds (m) and its reach (bandwidths; past 2 a point weighs under 2 %), and
         /// the least depth a point the vote finds inside is given (m).</summary>
@@ -658,8 +719,8 @@ namespace SecondFace.Game.People
                 var r = inv * (P[k] - origin) * 100f; var nn = inv * N[k];
                 parts.Add($"{PartOf(k)} {k} ({r.x:0},{r.y:0},{r.z:0}) n ({nn.x:0.0},{nn.y:0.0},{nn.z:0.0}) off {Off(k) * 100f:0.0} sp {_spacing[k] * 100f:0.0} {Mathf.Sqrt((P[k] - p).sqrMagnitude) * 100f:0.0} cm away: {verdict}");
             }
-            // (and the depth the surface reading gives, which Depth reports when the vote is inside)
-            if (c0 >= 0) parts.Add($"surface {Surface(p, c0) * 100f:0.0}");
+            // (and the depth the robust surface gives, which Depth reports in the low band: positive inside)
+            if (c0 >= 0) { var f = Robust(p, c0, out var ok); parts.Add(ok ? $"robust {-f * 100f:0.0}" : "robust none"); }
             return string.Join(" | ", parts);
         }
 
