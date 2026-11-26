@@ -13,7 +13,8 @@ namespace SecondFace.Game.People
     /// The body's own skin where an arm meets it (the owner's rule: arms, hands and clothing never sink into a body;
     /// docs/PEOPLE_MOTION.md C1, A4). The torso, the hips and the thighs, and each arm's upper arm, forearm and hand, as
     /// points sampled from the body's mesh at build time (Editor <c>RocketboxLayers</c>: one about every 2.5 cm of the
-    /// body, 2 cm of the hand, 3 cm of the arm), each skinned to its two strongest bones and posed every frame from the
+    /// body, 1.2 cm of the hand, 1.8 cm of the arm, and every arm vertex that stands out of its cell's point's plane by more
+    /// than the resting give), each skinned to its two strongest bones and posed every frame from the
     /// bones as the mesh itself is posed. A point stands out from the skin by the thickest layer worn over it
     /// (<see cref="Wear"/>, from <see cref="RbLayerSet"/>). <see cref="ArmClearance"/> holds the arms off this surface: the
     /// same surface the gate measures (MotionProbe), not a model of it (on the phone the meshes are not readable).
@@ -466,25 +467,36 @@ namespace SecondFace.Game.People
                 return across <= math.max(math.min(Spacing[c], PatchMax), math.min(DeepAcross * d, DeepAcrossMax)) ? d : -1f;
             }
 
-            // (as BodySkin.Robust, point for point in the same order: the points within its reach gathered in the nearest-three
-            // search's order)
-            private float Robust(float3 p, int c0, int cx, int cy, int cz, out bool ok)
+            // (as BodySkin.Robust, point for point in the same order: the points within its reach, from the cells its reach
+            // touches, in the nearest-three search's order of cells and points; the sign test as they are gathered)
+            private float Robust(float3 p, int c0, out bool ok, out bool ran, out float3 grad)
             {
+                grad = float3.zero;
                 var h = math.clamp(Spacing[c0], SurfaceHMin, SurfaceHMax);
                 var reach = math.min(SurfaceReach * h, Cell); var reach2 = reach * reach; var ih2 = 1f / (h * h);
                 var isr2 = 1f / (RobustResidual * RobustResidual * h * h); var isn2 = 1f / (RobustNormal * RobustNormal);
-                var f = 0f; var g = float3.zero; ok = false;
+                var f = 0f; var g = float3.zero; ok = false; ran = false;
                 var nb = new FixedList512Bytes<int>(); var r2s = new FixedList512Bytes<float>();
-                for (var dx = -1; dx <= 1; dx++)
-                    for (var dy = -1; dy <= 1; dy++)
-                        for (var dz = -1; dz <= 1; dz++)
-                            for (var j = Head[Hash(cx + dx, cy + dy, cz + dz)]; j >= 0; j = Next[j])
+                var behind = false;
+                int x0 = (int)math.floor((p.x - reach) / Cell), x1 = (int)math.floor((p.x + reach) / Cell);
+                int y0 = (int)math.floor((p.y - reach) / Cell), y1 = (int)math.floor((p.y + reach) / Cell);
+                int z0 = (int)math.floor((p.z - reach) / Cell), z1 = (int)math.floor((p.z + reach) / Cell);
+                for (var x = x0; x <= x1; x++)
+                    for (var y = y0; y <= y1; y++)
+                        for (var z = z0; z <= z1; z++)
+                            for (var j = Head[Hash(x, y, z)]; j >= 0; j = Next[j])
                             {
                                 var cj = Cells[j];
-                                if (cj.x != cx + dx || cj.y != cy + dy || cj.z != cz + dz) continue;
+                                if (cj.x != x || cj.y != y || cj.z != z) continue;
                                 var d = Sq(P[j] - p);
-                                if (d <= reach2 && nb.Length < RobustMax) { nb.Add(j); r2s.Add(d); }
+                                if (d > reach2 || nb.Length >= RobustMax) continue;
+                                nb.Add(j); r2s.Add(d);
+                                if (!behind && Dot(p - P[j], N[j]) < 0f) behind = true;
                             }
+                if (nb.Length == 0) return 0f;
+                // a weighted mean of no plane distance below nought is none either: outside, without the passes
+                if (!behind) { ok = true; return 0f; }
+                ran = true;
                 for (var it = 0; it < RobustIters; it++)
                 {
                     float sw = 0f, sf = 0f; float3 sg = float3.zero, sgf = float3.zero, sn = float3.zero;
@@ -503,6 +515,7 @@ namespace SecondFace.Game.People
                     if (sw <= 1e-20f) break;
                     f = sf / sw; g = (sgf - sg * f + sn) / sw; ok = true;
                 }
+                grad = g;
                 return f;
             }
 
@@ -512,7 +525,6 @@ namespace SecondFace.Game.People
                 int c0 = -1, c1 = -1, c2 = -1;
                 float d0 = float.MaxValue, d1 = float.MaxValue, d2 = float.MaxValue;
                 int cx = (int)math.floor(p.x / Cell), cy = (int)math.floor(p.y / Cell), cz = (int)math.floor(p.z / Cell);
-                var behind2 = float.MaxValue;
                 for (var dx = -1; dx <= 1; dx++)
                     for (var dy = -1; dy <= 1; dy++)
                         for (var dz = -1; dz <= 1; dz++)
@@ -522,8 +534,6 @@ namespace SecondFace.Game.People
                                 var cj = Cells[j];
                                 if (cj.x != cx + dx || cj.y != cy + dy || cj.z != cz + dz) continue;
                                 var d = Sq(P[j] - p);
-                                // (the nearest point within a cell that has it behind its plane, for the robust reading's sign)
-                                if (d < behind2 && d <= Cell * Cell && Dot(p - P[j], N[j]) < 0f) behind2 = d;
                                 if (d >= d2) continue;
                                 if (d < d0) { c2 = c1; d2 = d1; c1 = c0; d1 = d0; c0 = j; d0 = d; }
                                 else if (d < d1) { c2 = c1; d2 = d1; c1 = j; d1 = d; }
@@ -534,18 +544,16 @@ namespace SecondFace.Game.People
                 var ins = (u0 > 0f ? 1 : 0) + (u1 > 0f ? 1 : 0) + (u2 > 0f ? 1 : 0);
                 var inside = ins >= 2 ? math.min(u0 > 0f ? u0 : float.MaxValue, math.min(u1 > 0f ? u1 : float.MaxValue, u2 > 0f ? u2 : float.MaxValue)) : -1f;
                 var hr = math.clamp(Spacing[c0], SurfaceHMin, SurfaceHMax); var rr = math.min(SurfaceReach * hr, Cell);
-                if ((Flags[c0] & LowFlag) != 0 && d0 <= rr * rr)
+                var grad = float3.zero;
+                if ((Flags[c0] & LowFlag) != 0 && d0 <= rr * rr && math.abs(Dot(p - P[c0], N[c0])) <= hr)
                 {
-                    if (behind2 > rr * rr) inside = -1f;
-                    else
-                    {
-                        var f = Robust(p, c0, cx, cy, cz, out var ok);
-                        if (ok) inside = f < 0f ? math.max(-f, DeepMin) : -1f;
-                        Runs[0]++;
-                    }
+                    var f = Robust(p, c0, out var ok, out var ran, out grad);
+                    if (ok) inside = f < 0f ? math.max(-f, DeepMin) : -1f;
+                    if (ran) Runs[0]++;
+                    if (!ran || !(inside > 0f)) grad = float3.zero;
                 }
                 var nn = N[c0] + (c1 >= 0 ? N[c1] : float3.zero) + (c2 >= 0 ? N[c2] : float3.zero);
-                normal = Sq(nn) > 1e-8f ? Norm(nn) : N[c0];
+                normal = Sq(grad) > 1e-8f ? Norm(grad) : Sq(nn) > 1e-8f ? Norm(nn) : N[c0];
                 var v0 = p - P[c0];
                 var plane = Dot(v0, N[c0]);
                 var across = math.sqrt(math.max(0f, Sq(v0) - plane * plane));
@@ -564,7 +572,6 @@ namespace SecondFace.Game.People
             int c0 = -1, c1 = -1, c2 = -1;
             float d0 = float.MaxValue, d1 = float.MaxValue, d2 = float.MaxValue;
             var c = CellOf(p);
-            var behind2 = float.MaxValue;
             for (var dx = -1; dx <= 1; dx++)
                 for (var dy = -1; dy <= 1; dy++)
                     for (var dz = -1; dz <= 1; dz++)
@@ -574,8 +581,6 @@ namespace SecondFace.Game.People
                             var cj = _cell[j];
                             if (cj.x != c.x + dx || cj.y != c.y + dy || cj.z != c.z + dz) continue;   // another cell in the bucket
                             var d = (P[j] - p).sqrMagnitude;
-                            // (the nearest point within a cell that has it behind its plane, for the robust reading's sign)
-                            if (d < behind2 && d <= Cell * Cell && Vector3.Dot(p - P[j], N[j]) < 0f) behind2 = d;
                             if (d >= d2) continue;
                             if (d < d0) { c2 = c1; d2 = d1; c1 = c0; d1 = d0; c0 = j; d0 = d; }
                             else if (d < d1) { c2 = c1; d2 = d1; c1 = j; d1 = d; }
@@ -605,22 +610,22 @@ namespace SecondFace.Game.People
             var ins = (u0 > 0f ? 1 : 0) + (u1 > 0f ? 1 : 0) + (u2 > 0f ? 1 : 0);
             var inside = ins >= 2 ? Mathf.Min(u0 > 0f ? u0 : float.MaxValue, Mathf.Min(u1 > 0f ? u1 : float.MaxValue, u2 > 0f ? u2 : float.MaxValue)) : -1f;
             // against the hips and thighs, whether and how deep: the robust surface of the points near (Robust), where the vote
-            // above is fooled by the gear's own facets
-            if ((_set.Flags[c0] & LowFlag) != 0 && d0 <= RobustNear2(_spacing[c0]))
+            // above is fooled by the gear's own facets; only within its bandwidth of the surface (the nearest point's plane): past
+            // it the moving-least-squares surface is extrapolated and read points 2.5-4.3 cm off the body as 0.01-0.5 cm inside
+            // (11 of 7292 such readings on the dumps of 2026-11-26, the vote none wrong there), and the vote's answer stands
+            var grad = Vector3.zero;
+            if ((_set.Flags[c0] & LowFlag) != 0 && d0 <= RobustNear2(_spacing[c0]) && Mathf.Abs(Vector3.Dot(p - P[c0], N[c0])) <= Mathf.Clamp(_spacing[c0], SurfaceHMin, SurfaceHMax))
             {
-                // the surface is a weighted mean of the points' plane distances (every weight positive): when no point within its
-                // reach has the arm's point behind its plane it cannot either, and the point is outside without the passes, the
-                // answer exactly as they give it
-                if (behind2 > RobustNear2(_spacing[c0])) inside = -1f;
-                else
-                {
-                    var f = RobustAt(p, c0, out var ok);
-                    if (ok) inside = f < 0f ? Mathf.Max(-f, DeepMin) : -1f;
-                    RobustRuns++;
-                }
+                var f = RobustAt(p, c0, out var ok, out var ran);
+                if (ok) inside = f < 0f ? Mathf.Max(-f, DeepMin) : -1f;
+                if (ran) RobustRuns++;
+                if (ran && inside > 0f) grad = _grad;
             }
+            // (inside by the robust surface, the contact's normal is that surface's own gradient: the three nearest points' normals
+            // summed tilted a belt pouch's bottom 16° toward its bevelled edge and gave a sleeve whose offset points out through the
+            // bottom a share of it as if pressed between, C1, Construction_Male_06, 2026-11-26)
             var nn = N[c0] + (c1 >= 0 ? N[c1] : Vector3.zero) + (c2 >= 0 ? N[c2] : Vector3.zero);
-            normal = nn.sqrMagnitude > 1e-8f ? nn.normalized : N[c0];
+            normal = grad.sqrMagnitude > 1e-8f ? grad.normalized : nn.sqrMagnitude > 1e-8f ? nn.normalized : N[c0];
             // outside: the gap to the surface's plane at the nearest point (never more than to the point itself)
             // outside: the gap to the patch of skin the nearest point stands for (a disc in its plane, half its spacing
             // across): its whole plane read a hand hanging below a buttock or before a thigh as touching it, 2026-11-06
@@ -646,7 +651,11 @@ namespace SecondFace.Game.People
         /// the drawn hip read 0.53 cm, and in other frames the three nearest points (two on the pouch's facets) voted it outside
         /// (C1 0.5-0.8 cm in five states, 2026-11-26). Read against the drawn surface at the runtime's own arm points (five
         /// people's worst frames, 75 contacts): under-reads past 0.2 cm 22 -> 4, the inside test wrong on 71 -> 59 of 659 points
-        /// (docs/MOTION_ROOT_CAUSE.md §12). <paramref name="ok"/>: false when no point is near enough to weigh.
+        /// (docs/MOTION_ROOT_CAUSE.md §12). <paramref name="ok"/>: false when no point is near enough to weigh. Read only within its
+        /// bandwidth of the surface, its points gathered from the cells its reach touches and the passes skipped when no point
+        /// has the arm's point behind its plane (exactly their answer: outside), it costs 0.5-2 ms a person a frame in the
+        /// editor's idles (it doubled the arm clearance's cost read for every point near the hips, docs/MOTION_ROOT_CAUSE.md §13);
+        /// inside, its gradient is the contact's normal.
         /// </summary>
         private float Robust(Vector3 p, int c0, int m, out bool ok)
         {
@@ -672,25 +681,36 @@ namespace SecondFace.Game.People
                 if (sw <= 1e-20f) break;
                 f = sf / sw; g = (sgf - sg * f + sn) / sw; ok = true;
             }
+            _grad = g;
             return f;
         }
+        private Vector3 _grad;
 
-        /// <summary>The robust reading at <paramref name="p"/>: the body points within its reach of it gathered (in the nearest-three
-        /// search's order), then the passes.</summary>
-        private float RobustAt(Vector3 p, int c0, out bool ok)
+        /// <summary>The robust reading at <paramref name="p"/>: the body points within its reach of it gathered from the cells the
+        /// reach touches (in the nearest-three search's order), then, unless none has the point behind its plane (outside: the
+        /// surface is a weighted mean of their plane distances, every weight positive, so it cannot be below nought either, and
+        /// the answer is exactly what the passes would give) or <paramref name="full"/> asks for the value, the passes.
+        /// <paramref name="ran"/>: the passes ran.</summary>
+        private float RobustAt(Vector3 p, int c0, out bool ok, out bool ran, bool full = false)
         {
-            var reach2 = RobustNear2(_spacing[c0]);
-            var c = CellOf(p); var m = 0;
-            for (var dx = -1; dx <= 1; dx++)
-                for (var dy = -1; dy <= 1; dy++)
-                    for (var dz = -1; dz <= 1; dz++)
-                        for (var j = _head[Hash(c.x + dx, c.y + dy, c.z + dz)]; j >= 0; j = _next[j])
+            var reach2 = RobustNear2(_spacing[c0]); var reach = Mathf.Sqrt(reach2);
+            var lo = CellOf(p - Vector3.one * reach); var hi = CellOf(p + Vector3.one * reach);
+            var m = 0; var behind = false; ok = false; ran = false;
+            for (var x = lo.x; x <= hi.x; x++)
+                for (var y = lo.y; y <= hi.y; y++)
+                    for (var z = lo.z; z <= hi.z; z++)
+                        for (var j = _head[Hash(x, y, z)]; j >= 0; j = _next[j])
                         {
                             var cj = _cell[j];
-                            if (cj.x != c.x + dx || cj.y != c.y + dy || cj.z != c.z + dz) continue;
+                            if (cj.x != x || cj.y != y || cj.z != z) continue;
                             var d = (P[j] - p).sqrMagnitude;
-                            if (d <= reach2 && m < RobustMax) { _nb[m] = j; _r2[m] = d; m++; }
+                            if (d > reach2 || m >= RobustMax) continue;
+                            _nb[m] = j; _r2[m] = d; m++;
+                            if (!behind && Vector3.Dot(p - P[j], N[j]) < 0f) behind = true;
                         }
+            if (m == 0) return 0f;
+            if (!behind && !full) { ok = true; return 0f; }
+            ran = true;
             return Robust(p, c0, m, out ok);
         }
         private readonly int[] _nb = new int[RobustMax];
@@ -747,7 +767,7 @@ namespace SecondFace.Game.People
                 parts.Add($"{PartOf(k)} {k} ({r.x:0},{r.y:0},{r.z:0}) n ({nn.x:0.0},{nn.y:0.0},{nn.z:0.0}) off {Off(k) * 100f:0.0} sp {_spacing[k] * 100f:0.0} {Mathf.Sqrt((P[k] - p).sqrMagnitude) * 100f:0.0} cm away: {verdict}");
             }
             // (and the depth the robust surface gives, which Depth reports in the low band: positive inside)
-            if (c0 >= 0) { var f = RobustAt(p, c0, out var ok); parts.Add(ok ? $"robust {-f * 100f:0.0}" : "robust none"); }
+            if (c0 >= 0) { var f = RobustAt(p, c0, out var ok, out _, true); parts.Add(ok ? $"robust {-f * 100f:0.0}" : "robust none"); }
             return string.Join(" | ", parts);
         }
 

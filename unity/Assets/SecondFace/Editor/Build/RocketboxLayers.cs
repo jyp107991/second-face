@@ -339,6 +339,9 @@ namespace SecondFace.EditorTools
         /// <summary>The body's skin points filled in every this far (m) over its triangles, where no vertex stands within
         /// <see cref="FillGap"/>.</summary>
         private const float FillStep = 0.025f, FillGap = 0.02f;
+        /// <summary>How far an arm's vertex may stand out of its cell's point's tangent plane before it is a skin point of its own
+        /// (m): the resting give (ArmClearance.RestGive).</summary>
+        private const float ArmStandOut = 0.0025f;
         /// <summary>The covered test's cell and reach (m): a surface over a point, facing its way, this near hides it.</summary>
         private const float CovCell = 0.04f, CovReach = 0.05f;
 
@@ -621,6 +624,7 @@ namespace SecondFace.EditorTools
                 return false;
             }
             var cells = new Dictionary<(int, int, int, SkinPart), (int I, float D)>();
+            var armCell = new List<(int I, (int, int, int, SkinPart) Key)>();
             var inner = 0;
             // the bones under each arm's upper arm, forearm and hand (the original's: the skin's weights name them)
             HashSet<Transform> Under(HumanBodyBones hb) { var set = new HashSet<Transform>(); var t = anim.GetBoneTransform(hb); if (t != null) foreach (var c in t.GetComponentsInChildren<Transform>(true)) set.Add(c); return set; }
@@ -719,6 +723,23 @@ namespace SecondFace.EditorTools
                 var centre = new Vector3(key.Item1 + 0.5f, key.Item2 + 0.5f, key.Item3 + 0.5f) * cell;
                 var dc = (world[i] - centre).sqrMagnitude;
                 if (!cells.TryGetValue(key, out var have) || dc < have.D) cells[key] = (i, dc);
+                if (part is not (SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR)) armCell.Add((i, key));
+            }
+            // an arm's vertex that stands out of its cell's point's tangent plane by more than the resting give (a seam, a hem, a
+            // fold of the sleeve) is a point of its own: it touches first. One point a cell, nearest the cell's centre, left them
+            // out, and a resting arm held at contact by its points pressed them in (a sleeve's seam 0.65 cm from its cell's point
+            // and 0.6 cm out of its plane lay 0.35-0.58 cm into the chest's side all through the talk, C1, Female_Adult_01,
+            // 2026-11-26)
+            var standOut = new List<(int I, SkinPart Part)>();
+            foreach (var (i, key) in armCell)
+            {
+                var r0 = cells[key].I;
+                if (r0 == i) continue;
+                if (Vector3.Dot(world[i] - world[r0], wnor[r0]) <= ArmStandOut) continue;
+                // (a seam's split vertices once)
+                var dup = false;
+                foreach (var (j, _) in standOut) if ((world[j] - world[i]).sqrMagnitude < 1e-6f) { dup = true; break; }
+                if (!dup) standOut.Add((i, key.Item4));
             }
             // each vertex's foot as the gate tells it (MotionProbe: the nearest of its segments in the neutral pose, the foot's
             // being the foot to the toes and on 7 cm past them): the soles' points are chosen from these, as the gate's are
@@ -754,6 +775,7 @@ namespace SecondFace.EditorTools
             var byPart = new List<int>[9];
             for (var p = 0; p < 9; p++) byPart[p] = new List<int>();
             foreach (var (key, (i, _)) in cells) byPart[(int)key.Item4].Add(i);
+            foreach (var (i, part) in standOut) byPart[(int)part].Add(i);
             if (System.Environment.GetEnvironmentVariable("SKIN_DIAG") is { Length: > 0 } diag) SkinDiag(diag, id, lp, use, fate, partOf, byPart, cells.Count);
             for (var p = 0; p < 9; p++) byPart[p].Sort();
             var female = mats.Any(m => m != null && m.name.ToLowerInvariant().TrimStart('s').StartsWith("f") && m.name.ToLowerInvariant().EndsWith("_body"));

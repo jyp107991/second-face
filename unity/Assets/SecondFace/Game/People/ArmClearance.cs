@@ -107,7 +107,14 @@ namespace SecondFace.Game.People
             for (int i = _skin.Begin(first + 2), to = _skin.End(first + 2); i < to; i++)
                 if (_skin.Depth(_skin.P[i], out var d, out _)) deep = Mathf.Max(deep, d);
             HandDepth[(first == BodySkin.Part.UpperArmL ? 0 : 6) + step] = deep;
+            var deepF = -1f;
+            for (int i = _skin.Begin(first + 1), to = _skin.End(first + 1); i < to; i++)
+                if (_skin.Depth(_skin.P[i], out var d, out _)) deepF = Mathf.Max(deepF, d);
+            ForearmDepth[(first == BodySkin.Part.UpperArmL ? 0 : 6) + step] = deepF;
         }
+        /// <summary>For the gate's trace (with <see cref="TraceStages"/>): each forearm's deepest point in the body's skin (m) at each
+        /// step of a resting frame, as <see cref="HandDepth"/>.</summary>
+        [System.NonSerialized] public float[] ForearmDepth = new float[12];
         /// <summary>For the gate's report: the arm's point and the body's point that gave each gap this frame (left elbow,
         /// left hand, right elbow, right hand; arm then body; -1 none).</summary>
         public int[] DiagAt = new int[8];

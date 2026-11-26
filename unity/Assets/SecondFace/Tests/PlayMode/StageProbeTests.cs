@@ -114,8 +114,31 @@ namespace SecondFace.Tests
             private void OnDestroy() { _w?.Flush(); _w?.Close(); _w = null; }
         }
 
+        [DefaultExecutionOrder(10004)]
+        public sealed class RestRec : MonoBehaviour
+        {
+            public MotionProbe Probe; public ArmClearance Ac; private StreamWriter _w;
+            private void Start()
+            {
+                Directory.CreateDirectory(Out);
+                _w = new StreamWriter(Path.Combine(Out, $"rest_{Probe.Person}.csv")) { AutoFlush = false };
+                _w.WriteLine("state,t," + string.Join(",", Enumerable.Range(0, 6).Select(k => $"fL{k}")) + "," + string.Join(",", Enumerable.Range(0, 6).Select(k => $"fR{k}")) + "," + string.Join(",", Enumerable.Range(0, 6).Select(k => $"hR{k}")) + ",a1R0,a1R1,a1R2,a1R3,a1R4,a1R5,restDegR,pushR");
+            }
+            private void LateUpdate()
+            {
+                if (_w == null || Probe.State == null || Probe.Kind == null) return;
+                if (Probe.State.StartsWith("combat:") || Probe.State.Contains("walk") || Probe.State.Contains("jog")) return;
+                Ac.TraceStages = true;
+                var f = Ac.ForearmDepth; var h = Ac.HandDepth; var sa = Ac.StageA1;
+                _w.WriteLine($"{Probe.State},{Time.time:0.000}," + string.Join(",", f.Select(x => (x * 100f).ToString("0.00"))) + "," + string.Join(",", h.Skip(6).Select(x => (x * 100f).ToString("0.00"))) + "," + string.Join(",", sa.Skip(8).Take(6).Select(x => x.ToString("0.0"))) + $",{Ac.RestDeg[1]:0.0},{Ac.PushDeg[1]:0.0}");
+            }
+            private void OnDestroy() { _w?.Flush(); _w?.Close(); _w = null; }
+        }
+
         public sealed class Watcher : MonoBehaviour
         {
+            private static readonly string[] Rest = (System.Environment.GetEnvironmentVariable("REST_TRACE") ?? "").Split(',').Where(x => x.Length > 0).ToArray();
+            private static readonly string[] Off = (System.Environment.GetEnvironmentVariable("ROBUST_OFF") ?? "").Split(',').Where(x => x.Length > 0).ToArray();
             private static readonly string[] Swing = (System.Environment.GetEnvironmentVariable("W3_TRACE") ?? "").Split(',').Where(x => x.Length > 0).ToArray();
             private static readonly string[] Foot = (System.Environment.GetEnvironmentVariable("FOOT_TRACE") ?? "").Split(',').Where(x => x.Length > 0).ToArray();
             private static readonly string Mode = System.Environment.GetEnvironmentVariable("W3_MODE") ?? "";
@@ -125,6 +148,7 @@ namespace SecondFace.Tests
                 {
                     if (p.Person == null || p.GetComponent<Marked>() != null) continue;
                     var mk = p.gameObject.AddComponent<Marked>(); mk.Person = p.Person; mk.Skin = p.GetComponent<BodySkin>();
+                    if (mk.Skin != null && Off.Any(x => p.Person == x)) { mk.Skin.RobustOff = true; Debug.Log($"ROBUST_OFF {p.Person}"); }
                     var ac = p.GetComponent<ArmClearance>();
                     if (ac != null && Mode.Length > 0)
                         foreach (var kv in Mode.Split(';'))
@@ -139,6 +163,7 @@ namespace SecondFace.Tests
                         }
                     if (ac != null && Swing.Any(x => p.Person == x)) { var s = p.gameObject.AddComponent<SwingRec>(); s.Probe = p; s.Ac = ac; }
                     if (Foot.Any(x => p.Person == x)) { var f = p.gameObject.AddComponent<FootRec>(); f.Probe = p; f.Plant = p.GetComponent<FootPlant>(); }
+                    if (ac != null && Rest.Any(x => p.Person == x)) { var r = p.gameObject.AddComponent<RestRec>(); r.Probe = p; r.Ac = ac; }
                 }
             }
         }

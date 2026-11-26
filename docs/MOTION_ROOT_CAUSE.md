@@ -637,3 +637,57 @@ rel_FA06k 2; Police_Male_06 1, cap_Police_Male_03n 1).
     Mirroring the right sole's points from the left's did not change it (6 %); no roll at touchdown (both feet within 1.5°).
     Item: pitch a held forefoot about its own hinge (the line through the ball band's lowest underside points).
   - W6 Medical_Female_01's jog (a single frame 4.4 cm, the cap 4.0) and Female_Adult_01's talk C1 0.55: not traced.
+
+## 13. The everyday cells after §12: the striding push, the sleeve's share, the robust reading's reach and cost, the arms' seams (editor owner, 2026-11-26)
+Gate: red, 6460 (dfc732a4). Traced on picks of the batch's tree (the gate's own pick with a temporary probe beside it: the moving
+arm's angle at each step of the arm clearance, the resting forearm's depth at each step, the feet's holds, the runtime's arm
+points against the drawn surface); never a verdict.
+- **W3, the women's walks (and the men's walk_player): the push along the contact's normal lay along the swing.** Female_Adult_15's
+  right upper arm entered the clearance at 18.8° from down (swung 18.6° back, 2.8° out), its third by the elbow 6.8 cm past its
+  margin in her coated back flank; `SkinNeed` pushed it along the contact's normal, 74 % backward, by 32°, to 46° (42° back), and
+  the stride's ease (`Swing`) brought it back to 36°. Medical_Female_03 the same (to 49.7°, eased to 38); the men's left arm the
+  same forward over the belly (the normal 75 % forward, 32 -> 39.7 -> 35.2). The right arm's push was 2-3 times the left's in all
+  three women (`walk_f_b` is a walk after a right turn). **Fix (`ArmClearance.SkinNeed`):** striding, each contact is pushed
+  along its normal or straight out from the body, whichever leaves the upper arm nearer the vertical (the rule the stride's ease
+  already used, `EaseOut`): the clip's swing is kept and the arm stands out for the body's breadth. On the 18-person pick W3 8 -> 0
+  (Female_Adult_15 35.8 -> 31.4, Medical_Female_03 36.5 -> 33.5, Police_Male_06 and cap_Police_Male_03n under 35).
+- **C1, Construction_Male_06's forearm in his hip pouch (five resting states).** (1) The cloth and sleeve give was given whole
+  wherever the arm met the body; it is now given only for the share of each offset that lies between the two along the contact's
+  normal, and where the sleeve's offset points away from the body the bare arm counts deeper than its point by that share
+  (`ArmClearance.Give`): five states -> four, the vertex 0.7 -> 0.54-0.66 cm. (2) The contact's normal was the three nearest
+  points' normals summed, which at the pouch's bottom leaned 16° toward its bevelled edge and gave the sleeve's offset a share
+  of +0.13 where the bare arm lay 0.19 cm under its point (-0.4): inside by the robust surface, the contact's normal is now that
+  surface's own gradient (`BodySkin`). With it and the robust reading kept within its bandwidth (below), the pick's C1 for him 4 -> 0.
+- **The robust reading's cost and reach (`BodySkin`).** The robust reading (RIMLS, §12) ran for every low-band point within a
+  cell. Measured on this tree, idles, the editor: (a) an exact test first (the surface is a weighted mean of the points' plane
+  distances with positive weights, so when no point within reach has the arm's point behind its plane it is outside, as the
+  passes would say): little gain (the passes ran on only 1.7-7.9 % of the asks); (b) the reach's points gathered only for the low
+  band's asks, from the cells the reach touches: no gain over (a); (c) **read only within its bandwidth of the surface** (the
+  nearest point's plane within h): offline on the dumps (the layered surface as the truth), past the bandwidth the extrapolated
+  surface read 11 of 7292 points 2.5-4.3 cm off the body as 0.01-0.5 cm inside, and the vote read none wrong there, so the vote's
+  answer stands past it. Cost on the 18-person pick (idles, a person a frame): 13.5 (§12) -> 10.3 ms, against 7.9 before the robust
+  reading (on the skins before §12's rebuild); with the robust reading switched off on this tree 7.1-8.6 ms for three of them
+  (on 7.6-10.6): the robust reading now costs 0.5-2 ms, and the rest of the rise is the arm clearance's own extra work on the
+  rebuilt skins (more contacts read where they are: asks +0-20 %). Not yet at the cost before it: open.
+- **C1, Female_Adult_01's talk (the left upper arm's third by the elbow on the chest's side, 30 cm over the hips): the arm's
+  seam was not sampled.** The runtime's arm points there read within 0.1 cm of the truth (0.05-0.19 cm outside the drawn body);
+  the gate's vertex 1987 is a sleeve seam (split vertices) 0.65 cm from its cell's point and 0.6 cm out of that point's plane,
+  and the skin samples one vertex a 1.8 cm cell (the one nearest the cell's centre): held at contact by its points, the arm
+  pressed the seam 0.35-0.58 cm into the chest all through the talk. **Fix (`RocketboxLayers.Skin`):** an arm's vertex that stands
+  out of its cell's point's tangent plane by more than the resting give (0.25 cm) is a point of its own (split vertices once);
+  every person's skin rebuilt (`RocketboxPeopleBuild.BuildSkins`; arm points +3.5 %, 47,450 -> 49,108, mostly the hands' folds).
+- **W1, Female_Adult_01's jog: the hinge hypothesis refuted; the gate's right ball lies on the toes.** The foot plant pitches the
+  held foot about the level axis across its heading, exactly (the turn's axis between frames 1.00 across, 0.00-0.01 along and
+  up); the gate's right-foot ball is vertex 2868 on the toes' row (1.9 cm past the toe joint; the left foot's is on the
+  metatarsal row, where the plant holds both), chosen as the lowest of the band in the neutral pose, where the flat sole's two rows
+  tie. At push-off the rigid foot turns at 500-650° a second about the metatarsal row, which the hold keeps still and lifts 2-9 cm,
+  and the toes' row 3.4 cm ahead sweeps 0.16-0.36 m/s. Tried and reverted: the toes held on the ground at their pad (the windlass)
+  took the right ball to 0.10-0.17 m/s and passed W1, but sank the soles 1.6-5.9 cm into the ground (W6) in 16 of 18 people: a
+  rigid foot pivoting on a point under and behind the toe joint lowers the joint, so held toes go into the ground. Open: a
+  rolling forefoot (the contact moving from the metatarsal heads to the toes as the heel rises), or the ball's band defined behind
+  the toe joint in both the gate and the build (a measure's change: for the coordinator).
+- **Open, traced:** Construction_Male_03's A1 in the second men's idle (20.6 against his 20.0: the rest's abduction at its 17°
+  cap with the elbow still 0.9 cm into the jacket's flank at 21 cm over the hips, then the shoulder 3.7° out; the clip's trunk
+  leans back 4° and carries the shoulders 3.6 cm back over the hips, §11); Medical_Female_01's jog W6 (one frame, max 4.4 against
+  the cap of 4.0: the landing foot hovers 4.1-4.4 cm at 0.3-0.5 m/s as the jog slows to a stop, both feet off the ground, so the
+  gate reads it as bearing the weight).
