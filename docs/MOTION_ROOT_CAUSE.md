@@ -741,7 +741,8 @@ verdict.
   (the metatarsal row) and turns it there by the clip's pitch; the toes went with it, rigid (`FootPlant.Toes` straightens them to
   their rest while the ankle is low, for landings), so as the heel rose the toes' row 3.3 cm ahead turned down into the ground, the
   foot was lifted out by its lowest point, and the row swept along the ground at 0.16-0.36 m/s: the gate's right-foot ball lies on
-  that row (her forefoot is flat, the two rows tie, §13). Fix (`FootPlant.ToesDown`): a held foot's toes are bent up at the toe
+  that row (her forefoot is flat, the two rows tie, §13). Tried, then reverted (§15: it moved another flat forefoot's ball; the
+  cell is carried to the next batch) (`FootPlant.ToesDown`): a held foot's toes are bent up at the toe
   joint until their sole lies as it did with the foot flat, within 50° of their rest (the first toe reaches 40-65° at toe-off in
   real walking, Nawoczenski, Baumhauer and Umberger 1999), eased back to the clip's over the hold's release when the foot lifts;
   the foot is still held on its ball, and kept as low as with the toes rigid (laid down, the toes lifted the sole's lowest point

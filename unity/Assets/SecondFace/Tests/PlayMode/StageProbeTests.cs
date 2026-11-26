@@ -188,6 +188,10 @@ namespace SecondFace.Tests
                 long V(string n) { var f = typeof(BodySkin).GetField(n, BindingFlags.Public | BindingFlags.Instance); return f != null ? (long)f.GetValue(Skin) : -1; }
                 var sm = typeof(BodySkin).GetField("SatMs", BindingFlags.Public | BindingFlags.Instance);
                 Debug.Log($"STAGEPROBE skin {Person}: depth asks {V("DepthCalls")}, robust passes run {V("RobustRuns")}, kept from the pose {V("DepthKept")}, satellite asks {V("SatAsks")}, deeper {V("SatDeeper")}, satellites {(sm != null ? (double)sm.GetValue(Skin) : -1):0.0} ms in all");
+                double D(string n) { var f = typeof(BodySkin).GetField(n, BindingFlags.Public | BindingFlags.Instance); return f != null ? System.Convert.ToDouble(f.GetValue(Skin)) : -1; }
+                var ac = Skin.GetComponent<ArmClearance>();
+                var frames = ac != null ? ac.CostFrames : 0;
+                Debug.Log($"STAGEPROBE drawn {Person}: asks {D("DrawnAsks")}, found {D("DrawnFound")}, inside {D("DrawnInside")}, refused by the rays {D("DrawnRefused")}, posed {D("DrawnPoses")}x in {D("DrawnPoseMs"):0.0} ms, read in {D("DrawnReadMs"):0.0} ms; clearance frames {frames}, {(frames > 0 ? ac.CostMs / frames : 0):0.000} ms a frame; drawn {(frames > 0 ? (D("DrawnPoseMs") + D("DrawnReadMs")) / frames : 0):0.000} ms a frame");
             }
         }
 

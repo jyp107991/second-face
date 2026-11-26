@@ -783,6 +783,16 @@ namespace SecondFace.EditorTools
                     footOf[i] = fpart;
                 }
             }
+            // the drawn body (RBS6): the torso's and thighs' own triangles as the gate takes them (MotionProbe.Calibrate: every
+            // mesh vertex filed by its nearest segment in the neutral pose, every submesh; a triangle is the body's when its three
+            // corners are), so the runtime reads an arm's depth from the surface that is drawn, not from points sampled off it
+            var gateBody = new bool[n0];
+            for (var i = 0; i < n0; i++)
+            {
+                var best = float.MaxValue; var part = SkinPart.None;
+                foreach (var (a, b, p) in segs) { var d = Along(lp[i], a, b, out _); if (d < best) { best = d; part = p; } }
+                gateBody[i] = part is SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR;
+            }
             boneSrc = anim;
             if (copy != null) UnityEngine.Object.DestroyImmediate(copy);
             var byPart = new List<int>[9];
@@ -791,34 +801,14 @@ namespace SecondFace.EditorTools
             foreach (var (i, part) in standOut) byPart[(int)part].Add(i);
             if (System.Environment.GetEnvironmentVariable("SKIN_DIAG") is { Length: > 0 } diag) SkinDiag(diag, id, lp, use, fate, partOf, byPart, cells.Count);
             for (var p = 0; p < 9; p++) byPart[p].Sort();
-            // each arm point's satellites (RBS5): every drawn vertex of an arm's cell that is not a point of its own, given to the
-            // nearest of its cell's points (a seam's split vertices once). The runtime reads a point in contact at its satellites
-            // too and places the arm on the deepest: it holds what is drawn, not its samples (a resting forearm held at its points
-            // lay 0.15 cm deeper at a vertex between them, 0.53 cm into the hip, C1, Male_Adult_02, 2026-11-26)
-            var satOf = new Dictionary<int, List<int>>();
-            {
-                var isPoint = new HashSet<int>();
-                foreach (var (_, (ci, _)) in cells) isPoint.Add(ci);
-                foreach (var (si, _) in standOut) isPoint.Add(si);
-                foreach (var (i, key) in armCell)
-                {
-                    if (isPoint.Contains(i)) continue;
-                    var master = cells[key].I; var best = (world[i] - world[master]).sqrMagnitude;
-                    if (keptIn.TryGetValue(key, out var keptHere))
-                        foreach (var j in keptHere) { var dj = (world[j] - world[i]).sqrMagnitude; if (dj < best) { best = dj; master = j; } }
-                    if (!satOf.TryGetValue(master, out var list)) satOf[master] = list = new List<int>();
-                    var dup = false;
-                    foreach (var j in list) if ((world[j] - world[i]).sqrMagnitude < 1e-8f) { dup = true; break; }
-                    if (!dup && (world[master] - world[i]).sqrMagnitude >= 1e-8f) list.Add(i);
-                }
-            }
             var female = mats.Any(m => m != null && m.name.ToLowerInvariant().TrimStart('s').StartsWith("f") && m.name.ToLowerInvariant().EndsWith("_body"));
 
             using var ms = new MemoryStream();
+            var drawnLog = "";
             using (var gz = new GZipStream(ms, System.IO.Compression.CompressionLevel.Optimal, true))
             using (var w = new BinaryWriter(gz))
             {
-                w.Write("RBS5".ToCharArray());
+                w.Write("RBS6".ToCharArray());
                 w.Write(Defs.Length);
                 foreach (var def in Defs) { w.Write(def.Id); w.Write((byte)(def.ThinSides ? 1 : 0)); }
                 for (var p = 0; p < 9; p++) w.Write(byPart[p].Count);
@@ -858,33 +848,55 @@ namespace SecondFace.EditorTools
                         w.Write((byte)fs);
                         if (fs != 0) { Put(bp[b0].MultiplyVector(fd)); Put(bp[b1].MultiplyVector(fd)); foreach (var (xb, _) in extra) Put(bp[xb].MultiplyVector(fd)); }
                     }
-                // RBS5: the satellites, point by point in the same order (a count, then each one's bones, weights and bind places)
-                var total = 0;
-                for (var p = 0; p < 9; p++) foreach (var i in byPart[p]) if (satOf.TryGetValue(i, out var l0)) total += Mathf.Min(l0.Count, ushort.MaxValue);
-                w.Write(total);
-                for (var p = 0; p < 9; p++)
-                    foreach (var i in byPart[p])
+                // RBS6: the drawn body (gateBody, above). The bones that skin it with their bind poses; each corner vertex (its
+                // index in the mesh, its place in the mesh as imported, its bones and weights as the mesh has them, strongest
+                // first, the layers over it, how far it faces sideways, the flank corrective's delta in the mesh); each triangle
+                // (its corners in that list, and whether its winding faces against its corners' normals, as the build's own
+                // FaceNormal turns it)
+                {
+                    var tris = mesh.triangles;
+                    var dIdx = new Dictionary<int, int>(); var dList = new List<int>(); var dTris = new List<(int A, int B, int C, bool Flip)>();
+                    int Id(int v) { if (!dIdx.TryGetValue(v, out var k)) { k = dList.Count; dIdx[v] = k; dList.Add(v); } return k; }
+                    for (var t = 0; t + 2 < tris.Length; t += 3)
                     {
-                        satOf.TryGetValue(i, out var sats);
-                        var c = sats != null ? Mathf.Min(sats.Count, ushort.MaxValue) : 0;
-                        w.Write((ushort)c);
-                        for (var x = 0; x < c; x++)
-                        {
-                            var v = sats[x];
-                            var b = bw[v];
-                            int b0 = b.boneIndex0, b1 = b.weight1 > 0f ? b.boneIndex1 : b.boneIndex0;
-                            var sum = b.weight0 + b.weight1 + b.weight2 + b.weight3;
-                            if (sum <= 0f) sum = 1f;
-                            w.Write((byte)b0); w.Write((byte)b1); w.Write(b.weight0 / sum); w.Write(b.weight1 > 0f ? b.weight1 / sum : 0f);
-                            void PutS(Vector3 q) { w.Write(q.x); w.Write(q.y); w.Write(q.z); }
-                            PutS(bp[b0].MultiplyPoint3x4(pos[v])); PutS(bp[b1].MultiplyPoint3x4(pos[v]));
-                            var extra = new System.Collections.Generic.List<(int B, float W)>();
-                            if (b.weight2 > 0.001f) extra.Add((b.boneIndex2, b.weight2 / sum));
-                            if (b.weight3 > 0.001f) extra.Add((b.boneIndex3, b.weight3 / sum));
-                            w.Write((byte)extra.Count);
-                            foreach (var (xb, xw) in extra) { w.Write((byte)xb); w.Write(xw); PutS(bp[xb].MultiplyPoint3x4(pos[v])); }
-                        }
+                        int a = tris[t], b = tris[t + 1], c = tris[t + 2];
+                        if (a >= n0 || b >= n0 || c >= n0 || !gateBody[a] || !gateBody[b] || !gateBody[c]) continue;
+                        var fn = Vector3.Cross(pos[b] - pos[a], pos[c] - pos[a]);
+                        dTris.Add((Id(a), Id(b), Id(c), Vector3.Dot(fn, nor[a] + nor[b] + nor[c]) < 0f));
                     }
+                    (int B, float W)[] Weights(int v)
+                    {
+                        var b = bw[v];
+                        var l = new List<(int B, float W)> { (b.boneIndex0, b.weight0), (b.boneIndex1, b.weight1), (b.boneIndex2, b.weight2), (b.boneIndex3, b.weight3) };
+                        return l.Where(x => x.W > 0f).OrderByDescending(x => x.W).ToArray();
+                    }
+                    var usedBones = new SortedSet<int>();
+                    foreach (var v in dList) foreach (var (b, _) in Weights(v)) usedBones.Add(b);
+                    w.Write(usedBones.Count);
+                    foreach (var b in usedBones) { w.Write((byte)b); for (var e = 0; e < 16; e++) w.Write(bp[b][e]); }
+                    w.Write(dList.Count);
+                    foreach (var v in dList)
+                    {
+                        w.Write(v);
+                        w.Write(pos[v].x); w.Write(pos[v].y); w.Write(pos[v].z);
+                        var ws = Weights(v);
+                        w.Write((byte)ws.Length);
+                        foreach (var (b, wt) in ws) { w.Write((byte)b); w.Write(wt); }
+                        uint mask = 0;
+                        for (var k = 0; k < keeps.Count && k < 32; k++) if (keeps[k][v]) mask |= 1u << k;
+                        w.Write(mask);
+                        var b0 = bw[v].boneIndex0;
+                        var nw = (bones[b0].localToWorldMatrix * bp[b0]).MultiplyVector(nor[v]);
+                        w.Write((byte)Mathf.RoundToInt(BodySkin.SideShare(root.InverseTransformDirection(nw).normalized.x) * 255f));
+                        var fd = flL != null && flL[v] != Vector3.zero ? flL[v] : flR != null && flR[v] != Vector3.zero ? flR[v] : Vector3.zero;
+                        var fs = fd == Vector3.zero ? 0 : flL != null && flL[v] != Vector3.zero ? 1 : 2;
+                        w.Write((byte)fs);
+                        if (fs != 0) { w.Write(fd.x); w.Write(fd.y); w.Write(fd.z); }
+                    }
+                    w.Write(dTris.Count);
+                    foreach (var (a, b, c, flip) in dTris) { w.Write(a); w.Write(b); w.Write(c); w.Write((byte)(flip ? 1 : 0)); }
+                    drawnLog = $"; drawn body {dList.Count} vertices, {dTris.Count} triangles, {usedBones.Count} bones";
+                }
             }
             var outPath = $"{dir}/{id}_skin.bytes";
             File.WriteAllBytes(outPath, ms.ToArray());
@@ -927,7 +939,7 @@ namespace SecondFace.EditorTools
                 return new[] { foot.InverseTransformPoint(world[heel]), foot.InverseTransformPoint(world[back]), foot.InverseTransformPoint(world[ball]), (toe != null ? toe : foot).InverseTransformPoint(world[tip]) };
             }
             skin.Built = BodySkin.Version;
-            Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")}; {inner} inside faces left out; {relabelled} points the arms do not move given to the torso; parts told apart in the neutral pose)");
+            Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")}; {inner} inside faces left out; {relabelled} points the arms do not move given to the torso; parts told apart in the neutral pose{drawnLog})");
         }
 
         private static HumanBodyBones Parse(string name) => (HumanBodyBones)Enum.Parse(typeof(HumanBodyBones), name);

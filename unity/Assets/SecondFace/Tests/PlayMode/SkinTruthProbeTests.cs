@@ -19,7 +19,7 @@ namespace SecondFace.Tests
     {
         private static object F(object o, string n) => o.GetType().GetField(n, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(o);
         private static readonly string Out = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", "skin_truth"));
-        private static StreamWriter _pairs;
+        private static StreamWriter _pairs, _poseErr;
 
         [DefaultExecutionOrder(10002)]
         public sealed class Truth : MonoBehaviour
@@ -93,6 +93,9 @@ namespace SecondFace.Tests
                     return votes >= 2;
                 }
                 float True(Vector3 p) { var d = MotionProbe.DrawnDepth(p, v, _tris, _lo, _hi, 0.08f); return In(p) ? d : -d; }
+                // the drawn reading's posing against the baked mesh (posed again from the bones as they are now)
+                var pe = _skin.DrawnPoseError(v, out var pm);
+                _poseErr?.WriteLine($"{Probe.Person},{_state},{Time.time:0.000},{pe * 100f:0.00000},{pm * 100f:0.00000},{_skin.DrawnCount}");
                 var inv = Quaternion.Inverse(_root.rotation);
                 string L(Vector3 w) { var r = inv * (w - _hips.position) * 100f; return $"[{r.x:0.000},{r.y:0.000},{r.z:0.000}]"; }
                 string D(Vector3 w) { var r = inv * w; return $"[{r.x:0.0000},{r.y:0.0000},{r.z:0.0000}]"; }
@@ -106,7 +109,14 @@ namespace SecondFace.Tests
                     if (!ins || rd < -0.02f) continue;
                     var tr = True(_skin.P[i]);
                     rows.Add((i, ins, rd, tr, near));
-                    _pairs?.WriteLine($"{Probe.Person},{_state},{Time.time:0.000},{i},{_skin.PartOf(i)},{rd * 100f:0.000},{tr * 100f:0.000},{_skin.Off(i) * 100f:0.00},{(near >= 0 ? _skin.Off(near) * 100f : -1f):0.00},{(near >= 0 && _skin.Low(near) ? 1 : 0)},{(near >= 0 ? _skin.PartOf(near).ToString() : "none")}");
+                    var dr = _skin.DrawnRead(_skin.P[i], out var db, out var dl, out var fIn, out var rIn);
+                    var pt = _skin.PartOf(i);
+                    var lft = pt == BodySkin.Part.UpperArmL || pt == BodySkin.Part.ForearmL || pt == BodySkin.Part.HandL;
+                    var an = Probe.GetComponent<Animator>();
+                    var ua = an.GetBoneTransform(lft ? HumanBodyBones.LeftUpperArm : HumanBodyBones.RightUpperArm).position;
+                    var la = an.GetBoneTransform(lft ? HumanBodyBones.LeftLowerArm : HumanBodyBones.RightLowerArm).position;
+                    var along = Vector3.Dot(_skin.P[i] - ua, la - ua) / Mathf.Max(1e-8f, (la - ua).sqrMagnitude);
+                    _pairs?.WriteLine($"{Probe.Person},{_state},{Time.time:0.000},{i},{_skin.PartOf(i)},{rd * 100f:0.000},{tr * 100f:0.000},{_skin.Off(i) * 100f:0.00},{(near >= 0 ? _skin.Off(near) * 100f : -1f):0.00},{(near >= 0 && _skin.Low(near) ? 1 : 0)},{(near >= 0 ? _skin.PartOf(near).ToString() : "none")},{(dr ? 1 : 0)},{db * 100f:0.0000},{dl * 100f:0.0000},{(fIn ? 1 : 0)},{(rIn ? 1 : 0)},{along:0.000}");
                 }
                 // the gate's worst arm vertex this frame (the candidates by the three nearest body vertices' planes, then the drawn
                 // depth), among the arm's vertices near the runtime's arm points that are near the body
@@ -286,7 +296,9 @@ namespace SecondFace.Tests
         {
             Directory.CreateDirectory(Out);
             _pairs = new StreamWriter(Path.Combine(Out, "pairs.csv"));
-            _pairs.WriteLine("person,state,t,point,part,runtime,true,offArm,offBody,low,bodyPart");
+            _pairs.WriteLine("person,state,t,point,part,runtime,true,offArm,offBody,low,bodyPart,drawn,drawnBare,drawnLayered,faceIn,rayIn,along");
+            _poseErr = new StreamWriter(Path.Combine(Out, "pose_err.csv")) { AutoFlush = true };
+            _poseErr.WriteLine("person,state,t,maxcm,meancm,verts");
             var w = new GameObject("truth watcher");
             Object.DontDestroyOnLoad(w);
             w.AddComponent<Watcher>();
@@ -297,6 +309,7 @@ namespace SecondFace.Tests
                 foreach (var t in Object.FindObjectsByType<Truth>(FindObjectsSortMode.None)) Object.DestroyImmediate(t);
                 Object.Destroy(w);
                 _pairs.Flush(); _pairs.Close(); _pairs = null;
+                _poseErr?.Close(); _poseErr = null;
             }
         }
     }

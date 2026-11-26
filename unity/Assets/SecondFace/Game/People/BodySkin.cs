@@ -64,12 +64,21 @@ namespace SecondFace.Game.People
             public byte[] XN, XB;
             public float[] XW;
             public Vector3[] XP, XNo, XD;
-            // RBS5: each point's satellites (SatStart[i]..SatStart[i+1]): the drawn arm vertices its cell stands for, skinned as
-            // they are drawn (two bones and up to two more, positions only)
-            public int[] SatStart;
-            public byte[] SB0, SB1, SXN, SXB;
-            public float[] SW, SW1, SXW;
-            public Vector3[] SP0, SP1, SXP;
+            /// <summary>RBS6: the drawn body (the torso's and thighs' own triangles as the gate takes them): the bones that skin
+            /// it and their bind poses (by bone index), each vertex's index in the mesh, its place in the mesh, its bones and
+            /// weights (four slots, strongest first, <see cref="DK"/> of them used), the layers over it, how far it faces sideways,
+            /// the flank corrective's delta; each triangle's corners and whether its face is turned against its winding; each
+            /// vertex's welded id (split vertices at one place are one), each welded vertex's triangles; and a bounding volume
+            /// hierarchy over the triangles (built in the bind pose, refitted each pose).</summary>
+            public int DN, DT;
+            public int[] DBones;
+            public Matrix4x4[] DBind;
+            public int[] DMesh, DK, DFanStart, DFan, DWeld;
+            public Vector3[] DPos, DDelta;
+            public int4[] DB; public float4[] DW;
+            public uint[] DMask; public byte[] DSide, DFlank, DFlip;
+            public int3[] DTri;
+            public int[] HLeft, HRight, HStart, HCount, HOrder;
         }
 
         /// <summary>The flank correctives' weights now (0-1; ArmClearance sets them as it sets the body's own shapes).</summary>
@@ -81,14 +90,6 @@ namespace SecondFace.Game.People
         private Transform[] _bones;
         private Matrix4x4[] _m;
         private float[] _off;
-        // each satellite where it is now, from its point (posed with the points, turned with them)
-        private Vector3[] _satOff;
-        private int[] _satIdx;
-        /// <summary>A point within this of the body's skin (m) is read at its satellites too, and takes the deepest: the runtime
-        /// places the arm on the drawn vertices its points stand for, not on the points alone. One point a cell (1.8 cm on the
-        /// arms) let a resting forearm be held at its points while a drawn vertex between them lay 0.15 cm deeper, 0.53 cm in
-        /// (C1, Male_Adult_02, thirteen resting states, 2026-11-26).</summary>
-        public float SatNear = 0.01f;
         private uint _worn;
         /// <summary>Posed by <see cref="Pose"/> (world): each point on the surface (its layers' thickness out) and its normal.</summary>
         public Vector3[] P, N;
@@ -147,7 +148,9 @@ namespace SecondFace.Game.People
             _off ??= new float[n];
             if (_off.Length != n) _off = new float[n];
             _m = new Matrix4x4[_bones.Length];
-            _satOff = _set.SatStart != null ? new Vector3[_set.SatStart[n]] : null;
+            ReleaseDrawn();
+            var anim = GetComponent<Animator>() ?? GetComponentInParent<Animator>();
+            _hipsT = anim != null && anim.isHuman ? anim.GetBoneTransform(HumanBodyBones.Hips) : null;
         }
 
         private static Set Read(TextAsset data)
@@ -159,10 +162,10 @@ namespace SecondFace.Game.People
             using (var r = new BinaryReader(gz))
             {
                 var magic = new string(r.ReadChars(4));
-                if (magic != "RBS1" && magic != "RBS2" && magic != "RBS3" && magic != "RBS4" && magic != "RBS5") throw new InvalidDataException("not a body skin");
+                if (magic != "RBS1" && magic != "RBS2" && magic != "RBS3" && magic != "RBS4" && magic != "RBS6") throw new InvalidDataException("not a body skin");
                 var v2 = magic != "RBS1";   // each layer's thinning at the sides, and each point's facing sideways
-                var v5 = magic == "RBS5";   // each arm point's satellites
-                var v4 = magic == "RBS4" || v5;   // every bone that moves a point
+                var v6 = magic == "RBS6";   // the drawn body
+                var v4 = magic == "RBS4" || v6;   // every bone that moves a point
                 var v3 = magic == "RBS3" || v4;   // the flank correctives
                 var nl = r.ReadInt32();
                 s.Layers = new string[nl]; s.ThinSides = new bool[nl];
@@ -193,31 +196,38 @@ namespace SecondFace.Game.People
                     if (v3 && (s.FlankSide[i] = r.ReadByte()) != 0) { s.D0[i] = V(); s.D1[i] = V(); if (v4) for (var x = 0; x < s.XN[i] && x < 2; x++) s.XD[i * 2 + x] = V(); }
                     used.Add(s.B0[i]); used.Add(s.B1[i]);
                 }
-                if (v5)
+                if (v6)
                 {
-                    var ns = r.ReadInt32();
-                    s.SatStart = new int[n + 1];
-                    s.SB0 = new byte[ns]; s.SB1 = new byte[ns]; s.SW = new float[ns]; s.SW1 = new float[ns]; s.SP0 = new Vector3[ns]; s.SP1 = new Vector3[ns];
-                    s.SXN = new byte[ns]; s.SXB = new byte[ns * 2]; s.SXW = new float[ns * 2]; s.SXP = new Vector3[ns * 2];
-                    var q = 0;
-                    for (var i = 0; i < n; i++)
+                    var nb = r.ReadInt32();
+                    s.DBones = new int[nb];
+                    var binds = new Matrix4x4[nb];
+                    var maxB = 0;
+                    for (var k = 0; k < nb; k++)
                     {
-                        s.SatStart[i] = q;
-                        int c = r.ReadUInt16();
-                        for (var x = 0; x < c; x++, q++)
-                        {
-                            s.SB0[q] = r.ReadByte(); s.SB1[q] = r.ReadByte(); s.SW[q] = r.ReadSingle(); s.SW1[q] = r.ReadSingle();
-                            s.SP0[q] = V(); s.SP1[q] = V();
-                            s.SXN[q] = r.ReadByte();
-                            for (var e = 0; e < s.SXN[q]; e++)
-                            {
-                                var xb = r.ReadByte(); var xw = r.ReadSingle(); var xp = V();
-                                if (e < 2) { s.SXB[q * 2 + e] = xb; s.SXW[q * 2 + e] = xw; s.SXP[q * 2 + e] = xp; used.Add(xb); }
-                            }
-                            used.Add(s.SB0[q]); used.Add(s.SB1[q]);
-                        }
+                        s.DBones[k] = r.ReadByte();
+                        var m = new Matrix4x4();
+                        for (var e = 0; e < 16; e++) m[e] = r.ReadSingle();
+                        binds[k] = m; maxB = Mathf.Max(maxB, s.DBones[k]); used.Add(s.DBones[k]);
                     }
-                    s.SatStart[n] = q;
+                    s.DBind = new Matrix4x4[maxB + 1];
+                    for (var k = 0; k < nb; k++) s.DBind[s.DBones[k]] = binds[k];
+                    var dn = r.ReadInt32(); s.DN = dn;
+                    s.DMesh = new int[dn]; s.DPos = new Vector3[dn]; s.DK = new int[dn]; s.DB = new int4[dn]; s.DW = new float4[dn];
+                    s.DMask = new uint[dn]; s.DSide = new byte[dn]; s.DFlank = new byte[dn]; s.DDelta = new Vector3[dn];
+                    for (var i = 0; i < dn; i++)
+                    {
+                        s.DMesh[i] = r.ReadInt32(); s.DPos[i] = V();
+                        int k = r.ReadByte();
+                        var b4 = int4.zero; var w4 = float4.zero;
+                        for (var x = 0; x < k; x++) { int b = r.ReadByte(); var wt = r.ReadSingle(); if (x < 4) { b4[x] = b; w4[x] = wt; } }
+                        s.DK[i] = Mathf.Min(k, 4); s.DB[i] = b4; s.DW[i] = w4;
+                        s.DMask[i] = r.ReadUInt32(); s.DSide[i] = r.ReadByte(); s.DFlank[i] = r.ReadByte();
+                        if (s.DFlank[i] != 0) s.DDelta[i] = V();
+                    }
+                    var dt = r.ReadInt32(); s.DT = dt;
+                    s.DTri = new int3[dt]; s.DFlip = new byte[dt];
+                    for (var t = 0; t < dt; t++) { s.DTri[t] = new int3(r.ReadInt32(), r.ReadInt32(), r.ReadInt32()); s.DFlip[t] = r.ReadByte(); }
+                    DrawnTopology(s);
                 }
                 s.UsedBones = new int[used.Count];
                 used.CopyTo(s.UsedBones);
@@ -246,6 +256,21 @@ namespace SecondFace.Game.People
                 for (var k = 0; m != 0; k++, m >>= 1)
                     if ((m & 1) != 0) off = Mathf.Max(off, _set.ThinSides[k] ? Mathf.Lerp(thick[k], Mathf.Min(thick[k], SideThick), side) : thick[k]);
                 _off[i] = off;
+            }
+            // (the drawn body's corners stand out by the same rule: the layered surface is the drawn one, out by the clothes)
+            if (_set.DN > 0)
+            {
+                if (_dOffM == null || _dOffM.Length != _set.DN) _dOffM = new float[_set.DN];
+                for (var i = 0; i < _set.DN; i++)
+                {
+                    var m = _set.DMask[i] & worn;
+                    var off = 0f;
+                    var side = _set.DSide[i] / 255f;
+                    for (var k = 0; m != 0; k++, m >>= 1)
+                        if ((m & 1) != 0) off = Mathf.Max(off, _set.ThinSides[k] ? Mathf.Lerp(thick[k], Mathf.Min(thick[k], SideThick), side) : thick[k]);
+                    _dOffM[i] = off;
+                }
+                _dOffDirty = true;
             }
         }
 
@@ -296,15 +321,6 @@ namespace SecondFace.Game.People
                 }
                 P[i] = p + nn * _off[i];
                 N[i] = nn;
-                if (_satOff != null)
-                    for (var q = _set.SatStart[i]; q < _set.SatStart[i + 1]; q++)
-                    {
-                        ref var s0 = ref _m[_set.SB0[q]];
-                        ref var s1 = ref _m[_set.SB1[q]];
-                        var sp = s0.MultiplyPoint3x4(_set.SP0[q]) * _set.SW[q] + s1.MultiplyPoint3x4(_set.SP1[q]) * _set.SW1[q];
-                        for (var x = 0; x < _set.SXN[q] && x < 2; x++) sp += _m[_set.SXB[q * 2 + x]].MultiplyPoint3x4(_set.SXP[q * 2 + x]) * _set.SXW[q * 2 + x];
-                        _satOff[q] = sp + nn * _off[i] - P[i];
-                    }
             }
             for (var h = 0; h < Buckets; h++) _head[h] = -1;
             var body = _set.Start[(int)Part.ThighR + 1];
@@ -338,7 +354,6 @@ namespace SecondFace.Game.People
             {
                 P[i] = pivot + q * (P[i] - pivot);
                 N[i] = q * N[i];
-                if (_satOff != null) for (var x = _set.SatStart[i]; x < _set.SatStart[i + 1]; x++) _satOff[x] = q * _satOff[x];
             }
         }
 
@@ -384,10 +399,7 @@ namespace SecondFace.Game.People
         public const float DeepAcross = 3f, DeepAcrossMax = 0.04f;
 
         /// <summary>For the gate's report: how often <see cref="Depth"/> was asked, and how often the robust reading's passes ran.</summary>
-        [System.NonSerialized] public long DepthCalls, RobustRuns, DepthKept, SatAsks, SatDeeper;
-        /// <summary>For the gate's report: the time the satellites' readings have taken (ms).</summary>
-        [System.NonSerialized] public double SatMs;
-        private readonly System.Diagnostics.Stopwatch _satCost = new();
+        [System.NonSerialized] public long DepthCalls, RobustRuns, DepthKept;
         // (each asked point's place when it was last asked, and the pose it was asked against: the same place against the same
         // posed body is the same answer, so it is not reckoned again)
         private Vector3[] _askedAt; private int[] _askedPose; private int[] _askIdx; private int _pose = 1;
@@ -436,7 +448,7 @@ namespace SecondFace.Game.People
             _nBody = -1;
         }
 
-        private void OnDestroy() => Release();
+        private void OnDestroy() { Release(); ReleaseDrawn(); }
 
         /// <summary>Asks <see cref="Depth"/> of points <paramref name="from"/>..<paramref name="to"/> (every
         /// <paramref name="stride"/>th) at once; the answers in <see cref="QD"/>, <see cref="QN"/>, <see cref="QNear"/>.</summary>
@@ -465,11 +477,13 @@ namespace SecondFace.Game.People
             if (k == 0) return;
             if (!_runs.IsCreated) _runs = new NativeArray<int>(1, Allocator.Persistent);
             _runs[0] = 0;
-            new DepthJob { P = _nP, N = _nN, Head = _nHead, Next = _nNext, Cells = _nCell, Spacing = _nSpacing, Flags = _nFlags, Q = _qIn, D = _qD, No = _qNo, Near = _qNear, Runs = _runs, Count = k }.Run();
+            // (with the drawn body the robust reading is not run: every point within its band is read again against the drawn
+            // triangles, which answer exactly where the robust surface was an estimate)
+            new DepthJob { P = _nP, N = _nN, Head = _nHead, Next = _nNext, Cells = _nCell, Spacing = _nSpacing, Flags = _nFlags, Q = _qIn, D = _qD, No = _qNo, Near = _qNear, Runs = _runs, Count = k, UseRobust = DrawnOn ? 0 : 1 }.Run();
             RobustRuns += _runs[0];
             var nv = _qNo.Reinterpret<Vector3>();
             for (var j = 0; j < k; j++) { var i = _askIdx[j]; QD[i] = _qD[j]; QN[i] = nv[j]; QNear[i] = _qNear[j]; _askedAt[i] = qv[j]; _askedPose[i] = _pose; }
-            if (_satOff != null) Satellites(k);
+            if (DrawnOn) DrawnRange(k);
             if (CheckBatch && _checks < 40)
                 for (var i = from; i < to; i += stride)
                 {
@@ -484,46 +498,6 @@ namespace SecondFace.Game.People
                         Debug.Log($"BodySkin batch mismatch {name} point {i} (query {kq} of {m}, at {P[i].x:0.0000},{P[i].y:0.0000},{P[i].z:0.0000}, asked {_qIn[kq].x:0.0000},{_qIn[kq].y:0.0000},{_qIn[kq].z:0.0000}; cell {c}): managed {(ok ? near : -1)} {d:0.000000} {n}, batch {QNear[i]} {QD[i]:0.000000} {QN[i]}; mirrored {_nBody} of {_set.Start[(int)Part.ThighR + 1]}; body point {nb} live {P[nb]} cell {_cell[nb]}, mirror {_nP[nb]} cell {_nCell[nb]}; head live {_head[Hash(_cell[nb].x, _cell[nb].y, _cell[nb].z)]} mirror {_nHead[Hash(_cell[nb].x, _cell[nb].y, _cell[nb].z)]}");
                     }
                 }
-        }
-
-        /// <summary>The asked points within <see cref="SatNear"/> of the body read at their satellites as well, in one batch, each
-        /// taking the deepest reading (its depth, normal and nearest body point).</summary>
-        private void Satellites(int k)
-        {
-            _satCost.Restart();
-            var ks = 0;
-            for (var j = 0; j < k; j++)
-            {
-                var i = _askIdx[j];
-                if (QNear[i] < 0 || QD[i] < -SatNear) continue;
-                ks += _set.SatStart[i + 1] - _set.SatStart[i];
-            }
-            if (ks == 0) { SatMs += _satCost.Elapsed.TotalMilliseconds; return; }
-            if (_qIn.Length < ks)
-            {
-                _qIn.Dispose(); _qNo.Dispose(); _qNear.Dispose(); _qD.Dispose();
-                _qIn = new NativeArray<float3>(ks, Allocator.Persistent); _qNo = new NativeArray<float3>(ks, Allocator.Persistent);
-                _qNear = new NativeArray<int>(ks, Allocator.Persistent); _qD = new NativeArray<float>(ks, Allocator.Persistent);
-            }
-            if (_satIdx == null || _satIdx.Length < ks) _satIdx = new int[Mathf.Max(ks, 512)];
-            var qv = _qIn.Reinterpret<Vector3>();
-            var m = 0;
-            for (var j = 0; j < k; j++)
-            {
-                var i = _askIdx[j];
-                if (QNear[i] < 0 || QD[i] < -SatNear) continue;
-                for (var q = _set.SatStart[i]; q < _set.SatStart[i + 1]; q++) { _satIdx[m] = i; qv[m++] = P[i] + _satOff[q]; }
-            }
-            new DepthJob { P = _nP, N = _nN, Head = _nHead, Next = _nNext, Cells = _nCell, Spacing = _nSpacing, Flags = _nFlags, Q = _qIn, D = _qD, No = _qNo, Near = _qNear, Runs = _runs, Count = m }.Run();
-            var nv = _qNo.Reinterpret<Vector3>();
-            for (var j = 0; j < m; j++)
-            {
-                var i = _satIdx[j];
-                if (_qNear[j] < 0 || _qD[j] <= QD[i]) continue;
-                QD[i] = _qD[j]; QN[i] = nv[j]; QNear[i] = _qNear[j]; SatDeeper++;
-            }
-            SatAsks += m;
-            SatMs += _satCost.Elapsed.TotalMilliseconds;
         }
 
         /// <summary>The answer <see cref="DepthRange"/> kept for point <paramref name="i"/>, as <see cref="Depth"/> gives it
@@ -548,6 +522,8 @@ namespace SecondFace.Game.People
             public NativeArray<int> Near;
             public NativeArray<int> Runs;
             public int Count;
+            /// <summary>The robust reading in the low band (0 with the drawn body).</summary>
+            public int UseRobust;
 
             public void Execute()
             {
@@ -651,7 +627,7 @@ namespace SecondFace.Game.People
                 var inside = ins >= 2 ? math.min(u0 > 0f ? u0 : float.MaxValue, math.min(u1 > 0f ? u1 : float.MaxValue, u2 > 0f ? u2 : float.MaxValue)) : -1f;
                 var hr = math.clamp(Spacing[c0], SurfaceHMin, SurfaceHMax); var rr = math.min(SurfaceReach * hr, Cell);
                 var grad = float3.zero;
-                if ((Flags[c0] & LowFlag) != 0 && d0 <= rr * rr && math.abs(Dot(p - P[c0], N[c0])) <= hr)
+                if (UseRobust != 0 && (Flags[c0] & LowFlag) != 0 && d0 <= rr * rr && math.abs(Dot(p - P[c0], N[c0])) <= hr)
                 {
                     var f = Robust(p, c0, out var ok, out var ran, out grad);
                     if (ok) inside = f < 0f ? math.max(-f, DeepMin) : -1f;
@@ -667,6 +643,508 @@ namespace SecondFace.Game.People
                 var gap = across <= patch ? math.abs(plane) : math.sqrt((across - patch) * (across - patch) + plane * plane);
                 depth = inside > 0f ? inside : -gap;
                 return c0;
+            }
+        }
+
+        // ---- the drawn body (RBS6): an arm's depth read from the surface that is drawn ----
+        // The points above read the body's surface from samples of it: the least of the three nearest points' planes, which
+        // under-reads where the skin turns in (a resting forearm 0.53 cm into a waist under the ribs read 0.41 cm against the
+        // layered 0.93, the nearest planes 0.41/0.56/1.42 cm, C1, Male_Adult_02, thirteen resting states, 2026-11-26), and every
+        // reading of a point cloud (planes, IMLS, RIMLS) errs at concave or sharp places. Here the body's own vertices in the
+        // torso and thighs are posed as the mesh is drawn (its own bones and weights, its flank correctives, the quality's bone
+        // count) and an arm point near the body is read against its triangles: the nearest point on them (exact), inside by the
+        // angle-weighted pseudo-normal of the nearest feature (Baerentzen and Aanaes 2005, IEEE TVCG 11(3), exact on a closed
+        // surface), confirmed by the gate's own test (three level rays, odd crossings within 0.8 m), and out by the clothes over
+        // the nearest point (the corners' layers, interpolated). The vote above still answers for points beyond DrawnBand.
+
+        /// <summary>The drawn reading answers for an asked point the vote reads deeper than this outside the body (m), and finds a
+        /// triangle within <see cref="DrawnReach"/> of it (m).</summary>
+        public const float DrawnBand = 0.025f, DrawnReach = 0.06f;
+        // TEMP (A/B only; never committed): SKIN_DRAWN=off reads by the vote alone (the everyday screen sets it per config)
+        private static bool DrawnOff = System.Environment.GetEnvironmentVariable("SKIN_DRAWN") == "off";
+        private bool DrawnOn => !DrawnOff && _set != null && _set.DN > 0 && _set.DT > 0;
+        /// <summary>For reports: drawn readings asked, found within reach, inside, inside by the face and refused by the rays;
+        /// the time the drawn body's posing and its readings have taken (ms) and how often it was posed.</summary>
+        [System.NonSerialized] public long DrawnAsks, DrawnFound, DrawnInside, DrawnRefused;
+        [System.NonSerialized] public double DrawnPoseMs, DrawnReadMs; [System.NonSerialized] public int DrawnPoses;
+        private readonly System.Diagnostics.Stopwatch _drawnCost = new();
+        private Transform _hipsT;
+        private float[] _dOffM; private bool _dOffDirty = true;
+        private int _drawnAt = -1;
+        private NativeArray<float3> _dPos, _dDelta, _dV, _hLo, _hHi, _dq, _dqN;
+        private NativeArray<int4> _dB; private NativeArray<float4> _dW;
+        private NativeArray<int> _dK, _dWeld, _dFanStart, _dFan, _hLeft, _hRight, _hStart, _hCount, _hOrder, _dqF;
+        private NativeArray<byte> _dFl, _dFlip;
+        private NativeArray<int3> _dTri;
+        private NativeArray<float4x4> _dM;
+        private NativeArray<float> _dOff, _dqL, _dqB;
+        private int[] _dqIdx;
+
+        private const int HLeaf = 4;
+
+        /// <summary>The drawn body's welded corners, their triangles, and its bounding volume hierarchy (median splits on the
+        /// longest axis of the triangles' centres in the bind pose; each node after its parent, so a refit runs backwards).</summary>
+        private static void DrawnTopology(Set s)
+        {
+            var weld = new Dictionary<Vector3, int>();
+            s.DWeld = new int[s.DN];
+            for (var i = 0; i < s.DN; i++)
+            {
+                if (!weld.TryGetValue(s.DPos[i], out var w)) { w = weld.Count; weld[s.DPos[i]] = w; }
+                s.DWeld[i] = w;
+            }
+            var nw = weld.Count;
+            var cnt = new int[nw + 1];
+            for (var t = 0; t < s.DT; t++) { var c = s.DTri[t]; cnt[s.DWeld[c.x]]++; if (s.DWeld[c.y] != s.DWeld[c.x]) cnt[s.DWeld[c.y]]++; if (s.DWeld[c.z] != s.DWeld[c.x] && s.DWeld[c.z] != s.DWeld[c.y]) cnt[s.DWeld[c.z]]++; }
+            s.DFanStart = new int[nw + 1];
+            for (var w = 0; w < nw; w++) s.DFanStart[w + 1] = s.DFanStart[w] + cnt[w];
+            s.DFan = new int[s.DFanStart[nw]];
+            var fill = new int[nw];
+            for (var t = 0; t < s.DT; t++)
+            {
+                var c = s.DTri[t];
+                int a = s.DWeld[c.x], b = s.DWeld[c.y], d = s.DWeld[c.z];
+                s.DFan[s.DFanStart[a] + fill[a]++] = t;
+                if (b != a) s.DFan[s.DFanStart[b] + fill[b]++] = t;
+                if (d != a && d != b) s.DFan[s.DFanStart[d] + fill[d]++] = t;
+            }
+            var cen = new Vector3[s.DT];
+            for (var t = 0; t < s.DT; t++) { var c = s.DTri[t]; cen[t] = (s.DPos[c.x] + s.DPos[c.y] + s.DPos[c.z]) / 3f; }
+            var order = new int[s.DT];
+            for (var t = 0; t < s.DT; t++) order[t] = t;
+            List<int> left = new(), right = new(), start = new(), count = new();
+            int Node(int from, int to)
+            {
+                var id = left.Count;
+                left.Add(-1); right.Add(-1); start.Add(from); count.Add(to - from);
+                if (to - from <= HLeaf) return id;
+                var lo = Vector3.one * float.MaxValue; var hi = -lo;
+                for (var e = from; e < to; e++) { lo = Vector3.Min(lo, cen[order[e]]); hi = Vector3.Max(hi, cen[order[e]]); }
+                var ext = hi - lo;
+                var axis = ext.x >= ext.y && ext.x >= ext.z ? 0 : ext.y >= ext.z ? 1 : 2;
+                System.Array.Sort(order, from, to - from, Comparer<int>.Create((x, y) => cen[x][axis].CompareTo(cen[y][axis])));
+                var mid = (from + to) / 2;
+                var l = Node(from, mid);
+                var r = Node(mid, to);
+                left[id] = l; right[id] = r; count[id] = 0;
+                return id;
+            }
+            if (s.DT > 0) Node(0, s.DT);
+            s.HLeft = left.ToArray(); s.HRight = right.ToArray(); s.HStart = start.ToArray(); s.HCount = count.ToArray(); s.HOrder = order;
+        }
+
+        private void ReleaseDrawn()
+        {
+            if (_dPos.IsCreated)
+            {
+                _dPos.Dispose(); _dDelta.Dispose(); _dV.Dispose(); _hLo.Dispose(); _hHi.Dispose(); _dB.Dispose(); _dW.Dispose(); _dK.Dispose();
+                _dWeld.Dispose(); _dFanStart.Dispose(); _dFan.Dispose(); _hLeft.Dispose(); _hRight.Dispose(); _hStart.Dispose(); _hCount.Dispose();
+                _hOrder.Dispose(); _dFl.Dispose(); _dFlip.Dispose(); _dTri.Dispose(); _dM.Dispose(); _dOff.Dispose();
+            }
+            if (_dq.IsCreated) { _dq.Dispose(); _dqN.Dispose(); _dqF.Dispose(); _dqL.Dispose(); _dqB.Dispose(); }
+            _drawnAt = -1; _dOffDirty = true;
+        }
+
+        /// <summary>The drawn body posed from the bones as they are now (once a pose): its vertices skinned as the mesh is drawn,
+        /// the hierarchy's boxes refitted.</summary>
+        private void EnsureDrawn()
+        {
+            if (_drawnAt == _pose && _dPos.IsCreated) return;
+            _drawnCost.Restart();
+            var s = _set;
+            if (!_dPos.IsCreated)
+            {
+                _dPos = new NativeArray<float3>(s.DN, Allocator.Persistent); NativeArray<Vector3>.Copy(s.DPos, _dPos.Reinterpret<Vector3>());
+                _dDelta = new NativeArray<float3>(s.DN, Allocator.Persistent); NativeArray<Vector3>.Copy(s.DDelta, _dDelta.Reinterpret<Vector3>());
+                _dV = new NativeArray<float3>(s.DN, Allocator.Persistent);
+                _dB = new NativeArray<int4>(s.DB, Allocator.Persistent); _dW = new NativeArray<float4>(s.DW, Allocator.Persistent);
+                _dK = new NativeArray<int>(s.DK, Allocator.Persistent); _dWeld = new NativeArray<int>(s.DWeld, Allocator.Persistent);
+                _dFanStart = new NativeArray<int>(s.DFanStart, Allocator.Persistent); _dFan = new NativeArray<int>(s.DFan, Allocator.Persistent);
+                _hLeft = new NativeArray<int>(s.HLeft, Allocator.Persistent); _hRight = new NativeArray<int>(s.HRight, Allocator.Persistent);
+                _hStart = new NativeArray<int>(s.HStart, Allocator.Persistent); _hCount = new NativeArray<int>(s.HCount, Allocator.Persistent);
+                _hOrder = new NativeArray<int>(s.HOrder, Allocator.Persistent);
+                _hLo = new NativeArray<float3>(s.HLeft.Length, Allocator.Persistent); _hHi = new NativeArray<float3>(s.HLeft.Length, Allocator.Persistent);
+                _dFl = new NativeArray<byte>(s.DFlank, Allocator.Persistent); _dFlip = new NativeArray<byte>(s.DFlip, Allocator.Persistent);
+                _dTri = new NativeArray<int3>(s.DTri, Allocator.Persistent);
+                _dM = new NativeArray<float4x4>(s.DBind.Length, Allocator.Persistent);
+                _dOff = new NativeArray<float>(s.DN, Allocator.Persistent);
+                _dOffDirty = true;
+            }
+            if (_dOffDirty) { if (_dOffM != null && _dOffM.Length == s.DN) _dOff.CopyFrom(_dOffM); else for (var i = 0; i < s.DN; i++) _dOff[i] = 0f; _dOffDirty = false; }
+            foreach (var b in s.DBones) _dM[b] = _bones[b].localToWorldMatrix * s.DBind[b];
+            // the bones the GPU blends a vertex by: the renderer's own quality, else the project's (the editor's tier 4, the
+            // phone's Vulkan tier 2)
+            var q = Body != null && Body.quality != SkinQuality.Auto ? (int)Body.quality : (int)QualitySettings.skinWeights;
+            new DrawnPoseJob
+            {
+                Pos = _dPos, Delta = _dDelta, B = _dB, W = _dW, K = _dK, Flank = _dFl, M = _dM, Tri = _dTri,
+                Left = _hLeft, Right = _hRight, Start = _hStart, Cnt = _hCount, Order = _hOrder, Out = _dV, Lo = _hLo, Hi = _hHi,
+                FlankL = FlankL, FlankR = FlankR, KMax = Mathf.Clamp(q, 1, 4),
+            }.Run();
+            _drawnAt = _pose;
+            DrawnPoses++;
+            DrawnPoseMs += _drawnCost.Elapsed.TotalMilliseconds;
+        }
+
+        private void DrawnQueries(int m)
+        {
+            if (!_dq.IsCreated || _dq.Length < m)
+            {
+                if (_dq.IsCreated) { _dq.Dispose(); _dqN.Dispose(); _dqF.Dispose(); _dqL.Dispose(); _dqB.Dispose(); }
+                var cap = Mathf.Max(m, 256);
+                _dq = new NativeArray<float3>(cap, Allocator.Persistent); _dqN = new NativeArray<float3>(cap, Allocator.Persistent);
+                _dqF = new NativeArray<int>(cap, Allocator.Persistent); _dqL = new NativeArray<float>(cap, Allocator.Persistent); _dqB = new NativeArray<float>(cap, Allocator.Persistent);
+            }
+        }
+
+        private void RunDrawn(int m, bool alwaysRays)
+        {
+            var hips = _hipsT != null ? _hipsT.position : transform.position;
+            new DrawnJob
+            {
+                V = _dV, Lo = _hLo, Hi = _hHi, Q = _dq, Tri = _dTri, Flip = _dFlip, Left = _hLeft, Right = _hRight, Start = _hStart, Cnt = _hCount,
+                Order = _hOrder, Weld = _dWeld, FanStart = _dFanStart, Fan = _dFan, Off = _dOff, Layered = _dqL, Bare = _dqB, Normal = _dqN, Found = _dqF,
+                Hips = hips, Right3 = transform.right, Reach = DrawnReach, Count = m, AlwaysRays = alwaysRays ? 1 : 0,
+            }.Run();
+        }
+
+        /// <summary>After the vote's batch: every asked point it reads within <see cref="DrawnBand"/> of the body (or inside) read
+        /// again against the drawn body, which answers where it finds a triangle within reach.</summary>
+        private void DrawnRange(int k)
+        {
+            var m = 0;
+            if (_dqIdx == null || _dqIdx.Length < k) _dqIdx = new int[Mathf.Max(k, 256)];
+            for (var j = 0; j < k; j++)
+            {
+                var i = _askIdx[j];
+                if (QNear[i] < 0 || QD[i] <= -DrawnBand) continue;
+                _dqIdx[m++] = i;
+            }
+            if (m == 0) return;
+            EnsureDrawn();
+            _drawnCost.Restart();
+            DrawnQueries(m);
+            var qv = _dq.Reinterpret<Vector3>();
+            for (var j = 0; j < m; j++) qv[j] = P[_dqIdx[j]];
+            RunDrawn(m, false);
+            var nv = _dqN.Reinterpret<Vector3>();
+            for (var j = 0; j < m; j++)
+            {
+                var f = _dqF[j];
+                DrawnAsks++;
+                if ((f & 1) == 0) continue;
+                DrawnFound++;
+                if ((f & 2) != 0 && (f & 4) == 0) DrawnRefused++;
+                var i = _dqIdx[j];
+                QD[i] = _dqL[j]; QN[i] = nv[j];
+                if (QD[i] > 0f) DrawnInside++;
+            }
+            DrawnReadMs += _drawnCost.Elapsed.TotalMilliseconds;
+        }
+
+        /// <summary>One point read against the drawn body (as <see cref="DrawnRange"/> reads each).</summary>
+        private void DrawnOne(Vector3 p, ref float depth, ref Vector3 normal)
+        {
+            EnsureDrawn();
+            DrawnQueries(1);
+            _dq[0] = p;
+            RunDrawn(1, false);
+            if ((_dqF[0] & 1) == 0) return;
+            depth = _dqL[0]; normal = _dqN[0];
+        }
+
+        /// <summary>For probes: point <paramref name="p"/> against the drawn body: its signed depth in the bare body (m, positive
+        /// inside), in the layered body, whether the nearest feature's face and the gate's rays each say inside (the rays asked
+        /// whatever the face says), and false when no triangle is within reach.</summary>
+        public bool DrawnRead(Vector3 p, out float bare, out float layered, out bool faceIn, out bool rayIn)
+        {
+            bare = layered = 0f; faceIn = rayIn = false;
+            if (_set == null || _set.DN == 0 || _set.DT == 0 || !Ready) return false;
+            EnsureDrawn();
+            DrawnQueries(1);
+            _dq[0] = p;
+            RunDrawn(1, true);
+            var f = _dqF[0];
+            if ((f & 1) == 0) return false;
+            bare = _dqB[0]; layered = _dqL[0]; faceIn = (f & 2) != 0; rayIn = (f & 4) != 0;
+            return true;
+        }
+
+        /// <summary>For probes: the drawn body's vertices posed from the bones as they are now against the drawn mesh's own
+        /// (<paramref name="world"/>: every vertex of the body's mesh, baked, in the world): the largest and the mean distance (m).</summary>
+        public float DrawnPoseError(Vector3[] world, out float mean)
+        {
+            mean = 0f;
+            if (_set == null || _set.DN == 0 || !Ready) return -1f;
+            _drawnAt = -1;
+            EnsureDrawn();
+            var worst = 0f; var sum = 0.0;
+            for (var i = 0; i < _set.DN; i++)
+            {
+                var e = Vector3.Distance((Vector3)_dV[i], world[_set.DMesh[i]]);
+                worst = Mathf.Max(worst, e); sum += e;
+            }
+            mean = (float)(sum / _set.DN);
+            return worst;
+        }
+        public int DrawnCount => _set?.DN ?? 0;
+
+        [BurstCompile(CompileSynchronously = true, FloatMode = FloatMode.Strict, FloatPrecision = FloatPrecision.Standard)]
+        private struct DrawnPoseJob : IJob
+        {
+            [ReadOnly] public NativeArray<float3> Pos, Delta;
+            [ReadOnly] public NativeArray<int4> B;
+            [ReadOnly] public NativeArray<float4> W;
+            [ReadOnly] public NativeArray<int> K, Left, Right, Start, Cnt, Order;
+            [ReadOnly] public NativeArray<byte> Flank;
+            [ReadOnly] public NativeArray<float4x4> M;
+            [ReadOnly] public NativeArray<int3> Tri;
+            public NativeArray<float3> Out, Lo, Hi;
+            public float FlankL, FlankR;
+            public int KMax;
+
+            public void Execute()
+            {
+                for (var i = 0; i < Pos.Length; i++)
+                {
+                    var v = Pos[i];
+                    var f = Flank[i];
+                    if (f == 1) v += Delta[i] * FlankL; else if (f == 2) v += Delta[i] * FlankR;
+                    var k = math.min(K[i], KMax);
+                    var b = B[i]; var w = W[i];
+                    var v4 = new float4(v, 1f);
+                    var sw = 0f; var p = float3.zero;
+                    for (var x = 0; x < k; x++) { var wx = w[x]; sw += wx; p += wx * math.mul(M[b[x]], v4).xyz; }
+                    Out[i] = sw > 0f ? (k < K[i] ? p / sw : p) : v;
+                }
+                for (var n = Left.Length - 1; n >= 0; n--)
+                {
+                    float3 lo, hi;
+                    if (Left[n] < 0)
+                    {
+                        lo = new float3(float.MaxValue); hi = new float3(-float.MaxValue);
+                        for (var e = Start[n]; e < Start[n] + Cnt[n]; e++)
+                        {
+                            var t = Tri[Order[e]];
+                            lo = math.min(lo, math.min(Out[t.x], math.min(Out[t.y], Out[t.z])));
+                            hi = math.max(hi, math.max(Out[t.x], math.max(Out[t.y], Out[t.z])));
+                        }
+                    }
+                    else { lo = math.min(Lo[Left[n]], Lo[Right[n]]); hi = math.max(Hi[Left[n]], Hi[Right[n]]); }
+                    Lo[n] = lo; Hi[n] = hi;
+                }
+            }
+        }
+
+        [BurstCompile(CompileSynchronously = true, FloatMode = FloatMode.Strict, FloatPrecision = FloatPrecision.Standard)]
+        private struct DrawnJob : IJob
+        {
+            [ReadOnly] public NativeArray<float3> V, Lo, Hi, Q;
+            [ReadOnly] public NativeArray<int3> Tri;
+            [ReadOnly] public NativeArray<byte> Flip;
+            [ReadOnly] public NativeArray<int> Left, Right, Start, Cnt, Order, Weld, FanStart, Fan;
+            [ReadOnly] public NativeArray<float> Off;
+            public NativeArray<float> Layered, Bare;
+            public NativeArray<float3> Normal;
+            /// <summary>Bits: 1 a triangle within reach, 2 inside by the nearest feature's face, 4 inside by the rays (asked when
+            /// the face says inside, or always with <see cref="AlwaysRays"/>).</summary>
+            public NativeArray<int> Found;
+            public float3 Hips, Right3;
+            public float Reach;
+            public int Count, AlwaysRays;
+
+            private static float Box2(float3 p, float3 lo, float3 hi)
+            {
+                var d = math.max(lo - p, math.max(float3.zero, p - hi));
+                return math.dot(d, d);
+            }
+
+            // the nearest point on a triangle and its region (Ericson 2005, Real-Time Collision Detection 5.1.5): 0 the face,
+            // 1-3 corner a, b, c, 4-6 edge ab, bc, ca; with its barycentric weights
+            private static float3 Closest(float3 p, float3 a, float3 b, float3 c, out int region, out float3 bary)
+            {
+                var ab = b - a; var ac = c - a; var ap = p - a;
+                var d1 = math.dot(ab, ap); var d2 = math.dot(ac, ap);
+                if (d1 <= 0f && d2 <= 0f) { region = 1; bary = new float3(1f, 0f, 0f); return a; }
+                var bp = p - b;
+                var d3 = math.dot(ab, bp); var d4 = math.dot(ac, bp);
+                if (d3 >= 0f && d4 <= d3) { region = 2; bary = new float3(0f, 1f, 0f); return b; }
+                var vc = d1 * d4 - d3 * d2;
+                if (vc <= 0f && d1 >= 0f && d3 <= 0f) { var v = d1 / (d1 - d3); region = 4; bary = new float3(1f - v, v, 0f); return a + v * ab; }
+                var cp = p - c;
+                var d5 = math.dot(ab, cp); var d6 = math.dot(ac, cp);
+                if (d6 >= 0f && d5 <= d6) { region = 3; bary = new float3(0f, 0f, 1f); return c; }
+                var vb = d5 * d2 - d1 * d6;
+                if (vb <= 0f && d2 >= 0f && d6 <= 0f) { var w = d2 / (d2 - d6); region = 6; bary = new float3(1f - w, 0f, w); return a + w * ac; }
+                var va = d3 * d6 - d5 * d4;
+                if (va <= 0f && d4 - d3 >= 0f && d5 - d6 >= 0f) { var w = (d4 - d3) / ((d4 - d3) + (d5 - d6)); region = 5; bary = new float3(0f, 1f - w, w); return b + w * (c - b); }
+                var den = 1f / (va + vb + vc);
+                var vv = vb * den; var ww = vc * den;
+                region = 0; bary = new float3(1f - vv - ww, vv, ww);
+                return a + ab * vv + ac * ww;
+            }
+
+            private float3 FaceN(int t)
+            {
+                var c = Tri[t];
+                var n = math.cross(V[c.y] - V[c.x], V[c.z] - V[c.x]);
+                if (Flip[t] != 0) n = -n;
+                var l = math.length(n);
+                return l > 1e-12f ? n / l : float3.zero;
+            }
+
+            // the angle-weighted pseudo-normal of the nearest feature (a face's own normal, an edge's two faces' summed, a corner's
+            // faces' weighted by their angles there), over the welded mesh
+            private float3 PseudoNormal(int t, int region)
+            {
+                var c = Tri[t];
+                if (region == 0) return FaceN(t);
+                if (region <= 3)
+                {
+                    var v = region == 1 ? c.x : region == 2 ? c.y : c.z;
+                    var w = Weld[v];
+                    var sum = float3.zero;
+                    for (var e = FanStart[w]; e < FanStart[w + 1]; e++)
+                    {
+                        var f = Fan[e]; var cf = Tri[f];
+                        int a, b, o;
+                        if (Weld[cf.x] == w) { a = cf.x; b = cf.y; o = cf.z; }
+                        else if (Weld[cf.y] == w) { a = cf.y; b = cf.z; o = cf.x; }
+                        else { a = cf.z; b = cf.x; o = cf.y; }
+                        var e1 = V[b] - V[a]; var e2 = V[o] - V[a];
+                        var l1 = math.length(e1); var l2 = math.length(e2);
+                        if (l1 < 1e-9f || l2 < 1e-9f) continue;
+                        sum += math.acos(math.clamp(math.dot(e1, e2) / (l1 * l2), -1f, 1f)) * FaceN(f);
+                    }
+                    var ls = math.length(sum);
+                    return ls > 1e-12f ? sum / ls : FaceN(t);
+                }
+                int u = region == 4 ? c.x : region == 5 ? c.y : c.z, u2 = region == 4 ? c.y : region == 5 ? c.z : c.x;
+                int wu = Weld[u], wv = Weld[u2];
+                var s2 = float3.zero;
+                for (var e = FanStart[wu]; e < FanStart[wu + 1]; e++)
+                {
+                    var f = Fan[e]; var cf = Tri[f];
+                    if (Weld[cf.x] == wv || Weld[cf.y] == wv || Weld[cf.z] == wv) s2 += FaceN(f);
+                }
+                var l3 = math.length(s2);
+                return l3 > 1e-12f ? s2 / l3 : FaceN(t);
+            }
+
+            private static bool RayBox(float3 o, float3 d, float3 lo, float3 hi, float max)
+            {
+                float t0 = 0f, t1 = max;
+                for (var a = 0; a < 3; a++)
+                {
+                    if (math.abs(d[a]) < 1e-12f) { if (o[a] < lo[a] || o[a] > hi[a]) return false; continue; }
+                    var ia = 1f / d[a];
+                    var ta = (lo[a] - o[a]) * ia; var tb = (hi[a] - o[a]) * ia;
+                    if (ta > tb) { var x = ta; ta = tb; tb = x; }
+                    t0 = math.max(t0, ta); t1 = math.min(t1, tb);
+                    if (t0 > t1) return false;
+                }
+                return true;
+            }
+
+            // (as MotionProbe.Hit: Moeller-Trumbore, both faces, within max)
+            private static bool Hit(float3 o, float3 d, float3 a, float3 b, float3 c, float max)
+            {
+                var e1 = b - a; var e2 = c - a;
+                var q = math.cross(d, e2);
+                var det = math.dot(e1, q);
+                if (math.abs(det) < 1e-10f) return false;
+                var f = 1f / det;
+                var sv = o - a;
+                var u = f * math.dot(sv, q);
+                if (u < 0f || u > 1f) return false;
+                var r = math.cross(sv, e1);
+                var w = f * math.dot(d, r);
+                if (w < 0f || u + w > 1f) return false;
+                var t = f * math.dot(e2, r);
+                return t > 1e-5f && t < max;
+            }
+
+            private int Crossings(float3 o, float3 d)
+            {
+                var hits = 0;
+                var stack = new FixedList512Bytes<int>();
+                stack.Add(0);
+                while (stack.Length > 0)
+                {
+                    var n = stack[stack.Length - 1];
+                    stack.RemoveAt(stack.Length - 1);
+                    if (!RayBox(o, d, Lo[n], Hi[n], 0.8f)) continue;
+                    if (Left[n] < 0)
+                    {
+                        for (var e = Start[n]; e < Start[n] + Cnt[n]; e++) { var t = Tri[Order[e]]; if (Hit(o, d, V[t.x], V[t.y], V[t.z], 0.8f)) hits++; }
+                        continue;
+                    }
+                    stack.Add(Left[n]); stack.Add(Right[n]);
+                }
+                return hits;
+            }
+
+            // the gate's own inside test (MotionProbe.InBody): level rays out from the point (away from the hips' middle, and to
+            // either side of that), each counting the surface's crossings within 0.8 m, both faces; odd is in, two of three
+            private bool Rays(float3 p)
+            {
+                var away = p - Hips; away.y = 0f;
+                var l = math.length(away);
+                away = l > 1e-3f ? away / l : Right3;
+                var votes = 0;
+                if ((Crossings(p, away) & 1) == 1) votes++;
+                if ((Crossings(p, new float3(away.z, 0f, -away.x)) & 1) == 1) votes++;
+                if (votes == 1 && (Crossings(p, new float3(-away.z, 0f, away.x)) & 1) == 1) votes++;
+                return votes >= 2;
+            }
+
+            public void Execute()
+            {
+                for (var k = 0; k < Count; k++)
+                {
+                    var p = Q[k];
+                    var best = Reach * Reach; var bt = -1; var bq = float3.zero; var br = 0; var bb = float3.zero;
+                    var stack = new FixedList512Bytes<int>();
+                    stack.Add(0);
+                    while (stack.Length > 0)
+                    {
+                        var n = stack[stack.Length - 1];
+                        stack.RemoveAt(stack.Length - 1);
+                        if (Box2(p, Lo[n], Hi[n]) >= best) continue;
+                        if (Left[n] < 0)
+                        {
+                            for (var e = Start[n]; e < Start[n] + Cnt[n]; e++)
+                            {
+                                var t = Order[e]; var c = Tri[t];
+                                var q = Closest(p, V[c.x], V[c.y], V[c.z], out var region, out var bary);
+                                var d = math.lengthsq(q - p);
+                                if (d < best) { best = d; bt = t; bq = q; br = region; bb = bary; }
+                            }
+                            continue;
+                        }
+                        // (the nearer child popped first)
+                        var dl = Box2(p, Lo[Left[n]], Hi[Left[n]]); var dr = Box2(p, Lo[Right[n]], Hi[Right[n]]);
+                        if (dl < dr) { if (dr < best) stack.Add(Right[n]); if (dl < best) stack.Add(Left[n]); }
+                        else { if (dl < best) stack.Add(Left[n]); if (dr < best) stack.Add(Right[n]); }
+                    }
+                    if (bt < 0) { Found[k] = 0; Layered[k] = Bare[k] = 0f; Normal[k] = float3.zero; continue; }
+                    var dist = math.sqrt(best);
+                    var pn = PseudoNormal(bt, br);
+                    var faceIn = dist > 0f && math.dot(p - bq, pn) < 0f;
+                    var flags = 1 | (faceIn ? 2 : 0);
+                    var inside = false;
+                    if (faceIn || AlwaysRays != 0)
+                    {
+                        var rayIn = Rays(p);
+                        if (rayIn) flags |= 4;
+                        inside = AlwaysRays != 0 ? rayIn : rayIn && faceIn;
+                    }
+                    var c3 = Tri[bt];
+                    var off = bb.x * Off[c3.x] + bb.y * Off[c3.y] + bb.z * Off[c3.z];
+                    var s = inside ? dist : -dist;
+                    Bare[k] = s; Layered[k] = s + off; Found[k] = flags;
+                    Normal[k] = dist > 1e-5f ? (inside ? (bq - p) / dist : (p - bq) / dist) : pn;
+                }
             }
         }
 
@@ -720,7 +1198,7 @@ namespace SecondFace.Game.People
             // it the moving-least-squares surface is extrapolated and read points 2.5-4.3 cm off the body as 0.01-0.5 cm inside
             // (11 of 7292 such readings on the dumps of 2026-11-26, the vote none wrong there), and the vote's answer stands
             var grad = Vector3.zero;
-            if ((_set.Flags[c0] & LowFlag) != 0 && d0 <= RobustNear2(_spacing[c0]) && Mathf.Abs(Vector3.Dot(p - P[c0], N[c0])) <= Mathf.Clamp(_spacing[c0], SurfaceHMin, SurfaceHMax))
+            if (!DrawnOn && (_set.Flags[c0] & LowFlag) != 0 && d0 <= RobustNear2(_spacing[c0]) && Mathf.Abs(Vector3.Dot(p - P[c0], N[c0])) <= Mathf.Clamp(_spacing[c0], SurfaceHMin, SurfaceHMax))
             {
                 var f = RobustAt(p, c0, out var ok, out var ran);
                 if (ok) inside = f < 0f ? Mathf.Max(-f, DeepMin) : -1f;
@@ -741,6 +1219,7 @@ namespace SecondFace.Game.People
             var patch = 0.5f * Mathf.Min(_spacing[c0], PatchMax);
             var gap = across <= patch ? Mathf.Abs(plane) : Mathf.Sqrt((across - patch) * (across - patch) + plane * plane);
             depth = inside > 0f ? inside : -gap;
+            if (DrawnOn && depth > -DrawnBand) DrawnOne(p, ref depth, ref normal);
             return true;
         }
 

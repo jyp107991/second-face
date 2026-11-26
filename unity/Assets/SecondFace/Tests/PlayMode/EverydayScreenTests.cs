@@ -36,16 +36,26 @@ namespace SecondFace.Tests
         // (the bisect's switches, TEMP: ArmClearance.BisectEnv when the tree carries them; every FootPlant's ToeBendMax held at 0 for "toes")
         private static void SetBisect(string switches)
         {
+            StrideEndOff = ("," + (switches ?? "") + ",").Contains(",nostrideend,");
+            OutRetryOff = ("," + (switches ?? "") + ",").Contains(",nooutretry,");
+            Debug.Log($"EVERYDAY SCREEN switches [{switches}]: stride end {(StrideEndOff ? "OFF" : "on")}, out retry {(OutRetryOff ? "OFF" : "on")}");
+            var df = typeof(BodySkin).GetField("DrawnOff", Any);
+            if (df != null) df.SetValue(null, ("," + (switches ?? "") + ",").Contains(",drawnoff,") || System.Environment.GetEnvironmentVariable("SKIN_DRAWN") == "off");
+            Debug.Log($"EVERYDAY SCREEN switches [{switches}]: drawn reading {(df != null && (bool)df.GetValue(null) ? "OFF" : "on")}");
             var f = typeof(ArmClearance).GetField("BisectEnv", Any);
             if (f != null) f.SetValue(null, switches ?? (System.Environment.GetEnvironmentVariable("BISECT") ?? ""));
             else if (!string.IsNullOrEmpty(switches) && switches != "toes") Debug.LogWarning("EVERYDAY SCREEN: no ArmClearance.BisectEnv in this tree: switches " + switches + " not applied");
         }
 
+        private static bool StrideEndOff, OutRetryOff;
         public sealed class ToeSwitch : MonoBehaviour
         {
             public bool Off;
             private void Update()
             {
+                var se = typeof(ArmClearance).GetField("StrideEnd", BindingFlags.Public | BindingFlags.Instance);
+                var orr = typeof(ArmClearance).GetField("OutRetry", BindingFlags.Public | BindingFlags.Instance);
+                foreach (var ac in Object.FindObjectsByType<ArmClearance>(FindObjectsSortMode.None)) { se?.SetValue(ac, !StrideEndOff); orr?.SetValue(ac, !OutRetryOff); }
                 var f = typeof(FootPlant).GetField("ToeBendMax", BindingFlags.Public | BindingFlags.Instance);
                 if (f == null) return;
                 foreach (var fp in Object.FindObjectsByType<FootPlant>(FindObjectsSortMode.None)) f.SetValue(fp, Off ? 0f : 50f);
