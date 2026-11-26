@@ -717,6 +717,21 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-26 (later), the gate batch: the striding push, the give's share, the robust reading's reach, the arms' seams (editor
+  owner; not committed, the batch on `wip/gate-batch`).**
+  Gate: red, 6460 (dfc732a4).
+  - Causes found and removed at their sources (`docs/MOTION_ROOT_CAUSE.md` §13): a striding arm pushed along the contact's normal
+    swung further along its own swing (the women's walks, W3); the cloth and sleeve give granted whole where the sleeve was not
+    between the arm and the body, and the contact's normal at a pouch's bevel (C1); the robust reading extrapolated past its
+    bandwidth of the surface (false insides, and most of its cost); a sleeve's seam between the arm's sampled points (C1).
+  - On the 18-person pick: everyday cells 17 -> 3, fight cells about level; the arm clearance 13.5 -> 9.8 ms a person a frame in
+    the editor's idles (7.9 before the robust reading: still over, open).
+  - The whole cast's first chunk found a new everyday failure outside the pick (one man's forearm by the elbow 0.6 cm into the hip
+    in eleven resting states: an oblique contact between the arm's points, the resting give set for readings §12 corrected);
+    the cast was stopped there, nothing committed. The resting give taken only for the face-to-face share of a contact brought him
+    0.6 -> 0.53 (nine cells left); with him the pick reads everyday 12. Next: that contact's remaining cause (§13), then the
+    pick, then the whole cast.
+    Tried and reverted: the toes held on the ground at push-off (W1 passed, W6 failed in 16 of 18 people).
 - **2026-11-26, the gate batch: the skin's filled points on the drawn surface, the hips read by a robust surface (editor owner;
   not committed, the batch on `wip/gate-batch`).**
   Gate: red, 6460 (dfc732a4).

@@ -1550,7 +1550,11 @@ namespace SecondFace.Game.People
                 // at rest a contact rests: the forearm and hand may press into the hip and thigh by the soft tissue's give, the
                 // upper arm by the elbow lies on the flank at contact (the skin's points read the flank 0.1-0.5 cm shallower than
                 // the gate's mesh, so it is given none, C1, Female_Adult_01, 2026-11-18)
-                var m = i >= forearm ? Margin3 : Mathf.Lerp(SkinMargin + MoveMargin, 0f, _restW);
+                // (the resting give only for the share of the contact that is face to face: where the arm meets the body
+                // obliquely its surface goes deeper between its points than at them, the depth growing along the arm as the angle
+                // between the two surfaces' tangent, and a forearm by the elbow held at its points' 0.3 cm lay 0.6 cm into the hip
+                // between them, 67° oblique, C1, Business_Male_01, eleven resting states, 2026-11-26)
+                var m = i >= forearm ? Mathf.Lerp(SkinMargin + MoveMargin, -RestGive * Mathf.Clamp01(-Vector3.Dot(_skin.N[i], n)), _restW) : Mathf.Lerp(SkinMargin + MoveMargin, 0f, _restW);
                 if (d + m <= 0f) continue;
                 var arm = p - shoulder;
                 var a = Mathf.Atan2(d + m, arm.magnitude) * Mathf.Rad2Deg;

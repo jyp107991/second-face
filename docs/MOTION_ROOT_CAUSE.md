@@ -686,6 +686,24 @@ points against the drawn surface); never a verdict.
   rigid foot pivoting on a point under and behind the toe joint lowers the joint, so held toes go into the ground. Open: a
   rolling forefoot (the contact moving from the metatarsal heads to the toes as the heel rises), or the ball's band defined behind
   the toe joint in both the gate and the build (a measure's change: for the coordinator).
+- **Measured, the 18-person pick with all of the above (never a verdict):** everyday cells 17 -> 3 (Construction_Male_03's A1
+  20.6, Female_Adult_01's jog W1 6 %, Medical_Female_01's jog W6 4.4), fight cells about level (1046); the arm clearance 9.8 ms a
+  person a frame in the idles (13.5 before this section, 7.9 before the robust reading).
+- **The whole cast's first chunk (ten people, this tree's hash) found a new one: Business_Male_01's right forearm by the elbow,
+  0.59-0.63 cm into the hip in eleven resting states (slope, the looks, after each gesture, turn; C1 drawn, the limit 0.5).** The
+  runtime reads its point there exactly (point 3358: 0.30 cm in, the truth 0.31); the gate's vertex 503, 0.35 cm from it and
+  0.03 cm out of its plane, is 0.63 cm in: the forearm meets the hip obliquely (67° between the two surfaces' normals), so the
+  depth grows 0.9 cm a centimetre along the arm, and the deepest vertex lies between the arm's points (one a 1.8 cm cell). The
+  resting give (`ArmClearance.RestGive`, 0.25 cm) was set for skin points that read contacts 0.1-0.25 cm shallower than the mesh;
+  since §12 they read it within 0.1 cm, so the give and the points' spacing together now pass the gate's 0.5 at an oblique
+  contact. Before §12 the off-surface fills held this arm out and he passed. Tried (kept in the batch): the forearm's and hand's
+  resting give only for the share of the contact that is face to face (`ArmClearance.SkinNeed`: RestGive x the cosine between the
+  arm's and the body's normals): on a 19-person pick he went 0.59-0.63 -> 0.48-0.55 (slope, turn, idle0 pass; the looks and the
+  moments after the gestures still 0.53-0.55, nine cells), nothing else failed (Construction_Male_03's A4 2.5 -> 3.5 of 6.0,
+  Construction_Male_06's A1 17.2 -> 17.8). Not yet fixed: why the looks and the after-gesture states hold the forearm deeper than
+  idle0 (0.24) is to be traced (the hand's learned place, `_adaptL/_adaptR`, drifts across the states, and the hand set at its gap
+  after the clearance moves the forearm by the elbow back in under `SetHand`'s 0.5° check about the elbow); then the arm's
+  body-facing vertices sampled where they rest, if the points' spacing is still what is left.
 - **Open, traced:** Construction_Male_03's A1 in the second men's idle (20.6 against his 20.0: the rest's abduction at its 17°
   cap with the elbow still 0.9 cm into the jacket's flank at 21 cm over the hips, then the shoulder 3.7° out; the clip's trunk
   leans back 4° and carries the shoulders 3.6 cm back over the hips, §11); Medical_Female_01's jog W6 (one frame, max 4.4 against
