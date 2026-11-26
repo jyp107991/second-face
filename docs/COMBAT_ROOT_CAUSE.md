@@ -203,3 +203,38 @@ plays with the body turned 180° from the body's root.**
   turn the body, not the take's places). The v4.2-v4.5 imports wait for v4.6. Nothing is changed in `Gaze` for it.
 - Gate hole closed: a facing measure for the fight's states (the pelvis's and chest's yaw against the target, within real
   fighters' limits per state; `docs/PEOPLE_MOTION.md` §2.7), recorded as a new measure.
+
+## 2026-11-25: the combat tests on the healthy controller (editor owner, a fresh container)
+The controller rebuilt (Locomotion, then Combat; the base layer's motion asserted, `fight_stand` sharing it), combat set v4.6's
+124 clip metas configured by their importer on the cold import. EditMode (combat, import, ground) 106/109, PlayMode (combat)
+13/16 with the gate's pick counted; main's last CI PlayMode run failed 8, three of them CombatMotionPlayTests
+(EveryActionPlays, NoStateIsLeftHanging, WeaponsStayInHand): the last two pass here.
+
+**12. "Travels 0.16-0.35 m (root: true) but is baked in place" (21 clips: the women's rise and its long form, 19 re-stance
+steps).**
+- Cause: Core's table (`CombatMotion.Clips`, `Spare`) baked them while their v4.6 sidecars say they travel (`root`: true, 16-35
+  cm), against the table's own rule (a one-shot over 15 cm is applied or cut). The women's rise (`rise_f_built`, CMU 114_05,
+  35 cm back as she steps up) is what `cover_rise` plays for every woman: baked, her feet slide it back.
+- Fix: the 21 are `RootXZ.Apply`, as their sidecars say; their imports follow the table (the importer applies it on each
+  import; the batch's setup imported the 21 again). Test: `RootMotionAgreesWithEachClipsTravel` passes.
+
+**13. "After standing up, cover_rise (not back to the idle within 2 s)" (every weapon, the man).**
+- Cause: the test's window. v4.4's men's rise is ACCAD Male2_D13's own, 82 frames (2.7 s) to its cut at 0.97, where the old
+  one took under 2 s; the state goes on to the idle as the table says.
+- Fix: the test waits as long as the rise plays to its cut, plus its fade (as item 6 for hands up). Passes.
+
+**14. "Sequence contains no matching element" (`TheBeatsComeFromTheSidecars`).**
+- Cause: the test named `fist_jab_accad`, which combat set v4 moved to the spares (the men's jab is CMU's `fist_jab_m_cmu`).
+- Fix: the test asks the table for the men's jab and checks its impact against its own sidecar. Passes.
+
+**15. Open: `TheFightsFeetStandOnTheGroundAndStepBetweenStances` (new in this batch; item 5b).**
+- On the healthy controller: the aim's straighter knee 23.1-23.7° (the long gun's aim is CMU 79_96's `rifle_aim_cmu` since
+  v4.1, whose own straighter knee is 0-0°, `docs/qa/motion_calibration.md` §8; the test's comment still names 80_03's
+  1.2-1.7°, the limit 1.7 + 6 holds either way); the lower sole 0 … 1.9-4.6 cm over its ground (within 1); a planted foot
+  over 10 cm/s on 2.4-4.2 % of its frames (≤ 2), with the long gun and fists.
+- The ready (`rifle_ready_u_built`) and the aim are now one actor's chain (79_96), so 5b's "two actors' stances" no longer
+  explains the knee; the runtime bends it. Not traced in frames yet: the first item of the next batch (listed in
+  `docs/qa/gates/motion_waivers.json` `failing_tests`).
+
+**16. `ThousandsOfFightsKeepTheHardRules` timed out here (388 s against its 180 s).** A pure Core test; it passes in the Core
+workflow (dotnet) on main (dfc732a4). To be read on CI after the push; never loosened.

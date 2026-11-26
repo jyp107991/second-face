@@ -139,6 +139,11 @@ behind both their planes, so the planes read a penetration the drawn surface doe
 0's people, the idles at 10 Hz; `docs/MOTION_ROOT_CAUSE.md` §7): at the gate's worst forearm vertex the planes read 0.53 cm
 (Business_Male_02) and 0.71 cm (Business_Female_03); the same vertex is 0.13-0.15 and 0.05-0.12 cm inside the triangles as drawn;
 the runtime's `BodySkin.Depth` reads 0.53 and 0.28-0.40 there. The limit stays at 0.5 cm and the runtime keeps its own reading.
+**The runtime reads the same surface (2026-11-25).** The least of three planes also under-reads where the skin creases or turns:
+forearms resting 0.8-1.2 cm into two men's hips were read 0.2 cm deep by a point on a facet turned 25-40°, under the arm
+clearance's resting give. `BodySkin.Depth` now gives a point its vote finds inside the depth of the implicit moving-least-squares
+surface of its skin points (`BodySkin.Surface`: each point's tangent plane weighted by a Gaussian of its distance, Kolluri 2008),
+within 0.1-0.3 cm of the drawn depth on the traced contacts; the vote itself is unchanged (`docs/MOTION_ROOT_CAUSE.md` §10).
 The depth is `MotionProbe.DrawnDepth` (exact point-to-triangle distance over the triangles the inside test counts), held by
 `MotionProbeDepthTests` (known penetrations of 0, 0.3, 0.5, 1 and 2 cm under a convex patch with vertices 8 cm apart and under a
 flat one, read within 0.05 cm). The planes' reading is still written beside every report (`<report>_c1v.json`, never judged)
