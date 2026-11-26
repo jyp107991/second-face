@@ -46,7 +46,9 @@ namespace SecondFace.Tests
             public bool Off;
             private void Update()
             {
-                foreach (var fp in Object.FindObjectsByType<FootPlant>(FindObjectsSortMode.None)) fp.ToeBendMax = Off ? 0f : 50f;
+                var f = typeof(FootPlant).GetField("ToeBendMax", BindingFlags.Public | BindingFlags.Instance);
+                if (f == null) return;
+                foreach (var fp in Object.FindObjectsByType<FootPlant>(FindObjectsSortMode.None)) f.SetValue(fp, Off ? 0f : 50f);
             }
         }
 

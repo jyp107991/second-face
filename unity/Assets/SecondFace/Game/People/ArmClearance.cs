@@ -15,8 +15,6 @@ namespace SecondFace.Game.People
     [DefaultExecutionOrder(10)]   // after the clip, the foot plant, the gaze and the hands (HandPose: 5)
     public sealed class ArmClearance : MonoBehaviour
     {
-        internal static string BisectEnv = System.Environment.GetEnvironmentVariable("BISECT") ?? "";
-        internal static bool BisectOff(string k) => ("," + BisectEnv + ",").Contains("," + k + ",");
         /// <summary>With the body's own skin (<see cref="BodySkin"/>, within <see cref="SkinRange"/> m of the camera): an
         /// arm is held this far off the body's surface, or its clothes'.</summary>
         public float SkinMargin = 0.003f;
@@ -786,7 +784,7 @@ namespace SecondFace.Game.People
                     if (bendTo < BendFloor && bendTo < Vector3.Angle(upperDir, W - E)) return;
                     TurnForearm(lower, first, a, ax);
                     var inAfter = SkinNeed(lower, first, true).Angle;
-                    if (inAfter > (BisectOff("sethand") ? 0.5f : Mathf.Min(0.5f, inBefore + 0.01f))) { TurnForearm(lower, first, -a, ax); continue; }
+                    if (inAfter > Mathf.Min(0.5f, inBefore + 0.01f)) { TurnForearm(lower, first, -a, ax); continue; }
                     inBefore = inAfter;
                     moved = true;
                     break;
@@ -918,7 +916,6 @@ namespace SecondFace.Game.People
         /// between, three of them passed and the two left stood 0.62 cm in, the bare arm still under its sleeve's point).</summary>
         private float Give(int i, Vector3 n, float cloth, float sleeve)
         {
-            if (BisectOff("give")) return (cloth > 0f && _skin.Near >= 0 ? cloth * _skin.Off(_skin.Near) : 0f) + sleeve * _skin.Off(i);
             var g = 0f;
             var near = _skin.Near;
             if (cloth > 0f && near >= 0) g += cloth * _skin.Off(near) * Mathf.Max(0f, Vector3.Dot(_skin.N[near], n));
@@ -1532,7 +1529,7 @@ namespace SecondFace.Game.People
             // (counted whole, that contact stood the gear-held men's resting arms 22-25° off the vertical, the held 17°, A1,
             // 2026-11-16)
             var upperLen = (elbowAt - shoulder).magnitude;
-            var striding = _restW < 0.01f && Striding() && !BisectOff("stride");
+            var striding = _restW < 0.01f && Striding();
             _skin.DepthRange(from, to);
             for (var i = from; i < to; i++)
             {
@@ -1562,7 +1559,7 @@ namespace SecondFace.Game.People
                 // obliquely its surface goes deeper between its points than at them, the depth growing along the arm as the angle
                 // between the two surfaces' tangent, and a forearm by the elbow held at its points' 0.3 cm lay 0.6 cm into the hip
                 // between them, 67° oblique, C1, Business_Male_01, eleven resting states, 2026-11-26)
-                var m = i >= forearm ? (BisectOff("rest") ? Margin3 : Mathf.Lerp(SkinMargin + MoveMargin, -RestGive * Mathf.Clamp01(-Vector3.Dot(_skin.N[i], n)), _restW)) : Mathf.Lerp(SkinMargin + MoveMargin, 0f, _restW);
+                var m = i >= forearm ? Mathf.Lerp(SkinMargin + MoveMargin, -RestGive * Mathf.Clamp01(-Vector3.Dot(_skin.N[i], n)), _restW) : Mathf.Lerp(SkinMargin + MoveMargin, 0f, _restW);
                 if (d + m <= 0f) continue;
                 var arm = p - shoulder;
                 var a = Mathf.Atan2(d + m, arm.magnitude) * Mathf.Rad2Deg;

@@ -791,13 +791,34 @@ namespace SecondFace.EditorTools
             foreach (var (i, part) in standOut) byPart[(int)part].Add(i);
             if (System.Environment.GetEnvironmentVariable("SKIN_DIAG") is { Length: > 0 } diag) SkinDiag(diag, id, lp, use, fate, partOf, byPart, cells.Count);
             for (var p = 0; p < 9; p++) byPart[p].Sort();
+            // each arm point's satellites (RBS5): every drawn vertex of an arm's cell that is not a point of its own, given to the
+            // nearest of its cell's points (a seam's split vertices once). The runtime reads a point in contact at its satellites
+            // too and places the arm on the deepest: it holds what is drawn, not its samples (a resting forearm held at its points
+            // lay 0.15 cm deeper at a vertex between them, 0.53 cm into the hip, C1, Male_Adult_02, 2026-11-26)
+            var satOf = new Dictionary<int, List<int>>();
+            {
+                var isPoint = new HashSet<int>();
+                foreach (var (_, (ci, _)) in cells) isPoint.Add(ci);
+                foreach (var (si, _) in standOut) isPoint.Add(si);
+                foreach (var (i, key) in armCell)
+                {
+                    if (isPoint.Contains(i)) continue;
+                    var master = cells[key].I; var best = (world[i] - world[master]).sqrMagnitude;
+                    if (keptIn.TryGetValue(key, out var keptHere))
+                        foreach (var j in keptHere) { var dj = (world[j] - world[i]).sqrMagnitude; if (dj < best) { best = dj; master = j; } }
+                    if (!satOf.TryGetValue(master, out var list)) satOf[master] = list = new List<int>();
+                    var dup = false;
+                    foreach (var j in list) if ((world[j] - world[i]).sqrMagnitude < 1e-8f) { dup = true; break; }
+                    if (!dup && (world[master] - world[i]).sqrMagnitude >= 1e-8f) list.Add(i);
+                }
+            }
             var female = mats.Any(m => m != null && m.name.ToLowerInvariant().TrimStart('s').StartsWith("f") && m.name.ToLowerInvariant().EndsWith("_body"));
 
             using var ms = new MemoryStream();
             using (var gz = new GZipStream(ms, System.IO.Compression.CompressionLevel.Optimal, true))
             using (var w = new BinaryWriter(gz))
             {
-                w.Write("RBS4".ToCharArray());
+                w.Write("RBS5".ToCharArray());
                 w.Write(Defs.Length);
                 foreach (var def in Defs) { w.Write(def.Id); w.Write((byte)(def.ThinSides ? 1 : 0)); }
                 for (var p = 0; p < 9; p++) w.Write(byPart[p].Count);
@@ -836,6 +857,33 @@ namespace SecondFace.EditorTools
                         var fs = fd == Vector3.zero ? 0 : flL != null && flL[i] != Vector3.zero ? 1 : 2;
                         w.Write((byte)fs);
                         if (fs != 0) { Put(bp[b0].MultiplyVector(fd)); Put(bp[b1].MultiplyVector(fd)); foreach (var (xb, _) in extra) Put(bp[xb].MultiplyVector(fd)); }
+                    }
+                // RBS5: the satellites, point by point in the same order (a count, then each one's bones, weights and bind places)
+                var total = 0;
+                for (var p = 0; p < 9; p++) foreach (var i in byPart[p]) if (satOf.TryGetValue(i, out var l0)) total += Mathf.Min(l0.Count, ushort.MaxValue);
+                w.Write(total);
+                for (var p = 0; p < 9; p++)
+                    foreach (var i in byPart[p])
+                    {
+                        satOf.TryGetValue(i, out var sats);
+                        var c = sats != null ? Mathf.Min(sats.Count, ushort.MaxValue) : 0;
+                        w.Write((ushort)c);
+                        for (var x = 0; x < c; x++)
+                        {
+                            var v = sats[x];
+                            var b = bw[v];
+                            int b0 = b.boneIndex0, b1 = b.weight1 > 0f ? b.boneIndex1 : b.boneIndex0;
+                            var sum = b.weight0 + b.weight1 + b.weight2 + b.weight3;
+                            if (sum <= 0f) sum = 1f;
+                            w.Write((byte)b0); w.Write((byte)b1); w.Write(b.weight0 / sum); w.Write(b.weight1 > 0f ? b.weight1 / sum : 0f);
+                            void PutS(Vector3 q) { w.Write(q.x); w.Write(q.y); w.Write(q.z); }
+                            PutS(bp[b0].MultiplyPoint3x4(pos[v])); PutS(bp[b1].MultiplyPoint3x4(pos[v]));
+                            var extra = new System.Collections.Generic.List<(int B, float W)>();
+                            if (b.weight2 > 0.001f) extra.Add((b.boneIndex2, b.weight2 / sum));
+                            if (b.weight3 > 0.001f) extra.Add((b.boneIndex3, b.weight3 / sum));
+                            w.Write((byte)extra.Count);
+                            foreach (var (xb, xw) in extra) { w.Write((byte)xb); w.Write(xw); PutS(bp[xb].MultiplyPoint3x4(pos[v])); }
+                        }
                     }
             }
             var outPath = $"{dir}/{id}_skin.bytes";

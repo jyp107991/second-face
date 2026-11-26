@@ -53,6 +53,8 @@ namespace SecondFace.Game.Fighting
         private static readonly int StanceBaseId = Animator.StringToHash(CombatMotion.StanceBase), LocomotionId = Animator.StringToHash("Locomotion");
         private Hand _right, _left;
         private Transform _hips, _spine, _chest, _head, _upL, _loL, _footL, _upR, _loR, _footR;
+        // the lowest bone of the trunk above the legs (the hit's lean starts there)
+        private Transform _lean;
         private FootPlant _plant;
         private Gaze _gaze;
         private ArmClearance _clear;
@@ -185,11 +187,17 @@ namespace SecondFace.Game.Fighting
             _hips = _a.GetBoneTransform(HumanBodyBones.Hips);
             _spine = _a.GetBoneTransform(HumanBodyBones.Spine);
             _chest = _a.GetBoneTransform(HumanBodyBones.UpperChest) ?? _a.GetBoneTransform(HumanBodyBones.Chest) ?? _spine;
-            _trunk = new[] { _spine, _a.GetBoneTransform(HumanBodyBones.Chest), _a.GetBoneTransform(HumanBodyBones.UpperChest) }.Distinct().ToArray();
             _head = _a.GetBoneTransform(HumanBodyBones.Head);
             _shoulderR = _a.GetBoneTransform(HumanBodyBones.RightShoulder);
             _upL = _a.GetBoneTransform(HumanBodyBones.LeftUpperLeg); _loL = _a.GetBoneTransform(HumanBodyBones.LeftLowerLeg); _footL = _a.GetBoneTransform(HumanBodyBones.LeftFoot);
             _upR = _a.GetBoneTransform(HumanBodyBones.RightUpperLeg); _loR = _a.GetBoneTransform(HumanBodyBones.RightLowerLeg); _footR = _a.GetBoneTransform(HumanBodyBones.RightFoot);
+            // the trunk the fight's corrections turn: its bones above the legs. Biped's thighs hang from its Spine (Unity's
+            // Spine bone, Bip01 Spine, not the Hips): turned after the feet were set, it swung both legs about it, the planted
+            // feet 1.5-2.2 cm in a frame at every round of a long gun's aim (the correction taking a third of the recoil),
+            // 88-135 cm/s (F4 in every aim, docs/COMBAT_ROOT_CAUSE.md 17)
+            bool Carries(Transform b) => b != null && ((_upL != null && _upL.IsChildOf(b)) || (_upR != null && _upR.IsChildOf(b)));
+            _trunk = new[] { _spine, _a.GetBoneTransform(HumanBodyBones.Chest), _a.GetBoneTransform(HumanBodyBones.UpperChest) }.Where(b => b != null && !Carries(b)).Distinct().ToArray();
+            _lean = _trunk.Length > 0 ? _trunk[0] : null;
             _plant = GetComponent<FootPlant>();
             _ambient = GetComponent<Ambient>();
             _gaze = GetComponent<Gaze>();
@@ -722,9 +730,15 @@ namespace SecondFace.Game.Fighting
             var root = Body.position.y;
             var gL = GroundAt(_footL.position, root); var gR = GroundAt(_footR.position, root);
             var eL = SoleLow(_footL, _heelL, _ballL) - gL; var eR = SoleLow(_footR, _heelR, _ballR) - gR;
-            // the hips: the lower sole onto its ground (on a slope, the higher one's less 1.5 cm, so the downhill leg reaches)
+            // the hips: the lower sole onto its ground (on a slope, the higher one's less 1.5 cm, so the downhill leg reaches),
+            // and down at least as far as each foot the clip has down needs for its leg to reach its ground nearly straight
+            // (FootPlant.LegNeed's rule): set by the lower sole alone, the clip's straight standing leg could not reach its
+            // ground, its foot hung 1-3 cm up at the leg's full reach (the knee at the solver's limit, 1.8°) and swung with the
+            // hips' sway (F1 and F4 in the guard, the ready and both aims, docs/COMBAT_ROOT_CAUSE.md 17)
             var lo = Mathf.Min(eL, eR); var hi = Mathf.Max(eL, eR);
             var want = -Mathf.Clamp(hi - 0.015f, lo, hi);
+            want = Mathf.Min(want, -LegNeed(_upL, _loL, _footL, eL, _fl, want));
+            want = Mathf.Min(want, -LegNeed(_upR, _loR, _footR, eR, _fr, want));
             want = Mathf.Clamp(want, -0.2f, 0.2f);
             _sink = _fl.HaveWas || _fr.HaveWas ? Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-25f * dt)) : want;
             _hips.position += Vector3.up * (_sink * w);
@@ -738,6 +752,24 @@ namespace SecondFace.Game.Fighting
             _footL.rotation = rotL; _footR.rotation = rotR;
             SoleOver = new Vector2(SoleLow(_footL, _heelL, _ballL) - gL, SoleLow(_footR, _heelR, _ballR) - gR);
             Planted = new Vector2(_fl.Pinned && !_fl.Stepping ? 1f : 0f, _fr.Pinned && !_fr.Stepping ? 1f : 0f);
+        }
+
+        /// <summary>A standing leg's reach as a share of its length (FootPlant.StanceStraight's: the knee bent about 3.6°).</summary>
+        public float StandStraight = 0.9995f;
+
+        /// <summary>How far the hips must come down (m, from where they are) for this leg to reach the ground under its foot
+        /// (held where it is planted) nearly straight (<see cref="StandStraight"/>); -infinity for a foot the clip lifts
+        /// (over 3 cm up once the hips are at <paramref name="sink"/>), one stepping, or a place out of reach along the
+        /// ground.</summary>
+        private float LegNeed(Transform up, Transform lo, Transform ft, float e, in Foot f, float sink)
+        {
+            if (f.Stepping || e + sink > 0.03f) return float.NegativeInfinity;
+            var a = ft.position;
+            var at = f.Pinned && f.W > 0f ? Vector3.Lerp(Flat(a), f.Pin, f.W) : Flat(a);
+            var target = new Vector3(at.x, a.y - e, at.z);
+            var reach = StandStraight * ((lo.position - up.position).magnitude + (a - lo.position).magnitude);
+            var hv = target - up.position; var flat = new Vector2(hv.x, hv.z).magnitude;
+            return reach > flat ? up.position.y - (target.y + Mathf.Sqrt(reach * reach - flat * flat)) : float.NegativeInfinity;
         }
 
         /// <summary>Each foot's lowest sole point over its ground after the fight's feet (m; left, right), and whether each is
@@ -815,8 +847,9 @@ namespace SecondFace.Game.Fighting
             Quaternion Turn(float k) =>
                 // (+x leans back: a positive turn about the right axis tips the top forward in Unity's frame)
                 Quaternion.AngleAxis(-_hitA.x * k, right) * Quaternion.AngleAxis(_hitA.y * k, Vector3.up) * Quaternion.AngleAxis(_hitA.z * k, fwd);
-            if (_spine != null) _spine.rotation = Turn(_hitSpine * 0.5f) * _spine.rotation;
-            if (_chest != null && _chest != _spine) _chest.rotation = Turn(_hitChest * 0.5f) * _chest.rotation;
+            // (from the lowest trunk bone above the legs: the Spine on these rigs carries the legs, and turned it swung the feet)
+            if (_lean != null && _lean != _chest) _lean.rotation = Turn(_hitSpine * 0.5f) * _lean.rotation;
+            if (_chest != null) _chest.rotation = Turn((_hitChest + (_lean == _chest ? _hitSpine : 0f)) * 0.5f) * _chest.rotation;
             if (_head != null) _head.rotation = Turn(_hitHead * 0.6f) * _head.rotation;
         }
 
@@ -969,8 +1002,9 @@ namespace SecondFace.Game.Fighting
 
         /// <summary>
         /// A long gun's muzzle onto the target, by the upper body: the gun held in both hands, its stock in the shoulder and the
-        /// cheek on it, turns with the trunk as one piece, the spine, the chest and the upper chest a share each (the arms, the
-        /// head and the gun go with them, so the off hand keeps the reach the take gives it). It corrects an aim, never a gun
+        /// cheek on it, turns with the trunk as one piece, each of its bones above the legs a share (the chest and the upper
+        /// chest: Biped's thighs hang from its Spine, whose turn swung the planted feet at every round; the arms, the head and
+        /// the gun go with them, so the off hand keeps the reach the take gives it). It corrects an aim, never a gun
         /// still coming up: fully within <see cref="AimFixMax"/> of the target, fading out to none at twice that.
         /// (Turned at the main wrist alone, up to 12° over the whole raise into the aim, where the take's gun is still 18-83°
         /// off the target, it swung the fore-end 40-55 cm ahead of that hand by 8-11 cm: a woman's off hand 2.6-5.3 cm off its

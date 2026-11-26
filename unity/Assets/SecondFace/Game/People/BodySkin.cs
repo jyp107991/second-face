@@ -64,6 +64,12 @@ namespace SecondFace.Game.People
             public byte[] XN, XB;
             public float[] XW;
             public Vector3[] XP, XNo, XD;
+            // RBS5: each point's satellites (SatStart[i]..SatStart[i+1]): the drawn arm vertices its cell stands for, skinned as
+            // they are drawn (two bones and up to two more, positions only)
+            public int[] SatStart;
+            public byte[] SB0, SB1, SXN, SXB;
+            public float[] SW, SW1, SXW;
+            public Vector3[] SP0, SP1, SXP;
         }
 
         /// <summary>The flank correctives' weights now (0-1; ArmClearance sets them as it sets the body's own shapes).</summary>
@@ -75,6 +81,14 @@ namespace SecondFace.Game.People
         private Transform[] _bones;
         private Matrix4x4[] _m;
         private float[] _off;
+        // each satellite where it is now, from its point (posed with the points, turned with them)
+        private Vector3[] _satOff;
+        private int[] _satIdx;
+        /// <summary>A point within this of the body's skin (m) is read at its satellites too, and takes the deepest: the runtime
+        /// places the arm on the drawn vertices its points stand for, not on the points alone. One point a cell (1.8 cm on the
+        /// arms) let a resting forearm be held at its points while a drawn vertex between them lay 0.15 cm deeper, 0.53 cm in
+        /// (C1, Male_Adult_02, thirteen resting states, 2026-11-26).</summary>
+        public float SatNear = 0.01f;
         private uint _worn;
         /// <summary>Posed by <see cref="Pose"/> (world): each point on the surface (its layers' thickness out) and its normal.</summary>
         public Vector3[] P, N;
@@ -133,6 +147,7 @@ namespace SecondFace.Game.People
             _off ??= new float[n];
             if (_off.Length != n) _off = new float[n];
             _m = new Matrix4x4[_bones.Length];
+            _satOff = _set.SatStart != null ? new Vector3[_set.SatStart[n]] : null;
         }
 
         private static Set Read(TextAsset data)
@@ -144,9 +159,10 @@ namespace SecondFace.Game.People
             using (var r = new BinaryReader(gz))
             {
                 var magic = new string(r.ReadChars(4));
-                if (magic != "RBS1" && magic != "RBS2" && magic != "RBS3" && magic != "RBS4") throw new InvalidDataException("not a body skin");
+                if (magic != "RBS1" && magic != "RBS2" && magic != "RBS3" && magic != "RBS4" && magic != "RBS5") throw new InvalidDataException("not a body skin");
                 var v2 = magic != "RBS1";   // each layer's thinning at the sides, and each point's facing sideways
-                var v4 = magic == "RBS4";   // every bone that moves a point
+                var v5 = magic == "RBS5";   // each arm point's satellites
+                var v4 = magic == "RBS4" || v5;   // every bone that moves a point
                 var v3 = magic == "RBS3" || v4;   // the flank correctives
                 var nl = r.ReadInt32();
                 s.Layers = new string[nl]; s.ThinSides = new bool[nl];
@@ -176,6 +192,32 @@ namespace SecondFace.Game.People
                     if (v2) s.Side[i] = r.ReadByte();
                     if (v3 && (s.FlankSide[i] = r.ReadByte()) != 0) { s.D0[i] = V(); s.D1[i] = V(); if (v4) for (var x = 0; x < s.XN[i] && x < 2; x++) s.XD[i * 2 + x] = V(); }
                     used.Add(s.B0[i]); used.Add(s.B1[i]);
+                }
+                if (v5)
+                {
+                    var ns = r.ReadInt32();
+                    s.SatStart = new int[n + 1];
+                    s.SB0 = new byte[ns]; s.SB1 = new byte[ns]; s.SW = new float[ns]; s.SW1 = new float[ns]; s.SP0 = new Vector3[ns]; s.SP1 = new Vector3[ns];
+                    s.SXN = new byte[ns]; s.SXB = new byte[ns * 2]; s.SXW = new float[ns * 2]; s.SXP = new Vector3[ns * 2];
+                    var q = 0;
+                    for (var i = 0; i < n; i++)
+                    {
+                        s.SatStart[i] = q;
+                        int c = r.ReadUInt16();
+                        for (var x = 0; x < c; x++, q++)
+                        {
+                            s.SB0[q] = r.ReadByte(); s.SB1[q] = r.ReadByte(); s.SW[q] = r.ReadSingle(); s.SW1[q] = r.ReadSingle();
+                            s.SP0[q] = V(); s.SP1[q] = V();
+                            s.SXN[q] = r.ReadByte();
+                            for (var e = 0; e < s.SXN[q]; e++)
+                            {
+                                var xb = r.ReadByte(); var xw = r.ReadSingle(); var xp = V();
+                                if (e < 2) { s.SXB[q * 2 + e] = xb; s.SXW[q * 2 + e] = xw; s.SXP[q * 2 + e] = xp; used.Add(xb); }
+                            }
+                            used.Add(s.SB0[q]); used.Add(s.SB1[q]);
+                        }
+                    }
+                    s.SatStart[n] = q;
                 }
                 s.UsedBones = new int[used.Count];
                 used.CopyTo(s.UsedBones);
@@ -254,6 +296,15 @@ namespace SecondFace.Game.People
                 }
                 P[i] = p + nn * _off[i];
                 N[i] = nn;
+                if (_satOff != null)
+                    for (var q = _set.SatStart[i]; q < _set.SatStart[i + 1]; q++)
+                    {
+                        ref var s0 = ref _m[_set.SB0[q]];
+                        ref var s1 = ref _m[_set.SB1[q]];
+                        var sp = s0.MultiplyPoint3x4(_set.SP0[q]) * _set.SW[q] + s1.MultiplyPoint3x4(_set.SP1[q]) * _set.SW1[q];
+                        for (var x = 0; x < _set.SXN[q] && x < 2; x++) sp += _m[_set.SXB[q * 2 + x]].MultiplyPoint3x4(_set.SXP[q * 2 + x]) * _set.SXW[q * 2 + x];
+                        _satOff[q] = sp + nn * _off[i] - P[i];
+                    }
             }
             for (var h = 0; h < Buckets; h++) _head[h] = -1;
             var body = _set.Start[(int)Part.ThighR + 1];
@@ -287,6 +338,7 @@ namespace SecondFace.Game.People
             {
                 P[i] = pivot + q * (P[i] - pivot);
                 N[i] = q * N[i];
+                if (_satOff != null) for (var x = _set.SatStart[i]; x < _set.SatStart[i + 1]; x++) _satOff[x] = q * _satOff[x];
             }
         }
 
@@ -332,7 +384,10 @@ namespace SecondFace.Game.People
         public const float DeepAcross = 3f, DeepAcrossMax = 0.04f;
 
         /// <summary>For the gate's report: how often <see cref="Depth"/> was asked, and how often the robust reading's passes ran.</summary>
-        [System.NonSerialized] public long DepthCalls, RobustRuns, DepthKept;
+        [System.NonSerialized] public long DepthCalls, RobustRuns, DepthKept, SatAsks, SatDeeper;
+        /// <summary>For the gate's report: the time the satellites' readings have taken (ms).</summary>
+        [System.NonSerialized] public double SatMs;
+        private readonly System.Diagnostics.Stopwatch _satCost = new();
         // (each asked point's place when it was last asked, and the pose it was asked against: the same place against the same
         // posed body is the same answer, so it is not reckoned again)
         private Vector3[] _askedAt; private int[] _askedPose; private int[] _askIdx; private int _pose = 1;
@@ -414,6 +469,7 @@ namespace SecondFace.Game.People
             RobustRuns += _runs[0];
             var nv = _qNo.Reinterpret<Vector3>();
             for (var j = 0; j < k; j++) { var i = _askIdx[j]; QD[i] = _qD[j]; QN[i] = nv[j]; QNear[i] = _qNear[j]; _askedAt[i] = qv[j]; _askedPose[i] = _pose; }
+            if (_satOff != null) Satellites(k);
             if (CheckBatch && _checks < 40)
                 for (var i = from; i < to; i += stride)
                 {
@@ -428,6 +484,46 @@ namespace SecondFace.Game.People
                         Debug.Log($"BodySkin batch mismatch {name} point {i} (query {kq} of {m}, at {P[i].x:0.0000},{P[i].y:0.0000},{P[i].z:0.0000}, asked {_qIn[kq].x:0.0000},{_qIn[kq].y:0.0000},{_qIn[kq].z:0.0000}; cell {c}): managed {(ok ? near : -1)} {d:0.000000} {n}, batch {QNear[i]} {QD[i]:0.000000} {QN[i]}; mirrored {_nBody} of {_set.Start[(int)Part.ThighR + 1]}; body point {nb} live {P[nb]} cell {_cell[nb]}, mirror {_nP[nb]} cell {_nCell[nb]}; head live {_head[Hash(_cell[nb].x, _cell[nb].y, _cell[nb].z)]} mirror {_nHead[Hash(_cell[nb].x, _cell[nb].y, _cell[nb].z)]}");
                     }
                 }
+        }
+
+        /// <summary>The asked points within <see cref="SatNear"/> of the body read at their satellites as well, in one batch, each
+        /// taking the deepest reading (its depth, normal and nearest body point).</summary>
+        private void Satellites(int k)
+        {
+            _satCost.Restart();
+            var ks = 0;
+            for (var j = 0; j < k; j++)
+            {
+                var i = _askIdx[j];
+                if (QNear[i] < 0 || QD[i] < -SatNear) continue;
+                ks += _set.SatStart[i + 1] - _set.SatStart[i];
+            }
+            if (ks == 0) { SatMs += _satCost.Elapsed.TotalMilliseconds; return; }
+            if (_qIn.Length < ks)
+            {
+                _qIn.Dispose(); _qNo.Dispose(); _qNear.Dispose(); _qD.Dispose();
+                _qIn = new NativeArray<float3>(ks, Allocator.Persistent); _qNo = new NativeArray<float3>(ks, Allocator.Persistent);
+                _qNear = new NativeArray<int>(ks, Allocator.Persistent); _qD = new NativeArray<float>(ks, Allocator.Persistent);
+            }
+            if (_satIdx == null || _satIdx.Length < ks) _satIdx = new int[Mathf.Max(ks, 512)];
+            var qv = _qIn.Reinterpret<Vector3>();
+            var m = 0;
+            for (var j = 0; j < k; j++)
+            {
+                var i = _askIdx[j];
+                if (QNear[i] < 0 || QD[i] < -SatNear) continue;
+                for (var q = _set.SatStart[i]; q < _set.SatStart[i + 1]; q++) { _satIdx[m] = i; qv[m++] = P[i] + _satOff[q]; }
+            }
+            new DepthJob { P = _nP, N = _nN, Head = _nHead, Next = _nNext, Cells = _nCell, Spacing = _nSpacing, Flags = _nFlags, Q = _qIn, D = _qD, No = _qNo, Near = _qNear, Runs = _runs, Count = m }.Run();
+            var nv = _qNo.Reinterpret<Vector3>();
+            for (var j = 0; j < m; j++)
+            {
+                var i = _satIdx[j];
+                if (_qNear[j] < 0 || _qD[j] <= QD[i]) continue;
+                QD[i] = _qD[j]; QN[i] = nv[j]; QNear[i] = _qNear[j]; SatDeeper++;
+            }
+            SatAsks += m;
+            SatMs += _satCost.Elapsed.TotalMilliseconds;
         }
 
         /// <summary>The answer <see cref="DepthRange"/> kept for point <paramref name="i"/>, as <see cref="Depth"/> gives it

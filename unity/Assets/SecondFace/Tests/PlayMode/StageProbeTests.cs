@@ -186,7 +186,8 @@ namespace SecondFace.Tests
             {
                 if (Skin == null) return;
                 long V(string n) { var f = typeof(BodySkin).GetField(n, BindingFlags.Public | BindingFlags.Instance); return f != null ? (long)f.GetValue(Skin) : -1; }
-                Debug.Log($"STAGEPROBE skin {Person}: depth asks {V("DepthCalls")}, robust passes run {V("RobustRuns")}, kept from the pose {V("DepthKept")}");
+                var sm = typeof(BodySkin).GetField("SatMs", BindingFlags.Public | BindingFlags.Instance);
+                Debug.Log($"STAGEPROBE skin {Person}: depth asks {V("DepthCalls")}, robust passes run {V("RobustRuns")}, kept from the pose {V("DepthKept")}, satellite asks {V("SatAsks")}, deeper {V("SatDeeper")}, satellites {(sm != null ? (double)sm.GetValue(Skin) : -1):0.0} ms in all");
             }
         }
 
