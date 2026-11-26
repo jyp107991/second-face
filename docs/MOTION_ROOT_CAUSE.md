@@ -709,3 +709,62 @@ points against the drawn surface); never a verdict.
   leans back 4° and carries the shoulders 3.6 cm back over the hips, §11); Medical_Female_01's jog W6 (one frame, max 4.4 against
   the cap of 4.0: the landing foot hovers 4.1-4.4 cm at 0.3-0.5 m/s as the jog slows to a stop, both feet off the ground, so the
   gate reads it as bearing the weight).
+
+## 14. The resting forearm's deepest vertex, the hand's setting, the toes at push-off, the jog's stop (editor owner, 2026-11-26)
+Gate: red, 6460 (dfc732a4). Traced on picks of the batch's tree (the gate's own pick with a temporary probe beside it); never a
+verdict.
+- **C1, Business_Male_01's forearm by the elbow (nine resting states, 0.53-0.55 cm after §13's face-share give).** (1) The hand's
+  learned place (`_adaptL/_adaptR`) is not the cause: it is updated only when the upper arm is not placed first, and it is.
+  (2) What differs between his first idle (0.24) and the looks and the moments after the gestures (the same clip): the resting
+  upper arm's tilt back (`back`, held in a 4° band) settles at 3.7° in the first idle and 3.3° after the second idle's clip, the
+  shoulder's push is for the forearm from 2.7 against 3.0 cm in; the runtime's deepest forearm point reads the same in all of them
+  (0.21-0.22 cm, the probe's resting-step trace), the gate's vertex does not. (3) **The hand's setting let the forearm back in:**
+  after the clearance, `SetHand` refused a move only past half a degree of the shoulder's need, and the runtime's deepest forearm
+  point went 0.14 -> 0.21-0.22 cm through it in every resting state. Fix: refused when it leaves the arm needing more than before
+  it (0.01°), never past half a degree. (4) **The arm's sampling left out the deepest vertex:** the forearm's points there stand
+  4.4-6.6 cm apart but for one, point 3358, 0.35 cm from the gate's vertex 503 and in its plane; where the arm meets the hip
+  obliquely (56-67° between the surfaces) the depth grows along the arm's own plane, and 503 read 0.63 cm in while its cell's
+  point read 0.31 (`SkinTruthProbeTests`, look0). The drawn arm is flat between its vertices, so its deepest point in a body is
+  always one of them; one point a 1.8 cm cell (the vertex nearest the cell's centre) stood for vertices up to a cell away, and the
+  stand-out rule of §13 caught only those out of the point's plane. Fix (`RocketboxLayers.Skin`): every forearm and lower upper-arm
+  vertex further than the resting give (0.25 cm) from each point its cell keeps is a point of its own (the hands keep the stand-out
+  rule on their 1.2 cm cells); every person's skin rebuilt: arm points 49,108 -> 50,600 (+3 %; the forearms +15 %). On a 14-person
+  pick with both: his C1 0.53-0.55 -> 0.27-0.30 cm (slope 0.48 -> 0.41, turn 0.49 -> 0.17), everyday cells on the 13 people common
+  with the pick before 12 -> 3, none made worse; fight cells 746 -> 748.
+- **W6, Medical_Female_01's jog stop: tried and reverted.** The landing foot hovers 4.1-4.4 cm, 0.3-0.5 m/s across the ground and
+  level, as the jog slows at about 6 m/s²; the foot plant's catch (the hips set down onto a slow lower foot, both feet up) is keyed
+  on its own pace, smoothed over a tenth of a second, under 2.4 m/s, and did not fire. Keyed on the foot's own motion instead (slow
+  across, rising or falling under 0.2 m/s), it fired one frame after the frame the gate counts (the plant sees a foot's level only
+  after the frame) and fired in the jog's flight too: two joggers' W1 p98 went 5.4 -> 32 and 3.5 -> 37 cm/s. Reverted. Open: the
+  stop's blend lands the foot slow and 4 cm up (the clip, or the locomotion's slowing from the jog).
+- **W1, Female_Adult_01's jog: the toes turned into the ground with the foot.** The foot plant holds a moving foot on its ball
+  (the metatarsal row) and turns it there by the clip's pitch; the toes went with it, rigid (`FootPlant.Toes` straightens them to
+  their rest while the ankle is low, for landings), so as the heel rose the toes' row 3.3 cm ahead turned down into the ground, the
+  foot was lifted out by its lowest point, and the row swept along the ground at 0.16-0.36 m/s: the gate's right-foot ball lies on
+  that row (her forefoot is flat, the two rows tie, §13). Fix (`FootPlant.ToesDown`): a held foot's toes are bent up at the toe
+  joint until their sole lies as it did with the foot flat, within 50° of their rest (the first toe reaches 40-65° at toe-off in
+  real walking, Nawoczenski, Baumhauer and Umberger 1999), eased back to the clip's over the hold's release when the foot lifts;
+  the foot is still held on its ball, and kept as low as with the toes rigid (laid down, the toes lifted the sole's lowest point
+  off the ground they had been pressed into: the stance soles stood 1-3 cm up, W6 0.3 -> 1.1-2.9 cm at the p98 in four of twelve
+  people, before that was kept). On a 10-person pick her jog's W1 passes (6 % of frames over 15 cm/s before), and the stance soles stand as they did
+  (Male_Adult_06's and Construction_Male_02's jog W6 back under their limits); Business_Female_01's jog W6 reads 2.48 at the p98
+  (2.17 before the toes, limit 2.5).
+- **The rolling forefoot about the toe joint: measured, not applied.** Every body's forefoot in the bind pose (a temporary probe,
+  the gate's own ball band): the Biped toe joint sits at the sole (0.2-0.6 cm over the ball's vertex); 154 of the 158 gate balls lie
+  behind it (median 3.3 cm, the metatarsal row), skinned 0.9 to the foot's bone (median), 4 on the toes; 10 feet are flat (the two
+  rows tie: Female_Adult_01's both, 12, 14, 17, Male_Adult_06). Turned about the toe joint with the toes kept, the foot moves every
+  metatarsal-row ball by its foot-bone share at about the pitch rate x 3.3 cm x sin(pitch), the speed the toes' row has now about
+  the ball: it would trade her one cell for the cast's. The toes laid down while the foot stays held on its ball moves her toes'
+  row only with the toe joint (1.5 cm ahead of the ball).
+- **Cost (the arm clearance, the editor's idles, a person a frame).** (1) The gate traces the first person and the first man of
+  each run with `TraceStages` (the managed depth over the hands and forearms at six steps): their cost reads 5-6 ms high, and the
+  means quoted before mixed them in; compared here without them. (2) Of the clearance's depth asks, 29-50 % a person are the same
+  point at the same place against the same posed body (a forearm asked again after only the hand moved, the hand after only the
+  elbow turned): `BodySkin.DepthRange` now keeps those answers for the pose (the batch reckons each point from its place and the
+  body's points alone, so the answer is the same; `DepthKept` counts them). (3) On ten people of a pick (untraced) against the whole
+  cast's run before the robust reading (hash 8d5742a5, the same people): Medical_Female_01 5.6 -> 6.5, Medical_Female_03 5.6 -> 6.7,
+  Female_Adult_12 5.7 -> 6.3, Female_Adult_14 4.8 -> 4.8, Female_Adult_17 5.6 -> 5.9, Male_Adult_01 6.6 -> 6.2, Male_Adult_06 7.2 ->
+  7.8, Female_Adult_15 8.5 -> 9.2, Construction_Male_02 8.4 -> 10.5 ms: about 9 % over. On the whole cast's first chunk (its eight
+  untraced people): 7.4 ms a person before the robust reading (the run of hash 8d5742a5), 9.5 before this section, 9.0 now (Business_Male_04 8.6 -> 7.3, Business_Male_06 8.3 -> 7.0, Business_Male_03 12.7 -> 11.8). What is left is the robust reading near the hips (0.5-2 ms, its A/B in §13) and the asks of the
+  rebuilt skins' points (the arm's points +3 % here, the filled points on the drawn surface in §12): the price of reading the drawn
+  surface.
