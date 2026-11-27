@@ -857,3 +857,155 @@ three), Female_Adult_14's jog (W1) to the toes laid down (§14), and Constructio
   keys stand worse than dfc732a4's, every one but one at its count on cast 3's tree before this round (the fight's clips on every
   body of a sex, and the two known everyday cells); the one, Kb in the strikes, 129 -> 154: listed with their causes and fix items
   in `docs/qa/gates/motion_waivers.json` (the waiver policy).
+
+## 16. The Biped hierarchy and Unity's body orientation: the same human pose, the whole skeleton turned (editor owner, 2026-11-27)
+Found tracing the fight's cause B (`docs/COMBAT_ROOT_CAUSE.md` 19): planted feet 7-11 cm apart in height on the bodies where
+the clips' actors stand them level.
+- **Measured** (`LegTraceProbeTests`, temporary): each clip played bare (a manual graph, no Foot IK, no runtime system) on its
+  own actor, on two bodies of its sex, on a body whose legs and hip width are scaled to the actor's, and on the body with its
+  avatar built again (AvatarBuilder, its own description) with parts of its hierarchy changed; every frame the leg and trunk
+  bones in the root's frame and the human pose read back.
+  - The avatars agree where the definitions are: upper-leg and leg twist 0.5, leg stretch 0.05, feet spacing 0, default
+    limits; at muscle 0 the thighs and shanks 0.00° apart, the pelvis's lateral axis 0.4-0.9°. Translation DoF (on for the
+    bodies, off for the actors): the body's avatar built without it plays bit-identically.
+  - Not proportions: on the body with the actor's leg lengths and hip width the planted feet stand as far apart or further
+    (the fist guard 7.2 -> 7.9 cm, the men's crouch hold 17.5 -> 19.3, the club blow p98 8.8 -> 9.8); the actor's own leg
+    directions on the body's leg lengths stand them 1.1 / 7.7 / 0.5 cm apart (the actor's 1.2 / 8.6 / 1.6).
+  - With the human pose read back identical (the muscles within 0.00-0.14, the body rotation within 0.1-0.5°) the body's whole
+    skeleton (pelvis, spine, chest and both legs as one piece; the trunk's bend equal to 0.2°) stands turned from the actor's:
+    the rifle's ready 1.7°, the guards and the aim 4.3-4.6°, the club blow 4.8° (p98 9.1), the club's ready 7.6°, the women's
+    crouch hold 5.9°, the men's 16.6°, the fist guard 18.7°.
+  - Bisected by the avatar built again: the clavicles re-parented from `Bip01 Neck` to `Bip01 Spine2`: the fist guard 18.7 ->
+    2.0°, the men's guard 4.4 -> 0.7°, the women's 4.4 -> 1.2°, the women's thrust 4.5 -> 1.8°; the thighs from `Bip01 Spine` to
+    the pelvis: the club's ready 7.6 -> 3.6°, the club blow 4.8 -> 3.2°; both: 0.7-2.5° in every standing clip, the crouch hold
+    16.6 -> 13.8° (men), 5.9 -> 10.2° (women). Two standard (non-Biped) actors' skeletons differ between themselves by 0-3.4°
+    standing and 11.4° in the men's crouch hold.
+- **Cause.** Unity's humanoid places the pelvis from the clip's body orientation, which it reads from the joints' positions. On
+  the Rocketbox bodies (3ds Max Biped) the clavicles hang from the neck and the thighs from the spine: a bend of the neck or the
+  spine moves the shoulder and hip joints, changes the body orientation Unity reads, and Unity turns the whole skeleton to
+  match the clip's. The rest is the trunk's own geometry, large only in a deep bend (the crouch). The same hierarchy was behind
+  the gaze's fault (the head turned at its own joint, §11: the clavicles hang from the neck) and the fight's trunk corrections
+  swinging the legs (`docs/COMBAT_ROOT_CAUSE.md` 17: the thighs hang from the spine).
+- **Done for the fight** (this batch): the measured turn baked per clip and skeleton and put back on the hips and thighs first in
+  the frame (`docs/COMBAT_ROOT_CAUSE.md` 19). The everyday states are left as they are, but for the sits (below).
+- **Later batch item (not done):** at import, re-parent the bodies' clavicles to `Bip01 Spine2` and their thighs to the pelvis,
+  the bind pose kept in the world (the skinning unchanged), the avatars built again; then the everyday screen and the whole cast
+  again. It may retire the compensations built around the hierarchy (the gaze's own-joint turn, `FootPlant.Level`'s chest, the
+  fight's trunk bones above the legs) and the fight's baked turn's hierarchy share (the trunk's geometry share would stay). It
+  changes no look, so it is not an owner question.
+- **(b) is a compensating bake, not a cure.** The fight's turn (`docs/COMBAT_ROOT_CAUSE.md` 19) and the sits' (`SeatTurn`, below)
+  put back what the retarget leaves on these skeletons; they do not remove why it is left. The cure is (a), the rig's re-parent at
+  import. (a)'s item carries its own check: after the re-parent, the same bake must read about nought on every clip (the hips' and
+  the thighs' turns within a degree or so, the shift within a few millimetres); then the bake, `ClipTurnFirst`, `SeatTurn` and
+  their data are deleted, not kept as a no-op.
+- **The sits (this batch).** The same retarget at a sit's hip bend of about 90°: the base layer's sits (the controller's states
+  tagged "sit": a chair, a stool, the ground) on the Rocketbox bodies stood the pelvis turned and the thighs rolled from the
+  sits' CMU actors (the walker on a chair: hips 0.47 m, a foot 0.32 m off the floor, where the take keeps it at 0.05 m; dfc's
+  walker passed only because its configured T-pose was the take's first, seated key, MotionImportPostprocessor v13 §9). Baked as
+  the fight's (`CombatAnimatorBuild.Seats`: 3 sits x 2 skeletons, the hips up to 18-19°, the thighs up to 44-67°, the shift up to
+  6.3 cm), applied by `SeatTurn` at order -30 while a seated state plays, eased by the crossfade into and out of it.
+- **A further symptom (2026-11-27):** the hands' "ahead" read from the hip joints' middle instead of the Hips bone (§17) moves the
+  cast's reading 0.3-0.5 cm standing but 3.7-3.9 cm in the jog: the Biped's thighs hang from the spine, so the hip joints ride the
+  spine's bend away from the pelvis bone.
+
+## 17. The captured motion test's reads, Gaze's neutral face, and a person made away from the world's origin (editor owner, 2026-11-27)
+Found under three CI regressions of 71ba0e5b (`CapturedMotionHoldsHumanPosesWhenBuilt`, `ArmsStayOutOfTheBody`,
+`TheWalkerSitsOnAChair`); probes temporary (`CapturedProbeTests`, `ArmsProbeTests`, `PlayerAvatarProbe`), not hashed.
+- **The read point.** Gaze turns the head at its own joint in LateUpdate (since 2026-11-26), not in the animator's IK pass. The test
+  read its walk cycle and its idle face straight after `Animator.Update(0)`: the bare clip, no Gaze in it (the walk's face -17 to
+  -24°). It now reads each phase as the game shows it, after the frame's LateUpdate, the clip held at its phase; limits unchanged.
+- **The hands' reference.** The idle's hands are read ahead of the hip joints' middle (the anatomy a real person's hand is measured
+  from), not of the Hips bone: the players' MakeHuman rig stands its Hips bone toward the sacrum, 5.8 cm (player_m) and 8.2 cm
+  (player_f) behind the hip joints, where the cast's Biped stands it on their line. On the cast the reading moves 0.26 cm
+  (Female_Adult_01) and 0.54 cm (Male_Adult_08) in the idle: Male_Adult_08's +0.54 cm equals its T-pose bone offset (-0.5 cm),
+  exactly the rig offset the change is meant to remove (the jog's 3.7-3.9 cm is §16's, and the 0.2 m limit applies to the idle
+  only). Finding, not fixed: from the shoulder the players' hands hang 4-5 cm further forward than the cast's on the same idle
+  (player_m 0.128 m against Female_Adult_01 0.076, Male_Adult_08 0.090).
+- **The players' trunk, tried and taken out.** The players' configured T-pose stands its trunk curved (segments -8.3, -8.7,
+  +16.2, +19.4° from the vertical on player_m; -9.7, +2.9, -5.1, +21.1° on player_f) where Unity's humanoid takes muscle zero with
+  the spine upright and every clip's is configured so. Standing only the players' trunk upright changed one end of the retarget
+  alone and made the walk's face worse (-12.9° at phase 0.625, against -10 with the original trunk; measured with Gaze's face
+  reference still wrong, below). The trunk goes into the next batch with every clip's configured trunk on the same convention,
+  so that both ends of the retarget change at once.
+- **Gaze's neutral face, read away from the world's origin.** Gaze read the face's front in Awake by a HumanPoseHandler round trip
+  on the live body. GetHumanPose gives the body in the world and SetHumanPose places it from the person's own root, so on a person
+  standing away from the origin the round trip put the hips that far off again: a townsperson in Shale, 16 km out, had the pelvis
+  15.5 km away and 40 m up (the body's mesh hangs from the pelvis, so the person was never in view and, culled, never animated:
+  invisible and frozen in the game; `ArmsStayOutOfTheBody` read their arms "moving" because the camera stood 16 km from their
+  hips, past the skin's range). On a person turned from the world's axes it read the face's front off by that turn (137° and 180°
+  read 110° and 154° off). Fixed in `Gaze.Neutral`: read with the root at the origin and square to the world, every bone's local
+  transform put back after, a navigation agent's sync held off meanwhile. Test: `APersonMadeAnywhereKeepsTheirBodyAndFace` (a
+  townsperson at (15000, 40, 4000) turned 137°: the hips 0.00 cm from their place at the origin, the bounds round where the person
+  stands, the face reference 0.00° apart; on 71ba0e5b's Gaze: 15,524 m, the bounds 15 km off, 137°). The class: every other
+  HumanPoseHandler round trip runs on a bare rig at the origin (the turn bake, the flank probe, the body correctives' and the
+  layers' copies of an FBX at the origin), or on the gate's people, who stand square to the world and offset in x only
+  (MotionProbe: its references are heights or taken before its own round trip). The gate's people stand where the game never
+  puts anyone: a later item (`docs/PROGRESS.md`).
+- **The players' bound body faces away.** The players' MakeHuman models are bound facing away from their own root (the bound body
+  180° round: the eyes 8.2 cm behind the head joint along the root's front in the bind, in front of it in every animated pose).
+  Gaze took the neutral pose with the bound body's own rotation, so on the players the face's front was the back of the head: its
+  pitch read the wrong way round and its yaw half a turn off, and the walking player's head was held twisted 20-33° to alternate
+  sides (the eye line's yaw). `Gaze.Neutral` turns the bound body about the vertical to the root's front and keeps its pitch: the
+  cast's bodies are bound square in yaw, so their reference is unchanged (their bound pitch, 5.4° on the men and 7.6° on the
+  women, is what the gate's MotionProbe measures the face by). The players' walk face after: -1.8 to -2.5° at every phase (before
+  -3.9 to -10.6), the head's yaw within 0.4°. The test keeps its own, anatomical measure (the eye line) and asserts that Gaze's
+  face and the eyes' agree within 3° in pitch and yaw on a rig with eye bones (0.2° and 0.4° now): a measure of Gaze by Gaze's own
+  definition is circular, and on the cast Gaze and MotionProbe shared one definition, which is why this stayed hidden. Unity's
+  full human reference (the body square to the root, which moves the cast's reference by its 5.4-7.6° of bound pitch) is a gate
+  definition change, for the next batch's trunk convention item.
+- **The sits' tag.** The base layer's sits were built untagged (`LocomotionBuild`, since b2a82298), so `ArmClearance.Resting()`'s
+  test for a seated state never held. They are tagged "sit" now (the builder sets it; `LocomotionBuild.TagSits` set it on the
+  committed controller: three `m_Tag` lines), and `SeatTurn` and its bake find the sits by it. It changes nothing for the seated
+  walker today: `Walker.Planting(false)` turns the arm clearance off while seated. `SeatedArmsStayOutOfTheBody` (new) found the
+  sits' own hands 1.3-8.5 cm into the drawn body (the chair and the ground; the stool 0.0): a pre-existing defect, the fix a seated
+  clearance that holds the hands on the lap's surface (`docs/PROGRESS.md`).
+- **The configured trunks, for the next batch's trunk convention item** (each model's configured T-pose, in its importer: each trunk
+  segment's angle from the vertical, + forward; Hips-Spine is the rig's own offset between its hips and spine bones, near ±80-90°
+  where the two stand level, one behind or ahead of the other, not a bend). The everyday clips and the bodies:
+```
+player_m                           Hi-Sp +80.1  Sp-Ch -8.3  Ch-Up -8.7  Up-Ne +16.2  Ne-He +19.4
+player_f                           Hi-Sp +91.4  Sp-Ch -9.7  Ch-Up +2.9  Up-Ne -5.1  Ne-He +21.1
+Female_Adult_01                    Hi-Sp -0.8  Sp-Ch -0.0  Ch-Up -0.0  Up-Ne -9.0  Ne-He +0.0
+Male_Adult_08                      Hi-Sp -0.8  Sp-Ch -0.0  Ch-Up -0.0  Up-Ne +4.5  Ne-He +0.0
+argue                              Hi-Sp +0.0  Sp-Ch -4.8  Ch-Up -0.9  Up-Ne +1.4  Ne-He +1.4
+carry                              Hi-Sp +0.0  Sp-Ch -6.5  Ch-Up -1.2  Up-Ne +1.8  Ne-He +1.3
+drink                              Hi-Sp +0.0  Sp-Ch -5.7  Ch-Up -1.2  Up-Ne +1.4  Ne-He -0.2
+fall                               Hi-Sp +0.0  Sp-Ch +1.0  Ch-Up -1.0  Up-Ne -1.5  Ne-He -3.0
+guard                              Hi-Sp +0.0  Sp-Ch -5.7  Ch-Up -1.2  Up-Ne +1.4  Ne-He -0.2
+idle_f                             Hi-Sp -79.0  Sp-Ch +5.7  Ch-Up +7.6  Up-Ne +4.8  Ne-He +13.3
+idle_f_c                           Hi-Sp -79.0  Sp-Ch +5.7  Ch-Up +7.6  Up-Ne +4.8  Ne-He +13.3
+idle_m                             Hi-Sp -89.8  Sp-Ch +10.7  Ch-Up +6.3  Up-Ne +11.3  Ne-He +16.6
+idle_m_b                           Hi-Sp -91.3  Sp-Ch +9.2  Ch-Up +4.2  Up-Ne +13.4  Ne-He +29.3
+jog                                Hi-Sp +0.0  Sp-Ch -6.3  Ch-Up +0.2  Up-Ne +3.2  Ne-He -0.2
+jog_b                              Hi-Sp +0.0  Sp-Ch -6.8  Ch-Up -0.9  Up-Ne +2.3  Ne-He +0.3
+jog_f                              Hi-Sp +0.0  Sp-Ch -4.8  Ch-Up +5.9  Up-Ne +8.5  Ne-He -6.4
+jog_f_b                            Hi-Sp +0.0  Sp-Ch -4.8  Ch-Up +5.9  Up-Ne +8.5  Ne-He -6.4
+pickup                             Hi-Sp +0.0  Sp-Ch -3.6  Ch-Up -0.3  Up-Ne +1.3  Ne-He +1.0
+run                                Hi-Sp +0.0  Sp-Ch -8.7  Ch-Up -0.9  Up-Ne +3.2  Ne-He +2.0
+run_c                              Hi-Sp -89.8  Sp-Ch +10.7  Ch-Up +6.3  Up-Ne +11.3  Ne-He +16.6
+sit                                Hi-Sp +0.0  Sp-Ch +10.6  Ch-Up +7.1  Up-Ne +2.5  Ne-He -7.2
+sit_ground                         Hi-Sp +0.0  Sp-Ch -3.9  Ch-Up -0.8  Up-Ne +1.0  Ne-He +3.2
+sit_stool                          Hi-Sp +0.0  Sp-Ch -5.7  Ch-Up -1.2  Up-Ne +1.4  Ne-He -0.2
+sneak                              Hi-Sp +0.0  Sp-Ch -8.3  Ch-Up +0.4  Up-Ne +4.3  Ne-He -0.7
+stretch                            Hi-Sp +0.0  Sp-Ch -4.8  Ch-Up +5.9  Up-Ne +8.5  Ne-He -6.4
+stretch_m                          Hi-Sp +0.0  Sp-Ch -14.3  Ch-Up -1.6  Up-Ne +4.6  Ne-He +6.6
+sweep                              Hi-Sp +0.0  Sp-Ch -5.7  Ch-Up -1.2  Up-Ne +1.4  Ne-He -0.2
+talk                               Hi-Sp +0.0  Sp-Ch -4.8  Ch-Up -0.9  Up-Ne +1.4  Ne-He +1.4
+talk_b                             Hi-Sp +0.0  Sp-Ch -4.5  Ch-Up -1.5  Up-Ne +0.7  Ne-He -2.8
+walk                               Hi-Sp +0.0  Sp-Ch -1.0  Ch-Up -4.9  Up-Ne -4.4  Ne-He -1.0
+walk_b                             Hi-Sp +0.0  Sp-Ch -4.1  Ch-Up +0.5  Up-Ne +2.4  Ne-He +2.0
+walk_brisk_b                       Hi-Sp -89.8  Sp-Ch +10.7  Ch-Up +6.3  Up-Ne +11.3  Ne-He +16.6
+walk_d                             Hi-Sp -91.3  Sp-Ch +9.2  Ch-Up +4.2  Up-Ne +13.4  Ne-He +29.3
+walk_f                             Hi-Sp -79.0  Sp-Ch +5.7  Ch-Up +7.6  Up-Ne +4.8  Ne-He +13.3
+walk_f_b                           Hi-Sp -79.0  Sp-Ch +5.7  Ch-Up +7.6  Up-Ne +4.8  Ne-He +13.3
+walk_f_c                           Hi-Sp +0.0  Sp-Ch -2.5  Ch-Up +5.2  Up-Ne +6.4  Ne-He -5.0
+walk_f_long                        Hi-Sp -79.0  Sp-Ch +5.7  Ch-Up +7.6  Up-Ne +4.8  Ne-He +13.3
+walk_slow                          Hi-Sp +0.0  Sp-Ch -1.0  Ch-Up -4.9  Up-Ne -4.4  Ne-He -1.0
+walk_slow_b                        Hi-Sp +0.0  Sp-Ch -7.6  Ch-Up -2.2  Up-Ne +1.3  Ne-He -4.1
+wave                               Hi-Sp +0.0  Sp-Ch -5.7  Ch-Up -1.2  Up-Ne +1.4  Ne-He -0.2
+yawn                               Hi-Sp +0.0  Sp-Ch +2.2  Ch-Up +5.0  Up-Ne +3.9  Ne-He +2.2
+yawn_b                             Hi-Sp +0.0  Sp-Ch -2.5  Ch-Up +5.2  Up-Ne +6.4  Ne-He -5.0
+```
+  The fight's 282 clips share 24 trunks: the ACCAD-built (`*_accad`, `*_built`, 101 men's and 43 women's) +10.7/+6.3/+11.3/+16.6 and
+  +5.7/+7.6/+4.8/+13.3, the CMU men's fists -14.3/-1.6/+4.6/+6.6, the women's -0.8/+3.5/+3.8/-6.7, the 100STYLE takes 0.3/0/0/0.6,
+  and so on (the same reading over `Combat/Motion/*.fbx.meta`).

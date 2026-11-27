@@ -717,6 +717,43 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-27 (later), the gate batch: the fight's clips turned back onto their actors, a person made anywhere keeps their body and
+  face, the sits turned too (editor owner).**
+  Gate: red, VERDICT_TOTAL (the whole cast, VERDICT_DATE; 71ba0e5b's 3,351, with FY1/FY2 now counted: 4,018).
+  - Whole cast: VERDICT_LINE
+  - Causes found and removed at their sources: the fight's whole skeleton stood 2-19° turned from the clips' actors and the thighs
+    2-64° more on the CMU actors (Unity's humanoid on the Biped hierarchy, `docs/MOTION_ROOT_CAUSE.md` §16): the turn baked per
+    clip and skeleton and put back first in the frame (`docs/COMBAT_ROOT_CAUSE.md` 19; a compensating bake, not a cure: §16 (a)
+    removes it); the same for the base layer's sits (the walker's foot on a chair 0.32 -> 0.05 m); the record's lifted foot left
+    to the clip (fix A); LegNeed taken out (it folded the planted leg). Gaze's neutral face was read by a pose round trip on the
+    live body, which put a person made away from the world's origin 15 km off their own feet (Shale's townsfolk invisible and
+    frozen) and read a turned person's face off by the turn; and the players' MakeHuman models, bound facing away from their root,
+    had the back of the head for a face (the walking player's head twisted 20-33°): `Gaze.Neutral` (§17). The sits were never
+    tagged (since b2a82298): tagged "sit". The quick gate test destroyed the partners its conversation capture frames (it threw
+    on CI before its verdict): deactivated for the fight instead. FeetMeetASlope's stale layer count (it failed before measuring
+    since the fight's layers went on the controller): checked by name.
+  - Tests, new: `APersonMadeAnywhereKeepsTheirBodyAndFace` (fails on 71ba0e5b's Gaze, passes now), `SeatedArmsStayOutOfTheBody`
+    (fails: below), `TheSeatsTurnsAreBakedFromTheSitsAndSkeletonsThereAre`; `CapturedMotionHoldsHumanPosesWhenBuilt` reads after the
+    frame's LateUpdate and the hands from the hip joints, and asserts Gaze's face and the eyes' agree; the crossfade test covers the
+    sits. `CombatSet.asset` is a gate input now; FY1/FY2 are compared as any measure (out of "introduced").
+  - **Next batch, first: the trunk convention.** Every clip's configured T-pose trunk (MotionImportPostprocessor) and the players'
+    on Unity's humanoid convention (the spine's, chest's and neck's segments vertical), both ends of the retarget at once; with it
+    Unity's full human reference for the face (the body square to the root: moves the cast's face reference by its bound pitch,
+    5.4° on the men, 7.6° on the women; a gate definition change, MotionProbe and Gaze together, `Gaze.Neutral`). The configured
+    trunks now are tabled in `docs/MOTION_ROOT_CAUSE.md` §17 (the cast's Biped segments vertical; the players' curved, player_m
+    -8.3 / -8.7 / +16.2 / +19.4°, player_f -9.7 / +2.9 / -5.1 / +21.1°; the clips' between -14 and +29°, 26 distinct trunks over
+    the everyday clips and 24 over the fight's). Then CapturedMotion's player_f walk 0 hand (below).
+  - **Later items, in order:**
+    1. A seated arm clearance that holds the hands on the lap's surface: seated, the walker's arm clearance is off
+       (`Walker.Planting(false)`), and the sits' own hands sink into the drawn thighs (`SeatedArmsStayOutOfTheBody`: the ground sit
+       7.0-7.1 cm, the chair 0.7-2.2 cm, the stool 0.0-0.1; visible in play).
+    2. The gate's people stand where and as the game places them (far from the origin, turned): the cast stands at the origin
+       square to the world, which is why Gaze's round trip went unseen; MotionProbe's own round trip has the same yaw hole (not
+       exercised on the cast). Not changed in this batch; `APersonMadeAnywhereKeepsTheirBodyAndFace` covers the class meanwhile.
+    3. Sitting into the gate (the sits measured like the everyday states).
+    4. The rig's re-parent at import (§16 (a)): the bake must then read about nought on every clip, and goes.
+    5. FourChunks: the streaming test's in-flight preparations are not cancelled when it ends (an owner question is open).
+  - The arm clearance's level of detail stays as it is (the perf item below).
 - **2026-11-27, the gate batch committed under the waiver policy: the runtime reads the drawn body (editor owner).**
   Gate: red, 3,351 (the whole cast, 2026-11-27 04:34; dfc732a4's 6,460; the fight's new FY1/FY2, 667, exempt as introduced).
   - Whole cast of the batch's tree, 79 people: failing cells 6,460 -> 3,351, the everyday states 4 -> 2 (Female_Adult_01's jog W1,

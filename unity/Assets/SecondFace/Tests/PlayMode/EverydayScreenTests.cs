@@ -99,7 +99,7 @@ namespace SecondFace.Tests
             {
                 watch = new GameObject("stage watcher");
                 Object.DontDestroyOnLoad(watch);
-                watch.AddComponent<StageProbeTests.Watcher>();
+                throw new System.InvalidOperationException("SCREEN_WATCH: StageProbeTests is not in the tree (1127e)");
             }
             var combat = assets.Combat;
             var everyday = new List<string>();
