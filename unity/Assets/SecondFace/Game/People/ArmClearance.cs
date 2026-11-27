@@ -1053,6 +1053,12 @@ namespace SecondFace.Game.People
         /// <summary>Moving or gesturing, a shoulder push along the deepest contact's normal that leaves the arm in the body is tried
         /// again straight out to the side, and whichever leaves the arm less in kept.</summary>
         public bool OutRetry = true;
+        /// <summary>At rest, rest passes that leave the arm short of the clearance's target are tried again straight out to the
+        /// side, and whichever leaves the smaller need kept.</summary>
+        public bool RestOutRetry = true;
+        /// <summary>For the gate's trace: how much less need the rest passes out to the side left than those along the normal
+        /// (degrees; 0 when the normal's cleared it).</summary>
+        [System.NonSerialized] public readonly float[] RestOutDeg = new float[2];
         /// <summary>The depth in the body a push may leave the arm before the push out to the side is tried (m).</summary>
         public float OutRetryIn = 0.002f;
         /// <summary>For the gate's trace: how much less deep the push out to the side left the arm than the push along the normal
@@ -1414,13 +1420,17 @@ namespace SecondFace.Game.People
                 var angN = ang; var axN = ax; var pushedN = pushed; var nfN = _needFirst; var fdN = _firstDepth; var fuN = forUpper;
                 Swing(upper, lower, first);
                 var endN = Vector3.Angle(lower.position - upper.position, Vector3.down);
+                var inN = InDepth(upper, first);
                 Back(upper, lower, from, to, 2);
                 ang = ang0; ax = ax0;
                 Push(2);
                 Keep(upper, lower, from, to, 4);
                 Swing(upper, lower, first);
                 var endO = Vector3.Angle(lower.position - upper.position, Vector3.down);
-                if (endN <= endO) { Back(upper, lower, from, to, 3); ang = angN; ax = axN; pushed = pushedN; _needFirst = nfN; _firstDepth = fdN; forUpper = fuN; }
+                var inO = InDepth(upper, first);
+                // (the one that leaves the arm less in first, then the one nearer the vertical: judged by the angle alone, a turning
+                // man's push out left his forearm 0.8 cm in, C1, Construction_Male_03 turn, 2026-11-27)
+                if (Mathf.Abs(inN - inO) > 0.001f ? inN < inO : endN <= endO) { Back(upper, lower, from, to, 3); ang = angN; ax = axN; pushed = pushedN; _needFirst = nfN; _firstDepth = fdN; forUpper = fuN; }
                 else Back(upper, lower, from, to, 4);
                 if (TraceStages) StrideEndDeg[left ? 0 : 1] = endO - endN;
             }
@@ -1524,22 +1534,57 @@ namespace SecondFace.Game.People
             // vertical, A3, and the hand off the thigh, A4, 2026-11-07)
             var restDone = 0f;
             if (TraceStages) { var k0 = left ? 0 : 1; RestPart[k0] = -1; RestDeg[k0] = 0f; RestDepth[k0] = 0f; RestBody[k0] = -1; RestBodyY[k0] = 0f; }
-            for (var rPass = 0; rPass < 3 && restDone < RestCap; rPass++)
+            int rFrom = _skin.Begin(first), rTo = _skin.End(first + 2);
+            // (the rest passes along each contact's normal; where they leave the arm short of the clearance's own target, the same
+            // passes from the same start turned straight out to the side, and whichever leaves the smaller need kept: under a
+            // surface facing down and out (the hip's bulge at the hip joint's height) the passes along its normal moved a hanging
+            // forearm along the surface and not out of it, and it stayed 0.6 cm in through the second idle, C1,
+            // Construction_Male_03, 2026-11-27)
+            var tryOut = RestOutRetry && lower != null;
+            if (tryOut) Keep(upper, lower, rFrom, rTo, 2);
+            float RestPasses(bool outSide)
             {
-                var (rest, dirR) = SkinNeed(upper, first);
-                if (rest <= 0.01f) break;
-                if (TraceStages && rPass == 0 && _needAt >= 0)
+                var done = 0f;
+                for (var rPass = 0; rPass < 3 && done < RestCap; rPass++)
                 {
-                    var k0 = left ? 0 : 1;
-                    RestPart[k0] = _needAt >= _skin.Begin(first + 2) ? 3 : _needAt >= _skin.Begin(first + 1) ? 2
-                        : lower != null && (_skin.P[_needAt] - lower.position).magnitude > (lower.position - upper.position).magnitude / 3f ? 0 : 1;
-                    RestDepth[k0] = _needDepth * 100f;
-                    var nb = _skin.Near;
-                    if (nb >= 0) { var bp = _skin.PartOf(nb); RestBody[k0] = bp == BodySkin.Part.Torso ? 0 : bp == BodySkin.Part.ThighL ? 1 : bp == BodySkin.Part.ThighR ? 2 : 3; RestBodyY[k0] = _hips != null ? (_skin.P[nb].y - _hips.position.y) * 100f : 0f; }
+                    var (rest, dirR) = SkinNeed(upper, first);
+                    if (rest <= 0.01f) break;
+                    if (outSide)
+                    {
+                        var sa = Vector3.Cross(lower.position - upper.position, Outward(left ? -1 : 1));
+                        if (sa.sqrMagnitude < 1e-8f) break;
+                        dirR = sa.normalized;
+                    }
+                    if (!outSide && TraceStages && rPass == 0 && _needAt >= 0)
+                    {
+                        var k0 = left ? 0 : 1;
+                        RestPart[k0] = _needAt >= _skin.Begin(first + 2) ? 3 : _needAt >= _skin.Begin(first + 1) ? 2
+                            : lower != null && (_skin.P[_needAt] - lower.position).magnitude > (lower.position - upper.position).magnitude / 3f ? 0 : 1;
+                        RestDepth[k0] = _needDepth * 100f;
+                        var nb = _skin.Near;
+                        if (nb >= 0) { var bp = _skin.PartOf(nb); RestBody[k0] = bp == BodySkin.Part.Torso ? 0 : bp == BodySkin.Part.ThighL ? 1 : bp == BodySkin.Part.ThighR ? 2 : 3; RestBodyY[k0] = _hips != null ? (_skin.P[nb].y - _hips.position.y) * 100f : 0f; }
+                    }
+                    rest = Mathf.Min(rest, RestCap - done);
+                    TurnArm(upper, first, rest, dirR);
+                    done += rest;
                 }
-                rest = Mathf.Min(rest, RestCap - restDone);
-                TurnArm(upper, first, rest, dirR);
-                restDone += rest;
+                return done;
+            }
+            restDone = RestPasses(false);
+            if (tryOut)
+            {
+                var remN = SkinNeed(upper, first).Angle;
+                if (remN > 0.01f)
+                {
+                    Keep(upper, lower, rFrom, rTo, 3);
+                    var doneN = restDone;
+                    Back(upper, lower, rFrom, rTo, 2);
+                    var doneO = RestPasses(true);
+                    var remO = SkinNeed(upper, first).Angle;
+                    if (TraceStages) RestOutDeg[left ? 0 : 1] = remN - remO;
+                    if (remO + 0.01f >= remN) { Back(upper, lower, rFrom, rTo, 3); restDone = doneN; }
+                    else restDone = doneO;
+                }
             }
             Diag[left ? 5 : 11] = pushed + restDone;
             if (TraceStages) RestDeg[left ? 0 : 1] = restDone;

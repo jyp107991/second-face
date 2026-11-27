@@ -135,6 +135,45 @@ namespace SecondFace.Tests
             private void OnDestroy() { _w?.Flush(); _w?.Close(); _w = null; }
         }
 
+        [DefaultExecutionOrder(10001)]
+        public sealed class NeedRec : MonoBehaviour
+        {
+            public MotionProbe Probe; public ArmClearance Ac; private StreamWriter _w; private BodySkin _skin; private Animator _an;
+            private static readonly BindingFlags NP = BindingFlags.NonPublic | BindingFlags.Instance;
+            private MethodInfo _need, _give; private FieldInfo _needAt, _needDepth, _restW;
+            private void Start()
+            {
+                Directory.CreateDirectory(Out);
+                _w = new StreamWriter(Path.Combine(Out, $"need_{Probe.Person}.csv")) { AutoFlush = false };
+                _w.WriteLine("state,t,restW,needDeg,needAt,needPart,needDepth,deepI,deepPart,deepD,give,m,offArm,s,offBody,nx,ny,nz,ax,ay,az,distElbow");
+                _skin = Probe.GetComponent<BodySkin>(); _an = Probe.GetComponent<Animator>();
+                _need = typeof(ArmClearance).GetMethod("SkinNeed", NP); _give = typeof(ArmClearance).GetMethod("Give", NP);
+                _needAt = typeof(ArmClearance).GetField("_needAt", NP); _needDepth = typeof(ArmClearance).GetField("_needDepth", NP); _restW = typeof(ArmClearance).GetField("_restW", NP);
+            }
+            private void LateUpdate()
+            {
+                if (_w == null || Probe.State == null || !(Probe.State == "idle1" || Probe.State == "turn" || Probe.State == "idle0")) return;
+                var up = _an.GetBoneTransform(HumanBodyBones.RightUpperArm); var lo = _an.GetBoneTransform(HumanBodyBones.RightLowerArm);
+                var res = _need.Invoke(Ac, new object[] { up, BodySkin.Part.UpperArmR, false, false, false });
+                var ang = (float)res.GetType().GetField("Item1").GetValue(res);
+                var at = (int)_needAt.GetValue(Ac); var nd = (float)_needDepth.GetValue(Ac); var rw = (float)_restW.GetValue(Ac);
+                int b = _skin.Begin(BodySkin.Part.ForearmR), e = _skin.End(BodySkin.Part.ForearmR);
+                _skin.DepthRange(b, e);
+                var deep = -1; var dd = -1f; var dn = Vector3.zero;
+                for (var i = b; i < e; i++) if (_skin.Got(i, out var d, out var n) && d > dd) { dd = d; deep = i; dn = n; }
+                if (deep < 0) return;
+                _skin.Got(deep, out _, out _);
+                var near = _skin.Near;
+                var g = (float)_give.Invoke(Ac, new object[] { deep, dn, Ac.ClothGive, Ac.SleeveGive });
+                var m = -Ac.RestGive * Mathf.Clamp01(-Vector3.Dot(_skin.N[deep], dn));
+                var s = -Vector3.Dot(_skin.N[deep], dn);
+                var inv = Quaternion.Inverse(Probe.transform.rotation);
+                var nb = inv * dn; var na = inv * _skin.N[deep];
+                _w.WriteLine($"{Probe.State},{Time.time:0.000},{rw:0.00},{ang:0.00},{at},{(at >= 0 ? _skin.PartOf(at).ToString() : "-")},{nd * 100f:0.00},{deep},{_skin.PartOf(deep)},{dd * 100f:0.00},{g * 100f:0.00},{m * 100f:0.00},{_skin.Off(deep) * 100f:0.00},{s:0.00},{(near >= 0 ? _skin.Off(near) * 100f : -1f):0.00},{nb.x:0.00},{nb.y:0.00},{nb.z:0.00},{na.x:0.00},{na.y:0.00},{na.z:0.00},{(_skin.P[deep] - lo.position).magnitude * 100f:0.0}");
+            }
+            private void OnDestroy() { _w?.Flush(); _w?.Close(); _w = null; }
+        }
+
         public sealed class Watcher : MonoBehaviour
         {
             private static readonly string[] Rest = (System.Environment.GetEnvironmentVariable("REST_TRACE") ?? "").Split(',').Where(x => x.Length > 0).ToArray();
@@ -176,6 +215,7 @@ namespace SecondFace.Tests
                     if (ac != null && Swing.Any(x => p.Person == x)) { var s = p.gameObject.AddComponent<SwingRec>(); s.Probe = p; s.Ac = ac; }
                     if (Foot.Any(x => p.Person == x)) { var f = p.gameObject.AddComponent<FootRec>(); f.Probe = p; f.Plant = p.GetComponent<FootPlant>(); }
                     if (ac != null && Rest.Any(x => p.Person == x)) { var r = p.gameObject.AddComponent<RestRec>(); r.Probe = p; r.Ac = ac; }
+                    if (ac != null && (System.Environment.GetEnvironmentVariable("NEED_TRACE") ?? "").Split(',').Any(x => x.Length > 0 && p.Person == x)) { var nr = p.gameObject.AddComponent<NeedRec>(); nr.Probe = p; nr.Ac = ac; }
                 }
             }
         }
