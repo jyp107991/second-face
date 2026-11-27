@@ -292,6 +292,54 @@ namespace SecondFace.Tests
 #endif
         }
 
+        // TEMP (1127f, v5): the foot plant's catch (the hips set down onto a slow lower foot, both feet up) frame by frame: what the
+        // catch reads at the start of the plant's frame (last frame's dips and sole paces), the body's pace and slowing, the stand
+        // test, the sink and the stride's lowest before and after the plant. Writes test-results/catch_<person>.csv.
+        [DefaultExecutionOrder(-25)]
+        public sealed class CatchPre : MonoBehaviour { public CatchRec P; private void LateUpdate() { if (P != null) P.Pre(); } }
+
+        [DefaultExecutionOrder(-19)]
+        public sealed class CatchRec : MonoBehaviour
+        {
+            public MotionProbe Probe; private FootPlant _fp; private Animator _a; private StreamWriter _w;
+            private const BindingFlags NP = BindingFlags.NonPublic | BindingFlags.Instance;
+            private string _pre = ""; private Vector3 _rootWas; private bool _haveRoot;
+            private object F(string n) => typeof(FootPlant).GetField(n, NP)?.GetValue(_fp);
+            private float Fl(string n) => F(n) is float x ? x : float.NaN;
+            private string B(string n) => F(n) is bool b ? (b ? "1" : "0") : "";
+            private void Start()
+            {
+                _fp = GetComponent<FootPlant>(); _a = GetComponent<Animator>();
+                var dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results"));
+                _w = new StreamWriter(Path.Combine(dir, $"catch_{Probe.Person}.csv")) { AutoFlush = false };
+                _w.WriteLine($"# CatchPace {_fp.CatchPace} CatchSlow {_fp.CatchSlow} CatchLift {_fp.CatchLift} StandSpeed {_fp.StandSpeed} WalkFlight {_fp.WalkFlight} SlowingAccel {_fp.SlowingAccel}");
+                _w.WriteLine("frame,t,state,moved,speedParam,rate,haveDipWas,dipWasL,dipWasR,soleVWasL,soleVWasR,bodyWas,accelWas,lowWas,sinkWas,plantWas,halted,body,accel,low,sink,plant,dipL,dipR,lockL,lockR,liftL,liftR,g_have,g_notStanding,g_pace,g_dipL,g_dipR,g_slowL,g_slowR,caught");
+            }
+            public void Pre()
+            {
+                if (_fp == null || Probe == null || Probe.State == null || !Probe.State.Contains("jog")) { _pre = ""; return; }
+                _pre = $"{B("_haveDipWas")},{Fl("_dipWasL"):0.0000},{Fl("_dipWasR"):0.0000},{Fl("_soleVWasL"):0.000},{Fl("_soleVWasR"):0.000},{Fl("_bodySpeed"):0.000},{Fl("_accel"):0.000},{Fl("_low"):0.0000},{Fl("_sink"):0.0000},{Fl("_plant"):0.000}";
+            }
+            private void LateUpdate()
+            {
+                if (_w == null || _pre.Length == 0) { _haveRoot = false; return; }
+                var dt = Time.deltaTime; var root = _fp.transform.position;
+                var moved = _haveRoot && dt > 0f ? new Vector2(root.x - _rootWas.x, root.z - _rootWas.z).magnitude / dt : float.NaN;
+                _rootWas = root; _haveRoot = true;
+                float P(string n) { foreach (var p in _a.parameters) if (p.name == n && p.type == AnimatorControllerParameterType.Float) return _a.GetFloat(n); return float.NaN; }
+                var speed = P("Speed"); var rate = P("LocoRate");
+                var halted = B("_halted"); var body = Fl("_bodySpeed");
+                var standing = speed < _fp.StandSpeed || halted == "1";
+                var pre = _pre.Split(',');
+                bool have = pre[0] == "1"; float dl = float.Parse(pre[1]), dr = float.Parse(pre[2]), vl = float.Parse(pre[3]), vr = float.Parse(pre[4]);
+                var gPace = body < _fp.CatchPace; var gDL = dl > _fp.CatchLift; var gDR = dr > _fp.CatchLift; var gSL = vl < _fp.CatchSlow; var gSR = vr < _fp.CatchSlow;
+                var caught = have && !standing && gPace && gDL && gDR && (gSL || gSR);
+                string Bo(bool b) => b ? "1" : "0";
+                _w.WriteLine($"{Time.frameCount},{Time.time:0.000},{Probe.State},{moved:0.000},{speed:0.000},{rate:0.000},{_pre},{halted},{body:0.000},{Fl("_accel"):0.000},{Fl("_low"):0.0000},{Fl("_sink"):0.0000},{Fl("_plant"):0.000},{_fp.Diag[0]:0.0000},{_fp.Diag[4]:0.0000},{_fp.Diag[3]:0.0},{_fp.Diag[7]:0.0},{_fp.Diag[2]:0.0000},{_fp.Diag[6]:0.0000},{Bo(have)},{Bo(!standing)},{Bo(gPace)},{Bo(gDL)},{Bo(gDR)},{Bo(gSL)},{Bo(gSR)},{Bo(caught)}");
+            }
+            private void OnDestroy() { _w?.Flush(); _w?.Close(); _w = null; }
+        }
+
         // TEMP (1127e): each traced person's base layer, frame by frame: the state's phase and the clips playing, by file
         public sealed class PhaseWatcher : MonoBehaviour
         {
@@ -302,6 +350,7 @@ namespace SecondFace.Tests
                 {
                     if (p.Person == null || p.GetComponent<PhaseRec>() != null || !Who.Contains(p.Person)) continue;
                     var r = p.gameObject.AddComponent<PhaseRec>(); r.Probe = p;
+                    var cr = p.gameObject.AddComponent<CatchRec>(); cr.Probe = p; p.gameObject.AddComponent<CatchPre>().P = cr;
                     var sp = p.gameObject.AddComponent<SoleProbe>(); sp.Probe = p;
                     p.gameObject.AddComponent<SolePre>().P = sp; p.gameObject.AddComponent<SoleMid>().P = sp;
                 }

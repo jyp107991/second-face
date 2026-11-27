@@ -760,6 +760,17 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
        the actors', the same on every body of a skeleton; item 4 removes it at its source); (c) the hips' sink, keyed on the
        ankles' lower envelope, not the soles (a sink keyed on the soles was simulated and floats the stance contact, p98 +2.2 to
        +4.0 cm: not an answer on its own).
+    7. The push-off (`docs/MOTION_ROOT_CAUSE.md` §17): the forefoot rocker (`FootPlant`, kept aside: it cures the push-off scrape,
+       the held contact's own speed p90 43 -> 6.0 cm/s and its share over 15 cm/s 28.7 -> 1.6 %, Female_Adult_01's jog W1 5.8 ->
+       2.7 %) needs three decisions first: (i) a skinned sole: the plant reads its sole and hull points by linear blend skinning
+       with their full bone weights (the GPU's own sum over the few hundred baked points), not rigid in one frame (mixed foot and
+       toe weights under a bent toe: mesh less model p99.9 0.11 -> 0.73 cm); (ii) toe-off from the joint's own range: the hold
+       lets go at a published MTP extension, the source named with its numbers (walking: a mean first-MTP dorsiflexion of 42° in
+       gait, Nawoczenski, Baumhauer and Umberger 1999, J Bone Joint Surg Am 81(3):370-376; running: a peak MTP extension of
+       24.8 ± 4.1° to 27.0 ± 4.6° in shod running, Cigoja, Fletcher and Nigg 2022, J Sport Health Sci 11(3); the two differ: held
+       to the clip's lift, the joint reached 64-77° at the p98); (iii) an open question for the owner: with the hold on the toe
+       joint, the gate's metatarsal-row ball stands 3.3 cm behind the joint and 2.0-2.4 cm up as the foot pitches, moving 16-18
+       cm/s, and the gate counts it as bearing weight (Male_Adult_03's jog W1 1.9 -> 5.4 %). The gate is unchanged.
   - The arm clearance's level of detail stays as it is (the perf item below).
 - **2026-11-27, the gate batch committed under the waiver policy: the runtime reads the drawn body (editor owner).**
   Gate: red, 3,351 (the whole cast, 2026-11-27 04:34; dfc732a4's 6,460; the fight's new FY1/FY2, 667, exempt as introduced).

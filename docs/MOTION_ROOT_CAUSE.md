@@ -1055,6 +1055,47 @@ Found under three CI regressions of 71ba0e5b (`CapturedMotionHoldsHumanPosesWhen
   Rejected: the sink keyed on the soles' own lowest point instead (simulated offline on the eleven; the simulator reproduces the
   logged sink to 0.00 cm at the median, 0.45 at the p98): it removes the early contact but floats the lower stance contact, p98
   +2.2 to +4.0 cm, by person. The batch does not need it: without its push-off samples Female_Adult_01's jog W1 is 9 of 413 (2.2 %).
+- **The push-off: the plant held a one-piece foot over a two-piece one** (relaunch 15; the same probe on the fifteen, the eleven
+  and the four other flat forefoots, each against main's ankle test, K). At push-off (the gate's heel over 3 cm, the foot's lowest
+  under 1.2 cm, held) the drawn contact is the toes' tip, 2.6-12.8 cm ahead of the ball the plant holds, and it slides: its own
+  horizontal speed (the same vertex frame to frame) 5.8 cm/s at the median, 43 at the p90 and 87 at the p98, 28.7 % of 13,367
+  frames over 15 cm/s, in every one of the fifteen (6-47 % a foot). The clip bends the toes 15-26° up at push-off (5-22° more than
+  in its own stance); the plant straightened them toward the bind while the ankle was low (`Toes()` on the rising and held branch,
+  859ccf69, 2026-11-06, kept from the landing rule: "the jog's toes curled down at landing put their tips 6-7 cm under the
+  ground"), so the forefoot was rigid and rolled onto its tip. `BallOverTip` is 8 cm since 8790a317 (2026-11-06; 3 cm before,
+  791a42b6): a jogging forefoot pointed 60° came down on its tip and, held there, its ball slid, measured on the bones' sole points.
+  Two changes were measured, each against nine conditions (K -> the change), and both failed; main's ankle test stands:
+
+  | condition | the clip's own toes (notoes) | the forefoot rocker |
+  |---|---|---|
+  | 1 everyday failures besides MF01's stop | FA01 walk:jog W1 6 %, new FA01 bend:jog W1 5 % | FA01 passes; new MA03 walk:jog W1 5.4 %, bend:jog 5.2 % |
+  | 2 FA01 walk:jog W1 (5.8 %) | 5.6 % | 2.7 % |
+  | 3 locks not at a landing / while rising (106 / 52) | 121 / 61 | 122 / 62 |
+  | 4 onsets within ±1 frame of the record (88 %, 92 %) | 88 %, 92 % | 88 %, 92 % |
+  | 5 walking cells worse / better | 151 / 54 | 236 / 63 |
+  | 6 feet with the toes deeper in the ground (p99, max) | 21 of 30 (0.44, 0.75 cm) | 23 of 30 (0.69, 0.83 cm) |
+  | 7 the drawn heel's largest rise | 0.28 cm | 0.17 cm |
+  | 8 mesh less model, p99.9 (0.11 cm) | 0.49 cm | 0.73 cm |
+  | 9 the held contact at push-off: p50 / p90 / p98, share over 15 cm/s (5.8 / 43 / 87, 28.7 %) | 4.8 / 52 / 90, 30.4 %, up on 23 of 30 feet | 1.3 / 6.0 / 11.8, 1.6 %, no foot's share up |
+
+  The clip's own toes (both straightening calls taken out) moved the contact back toward the ball on most walks (Female_Adult_01
+  6.4 -> 3.4-3.6 cm ahead of it), but the hold still pivoted behind the bending forefoot and the bent toes scraped; and sole and
+  hull points kept rigid in one frame across the toe joint parted from the mesh (hull points mostly skinned to the foot but held
+  in the toes' frame, p99 +0.22 to +0.31 cm; the flat forefoots' balls, mostly on the toes but held in the foot's frame, p99
+  +0.54). The forefoot rocker (Perry's third rocker; `patch15/FootPlant.cs.rocker`, kept for the next batch) put each sole point and
+  hull vertex in the frame of the bone it is mostly skinned to (read at the bind from the skin itself: the toes turned a quarter
+  turn and the meshes baked again, linear skinning moving each vertex by its toe weight) and, once the heel had been down and
+  rose past LockDown while held, held the foot on its toe joint, the toes laid flat on the ground, until the existing release rules
+  let go. It cures the scrape (the held toe segment's own speed 1.2 cm/s at the median, 13.9 at the p98, 1.7 % over 15; the held
+  joint 0.6 at the p98) and Female_Adult_01's jog, and shows three needs of its own, each a design decision for the next batch
+  (`docs/PROGRESS.md`): (i) the sole read by linear blend skinning with its full bone weights, not rigid in one frame (mixed
+  foot and toe weights under a toe bent 30-80°: mesh less model p99 0.48 cm, p99.9 0.77 on the hull points mostly on the foot);
+  (ii) toe-off from the joint's own range: held flat until the clip lifts the toes, the toe joint reached 27-32° at the median,
+  64-77° at the p98 and 72-82° at most, against a mean first-MTP dorsiflexion of 42° in walking (Nawoczenski, Baumhauer and
+  Umberger 1999; §14 quotes 40-65° at toe-off) and a peak MTP extension of 24.8 ± 4.1° to 27.0 ± 4.6° in shod running (Cigoja,
+  Fletcher and Nigg 2022): the walking and running figures differ; (iii) the gate's metatarsal-row ball: with the hold on the toe
+  joint it stands 3.3 cm behind the joint and 2.0-2.4 cm up as the foot pitches, moving 16-18 cm/s (Male_Adult_03's jog W1 1.9 ->
+  5.4 %), and the gate counts it as bearing weight (a question for the owner; the gate is unchanged).
 - **W6, Medical_Female_01's jog stop, and the walk's starts and stops.** One frame: the landing right foot 4.4 cm up, 0.47 m/s
   across the ground, rising 0.18 m/s, both feet up, the body at 2.3 m/s (its p98 1.3 passes): the catch (the hips set down onto a
   slow lower foot, both feet up) is gated by the plant's smoothed pace, which lags the stop's deceleration, and did not fire. The
