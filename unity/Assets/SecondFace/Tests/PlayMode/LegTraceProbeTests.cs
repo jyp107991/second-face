@@ -42,6 +42,7 @@ namespace SecondFace.Tests
             public HumanPoseHandler Hp;
             public List<(Transform T, Vector3 Lp, Quaternion Lr, Vector3 Ls)> Bind;
             public List<(Transform T, Vector3 Lp)> Fix = new();
+            public bool Turned;
             public Transform B(HumanBodyBones b) => A.GetBoneTransform(b);
         }
 
@@ -199,8 +200,9 @@ namespace SecondFace.Tests
             Assert.That(cat, Is.Not.Null, "catalogue");
             yield return BootTests.Clear();
             var root = new GameObject("leg trace");
+            var set = AssetDatabase.LoadAssetAtPath<SecondFace.Game.Fighting.CombatSet>("Assets/SecondFace/Combat/CombatSet.asset");
             var only = System.Environment.GetEnvironmentVariable("LEG_TRACE_STATES");
-            var pick = new HashSet<string>((string.IsNullOrEmpty(only) ? "melee_idle,unarmed_idle,club2_strike,club2_idle,cover_hold,rifle_aim" : only).Split(','));
+            var pick = new HashSet<string>((string.IsNullOrEmpty(only) ? "melee_idle,unarmed_idle,club2_strike,club2_idle,cover_hold,rifle_aim,rifle_idle" : only).Split(','));
             var states = CombatMotion.States.Where(s => s.Layer == CombatMotion.FullLayer && pick.Contains(s.Name)).ToList();
             var bodyIds = new[] { ("Business_Male_01", false), ("Male_Adult_08", false), ("Business_Female_01", true), ("Female_Adult_01", true) };
             var csv = new StringBuilder(Header()).AppendLine();
@@ -231,18 +233,10 @@ namespace SecondFace.Tests
                         foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true)) mb.enabled = false;
                         rigs.Add(Make(bid, go));
                     }
-                    foreach (var (lab, tdof, th, cl) in new[] { ("rb_same", true, false, false), ("rb_notdof", false, false, false), ("rb_thighs", true, true, false), ("rb_clav", true, false, true), ("rb_both_notdof", false, true, true) })
-                        rigs.Add(Rebuilt(lab, cat.Get(bid), new Vector3(x + (++k) * 3f, 0f, 0f), root.transform, tdof, th, cl, txt));
-                    // other actors as bodies (their own avatars): a CMU-converted and an ACCAD-converted skeleton
-                    foreach (var other in new[] { "guard_m_built", "fist_guard_accad", "rifle_aim_cmu" })
                     {
-                        if (other == name) continue;
-                        var op = $"{CombatMotion.Folder}/{other}.fbx";
-                        var oav = AssetDatabase.LoadAllAssetsAtPath(op).OfType<Avatar>().FirstOrDefault();
-                        var om = (GameObject)Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(op), new Vector3(x + (++k) * 3f, 0f, 0f), Quaternion.identity, root.transform);
-                        var oa = om.GetComponent<Animator>() ?? om.AddComponent<Animator>();
-                        oa.avatar = oav;
-                        rigs.Add(Make("actor_" + other, om));
+                        var go = Object.Instantiate(cat.Get(bid), new Vector3(x + (++k) * 3f, 0f, 0f), Quaternion.identity, root.transform);
+                        foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true)) mb.enabled = false;
+                        var tr = Make("turned_" + bid, go); tr.Turned = true; rigs.Add(tr);
                     }
                     x += 20f;
                     foreach (var r in rigs) txt.AppendLine("   " + Settings(r));
@@ -267,7 +261,20 @@ namespace SecondFace.Tests
                     {
                         var t = t0 + i * dt * Mathf.Max(0.05f, s.Speed);
                         if (s.Loop) t = t0 + Mathf.Repeat(t - t0, clip.length);
-                        foreach (var (r, g, cp) in graphs) { cp.SetTime(t); cp.SetDone(false); g.Evaluate(0f); ApplyFix(r); Row(csv, s.Name, name, r, i, t); }
+                        foreach (var (r, g, cp) in graphs)
+                        {
+                            cp.SetTime(t); cp.SetDone(false); g.Evaluate(0f); ApplyFix(r);
+                            if (r.Turned && set != null && set.TurnOf(name, SecondFace.Game.Fighting.CombatSet.SkeletonKey(r.A), Mathf.Clamp01(t / clip.length), out var rot, out var tl, out var tr, out var sh))
+                            {
+                                var rr = r.Root.rotation; var ir = Quaternion.Inverse(rr);
+                                var hips = r.B(HumanBodyBones.Hips);
+                                hips.rotation = rr * rot * ir * hips.rotation;
+                                r.B(HumanBodyBones.LeftUpperLeg).rotation = rr * tl * ir * r.B(HumanBodyBones.LeftUpperLeg).rotation;
+                                r.B(HumanBodyBones.RightUpperLeg).rotation = rr * tr * ir * r.B(HumanBodyBones.RightUpperLeg).rotation;
+                                hips.position += r.Root.TransformVector(sh);
+                            }
+                            Row(csv, s.Name, name, r, i, t);
+                        }
                     }
                     foreach (var (r, g, _) in graphs) { g.Destroy(); r.Hp.Dispose(); }
                     foreach (var r in rigs) Object.DestroyImmediate(r.Go);

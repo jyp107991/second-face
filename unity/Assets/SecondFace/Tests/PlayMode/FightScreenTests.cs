@@ -121,13 +121,18 @@ namespace SecondFace.Tests
             // (SCREEN_CONFIGS "label:rule|label:rule": TEMP A/B, each chunk run once per config with Fighter.FeetRuleTemp = rule when
             // the tree has it; outputs fight_screen_<k>_<label>)
             var configs = (System.Environment.GetEnvironmentVariable("SCREEN_CONFIGS") ?? "").Split('|').Select(x => x.Trim()).Where(x => x.Length > 0)
-                .Select(x => { var c = x.Split(':'); return (Label: c[0], Rule: c.Length > 1 ? int.Parse(c[1]) : -1); }).ToList();
-            if (configs.Count == 0) configs.Add(("", -1));
+                .Select(x => { var c = x.Split(':'); return (Label: c[0], Rule: c.Length > 1 ? int.Parse(c[1].Split(',')[0]) : -1, NoTurn: c.Length > 1 && c[1].Contains("noturn")); }).ToList();
+            if (configs.Count == 0) configs.Add(("", -1, false));
             var ruleField = typeof(Fighter).GetField("FeetRuleTemp", BindingFlags.Public | BindingFlags.Static);
-            foreach (var (label, rule) in configs)
+            var turnOff = typeof(Fighter).GetField("TurnOffTemp", BindingFlags.Public | BindingFlags.Static);
+            var turnTicks = typeof(Fighter).GetField("TurnTicksTemp", BindingFlags.Public | BindingFlags.Static);
+            var turnCalls = typeof(Fighter).GetField("TurnCallsTemp", BindingFlags.Public | BindingFlags.Static);
+            foreach (var (label, rule, noTurn) in configs)
             {
             if (rule >= 0) { Assert.That(ruleField, Is.Not.Null, "Fighter.FeetRuleTemp (TEMP)"); ruleField.SetValue(null, rule); }
-            Debug.Log($"FIGHT SCREEN config [{label}] rule {(ruleField != null ? ruleField.GetValue(null) : "n/a")}");
+            if (turnOff != null) turnOff.SetValue(null, noTurn);
+            if (turnTicks != null) { turnTicks.SetValue(null, 0L); turnCalls.SetValue(null, 0L); }
+            Debug.Log($"FIGHT SCREEN config [{label}] rule {(ruleField != null ? ruleField.GetValue(null) : "n/a")} turn {(turnOff == null ? "n/a" : noTurn ? "off" : "on")}");
             var knees = new System.Text.StringBuilder("person,state,frame,KLr,KRr,A1Lr,A1Rr,A1Lb,A1Rb,A1La,A1Ra,A2Lr,A2Rr,A2Lb,A2Rb,A2La,A2Ra,KLb,KRb,KLa,KRa,hipsYb,hipsYa,ankLb,ankRb,ankLa,ankRa,sink,soleOverL,soleOverR,current\n");
             foreach (var k in want.OrderBy(x => x))
             {
@@ -240,6 +245,11 @@ namespace SecondFace.Tests
                 yield return null;
             }
             Debug.Log($"FIGHT SCREEN [{label}] total: {total} fight failures");
+            if (turnTicks != null)
+            {
+                var calls = (long)turnCalls.GetValue(null); var ticks = (long)turnTicks.GetValue(null);
+                Debug.Log($"FIGHT SCREEN [{label}] turn cost: {calls} calls, {(calls > 0 ? ticks * 1e6 / System.Diagnostics.Stopwatch.Frequency / calls : 0):0.00} us a call (a person a frame)");
+            }
             if (System.Environment.GetEnvironmentVariable("KNEE_TRACE") == "1") File.WriteAllText(Path.Combine(dir, "knee_trace" + (label.Length > 0 ? "_" + label : "") + ".csv"), knees.ToString());
             knees.Clear(); knees.Append("person,state,frame,KLr,KRr,A1Lr,A1Rr,A1Lb,A1Rb,A1La,A1Ra,A2Lr,A2Rr,A2Lb,A2Rb,A2La,A2Ra,KLb,KRb,KLa,KRa,hipsYb,hipsYa,ankLb,ankRb,ankLa,ankRa,sink,soleOverL,soleOverR,current\n");
             total = 0;

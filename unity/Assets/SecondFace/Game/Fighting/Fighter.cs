@@ -185,6 +185,12 @@ namespace SecondFace.Game.Fighting
             _loco = _a.HasState(0, LocomotionId) ? LocomotionId : 0;
             _right = new Hand(_a, false); _left = new Hand(_a, true);
             _hips = _a.GetBoneTransform(HumanBodyBones.Hips);
+            // the body's skeleton (the fight clips' turns back onto their actors are baked per skeleton) and the component that
+            // turns it first in the frame
+            _skel = CombatSet.SkeletonKey(_a);
+            var first = GetComponent<ClipTurnFirst>();
+            if (first == null) first = gameObject.AddComponent<ClipTurnFirst>();
+            first.Fighter = this;
             _spine = _a.GetBoneTransform(HumanBodyBones.Spine);
             _chest = _a.GetBoneTransform(HumanBodyBones.UpperChest) ?? _a.GetBoneTransform(HumanBodyBones.Chest) ?? _spine;
             _head = _a.GetBoneTransform(HumanBodyBones.Head);
@@ -659,6 +665,72 @@ namespace SecondFace.Game.Fighting
             LearnFacing();
             Springs(dt);
             Hands(dt);
+        }
+
+        // ------------------------------------------------------------------------------------------- the clip's actor
+
+        private string _skel;
+
+        /// <summary>The turn and shift put on the hips this frame (degrees, m in the world): tests read them.</summary>
+        public float TurnAngle { get; private set; }
+        public Vector3 TurnShift { get; private set; }
+        /// <summary>The turn put on the hips this frame, in the body's root frame (identity: none), and the larger of the two
+        /// thighs' (degrees).</summary>
+        public Quaternion TurnRot { get; private set; } = Quaternion.identity;
+        public Quaternion TurnThighL { get; private set; } = Quaternion.identity;
+        public Quaternion TurnThighR { get; private set; } = Quaternion.identity;
+        public float TurnThighs { get; private set; }
+
+        /// <summary>
+        /// The fight's whole-body clip on this body's skeleton, turned back onto its actor's pose (<see cref="CombatSet.ClipTurn"/>:
+        /// on these Biped bodies the same human pose stands the whole skeleton turned 2-19° from the actor's, the planted feet 7-11
+        /// cm apart in height where the actor's are level, docs/COMBAT_ROOT_CAUSE.md 19). The hips are turned and shifted by the
+        /// clip's baked turn at its time, by the next state's across a crossfade (as the transition weighs them) and by the
+        /// layer's weight, so it comes in and goes out with the clip. Run by <see cref="ClipTurnFirst"/> before every other
+        /// system that reads the pose; nothing while the layer weighs nothing (the everyday states are left as they are).
+        /// </summary>
+        public void TurnOntoTheActor()
+        {
+            TurnAngle = 0f; TurnShift = Vector3.zero; TurnRot = TurnThighL = TurnThighR = Quaternion.identity; TurnThighs = 0f;
+            if (TurnOffTemp) return;   // TEMP (A/B)
+            if (!Ready || _a == null || !_a.enabled || _hips == null || Set == null || _skel == null || _full < 0) return;
+            var w = Smooth(_fullW);
+            if (w <= 0.001f) return;
+            var t0 = System.Diagnostics.Stopwatch.GetTimestamp();   // TEMP (cost)
+            TurnOf(_a.GetCurrentAnimatorStateInfo(_full), out var hips, out var tl, out var tr, out var shift);
+            if (_a.IsInTransition(_full))
+            {
+                TurnOf(_a.GetNextAnimatorStateInfo(_full), out var hn, out var ln, out var rn, out var sn);
+                var k = Mathf.Clamp01(_a.GetAnimatorTransitionInfo(_full).normalizedTime);
+                hips = Quaternion.Slerp(hips, hn, k); tl = Quaternion.Slerp(tl, ln, k); tr = Quaternion.Slerp(tr, rn, k); shift = Vector3.Lerp(shift, sn, k);
+            }
+            hips = Quaternion.Slerp(Quaternion.identity, hips, w); tl = Quaternion.Slerp(Quaternion.identity, tl, w); tr = Quaternion.Slerp(Quaternion.identity, tr, w); shift *= w;
+            var root = _a.transform;
+            var rr = root.rotation; var ir = Quaternion.Inverse(rr);
+            // (the hips first, every bone under them with it; then each thigh about its own joint)
+            _hips.rotation = rr * hips * ir * _hips.rotation;
+            if (_upL != null) _upL.rotation = rr * tl * ir * _upL.rotation;
+            if (_upR != null) _upR.rotation = rr * tr * ir * _upR.rotation;
+            var move = root.TransformVector(shift);
+            _hips.position += move;
+            TurnAngle = Quaternion.Angle(Quaternion.identity, hips); TurnShift = move; TurnRot = hips; TurnThighL = tl; TurnThighR = tr;
+            TurnThighs = Mathf.Max(Quaternion.Angle(Quaternion.identity, tl), Quaternion.Angle(Quaternion.identity, tr));
+            TurnTicksTemp += System.Diagnostics.Stopwatch.GetTimestamp() - t0; TurnCallsTemp++;   // TEMP (cost)
+        }
+
+        /// <summary>TEMP (the turn's cost, read by the fight screen; remove before any verdict or commit).</summary>
+        public static long TurnTicksTemp, TurnCallsTemp;
+        /// <summary>TEMP (A/B only; remove before any verdict or commit): the turn off.</summary>
+        public static bool TurnOffTemp;
+
+        private void TurnOf(AnimatorStateInfo info, out Quaternion hips, out Quaternion thighL, out Quaternion thighR, out Vector3 shift)
+        {
+            hips = thighL = thighR = Quaternion.identity; shift = Vector3.zero;
+            if (!Names.TryGetValue(info.shortNameHash, out var name)) return;
+            var s = CombatMotion.State(name);
+            if (s == null) return;
+            var t = info.loop ? info.normalizedTime - Mathf.Floor(info.normalizedTime) : Mathf.Clamp01(info.normalizedTime);
+            Set.TurnOf(s.ClipFor(Female), _skel, t, out hips, out thighL, out thighR, out shift);
         }
 
         /// <summary>

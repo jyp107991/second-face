@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using SecondFace.Core.Combat;
 using UnityEngine;
 
@@ -150,6 +151,125 @@ namespace SecondFace.Game.Fighting
             /// <summary>Each foot's planted spans by the clip's own record of its actor's contacts (the sidecar's
             /// plant_record.stances), as pairs of normalized times [start, end, start, end ...]; empty: no record.</summary>
             public float[] DownL = new float[0], DownR = new float[0];
+            /// <summary>The clip's turn back onto its actor's pose, one per body skeleton (<see cref="ClipTurn"/>); empty for a
+            /// clip the fight's whole-body layer never plays.</summary>
+            public ClipTurn[] Turns = new ClipTurn[0];
+        }
+
+        /// <summary>
+        /// What Unity's humanoid retarget leaves between a fight clip's actor and a body's skeleton (docs/COMBAT_ROOT_CAUSE.md 19,
+        /// docs/MOTION_ROOT_CAUSE.md §16), put back. Unity places the pelvis from the clip's body orientation, which it reads from
+        /// the joints' positions, and on the Rocketbox bodies (3ds Max Biped) the clavicles hang from the neck and the thighs from
+        /// the spine: the same human pose (the same muscles and body rotation, read back) stands the whole skeleton turned 2-19°
+        /// from the actor's; and on the actors converted from CMU's skeleton (a hip joint bone between the pelvis and each thigh)
+        /// the thighs stand rolled 2-27° more, growing with the hip's bend (the planted feet 7-11 cm apart in height where the
+        /// actor's are level). Baked in the editor from the clip on its own actor and on the skeleton (CombatAnimatorBuild.Turns,
+        /// nothing set by hand); at each key (a normalized time of the clip), in the body's root frame: the turn of the hips from
+        /// the skeleton's pose onto the actor's (each from its own muscle-zero pose); then each thigh's turn that lays the thigh
+        /// along the actor's and the knee-to-toes line in the actor's leg plane; the shift along the ground that puts the middle of
+        /// the hip joints where the actor's are (scaled by the two human scales; m at the body's scale 1; the height is left to
+        /// the fight's feet). Fighter applies it before any other system reads the pose (<see cref="ClipTurnFirst"/>).
+        /// </summary>
+        [System.Serializable]
+        public sealed class ClipTurn
+        {
+            /// <summary>The body skeleton it is for (<see cref="SkeletonKey"/>).</summary>
+            public string Skeleton;
+            /// <summary>The keys, <see cref="Stride"/> floats each (time; hips, left thigh, right thigh as x, y, z, w; the shift's
+            /// x and z), as little-endian floats in base 64 (a compact asset).</summary>
+            public string Data = "";
+            public int Keys;
+            public const int Stride = 15;
+
+            [System.NonSerialized] private float[] _f;
+
+            public float[] Floats()
+            {
+                if (_f != null) return _f;
+                if (string.IsNullOrEmpty(Data)) return _f = new float[0];
+                var bytes = System.Convert.FromBase64String(Data);
+                var f = new float[bytes.Length / 4];
+                System.Buffer.BlockCopy(bytes, 0, f, 0, f.Length * 4);
+                return _f = f;
+            }
+
+            public static string Pack(float[] f)
+            {
+                var bytes = new byte[f.Length * 4];
+                System.Buffer.BlockCopy(f, 0, bytes, 0, bytes.Length);
+                return System.Convert.ToBase64String(bytes);
+            }
+
+            private static Quaternion Q(float[] f, int at) => new(f[at], f[at + 1], f[at + 2], f[at + 3]);
+
+            /// <summary>The turns and shift at a normalized time (between the keys, eased linearly; the ends held).</summary>
+            public void At(float t, out Quaternion hips, out Quaternion thighL, out Quaternion thighR, out Vector3 shift)
+            {
+                var f = Floats();
+                var n = f.Length / Stride;
+                hips = thighL = thighR = Quaternion.identity; shift = Vector3.zero;
+                if (n == 0) return;
+                int lo, hi; float k;
+                if (n == 1 || t <= f[0]) { lo = hi = 0; k = 0f; }
+                else if (t >= f[(n - 1) * Stride]) { lo = hi = n - 1; k = 0f; }
+                else
+                {
+                    lo = 0; hi = n - 1;
+                    while (hi - lo > 1) { var m = (lo + hi) >> 1; if (f[m * Stride] <= t) lo = m; else hi = m; }
+                    k = (t - f[lo * Stride]) / Mathf.Max(1e-6f, f[hi * Stride] - f[lo * Stride]);
+                }
+                int a = lo * Stride, b = hi * Stride;
+                hips = Quaternion.Slerp(Q(f, a + 1), Q(f, b + 1), k);
+                thighL = Quaternion.Slerp(Q(f, a + 5), Q(f, b + 5), k);
+                thighR = Quaternion.Slerp(Q(f, a + 9), Q(f, b + 9), k);
+                shift = new Vector3(Mathf.Lerp(f[a + 13], f[b + 13], k), 0f, Mathf.Lerp(f[a + 14], f[b + 14], k));
+            }
+        }
+
+        /// <summary>The inputs the turns were baked from (CombatAnimatorBuild.TurnStamp: the bake's version, every baked clip's
+        /// import hash, every skeleton's key): a test fails when a clip or a skeleton changed and the set was not baked again.</summary>
+        public string TurnStamp = "";
+
+        private static readonly Dictionary<Avatar, string> Keys = new();
+
+        /// <summary>A body skeleton's identity (16 hex digits): the bones the human pose drives (every human bone and every
+        /// bone between it and the model's root), each with its avatar T-pose's local position (0.1 mm) and rotation (1e-4) and
+        /// the bone it hangs from, and the human bones' mapping; the model's own root and its mesh nodes (named per person) left
+        /// out. People who share it are retargeted alike.</summary>
+        public static string SkeletonKey(Animator a)
+        {
+            if (a == null || a.avatar == null || !a.avatar.isHuman) return null;
+            if (Keys.TryGetValue(a.avatar, out var key)) return key;
+            var d = a.avatar.humanDescription;
+            var bones = new HashSet<string>();
+            var parents = new SortedDictionary<string, string>(System.StringComparer.Ordinal);
+            for (var b = HumanBodyBones.Hips; b < HumanBodyBones.LastBone; b++)
+                for (var t = a.GetBoneTransform(b); t != null && t != a.transform; t = t.parent)
+                    if (bones.Add(t.name)) parents[t.name] = t.parent == null || t.parent == a.transform ? "<root>" : t.parent.name;
+            if (bones.Count == 0) return null;
+            var sb = new System.Text.StringBuilder();
+            long R(float v, float q) => (long)System.Math.Round(v / q);
+            foreach (var b in d.skeleton.Where(b => bones.Contains(b.name)).OrderBy(b => b.name, System.StringComparer.Ordinal))
+                sb.Append(b.name).Append('<').Append(parents[b.name]).Append('|')
+                  .Append(R(b.position.x, 1e-4f)).Append(',').Append(R(b.position.y, 1e-4f)).Append(',').Append(R(b.position.z, 1e-4f)).Append('|')
+                  .Append(R(b.rotation.x, 1e-4f)).Append(',').Append(R(b.rotation.y, 1e-4f)).Append(',').Append(R(b.rotation.z, 1e-4f)).Append(',').Append(R(b.rotation.w, 1e-4f)).Append(';');
+            foreach (var h in d.human.OrderBy(h => h.humanName, System.StringComparer.Ordinal)) sb.Append(h.humanName).Append('=').Append(h.boneName).Append(';');
+            ulong hsh = 14695981039346656037UL;
+            foreach (var c in sb.ToString()) { hsh ^= c; hsh *= 1099511628211UL; }
+            key = hsh.ToString("x16", System.Globalization.CultureInfo.InvariantCulture);
+            Keys[a.avatar] = key;
+            return key;
+        }
+
+        /// <summary>A clip's turns for a skeleton at a normalized time; false (identity) when none was baked.</summary>
+        public bool TurnOf(string clip, string skeleton, float t, out Quaternion hips, out Quaternion thighL, out Quaternion thighR, out Vector3 shift)
+        {
+            hips = thighL = thighR = Quaternion.identity; shift = Vector3.zero;
+            var c = ClipOf(clip);
+            if (c?.Turns == null || skeleton == null) return false;
+            foreach (var tu in c.Turns)
+                if (tu != null && tu.Skeleton == skeleton) { tu.At(t, out hips, out thighL, out thighR, out shift); return true; }
+            return false;
         }
 
         private Dictionary<string, Weapon> _weapons;
