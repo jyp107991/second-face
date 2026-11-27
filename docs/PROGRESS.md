@@ -731,7 +731,9 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
     had the back of the head for a face (the walking player's head twisted 20-33°): `Gaze.Neutral` (§17). The sits were never
     tagged (since b2a82298): tagged "sit". The quick gate test destroyed the partners its conversation capture frames (it threw
     on CI before its verdict): deactivated for the fight instead. FeetMeetASlope's stale layer count (it failed before measuring
-    since the fight's layers went on the controller): checked by name.
+    since the fight's layers went on the controller): checked by name. The foot plant's catch (the hips set down onto a slow
+    lower foot, both feet up) read the body's pace smoothed over a tenth of a second, 0.43 m/s behind a jog's stop: it now reads
+    the slower of this frame's and the smoothed (Medical_Female_01's jog W6 max 4.4 -> 1.3 cm on the fifteen; §17).
   - Tests, new: `APersonMadeAnywhereKeepsTheirBodyAndFace` (fails on 71ba0e5b's Gaze, passes now), `SeatedArmsStayOutOfTheBody`
     (fails: below), `TheSeatsTurnsAreBakedFromTheSitsAndSkeletonsThereAre`; `CapturedMotionHoldsHumanPosesWhenBuilt` reads after the
     frame's LateUpdate and the hands from the hip joints, and asserts Gaze's face and the eyes' agree; the crossfade test covers the
@@ -771,6 +773,11 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
        to the clip's lift, the joint reached 64-77° at the p98); (iii) an open question for the owner: with the hold on the toe
        joint, the gate's metatarsal-row ball stands 3.3 cm behind the joint and 2.0-2.4 cm up as the foot pitches, moving 16-18
        cm/s, and the gate counts it as bearing weight (Male_Adult_03's jog W1 1.9 -> 5.4 %). The gate is unchanged.
+    8. The walk's and the jog's starts and stops: the stop's blend from the jog lands the foot slow and 4 cm up (the catch now
+       sets the hips down onto it, §17), the same kind of event as the walk's start and stop blends, where no clip's record
+       applies: the blend's own landing, at its source.
+    9. W1 and W6 on navigation agents in the game's own conditions: no test measures them (`PartyTests` jogs the company 30 m and
+       stops it, and its catch fires on the same 138 frames under the old and the new pace; neither W1 nor W6 is measured there).
   - The arm clearance's level of detail stays as it is (the perf item below).
 - **2026-11-27, the gate batch committed under the waiver policy: the runtime reads the drawn body (editor owner).**
   Gate: red, 3,351 (the whole cast, 2026-11-27 04:34; dfc732a4's 6,460; the fight's new FY1/FY2, 667, exempt as introduced).

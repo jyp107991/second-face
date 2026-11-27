@@ -1101,11 +1101,32 @@ Found under three CI regressions of 71ba0e5b (`CapturedMotionHoldsHumanPosesWhen
   Fletcher and Nigg 2022): the walking and running figures differ; (iii) the gate's metatarsal-row ball: with the hold on the toe
   joint it stands 3.3 cm behind the joint and 2.0-2.4 cm up as the foot pitches, moving 16-18 cm/s (Male_Adult_03's jog W1 1.9 ->
   5.4 %), and the gate counts it as bearing weight (a question for the owner; the gate is unchanged).
-- **W6, Medical_Female_01's jog stop, and the walk's starts and stops.** One frame: the landing right foot 4.4 cm up, 0.47 m/s
-  across the ground, rising 0.18 m/s, both feet up, the body at 2.3 m/s (its p98 1.3 passes): the catch (the hips set down onto a
-  slow lower foot, both feet up) is gated by the plant's smoothed pace, which lags the stop's deceleration, and did not fire. The
-  stop's blend from the jog lands the foot slow and 4 cm up: the same kind of event as the walk's start and stop blends, where no
-  clip's record applies. Open, the next batch (`docs/PROGRESS.md`).
+- **W6, Medical_Female_01's jog stop: the catch read a lagging pace; taken.** One frame: the landing right foot 4.4 cm up, 0.47
+  m/s across the ground, rising 0.18 m/s, both feet up, the body at 2.30 m/s this frame (its p98 1.3 passes). The catch (the
+  hips set down onto a slow lower foot, both feet up) is gated by the body's pace under `CatchPace` (2.4 m/s), and read it
+  smoothed over a tenth of a second (`1 - exp(-10 dt)`): slowing at 6.7 m/s², the smoothed pace ran 0.43 m/s behind, 2.73
+  against 2.30, and every other gate of the catch was open (both feet more than `CatchLift` up, that foot under `CatchSlow`), so
+  the gate's one frame over the cap was a catch that did not fire. §14's try keyed the catch on the foot's own motion instead,
+  fired a frame late and in the jog's flight, and was reverted; this keeps every gate and reads the pace as the slower of this
+  frame's and the smoothed (`Mathf.Min(moved, _bodySpeed)`), so a slowing body is read at its pace now and the set-off's catches,
+  where the smoothed pace is the slower, stay as they were. No new number. Pre-checked on the fifteen against main's ankle test
+  (K): the only everyday failure is Female_Adult_01's walk:jog W1 (6 %, as under K); Medical_Female_01's W6 max 4.416 -> 1.320
+  (p98 1.307 -> 1.291); the 44 measures that changed are all in walk:jog, each judged quantity unchanged or better (statistics
+  within 0.01: Female_Adult_01's W1 mean 2.614 -> 2.623 with its share over 15 cm/s unchanged at 5.8 %); 15 new catch frames,
+  all at the jog's stop (t 172.126-172.146: this frame's pace 2.20-2.30 against the smoothed 2.65-2.73 m/s, slowing, both last
+  dips over 1.5 cm, the landing foot 0.46-0.56 m/s), none in a steady jog or in flight; their sink steps 0.95-1.44 cm a frame
+  and the hips' vertical speed at most 0.54 m/s, against K's own catches (0.8-3.5 cm) and K's largest in the state (5.50 cm,
+  5.66 m/s); the lock onsets within a frame of the record 88 % and 92 % as under K; no foot deeper in the ground (W6 p2); and
+  the party test's navigation agents (a 30 m jog and a stop, PartyTests) catch on the same 138 frames under both. The run
+  differed from K's in 321 other measures of the eleven, all in states before the jog, none of them a pass changed (the largest
+  Female_Adult_04's idle0 A6 median 134.8 -> 131.5°, then 0.55° in a few A2 and K5 cells): the sink and the hips differ by
+  under 0.1 mm (the record's resolution) from the first idle's first recorded frames, before either rule has fired a catch;
+  K's code reproduces itself exactly over two runs (0 changes), the toes' trial and the catch, two different codes, agree with
+  each other in every one of those states (0 changes; the rocker within 6), and the four's runs show none: a numerical
+  difference that comes with the rebuilt plant, not with what the catch does (recorded; a semantically null edit would test it). The whole cast: CAST_W6. Open for the
+  next batch (`docs/PROGRESS.md`): the stop's blend still lands the foot slow and 4 cm up, the same kind of event as the walk's
+  start and stop blends where no clip's record applies; and no test measures W1 or W6 on navigation agents in the game's own
+  conditions.
 - **The configured trunks, for the next batch's trunk convention item** (each model's configured T-pose, in its importer: each trunk
   segment's angle from the vertical, + forward; Hips-Spine is the rig's own offset between its hips and spine bones, near ±80-90°
   where the two stand level, one behind or ahead of the other, not a bend). The everyday clips and the bodies:
