@@ -16,6 +16,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative, sep } from 'node:path';
+import { judge } from './gate_ratchet.mjs';
 
 const ROOT = new URL('../..', import.meta.url).pathname;
 const VERDICT_REL = 'docs/qa/gates/motion_gate.json';
@@ -113,12 +114,25 @@ function prior() {
   } catch { return null; }
 }
 const before = prior();
-if (before && before.byMeasure && verdict.byMeasure && before.measures === verdict.measures && before.set === verdict.set) {
-  for (const [m, n] of Object.entries(verdict.byMeasure)) {
-    const was = before.byMeasure[m] ?? 0;
-    if (n > was) problems.push(`people made worse: ${m} ${was} -> ${n} failures (${before.date} -> ${verdict.date}); fix it or revert, never commit a regression`);
-  }
+// the waiver policy (owner, 2026-11-18; CLAUDE.md §2): each measure's failing cells, the fight's aliased sets folded into
+// their baseline keys (motion_gate_inputs.json `aliases`), against the verdict before when both are the same set; every key
+// worse listed in docs/qa/gates/motion_waivers.json, the totals falling when any is, each waiver back within two batches
+// (tools/qa/gate_ratchet.mjs `judge`; tests/people_gate_ratchet.test.ts)
+const WAIVERS_REL = 'docs/qa/gates/motion_waivers.json';
+const waivers = existsSync(join(ROOT, WAIVERS_REL)) ? (JSON.parse(readFileSync(join(ROOT, WAIVERS_REL), 'utf8')).waivers ?? []) : [];
+function history() {
+  // the dates of the verdicts there have been: every committed one (newest 40), and the one in the tree
+  const dates = [];
+  try {
+    for (const h of git(['log', '--format=%H', '-n', '40', '--', VERDICT_REL]).trim().split('\n').filter(Boolean)) {
+      try { const d = JSON.parse(git(['show', `${h}:${VERDICT_REL}`])).date; if (d) dates.push(d); } catch { /* an old format */ }
+    }
+  } catch { /* no history */ }
+  if (verdict.date && !dates.includes(verdict.date)) dates.push(verdict.date);
+  return dates;
 }
+const judged = judge(before, verdict, spec, waivers, history());
+for (const p of judged.problems) problems.push(`${p} (${before?.date} -> ${verdict.date})`);
 
 const images = walk(EVIDENCE).filter((f) => PEOPLE.test(relative(EVIDENCE, f)) && !/\/_red\//.test(f));
 const recent = images.map((f) => ({ f, t: changed(f) })).filter((x) => x.t >= LOCK);

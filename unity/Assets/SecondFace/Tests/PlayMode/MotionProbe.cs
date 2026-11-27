@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 
 namespace SecondFace.Tests
@@ -86,6 +88,8 @@ namespace SecondFace.Tests
         private int[] _bodyTris;
         private Vector3[] _cv;
         private float[] _tyLo, _tyHi;
+        private float _planeMax;
+        private Vector3[] _tLo, _tHi;
 
         /// <summary>The body's torso and thighs as they are posed now (their triangles, and each one's height range).</summary>
         private void Collide(Vector3[] v)
@@ -99,13 +103,54 @@ namespace SecondFace.Tests
                     if (Body(all[t]) && Body(all[t + 1]) && Body(all[t + 2])) { keep.Add(all[t]); keep.Add(all[t + 1]); keep.Add(all[t + 2]); }
                 _bodyTris = keep.ToArray();
                 _tyLo = new float[_bodyTris.Length / 3]; _tyHi = new float[_bodyTris.Length / 3];
+                _tLo = new Vector3[_bodyTris.Length / 3]; _tHi = new Vector3[_bodyTris.Length / 3];
             }
             _cv = v;
             for (int t = 0, k = 0; t < _bodyTris.Length; t += 3, k++)
             {
-                float a = v[_bodyTris[t]].y, b = v[_bodyTris[t + 1]].y, c = v[_bodyTris[t + 2]].y;
-                _tyLo[k] = Mathf.Min(a, Mathf.Min(b, c)); _tyHi[k] = Mathf.Max(a, Mathf.Max(b, c));
+                Vector3 a = v[_bodyTris[t]], b = v[_bodyTris[t + 1]], c = v[_bodyTris[t + 2]];
+                _tLo[k] = Vector3.Min(a, Vector3.Min(b, c)); _tHi[k] = Vector3.Max(a, Vector3.Max(b, c));
+                _tyLo[k] = _tLo[k].y; _tyHi[k] = _tHi[k].y;
             }
+        }
+
+        /// <summary>C1's depth (2026-11-18): how far a point lies from the body's drawn surface, the torso's and thighs' own
+        /// triangles (the nearest point on any of them; the same triangles <see cref="InBody"/> counts), in m. The three nearest
+        /// vertices' planes, the gate's reading before, over-read a convex hip whose vertices stand 4-7 cm apart: a point under
+        /// the chord between two vertices is behind both their planes (forearms 0.05-0.15 cm into the drawn surface read
+        /// 0.53-0.71 cm, docs/MOTION_ROOT_CAUSE.md §7). <paramref name="within"/>: only triangles whose box is nearer than this.</summary>
+        public static float DrawnDepth(Vector3 p, Vector3[] v, int[] tris, Vector3[] lo, Vector3[] hi, float within)
+        {
+            var best = within * within;
+            for (int t = 0, k = 0; t + 2 < tris.Length; t += 3, k++)
+            {
+                if (lo != null)
+                {
+                    var g = BoxGap(p, p, lo[k], hi[k]);
+                    if (g * g >= best) continue;
+                }
+                var q = ClosestOnTriangle(p, v[tris[t]], v[tris[t + 1]], v[tris[t + 2]]);
+                var d = (q - p).sqrMagnitude;
+                if (d < best) best = d;
+            }
+            return Mathf.Sqrt(best);
+        }
+
+        /// <summary>Whether a point is inside a closed mesh: level rays from it (along <paramref name="away"/> and to either side
+        /// of it), each counting the surface's crossings within 0.8 m, both faces; odd is in (two rays of three). As
+        /// <see cref="InBody"/>, for any mesh (the unit test's).</summary>
+        public static bool Inside(Vector3 p, Vector3 away, Vector3[] v, int[] tris)
+        {
+            away.y = 0f; away = away.sqrMagnitude > 1e-6f ? away.normalized : Vector3.right;
+            var votes = 0;
+            foreach (var dir in new[] { away, Quaternion.AngleAxis(90f, Vector3.up) * away, Quaternion.AngleAxis(-90f, Vector3.up) * away })
+            {
+                var crossings = 0;
+                for (var t = 0; t + 2 < tris.Length; t += 3)
+                    if (Hit(p, dir, v[tris[t]], v[tris[t + 1]], v[tris[t + 2]], 0.8f)) crossings++;
+                if ((crossings & 1) == 1) votes++;
+            }
+            return votes >= 2;
         }
 
         /// <summary>Whether a point is inside the body's torso and thighs: level rays out from it (away from the body's
@@ -159,6 +204,9 @@ namespace SecondFace.Tests
         private int _f4Base;
         /// <summary>Where to write a per-frame trace of the feet (a CSV), for the states whose name starts with <see cref="TraceState"/>.</summary>
         public string TracePath, TraceState;
+        /// <summary>The way to the fight's target (flat, world), while a fight's state is measured: the pelvis's and the chest's
+        /// yaw against it are FY1 and FY2 (docs/PEOPLE_MOTION.md §2.7; null: not measured).</summary>
+        public Vector3? FaceTarget;
         private float _nextBake;
         /// <summary>The probe's own time (s, from 0, the frames' own steps): differences of Time.time, a float whose size
         /// depends on how long the editor took to start, came out a few thousandths apart from run to run.</summary>
@@ -350,6 +398,18 @@ namespace SecondFace.Tests
         }
 
         /// <summary>The chest's forward now, level.</summary>
+        /// <summary>The pelvis's and the chest's yaw from a flat direction (degrees, + clockwise from above).</summary>
+        public (float Pelvis, float Chest) Facing(Vector3 target)
+        {
+            target.y = 0f;
+            float Yaw(HumanBodyBones l, HumanBodyBones r)
+            {
+                var front = Vector3.Cross(Vector3.up, B(l).position - B(r).position); front.y = 0f;
+                return front.sqrMagnitude > 1e-8f && target.sqrMagnitude > 1e-8f ? Vector3.SignedAngle(target, front, Vector3.up) : 0f;
+            }
+            return (Yaw(HumanBodyBones.LeftUpperLeg, HumanBodyBones.RightUpperLeg), Yaw(HumanBodyBones.LeftUpperArm, HumanBodyBones.RightUpperArm));
+        }
+
         public Vector3 ChestForward()
         {
             var f = _chest.rotation * _chestOff * Vector3.forward;
@@ -423,6 +483,10 @@ namespace SecondFace.Tests
                 var roll = Mathf.Asin(Mathf.Clamp(Vector3.Dot(r, Vector3.up), -1f, 1f)) * Mathf.Rad2Deg;
                 if (k == K.Walk) { Add("W4", pitch); Add("W5", yaw); }
                 else if (k != K.Turn) { Add("H1", pitch); Add("H2", yaw); Add("H3", Mathf.Abs(roll)); }
+                // facing the fight's target (2026-11-18): the pelvis's front (the hip joints' line) and the chest's (the shoulder
+                // joints'), flat, from the target's line, + clockwise seen from above (to the fighter's right), as
+                // tools/qa/calibration/facing.py reads real fighters
+                if (FaceTarget.HasValue && State != null && State.StartsWith("combat:")) { var (fy1, fy2) = Facing(FaceTarget.Value); Add("FY1", fy1); Add("FY2", fy2); }
                 // the feet: a foot is down (bearing weight) while its sole is within 2 cm of the lowest it has been in this
                 // state (floating feet are caught by F1 and W6, not by missing every contact); sliding while down
                 if (_minState != State)
@@ -545,7 +609,9 @@ namespace SecondFace.Tests
             var inside = skin.Depth(skin.P[best], out var depth, out var n);
             var near = skin.Near;
             var nearDesc = near >= 0 ? $"{skin.PartOf(near)} point {near} off {skin.Off(near) * 100f:0.0} cm, {(skin.P[near] - skin.P[best]).magnitude * 100f:0.0} cm away" : "none";
-            return $"; the game's nearest arm point ({skin.PartOf(best)} {best}, {Mathf.Sqrt(bd) * 100f:0.0} cm from it) reads {(inside ? (depth * 100f).ToString("0.0") : "nothing")} cm, by {nearDesc}";
+            // (and the three body points it judged by, each with its verdict: a contact the game reads too shallow is told from
+            // the points it read it by, 2026-11-25)
+            return $"; the game's nearest arm point ({skin.PartOf(best)} {best}, {Mathf.Sqrt(bd) * 100f:0.0} cm from it) reads {(inside ? (depth * 100f).ToString("0.0") : "nothing")} cm, by {nearDesc} [judged by: {skin.ExplainDepth(skin.P[best], _hips.position, _root.rotation)}]";
         }
 
         /// <summary>Whether the game's skin has a body point where the mesh's body vertex is (a missing one: a clip it cannot
@@ -565,6 +631,62 @@ namespace SecondFace.Tests
             var inv = Quaternion.Inverse(_root.rotation);
             var rel = inv * (p - _hips.position) * 100f;
             return $"; the body vertex at ({rel.x:0},{rel.y:0},{rel.z:0}) has the game's {skin.PartOf(best)} point {best} {Mathf.Sqrt(bd) * 100f:0.0} cm off it (normal {(inv * skin.N[best]).x:0.0},{(inv * skin.N[best]).y:0.0},{(inv * skin.N[best]).z:0.0})";
+        }
+
+        /// <summary>Where C1's worst contacts are written for a trace (env C1_DUMP=1: test-results/c1dump; null: never). A
+        /// diagnostic only: what is measured never depends on it.</summary>
+        public static readonly string C1Dump = System.Environment.GetEnvironmentVariable("C1_DUMP") == "1"
+            ? Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results", "c1dump")) : null;
+
+        /// <summary>For a trace of C1's worst contact in a state: the arm vertex, every triangle of the mesh with a corner within
+        /// 8 cm of it (corners in cm in the hips' frame, their parts and normals, whether the gate's body set has it) and the
+        /// inside test's three rays with each crossing (distance, the triangle's parts).</summary>
+        private void DumpC1(Vector3[] v, Vector3[] n, int at, float depth)
+        {
+            if (at < 0) return;
+            Directory.CreateDirectory(C1Dump);
+            var inv = Quaternion.Inverse(_root.rotation);
+            string P(Vector3 w) { var r = inv * (w - _hips.position) * 100f; return $"[{r.x:0.000},{r.y:0.000},{r.z:0.000}]"; }
+            string N(Vector3 w) { var r = inv * w; return $"[{r.x:0.000},{r.y:0.000},{r.z:0.000}]"; }
+            var p = v[at];
+            var all = _baked.triangles;
+            var inBody = new HashSet<long>();
+            for (var t = 0; t + 2 < _bodyTris.Length; t += 3) inBody.Add(((long)_bodyTris[t] << 40) | ((long)_bodyTris[t + 1] << 20) | (long)_bodyTris[t + 2]);
+            var sb = new StringBuilder();
+            sb.Append($"{{\"person\":\"{Person}\",\"state\":\"{State}\",\"t\":{_clock:0.000},\"depth\":{depth * 100f:0.000},\"vertex\":{at},\"part\":\"{(Part)_seg[at]}\",\"p\":{P(p)},\"pn\":{N(n[at])},\"tris\":[");
+            var first = true;
+            for (var t = 0; t + 2 < all.Length; t += 3)
+            {
+                int a = all[t], b = all[t + 1], c = all[t + 2];
+                if ((v[a] - p).sqrMagnitude > 0.0064f && (v[b] - p).sqrMagnitude > 0.0064f && (v[c] - p).sqrMagnitude > 0.0064f) continue;
+                if (!first) sb.Append(',');
+                first = false;
+                var key = ((long)a << 40) | ((long)b << 20) | (long)c;
+                sb.Append($"{{\"i\":[{a},{b},{c}],\"v\":[{P(v[a])},{P(v[b])},{P(v[c])}],\"n\":[{N(n[a])},{N(n[b])},{N(n[c])}],\"parts\":[\"{(Part)_seg[a]}\",\"{(Part)_seg[b]}\",\"{(Part)_seg[c]}\"],\"body\":{(inBody.Contains(key) ? "true" : "false")}}}");
+            }
+            sb.Append("],\"rays\":[");
+            var away = p - _hips.position; away.y = 0f;
+            away = away.sqrMagnitude > 1e-6f ? away.normalized : _root.right;
+            var r0 = 0;
+            foreach (var dir in new[] { away, Quaternion.AngleAxis(90f, Vector3.up) * away, Quaternion.AngleAxis(-90f, Vector3.up) * away })
+            {
+                if (r0++ > 0) sb.Append(',');
+                sb.Append($"{{\"dir\":{N(dir)},\"hits\":[");
+                var h = 0;
+                for (int t = 0, k = 0; t < _bodyTris.Length; t += 3, k++)
+                {
+                    if (p.y < _tyLo[k] || p.y > _tyHi[k]) continue;
+                    Vector3 a = _cv[_bodyTris[t]], b = _cv[_bodyTris[t + 1]], c = _cv[_bodyTris[t + 2]];
+                    if (!Hit(p, dir, a, b, c, 0.8f)) continue;
+                    var e1 = b - a; var e2 = c - a; var fn = Vector3.Cross(e1, e2).normalized;
+                    var dist = Vector3.Dot(a - p, fn) / Mathf.Max(1e-6f, Mathf.Abs(Vector3.Dot(dir, fn))) * Mathf.Sign(Vector3.Dot(dir, fn));
+                    if (h++ > 0) sb.Append(',');
+                    sb.Append($"{{\"d\":{Mathf.Abs(dist) * 100f:0.00},\"i\":[{_bodyTris[t]},{_bodyTris[t + 1]},{_bodyTris[t + 2]}]}}");
+                }
+                sb.Append("]}");
+            }
+            sb.Append("]}");
+            File.WriteAllText(Path.Combine(C1Dump, $"{Person}_{State.Replace(':', '_')}.json"), sb.ToString());
         }
 
         private SecondFace.Game.People.FootPlant _fp;
@@ -593,7 +715,7 @@ namespace SecondFace.Tests
         private string HoldTrace()
         {
             var sk = GetComponent<SecondFace.Game.People.BodySkin>();
-            var a4 = $",{_traceA4L:0.0},{_traceA4R:0.0},{(sk != null ? sk.FlankL : -1f):0.00},{(sk != null ? sk.FlankR : -1f):0.00},{_traceOutL:0.0},{_traceFwdL:0.0},{_traceOutR:0.0},{_traceFwdR:0.0}," + (_ac != null && _ac.StageA1 != null ? string.Join(",", _ac.StageA1.Select(x => x.ToString("0.0"))) + $",{_ac.HoldFlank[0]:0.00},{_ac.HoldFlank[1]:0.00}" : ",,,,,,,,,,,,,,,") + "," + _traceK + $",{(_fp != null ? _fp.Sink * 100f : 0f):0.0}" + (_ac != null ? $",{_ac.PushPart[0]},{_ac.PushDeg[0]:0.0},{_ac.PushPart[1]},{_ac.PushDeg[1]:0.0}" : ",,,,");
+            var a4 = $",{_traceA4L:0.0},{_traceA4R:0.0},{(sk != null ? sk.FlankL : -1f):0.00},{(sk != null ? sk.FlankR : -1f):0.00},{_traceOutL:0.0},{_traceFwdL:0.0},{_traceOutR:0.0},{_traceFwdR:0.0}," + (_ac != null && _ac.StageA1 != null ? string.Join(",", _ac.StageA1.Select(x => x.ToString("0.0"))) + $",{_ac.HoldFlank[0]:0.00},{_ac.HoldFlank[1]:0.00}" : ",,,,,,,,,,,,,,,") + "," + _traceK + $",{(_fp != null ? _fp.Sink * 100f : 0f):0.0}" + (_ac != null ? $",{_ac.PushPart[0]},{_ac.PushDeg[0]:0.0},{_ac.PushPart[1]},{_ac.PushDeg[1]:0.0},{_ac.RestPart[0]},{_ac.RestDepth[0]:0.00},{_ac.RestBody[0]},{_ac.RestBodyY[0]:0.0},{_ac.RestDeg[0]:0.0},{_ac.RestPart[1]},{_ac.RestDepth[1]:0.00},{_ac.RestBody[1]},{_ac.RestBodyY[1]:0.0},{_ac.RestDeg[1]:0.0},{_ac.PushDepth[0]:0.00},{_ac.PushDepth[1]:0.00}" : ",,,,,,,,,,,,,,,,");
             if (_ac == null || _ac.Hold == null || _ac.Hold.Length < 8) return ",,,,,,," + a4;
             return string.Join(",", _ac.Hold.Select(x => x.ToString("0.00"))) + a4;
         }
@@ -868,22 +990,36 @@ namespace SecondFace.Tests
             // a candidate is in the body only if rays from it cross the body's surface an odd number of times (two of three
             // level rays): the three nearest points can all face away from a point beside the top of a shoulder or below
             // a hem, which is outside (2026-11-06)
+            _planeMax = 0f;
             if (_candidates.Count > 0)
             {
                 Collide(v);
-                _candidates.Sort((x, y) => y.Depth.CompareTo(x.Depth));   // the deepest first: the first confirmed is the measure
-                foreach (var (i, i0, depth) in _candidates)
+                // the measure: the deepest confirmed candidate's depth under the drawn surface (its nearest point on the body's
+                // triangles). The vertices' planes only find the candidates, deepest first; on a convex surface they are behind it,
+                // so a candidate whose plane depth is under the deepest drawn depth so far cannot be deeper (where they are not, a
+                // concave crease, the planes find no candidate at all, as before)
+                _candidates.Sort((x, y) => y.Depth.CompareTo(x.Depth));
+                foreach (var (i, i0, plane) in _candidates) if (InBody(v[i])) { _planeMax = plane; break; }
+                foreach (var (i, i0, plane) in _candidates)
                 {
+                    if (plane <= depthMax) break;   // (sorted: no later candidate is deeper)
+                    var depth = DrawnDepth(v[i], v, _bodyTris, _tLo, _tHi, plane + 0.05f);
                     if (depth <= depthMax || !InBody(v[i])) continue;
                     depthMax = depth;
                     worstVertex = i; worstBody = i0;
-                    worst = $"{(Part)_seg[i]} vertex {i} {depth * 100f:0.0} cm under {(Part)_seg[i0]} vertex {i0} (at {(v[i0].y - _root.position.y):0.00} m, normal {n[i0].x:0.00},{n[i0].y:0.00},{n[i0].z:0.00} in the body's frame {Quaternion.Inverse(_root.rotation) * n[i0]})";
-                    break;
+                    worst = $"{(Part)_seg[i]} vertex {i} {depth * 100f:0.0} cm under the drawn surface ({plane * 100f:0.0} cm behind {(Part)_seg[i0]} vertex {i0}'s plane) (at {(v[i0].y - _root.position.y):0.00} m, normal {n[i0].x:0.00},{n[i0].y:0.00},{n[i0].z:0.00} in the body's frame {Quaternion.Inverse(_root.rotation) * n[i0]})";
                 }
                 _candidates.Clear();
             }
             Add("C1", depthMax * 100f);
-            if (depthMax > 0.005f && worst != null && (!WorstClip.TryGetValue(State, out var w) || w.Item1 < depthMax)) WorstClip[State] = (depthMax, worst + Runtime(v, worstVertex) + RuntimeBody(v, worstBody));
+            // (the vertices' planes' reading, C1 before 2026-11-18: a diagnostic beside the verdict, never judged, for the record of
+            // the cells the drawn surface changed)
+            Add("C1v", _planeMax * 100f);
+            if (depthMax > 0.005f && worst != null && (!WorstClip.TryGetValue(State, out var w) || w.Item1 < depthMax))
+            {
+                WorstClip[State] = (depthMax, worst + Runtime(v, worstVertex) + RuntimeBody(v, worstBody));
+                if (C1Dump != null) DumpC1(v, n, worstVertex, depthMax);
+            }
             // the hands' gap to the hips' and thighs' surface, not to their vertices: a coarse thigh's vertices stand 6-7 cm
             // apart, so a hand resting 1.5 cm off its skin read 6 cm from the nearest vertex (A4, 2026-11-08); the nearest
             // point on their triangles (the vertex's gap is never less: the surface passes through every vertex)

@@ -78,9 +78,26 @@ It is binding. It sits beside the face and skin gate (`docs/PEOPLE_QA.md`) and i
    start: a wait by it ended a frame sooner or later from run to run, and the same code's whole-cast verdicts came out
    1073 and 1085, 174 lines apart, 2026-11-07); a check of the gate itself is two runs of the same code, line for line
    the same. **Green means the whole cast** (`EveryPersonStandsAndMovesLikePeople`, every body of the
-   catalogue, one verdict): the quick ten are a working check and never count as green. **No commit makes people
-   worse**: a verdict with more failures than the one it replaces on any measure (the same measures, the same set)
-   fails `npm run check` and CI; a regression is fixed or reverted, never committed. Files are added to the inputs
+   catalogue, one verdict): the quick ten are a working check and never count as green. **The waiver policy** (owner,
+   2026-11-18, replacing "no commit makes people worse"; CLAUDE.md §2): integrate often and never hold a large batch
+   uncommitted. A batch commits on a whole-cast verdict of its own tree when (1) its failing cells fall, overall and
+   within the everyday states (a total already at nought may stay there; with no key worse the totals cannot rise);
+   (2) every key worse than the verdict it replaces (the same set) is listed in `docs/qa/gates/motion_waivers.json`:
+   key, `before` (its pre-waiver count), `after` (no less than its count now), `cause` (or "unknown"), `fix` (the item that
+   brings it back) and `since` (the date of the verdict it was waived on). An unlisted worse key fails `npm run check` and
+   CI. (3) A waived key ratchets from its new value (a rise past `after` fails) and must be back at or below `before`
+   within two batches: still above it two verdicts after `since`, it blocks the batch. (4) Tests, the build and CI stay
+   green. Since 2026-11-18 the comparison holds when the gate's own
+   code changed too (a change of the measures' code is no exemption: only a measure made stricter, named in the inputs'
+   `remeasured` with its why, is left out until a verdict on the new code is committed); a set the verdict before did not
+   measure at all is not compared. **A fight's state set introduced after a baseline is compared on the set its states
+   were measured under there** (the inputs' `aliases`: each measure's failing cells of the new set summed into the
+   baseline set's): introduced with combat set v4, whose two-handed blows went to `strike2` and whose slips and ducks to
+   `dodge`, each to the limits of real actors of that action (§2.7; `docs/qa/motion_calibration.md` §8). The gate measures
+   each person's fight records under the set of the state the table plays for them; both sets were measured under `strike`
+   in the baseline (the blows as the strike action, every miss as its block), so both fold into `strike`. A set is aliased only to the one its states were measured under, never to hide a regression. The fold, the
+   comparison and the waivers' judgement are `tools/qa/gate_ratchet.mjs` (`judge`), which `npm run check` runs through `people_gate.mjs`; `tests/people_gate_ratchet.test.ts`
+   pins them on the inputs' own table (a merged key made worse fails though neither of its sets alone is). Files are added to the inputs
    when they start to decide how people look or move, and never taken out to make a verdict fresh. **Every report
    to the owner starts with the gate's state** as `npm run people-gate` prints it (green, or red with the failing
    measures and their counts, or stale), and never calls people work done while it is not green.
@@ -114,7 +131,27 @@ every frame. Angles are degrees, distances centimetres. "Down" and "horizon" are
 | K3 | Pelvis level | the line between the hip joints from the horizontal | ≤ 5 | 8 | in standing the pelvis is level [16]; a weight shift drops it a little, a hip hitched or dropped far is a pose |
 | K4 | Hips over the feet | the pelvis's middle past the outer foot across the body (cm, + beyond) | ≤ 2 | 4 | a weight shift brings the hips over the standing foot, not past it: a hip thrown out is a pose (the owner, 2026-11-09) |
 | K5 | A bent knee over its foot | a bent leg's (10° or more) knee, seen from above: where it points (from the middle of its hip and ankle) against whichever of the body's front and its foot's line is further in (+ in): so it may point anywhere between the two and 10° beyond (on a turned-out foot, K5 ≤ F3s + 10 measured on the foot's line) | ≤ 10 | 20 | a resting leg's knee bends the way its toes point [16]; a knee turned in across its foot reads as the owner's 'other knee turned in' (2026-11-09). Measured against the foot's own line (≤ 15, cap 25) until 2026-11-17: a real relaxed knee points ahead while the foot turns out 10–28°, so 8 of 13 real quiet-standing captures failed by their toe-out alone [17] |
-| C1 | Nothing clips | depth of a hand, forearm or lower upper-arm vertex (the upper arm's third nearest the elbow, which hangs clear of the waist; higher, the arm rests on the side of the chest, a contact both soft tissues take) inside the torso, hip or thigh skin (baked mesh: behind the three nearest skin points' planes, and inside by ray parity, two of three level rays crossing the skin an odd number of times; the planes alone call a point beside the top of a shoulder or below a hem inside) | ≤ 0.5 | 1.5 | the owner's rule: arms, hands and clothing never sink into a body (CLAUDE.md §2) |
+| C1 | Nothing clips | depth of a hand, forearm or lower upper-arm vertex (the upper arm's third nearest the elbow, which hangs clear of the waist; higher, the arm rests on the side of the chest, a contact both soft tissues take) inside the torso, hip or thigh skin, measured as its distance to the drawn surface: the nearest point on the torso's, hips' and thighs' own triangles (since 2026-11-18; baked mesh: found behind the three nearest skin points' planes, and inside by ray parity, two of three level rays crossing the skin an odd number of times; the planes alone call a point beside the top of a shoulder or below a hem inside, and over-read the depth: see the note under this table) | ≤ 0.5 | 1.5 | the owner's rule: arms, hands and clothing never sink into a body (CLAUDE.md §2) |
+
+**C1 reads the drawn surface (coordinator's decision, 2026-11-18).** Until then C1 was the least of the three nearest body
+vertices' plane depths. On a convex hip whose vertices stand 4-7 cm apart a point under the chord between two vertices lies
+behind both their planes, so the planes read a penetration the drawn surface does not have. Evidence (`C1ProbeTests`, chunk
+0's people, the idles at 10 Hz; `docs/MOTION_ROOT_CAUSE.md` §7): at the gate's worst forearm vertex the planes read 0.53 cm
+(Business_Male_02) and 0.71 cm (Business_Female_03); the same vertex is 0.13-0.15 and 0.05-0.12 cm inside the triangles as drawn;
+the runtime's `BodySkin.Depth` reads 0.53 and 0.28-0.40 there. The limit stays at 0.5 cm and the runtime keeps its own reading.
+**The runtime reads the same surface (2026-11-25).** The least of three planes also under-reads where the skin creases or turns:
+forearms resting 0.8-1.2 cm into two men's hips were read 0.2 cm deep by a point on a facet turned 25-40°, under the arm
+clearance's resting give. Against the hips and thighs (the band where resting forearms and hands hang) `BodySkin.Depth` reads
+whether a point is inside and how deep from the robust implicit surface of its skin points (`BodySkin.Robust`: RIMLS, Öztireli et
+al. 2009, each point's tangent plane weighted by its distance, its plane's residual and its normal's agreement; since 2026-11-26,
+in place of the plain IMLS of Kolluri 2008, which blurred a belt pouch's corner, and of the nearest-three vote there); the chest
+and waist above keep the vote and the least of three (read by the IMLS there too, seven men's everyday cells went 11 -> 38;
+`docs/MOTION_ROOT_CAUSE.md` §10). The skin's filled points lie on the drawn triangles with the faces' own normals since 2026-11-26
+(on the curved surface of their corners' normals they stood p50 0.6, p90 1.3 cm outside the drawn body; §12).
+The depth is `MotionProbe.DrawnDepth` (exact point-to-triangle distance over the triangles the inside test counts), held by
+`MotionProbeDepthTests` (known penetrations of 0, 0.3, 0.5, 1 and 2 cm under a convex patch with vertices 8 cm apart and under a
+flat one, read within 0.05 cm). The planes' reading is still written beside every report (`<report>_c1v.json`, never judged)
+so the cells the change moved are on record, both ways.
 
 ### 2.2 Gestures
 
@@ -147,29 +184,36 @@ its sidecar, and that the sidecar records the source's frame rate (a source read
 `stretch` at double speed, found 2026-11-17). K1 applies to the clips themselves as well as to the game: an idle whose
 own actor stands with the straighter knee past 8° is not used as an idle (`tools/unity/motion/clip_qa.py`, at staging).
 
-**The clips in use (motion set v5 but the walks, 2026-11-17; each person plays their own sex's captures, and their own gait
-set among them by a hash of who they are, `Pace.MenSets` / `WomenSets`; each clip played at the rate its own stride on that
-body needs, `Pace.StrideMen` / `StrideWomen`, measured by `PaceCalibrationTests`):** men's walks `walk_slow`, `walk_slow_b`,
-`walk_d`, `walk`, `walk_b`, `walk_brisk_b` (set v4's cut: v5's open-loop walks put a stance foot 2.7-3.1 cm up on two men,
-W6, and slid three of seven women's walks, W1 6-7 % of frames, on a 14-person pick); jogs `jog` (CMU 35_17) and `jog_b`
-(CMU 16_35), v5's open loops (W1 and W6 0 on the pick; set v1's `jog_v1` retired for men); runs `run`, `run_c`; men's idles
-`idle_m`, `idle_m_b` (ACCAD Male2, Male1 standing); women's walk `walk_f_b` (v4's cut; the player's 1.4 m/s plays it at about
-1.2, a brisk 120 steps a minute: game speed never depends on sex); women's jog `jog_f` (CMU 141_02, a woman's capture, v5),
-with `jog_v1` only for a woman whose legs would play `jog_f` past `RateMax` (P1); women's idles `idle_f`, `idle_f_c`; women's
+**The clips in use (motion set v6.1, 2026-11-17; each person plays their own sex's captures, and their own gait set among
+them by a hash of who they are, `Pace.MenSets` / `WomenSets`; each clip played at the rate its own stride on that body needs,
+`Pace.StrideMen` / `StrideWomen`, measured by `PaceCalibrationTests`; each clip retargeted against an avatar configuration
+built from its own file's T-pose (the converters' `t_pose_key`), rebuilt whenever the file's bytes change, with the
+Humanoid hand on the hand bone itself and the wrist-twist bone an in-between, `MotionImportPostprocessor`, checked by
+`MotionImportTests`: until v6.1 each clip kept the configuration of its first export's first key, every limb as captured
+(Neck2 6-45° off, two clips of one skeleton 90-160° apart, a jog retargeted from its touchdown), and the CMU clips' hands
+lost the captured wrist turn, up to 150° in `wave`, docs/MOTION_ROOT_CAUSE.md §7):** every gait's stance foot planted in the converter (the sole's contact
+point held still from the key after touchdown to toe-off) and its speed the one at which that point stands still; men's
+walks `walk_slow`, `walk_slow_b`, `walk_d`, `walk`, `walk_b`, `walk_brisk_b` (closed loops, set v4's convention: v5's
+open-loop walks put a stance foot 2.7-3.1 cm up on two men, W6, and slid three of seven women's walks); jogs `jog` (CMU
+35_17) and `jog_b` (CMU 16_35) and runs `run`, `run_c` (open loops); men's idles `idle_m`, `idle_m_b` (ACCAD Male2, Male1
+standing); women's walk `walk_f_b` (the player's 1.4 m/s plays it at about 1.2, a brisk 120 steps a minute: game speed
+never depends on sex); women's jog `jog_f` (CMU 141_02, a woman's capture), with `jog` (v6's plant of CMU 35_17, which
+retires set v1's `jog_v1`) only for a woman whose legs would play `jog_f` past `RateMax` (P1); women's idles `idle_f`, `idle_f_c`; women's
 `stretch`, `yawn`, `yawn_b`, `sit`; everyone's talk, argue, drink, wave, carry, sneak, pickup, sits. Every standing idle
 carries the helper's knee-solve correction (the captures' knee centres read 8-24° on straight legs; K1 ≤ 5° after, the feet
-kept) and a level head; every v5 clip holds Neck2 at its rest bend and the Neck aimed at the captured head (Unity reports no
-in-between warning on any of them). **Out:** `jog_f_b` (CMU 141_03: its stance foot creeps 0.4-0.8 m/s through stance in the
+kept) and a level head; every clip holds Neck2 and the wrist-twist bones at rest (Unity reports no rig error or in-between
+warning on any of them; the clip QA's `configuration` and `mapping` checks read the project's metas). **Out:** `jog_f_b` (CMU 141_03: its stance foot creeps 0.4-0.8 m/s through stance in the
 clip itself, so its stride on a woman's body is 0.70 of its speed and the jog would play at a rate of 1.59, P1), `walk_brisk`
 (138 steps/min, past real walkers), `walk_c` (walk ratio), `walk_f_n` (its planted feet slide), `jog_c`, `run_b` (CMU 104's
 solver turns the feet over 60-160° between frames), `run_f` (no clean loop), the women's slower walks `walk_f`, `walk_f_c`,
 `walk_f_long` (they would be played past a natural cadence at the townsfolk's pace), and the old idles `idle`, `idle_b`,
-`idle_c`, `idle_d`, `idle_f_b` (their actors' knees bent 20-24°, heads down to −58°). **Open:** the jogs' touchdown: in the
-clips and in their sources alike the stance foot's joints run 0.5-2 m/s at the key it lands and 0.1-0.6 m/s for two to four
-keys after (a joint centre rolling over the heel; CMU 141's solver creeping through stance), and `FootPlant`'s swing clearance
-(the foot held 3 cm up while it still moves fast, then set down) keeps those frames off the ground: without it W1 failed 14
-of 18 jogs on a pick (2026-11-17). The clearance is retired once the converter plants each stance foot's contact point
-(motion set v6). No woman's run yet; `stretch_m` (CMU 143_30, a man's stretch and yawn) is imported but not played: its
+`idle_c`, `idle_d`, `idle_f_b` (their actors' knees bent 20-24°, heads down to −58°). **Open:** the jogs' touchdown. v6.1
+holds the contact point still from the key after touchdown, but the touchdown key itself carries the swing's arrival (`jog`
+2.79, 1.60, 0.00 m/s key by key), so the game's frame between it and the next key reads 0.4-0.7 m/s on the ground; without
+`FootPlant`'s swing clearance (the foot held 3 cm up while it still moves fast, then set down) W1 failed 14 jogs of 13 of
+14 people on a pick (5-7 % of frames over 15 cm/s) and three women's sneaks (6-12 %), 2026-11-17. Real CMU 35_17 at 120 Hz shows 0.3-0.45 m/s at +17 ms, and W1 has no
+calibration on real joggers: W1 is measured on at least three real joggers' captures at their native rate, the limit or the
+clip decided from that, and only then the clearance retired (docs/MOTION_ROOT_CAUSE.md §7). No woman's run yet; `stretch_m` (CMU 143_30, a man's stretch and yawn) is imported but not played: its
 actor raises the shoulders 24°, past S1's 20 for a stretch, on every man measured.
 
 ### 2.5 Two people talking
@@ -198,28 +242,49 @@ The combat states the game shows, measured on people made as the game makes them
 code (`CombatViews.ForBody`: the fighter on the animator, the weapon from the pack), every runtime system on, every frame,
 like the walks. Their limits are real fighters', measured with this gate's own measures on the actors' own skeletons at their
 true frame rates and accepted for WP2: **source: `docs/qa/motion_calibration.md` §7** (ACCAD Male2 and Female1, CMU 144,
-141_14, 113_13, 13_17, 79_96, 80_03, 77_03/77_09; `motion_calibration_combat.json`). Each limit is the real fighters' p98
-(and p2 where a lower bound applies), each cap their max (and min), the trials of the state pooled. **The long-gun aim is
-provisional**: two actors miming a gun (the head from one), to be replaced by a captured long-gun take with a real weapon.
+141_14, 113_13, 13_17, 79_96, 80_03, 77_03/77_09; `motion_calibration_combat.json`), and **§8 for combat set v4** (applied
+2026-11-18: the long-gun aim from three actors, CMU 79_96, 80_03 and 100STYLE's Swat_ID, replacing §7's provisional two-actor
+column; a two-handed weapon's blows from three, CMU 79, 80 and 124; slips and ducks from four, ACCAD Male2, Male1, Female1 and
+CMU 77; the peek, from one actor, stays provisional and is not held). Each limit is the real fighters' p98 (and p2 where a
+lower bound applies), each cap their max (and min), the trials of the state pooled.
 These limits apply only while the game shows the fight's own stance (the gate's states `combat:<set>:<what>`); quiet
 standing's (§2.1) and walking's (§2.4) limits are never loosened by them.
 
-| Measure | Guard | Strike | Aim, long gun (provisional) | Crouch / cover |
-|---|---|---|---|---|
-| K1 straighter knee ° | ≤ 67 (81) | ≤ 82 (89) | ≤ 2.2 (2.5) | 16.7 … 147 (16.1 … 148) |
-| Kb more bent knee ° | ≤ 75.5 (94.5) | ≤ 90.5 (97.1) | ≤ 20.4 (20.7) | ≤ 148 (148) |
-| H1 head pitch ° | −26.9 … +10.3 (−33.0 … +14.0) | −41.9 … +16.8 (−53.3 … +22.9) | −3.0 … +1.2 (−3.0 … +1.6) | −44.7 … +33.8 (−53.3 … +35.4) |
-| H2 head yaw on chest ° | ≤ 55.9 (59.5) | ≤ 56.8 (65.9) | 15.2 … 22.2 (15.1 … 22.9) | ≤ 92.1 (93.2) |
-| H3 head roll ° | ≤ 19.5 (21.5) | ≤ 22.1 (25.7) | 10.6 … 16.6 (10.4 … 16.7) | ≤ 36.7 (45.6) |
-| F2 heel lift, cm | ≤ 9.8 (14.4) | ≤ 13.2 (14.7) | ≤ 1.9 (1.9) | ≤ 17.1 (17.2) |
-| F3w stance width, cm | 21.2 … 70.4 (3.9 … 79.2) | 16.4 … 83.2 (1.3 … 90.5) | 23.3 … 32.8 (23.3 … 33.0) | 18.9 … 50.6 (16.0 … 51.0) |
-| A1 upper arm from hanging ° | ≤ 103 (119) | ≤ 88.5 (112) | 53.2 … 88.8 (50.2 … 90.5) | ≤ 134 (135) |
-| A2 elbow bend ° | 112.8 … 146.9 (109.3 … 149.9) | 83.9 … 140.5 (41.1 … 145.7) | 119.6 … 143.0 (119.5 … 146.6) | ≤ 140.7 (141.5) |
+| Measure | Guard | Strike | Strike, two-handed (§8) | Aim, long gun (§8) | Dodge (§8) | Crouch / cover |
+|---|---|---|---|---|---|---|
+| K1 straighter knee ° | ≤ 67 (81) | ≤ 82 (89) | ≤ 36.1 (39.3) | ≤ 33.5 (34.9) | ≤ 122.6 (124) | 16.7 … 147 (16.1 … 148) |
+| Kb more bent knee ° | ≤ 75.5 (94.5) | ≤ 90.5 (97.1) | ≤ 54.9 (57.6) | ≤ 37.2 (38.0) | ≤ 127.9 (129.2) | ≤ 148 (148) |
+| H1 head pitch ° | −26.9 … +10.3 (−33.0 … +14.0) | −41.9 … +16.8 (−53.3 … +22.9) | as strike | −7.1 … +0.6 (−7.1 … +1.6) | −47.5 … +3.9 (−54 … +7.9) | −44.7 … +33.8 (−53.3 … +35.4) |
+| H2 head yaw on chest ° | ≤ 55.9 (59.5) | ≤ 56.8 (65.9) | as strike | 15.7 … 33.3 (15.1 … 33.7) | ≤ 54.4 (55.4) | ≤ 92.1 (93.2) |
+| H3 head roll ° | ≤ 19.5 (21.5) | ≤ 22.1 (25.7) | as strike | 7.9 … 16.3 (7.8 … 16.7) | ≤ 18.2 (21) | ≤ 36.7 (45.6) |
+| F2 heel lift, cm | ≤ 9.8 (14.4) | ≤ 13.2 (14.7) | ≤ 15.1 (15.3) | ≤ 1.8 (1.9) | ≤ 6.6 (10.5) | ≤ 17.1 (17.2) |
+| F3w stance width, cm | 21.2 … 70.4 (3.9 … 79.2) | 16.4 … 83.2 (1.3 … 90.5) | 23.1 … 66.0 (22.1 … 66.4) | 23.4 … 44.7 (23.3 … 44.7) | 13.2 … 110.8 (7.1 … 139.8) | 18.9 … 50.6 (16.0 … 51.0) |
+| A1 upper arm from hanging ° | ≤ 103 (119) | ≤ 88.5 (112) | ≤ 122.5 (129.4) | 54.8 … 86.2 (50.2 … 90.5) | (thrown about) | ≤ 134 (135) |
+| A2 elbow bend ° | 112.8 … 146.9 (109.3 … 149.9) | 83.9 … 140.5 (41.1 … 145.7) | 13.8 … 128.6 (11.6 … 135.2) | 119.7 … 146.1 (119.5 … 146.6) | (thrown about) | ≤ 140.7 (141.5) |
 
 Limit p2 … p98 (cap min … max). New measures for these states: **Kb**, the more bent knee (the angle between thigh and shin,
 as K1 for the straighter); **WG1**, the weapon's main grip from the palm's centre (≤ 1 cm, cap 2: the weapon stays in the hand,
 COMBAT.md A1); **WG2**, the off hand's palm from the weapon's `grip_off` (a pistol's support point beside its grip) while it is
 held there (≤ 2 cm, cap 3: the fix for the captured long-gun and club takes whose mimed hands drift 5-27 cm apart).
+
+**Facing the target (FY1, FY2; added 2026-11-18, a new measure: `motion_gate_inputs.json` `introduced`).** The pelvis's front
+(the hip joints' line, flat) and the chest's (the shoulder joints' line) against the line to what the fighter fights, degrees,
++ clockwise seen from above (to the fighter's right): the gate's fights are all at the body's front (+Z), the game's target.
+It closes a hole: combat set v4.1's take-frame clips played with the body 180° from its target and no measure saw it
+(`docs/COMBAT_ROOT_CAUSE.md` §11). Limits from the §8 actors (`tools/qa/calibration/facing.py`, `docs/qa/calibration_facing.json`;
+`docs/qa/motion_calibration.md` §11), the target read from the action, as no capture records one: the aim's gun line (the main
+hand to the off hand), the ready's own take's later gun line, each blow's line (the upper chest to the striking hand at its
+furthest). Right-handed fighters, as the game's.
+
+| Measure | Aim, long gun (3: CMU 79_96, 80_03, 100STYLE Swat_ID) | Ready, long gun (2: CMU 79_96, 80_03) | Strike (10 takes: ACCAD Male2, CMU 143, 144, 141, 113) |
+|---|---|---|---|
+| FY1 pelvis yaw ° | 45.3 … 60.4 (44.9 … 68.7) | 22.3 … 42.4 (22.3 … 42.5) | −69.5 … +47.6 (−87.2 … +109.5) |
+| FY2 chest yaw ° | 56.3 … 76.5 (56.1 … 84.6) | 15.4 … 44.3 (14.9 … 44.3) | −64.4 … +50.4 (−80.3 … +99.0) |
+
+Held in the sets `aim` (the long gun's aim, shot and burst), `strike` (blows and a block; a one-handed weapon's blows to the
+unarmed fighters', as §8's rule for them) and the long gun's ready (`combat:ready:rifle` only: no pistol's or club's ready
+facing is captured). A rifleman blades the body to his right of the gun line; a still ready stands 15-44° off the line the gun
+will take.
 
 Which limits each state is held to (`HumanMotionGateTests.CombatLimits`), and C1 (nothing clips) in every one:
 
@@ -228,7 +293,9 @@ Which limits each state is held to (`HumanMotionGateTests.CombatLimits`), and C1
 | guard | the unarmed and one-handed guard | Guard, all of it; F1, F4, WG1 |
 | ready | a gun's or a two-handed club's ready stance | Guard's legs, head and feet (the arms are on the weapon); F1, F4, WG1, WG2 |
 | strike | blows, a block | Strike, all of it; F1, WG1, WG2 (no F4: fighters pivot and step on their blows, and were not measured for it) |
-| aim | a long gun's aim, its shot and its burst | Aim, all of it (provisional); F1, F4, WG1, WG2 |
+| strike2 | a two-handed weapon's blows | Strike, two-handed, and the strike's head; F1, WG1, WG2 |
+| dodge | a slip or a duck from a blow | Dodge's legs, head and feet; F1 (the arms are thrown about) |
+| aim | a long gun's aim, its shot and its burst | Aim, all of it (§8, three actors); F1, F4, WG1, WG2 |
 | aim_pistol | a pistol's aim and shots (both hands by IK on the long gun's captured stance) | Aim's legs and feet and H1; H2 and H3 as standing (§2.1: no stock at the cheek); F1, F4, WG1, WG2 |
 | crouch | down into cover, the crouch held | Crouch / cover, all of it; F1, F4, WG1, WG2 |
 | reload | a reload | as a gesture (§2.2): F1, F2, F4, H1 −25 … +15, H2, S1 ≤ 10; WG1 |
@@ -239,7 +306,10 @@ Which limits each state is held to (`HumanMotionGateTests.CombatLimits`), and C1
 
 While the fight's own stance plays, the standing systems that hold quiet standing's own limits give way to the fight's, as the
 foot plant gives way to a fall: the foot plant (it keeps quiet standing's stance width and straight bearing leg) is paused and
-the fighter keeps the clip's stance on the ground under each foot, a planted foot held where it was put down; the gaze clamps
+the fighter keeps the clip's stance on the ground: the lower foot's lowest sole point on its ground through the hips and a foot
+the clip has down on its own ground by the leg (the clips as retargeted stand 2.5-4 cm up), the clip's own planted foot
+followed as it creeps (held, a straight standing knee bent 14-22° on a centimetre), and a foot a crossfade between two stances
+would slide stepped to its new place, one foot at a time (COMBAT.md, WP2 review, 2026-11-17); the gaze clamps
 the head within the stance's own limits (real fighters' p98, a little less); the arms are still kept out of the body
 (`ArmClearance`, told the arms hold something: neither rested at the side nor swung); idle gestures wait. The weapon walk
 (`combat:carry`) is the people's own locomotion with the fight's arms over it. The gate's captures add the fight at the game

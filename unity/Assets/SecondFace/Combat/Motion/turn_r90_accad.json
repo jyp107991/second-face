@@ -1,0 +1,197 @@
+{
+ "name": "turn_r90_accad",
+ "src": "ACCAD Male2_B12_WalkTurnRight90",
+ "loop": false,
+ "speed": 0.0,
+ "root": true,
+ "hip": 0.9082,
+ "fps": 30,
+ "frames": 121,
+ "src_fps": 30.0,
+ "sex": "m",
+ "sex_source": "ACCAD names its subjects by sex (Male2)",
+ "set": "m",
+ "licence": "ACCAD Open Motion Project (Ohio State University), CC BY 3.0",
+ "source": "https://accad.osu.edu/research/motion-lab/mocap-system-and-data (Male2_bvh.zip: Male2_B12_WalkTurnRight90.bvh)",
+ "state": "S22",
+ "gate": "turn",
+ "kind": "walk turning 90\u00b0 right",
+ "weapon": "any",
+ "two_hands": false,
+ "source_kind": "captured",
+ "authoring": "captured (feet planted)",
+ "range": [
+  1.333,
+  5.367
+ ],
+ "facing": "first",
+ "travel_m": [
+  -3.817,
+  2.2
+ ],
+ "root_note": "travels 4.40 m: apply as root motion",
+ "closed": false,
+ "resolved": true,
+ "floor_shift_m": 0.0,
+ "mirrored": false,
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "stature_est_m": 1.366,
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     0,
+     12
+    ],
+    [
+     30,
+     47
+    ],
+    [
+     62,
+     77
+    ],
+    [
+     93,
+     108
+    ]
+   ],
+   "Right": [
+    [
+     45,
+     51
+    ],
+    [
+     77,
+     93
+    ],
+    [
+     108,
+     120
+    ]
+   ]
+  },
+  "held_keys": 108,
+  "max_shift_cm": 2.5,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 0,
+  "foot_pitched_max_deg": 0.0,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      12
+     ],
+     [
+      30,
+      47
+     ],
+     [
+      62,
+      77
+     ],
+     [
+      93,
+      108
+     ]
+    ],
+    "Right": [
+     [
+      14,
+      17
+     ],
+     [
+      45,
+      52
+     ],
+     [
+      77,
+      93
+     ],
+     [
+      108,
+      120
+     ]
+    ]
+   },
+   "held_keys": 112,
+   "max_shift_cm": 0.84,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      12
+     ],
+     [
+      30,
+      47
+     ],
+     [
+      62,
+      77
+     ],
+     [
+      93,
+      108
+     ]
+    ],
+    "Right": [
+     [
+      14,
+      17
+     ],
+     [
+      45,
+      52
+     ],
+     [
+      77,
+      93
+     ],
+     [
+      108,
+      120
+     ]
+    ]
+   },
+   "held_keys": 108,
+   "max_shift_cm": 0.06,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  }
+ }
+}

@@ -1,0 +1,339 @@
+{
+ "name": "crouch_walk_back_cmu",
+ "src": "CMU 136_11",
+ "loop": true,
+ "speed": 0.558,
+ "root": false,
+ "hip": 0.9411,
+ "fps": 30,
+ "frames": 47,
+ "src_fps": 120,
+ "sex": "m",
+ "sex_source": "the take's own file names its subject male (G:\\JayActor3\\...\\male.ASF); CMU's title records no sex",
+ "set": "m",
+ "licence": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses, may not be resold as data",
+ "source": "http://mocap.cs.cmu.edu/search.php?subjectnumber=136 (trial 136_11)",
+ "state": "S16",
+ "gate": "carry",
+ "kind": "walk backwards crouched (a man)",
+ "weapon": "any",
+ "two_hands": false,
+ "source_kind": "captured",
+ "authoring": "captured (as captured)",
+ "range": [
+  0.0,
+  11.975
+ ],
+ "facing": "mean",
+ "travel_m": [
+  0.0,
+  0.0
+ ],
+ "root_note": "in place",
+ "closed": true,
+ "cycle": "near",
+ "inbetween": {
+  "LeftHipJoint": {
+   "rest_lcl_quat": [
+    0.3901577,
+    0.4629883,
+    0.0,
+    -0.7958761
+   ],
+   "kept": "under the root, never turned: at its rest in the bind and the take"
+  },
+  "RightHipJoint": {
+   "rest_lcl_quat": [
+    0.3818548,
+    0.4817743,
+    0.0,
+    0.7887208
+   ],
+   "kept": "under the root, never turned: at its rest in the bind and the take"
+  },
+  "Neck2": {
+   "rest_lcl_quat": [
+    0.9953203,
+    -0.0957424,
+    -0.0004963,
+    0.0130619
+   ],
+   "mode": "rest",
+   "into": [
+    "Neck",
+    "Head"
+   ],
+   "parent_swung_max_deg": 3.76,
+   "child_joint_moved_max_mm": 1.69
+  },
+  "LeftWristTwist": {
+   "rest_lcl_quat": [
+    1.0,
+    -0.0,
+    0.0,
+    -0.0
+   ],
+   "mode": "straight",
+   "into": [
+    "LeftLowerArm",
+    "LeftHand"
+   ],
+   "parent_swung_max_deg": 0.0,
+   "child_joint_moved_max_mm": 0.0
+  },
+  "RightWristTwist": {
+   "rest_lcl_quat": [
+    1.0,
+    -0.0,
+    0.0,
+    0.0
+   ],
+   "mode": "straight",
+   "into": [
+    "RightLowerArm",
+    "RightHand"
+   ],
+   "parent_swung_max_deg": 0.0,
+   "child_joint_moved_max_mm": 0.0
+  }
+ },
+ "resolved": false,
+ "floor_shift_m": 0.0,
+ "mirrored": false,
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [
+   "LeftHipJoint",
+   "LeftWristTwist",
+   "Neck2",
+   "RightHipJoint",
+   "RightWristTwist"
+  ],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "stature_est_m": 1.678,
+ "speed_root": 0.609,
+ "plant": {
+  "method": "each stance foot's contact point (the heel, then the ball once down) held still on the ground by two-bone leg IK on the loop as Unity plays it, the hips' height and path, the foot's turn and the toes as captured (plant.py); the speed the planted stride over the loop's time",
+  "speed_root": 0.6092,
+  "speed": 0.5578,
+  "stride_m": 0.8553,
+  "cycle_s": 1.5333,
+  "played_stride_m": 0.8553,
+  "ik": {
+   "residual_cm": 0.0,
+   "unreachable_keys": 0,
+   "foot_turned_keys": 0,
+   "foot_turned_max_deg": 0.0,
+   "knee_change_deg": 2.701,
+   "knee_change_step_deg": 2.395,
+   "knee_change_stance_deg": 2.701,
+   "knee_change_swing_deg": 2.341
+  },
+  "extended_keys": {
+   "Left": [],
+   "Right": []
+  },
+  "stances": {
+   "Left": [
+    {
+     "touchdown": 40,
+     "toe_off": 72,
+     "planted": [
+      40,
+      72
+     ],
+     "contact_heel_to_ball": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "fit_weight": [
+      0.0,
+      0.69,
+      0.78,
+      0.72,
+      0.89,
+      0.97,
+      0.99,
+      0.68,
+      0.4,
+      0.37,
+      0.44,
+      0.65,
+      0.98,
+      0.99,
+      0.99,
+      1.0,
+      1.0,
+      0.97,
+      0.98,
+      0.96,
+      0.89,
+      0.97,
+      0.99,
+      0.95,
+      0.95,
+      0.97,
+      0.98,
+      0.95,
+      0.9,
+      0.87,
+      0.81,
+      0.55,
+      0.14
+     ],
+     "ankle_moved_cm": 4.17
+    }
+   ],
+   "Right": [
+    {
+     "touchdown": 16,
+     "toe_off": 49,
+     "planted": [
+      16,
+      49
+     ],
+     "contact_heel_to_ball": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "fit_weight": [
+      0.0,
+      0.27,
+      0.55,
+      0.63,
+      0.83,
+      0.97,
+      0.95,
+      0.96,
+      0.99,
+      0.99,
+      0.98,
+      1.0,
+      0.99,
+      1.0,
+      0.98,
+      0.97,
+      0.98,
+      0.97,
+      0.98,
+      0.98,
+      0.98,
+      0.96,
+      0.97,
+      0.96,
+      0.95,
+      0.96,
+      0.91,
+      0.92,
+      0.95,
+      0.94,
+      0.88,
+      0.35,
+      0.15,
+      0.12
+     ],
+     "ankle_moved_cm": 6.19
+    }
+   ]
+  },
+  "stance_max_ms": {
+   "ankle_ball": [
+    0.728,
+    0.0
+   ],
+   "with_contact_point": [
+    0.728,
+    0.0
+   ],
+   "order": "unplanted, planted"
+  }
+ },
+ "travel_vs_facing_deg": 178.8
+}

@@ -163,16 +163,22 @@ namespace SecondFace.Tests
                     {
                         yield return Seen(v, v.OnAim(target), seen, 0.1f);
                         if (!f.Is(CombatMotion.Aim(arms))) wrong.Add($"{who}: aimed into {f.Current}, not {CombatMotion.Aim(arms)}");
+                        // a long gun's rounds are fired on the hold itself, each kicking the chest back (Fighter.Recoil): the
+                        // stance never leaves the hold's actor between rounds
+                        var kicks = 0; var was = 0f;
+                        IEnumerator Kicks() { while (true) { if (f.RecoilNow > was + 1f) kicks++; was = f.RecoilNow; yield return null; } }
+                        var watcher = _host.StartCoroutine(Kicks());
                         seen.Clear();
                         yield return Seen(v, v.OnFire(target + Vector3.up * 1.1f, true, 0, 1), seen, 0.1f);
-                        if (arms == Arms.Rifle && !seen.Contains("rifle_fire")) wrong.Add($"{who}: a shot played {string.Join(",", seen)}");
+                        if (arms == Arms.Rifle && (seen.Any(x => x != "rifle_aim") || kicks < 1)) wrong.Add($"{who}: a shot played {string.Join(",", seen)}, {kicks} kick(s)");
                         if (arms == Arms.Rifle)
                         {
-                            seen.Clear();
+                            seen.Clear(); kicks = 0;
                             IEnumerator Burst() { for (var i = 0; i < 3; i++) yield return v.OnFire(target + Vector3.up * 1.1f, true, i, 3); }
                             yield return Seen(v, Burst(), seen, 0.1f);
-                            if (!seen.Contains("rifle_burst")) wrong.Add($"{who}: a burst played {string.Join(",", seen)}");
+                            if (seen.Any(x => x != "rifle_aim") || kicks < 3) wrong.Add($"{who}: a burst played {string.Join(",", seen)}, {kicks} kick(s)");
                         }
+                        _host.StopCoroutine(watcher);
                         yield return Returns("the shots (lowered)", 4f);
                         seen.Clear();
                         yield return Seen(v, v.OnReload(), seen, 0.2f);
@@ -204,7 +210,10 @@ namespace SecondFace.Tests
                     yield return Seen(v, Do(() => v.OnStance("crouch")), seen, 3.5f);
                     if (!seen.Contains("cover_down") || f.Current != CombatMotion.Cover(arms)) wrong.Add($"{who}: a crouch played {string.Join(",", seen)}, holds {f.Current}");
                     v.OnStance("stand");
-                    yield return Returns("standing up", 2f);
+                    // (as long as the way up plays to its cut, and its fade: combat set v4.4's men's rise is ACCAD Male2_D13's own,
+                    // 2.7 s, against the 2 s this waited for the old one)
+                    var rise = CombatMotion.State(CombatMotion.StandUp(f.Arms));
+                    yield return Returns("standing up", f.Set.Length(rise.Name, f.Female) * (rise.Cut - rise.From) / rise.Speed + rise.Fade + 0.4f);
                     // a throw (the weapon back in hand after it)
                     seen.Clear();
                     var arc = new List<Vector3>();
@@ -215,14 +224,140 @@ namespace SecondFace.Tests
                     if (f.Held.Shown && !f.InHand) wrong.Add($"{who}: the weapon not back in hand after the throw");
                     // hands up
                     seen.Clear();
-                    yield return Seen(v, Do(v.OnYield), seen, 1.5f);
-                    if (f.Current != "yield_hold") wrong.Add($"{who}: hands up played {string.Join(",", seen)}, holds {f.Current}");
+                    // (to the hold: the way up as long as its clip plays to its cut, and its fade; v4's take 2 s, the old one 0.8)
+                    // (on the weapon class's own stance: CombatMotion.Yield, v4.1)
+                    var enter = CombatMotion.Yield(f.Arms, f.Female);
+                    var up = CombatMotion.State(enter);
+                    yield return Seen(v, Do(v.OnYield), seen, f.Set.Length(enter, f.Female) * (up.Cut - up.From) / up.Speed + up.Fade + 0.4f);
+                    if (f.Current != up.Then) wrong.Add($"{who}: hands up played {string.Join(",", seen)}, holds {f.Current} (not {up.Then})");
                     v.OnEnd();
                     yield return Wait(1.5f);
                     if (f.FullWeight > 0.05f) wrong.Add($"{who}: the fight's layer still weighs {f.FullWeight:0.00} after the end");
                     Object.Destroy(v.Body.gameObject);
                     yield return null;
                 }
+            Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
+        }
+
+        /// <summary>A long gun's aim is held from the moment it is reached until it has been quiet for the lowering delay, however
+        /// long the aim took (a wide turn onto a target at the side, the raise, the facing learnt: longer than the delay); and a
+        /// shot asked while the gun is coming down raises it again before the round leaves it. (The quiet was counted from the
+        /// aim's start, so a long aim came down the frame it was reached; and the layer crossfading out of the hold still read
+        /// as aimed, so the shot fired on the lowering gun: "a shot played rifle_lower", 2026-11-17.)</summary>
+        [UnityTest, Timeout(600000)]
+        public IEnumerator TheAimHoldsUntilQuietAndAShotNeverLeavesALoweringGun()
+        {
+            yield return Arena();
+            var wrong = new List<string>();
+            foreach (var id in new[] { Man, Woman })
+            {
+                var v = Person(id, Vector3.zero, "w_carbine556");
+                var f = v.Fighter;
+                yield return Wait(1.2f);
+                var side = v.Body.position + v.Body.right * 8f;
+                var delay = Mathf.Max(0.6f, v.Pace.Seconds(1.1f, v.Theirs));
+                yield return v.OnAim(side);
+                if (!f.Is("rifle_aim")) wrong.Add($"{id}: aimed into {f.Current}, not rifle_aim");
+                // held, untouched, for most of the delay from the moment the aim is reached
+                for (var t = 0f; t < 0.8f * delay; t += Time.deltaTime)
+                {
+                    if (f.Current != "rifle_aim" || !f.Is("rifle_aim")) { wrong.Add($"{id}: the aim left for {f.Current} {t:0.00} s after it was reached (the delay {delay:0.00} s)"); break; }
+                    yield return null;
+                }
+                // left alone, it comes down ...
+                var lowering = false;
+                for (var t = 0f; t < delay + 2f && !lowering; t += Time.deltaTime) { lowering = f.Current == "rifle_lower"; if (!lowering) yield return null; }
+                if (!lowering) { wrong.Add($"{id}: the aim never came down ({f.Current})"); }
+                else
+                {
+                    // ... and a shot asked as it comes down raises it first: the round leaves a gun held at the aim
+                    var kicks = new List<string>(); var was = f.RecoilNow;
+                    IEnumerator Kicks() { while (true) { if (f.RecoilNow > was + 1f) kicks.Add(f.Is("rifle_aim") ? f.Current : f.Current + " (the layer leaving rifle_aim)"); was = f.RecoilNow; yield return null; } }
+                    var watcher = _host.StartCoroutine(Kicks());
+                    yield return v.OnFire(side + Vector3.up * 1.1f, true, 0, 1);
+                    yield return null;
+                    _host.StopCoroutine(watcher);
+                    if (kicks.Count != 1 || kicks[0] != "rifle_aim") wrong.Add($"{id}: a shot asked as the gun came down fired on {(kicks.Count == 0 ? "nothing" : string.Join(",", kicks))}");
+                }
+                v.OnEnd();
+                yield return Wait(0.6f);
+                Object.Destroy(v.Body.gameObject);
+                yield return null;
+            }
+            Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
+        }
+
+        /// <summary>The fight's end hands the body back on the body itself (Fighter.HandBack): hands held up come down as the
+        /// fight's layers let go, at once, the weapon thrown down back in its sling; a body destroyed while its hand-back or a
+        /// get-up is still under way takes them with it (nothing is done to it afterwards, no weapon is left behind); and a new
+        /// fight's view on the same body stops the last fight's hand-back, which would otherwise let go of the new stance.
+        /// (Run by the fight's host, the end held hands up 1.5 s with the layer at full weight, then took the weapon up on a
+        /// Fighter destroyed meanwhile: MissingReferenceException at Fighter.Make, 2026-11-17.)</summary>
+        [UnityTest, Timeout(600000)]
+        public IEnumerator TheEndHandsTheBodyBackAndGoesWithIt()
+        {
+            yield return Arena();
+            var wrong = new List<string>();
+            static int Loose() => Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None).Count(t => t.parent == null && t.name.StartsWith("held_"));
+            var loose = Loose();
+            foreach (var id in new[] { Man, Woman })
+            {
+                // hands up, then the end: the layers let go at once, the weapon slung
+                var v = Person(id, Vector3.zero, "w_carbine556");
+                var f = v.Fighter;
+                yield return Wait(1.2f);
+                v.OnYield();
+                yield return Wait(1.5f);
+                v.OnEnd();
+                yield return Wait(0.8f);
+                if (f.FullWeight > 0.05f || f.ArmsWeight > 0.05f) wrong.Add($"{id}: 0.8 s after the end the fight's layers weigh {f.FullWeight:0.00}, {f.ArmsWeight:0.00}");
+                if (f.Weapon == null || f.InHand) wrong.Add($"{id}: the weapon thrown down not back in its sling after the end ({(f.Weapon == null ? "none" : "in hand")})");
+                // destroyed 0.8 s after the end (the old path: the end took the weapon up on the destroyed body 1.5 s on)
+                Object.Destroy(v.Body.gameObject);
+                yield return Wait(2.5f);
+                // a fall, the get-up under way, the body destroyed: the get-up goes with it
+                v = Person(id, Vector3.zero, "w_carbine556");
+                yield return Wait(1.2f);
+                v.OnFall(v.Body.position + Vector3.forward * 3f);
+                yield return Wait(2.5f);
+                v.OnRise();
+                yield return Wait(0.5f);
+                if (!v.Rising) wrong.Add($"{id}: not getting up 0.5 s after the rise was asked");
+                Object.Destroy(v.Body.gameObject);
+                yield return Wait(1.5f);
+            }
+            // a man's end with his fists up: the captured relax, then the layers let go; destroyed during it
+            {
+                var v = Person(Man, Vector3.zero, null);
+                yield return Wait(1.2f);
+                v.OnEnd();
+                yield return null;
+                Object.Destroy(v.Body.gameObject);
+                yield return Wait(3.5f);
+            }
+            // a new fight's view takes the body while the last one's hand-back is under way (the man's relax): the new stance
+            // is not let go when the old hand-back would have finished
+            {
+                var v = Person(Man, Vector3.zero, null);
+                yield return Wait(1.2f);
+                v.OnEnd();
+                yield return null;
+                var next = CombatViews.ForBody(Unit(Man, "w_carbine556"), v.Body, _host, _fx, _assets.Combat, female: false, theirs: false);
+                Assert.That(next, Is.Not.Null, "a second view on the same body");
+                Assert.That(next.Fighter, Is.SameAs(v.Fighter), "the same fighter");
+                var f = next.Fighter;
+                yield return Wait(1.0f);
+                var low = 1f;
+                for (var t = 0f; t < 3.5f; t += Time.deltaTime) { low = Mathf.Min(low, f.FullWeight); yield return null; }
+                if (low < 0.99f || f.Current != CombatMotion.Idle(Arms.Rifle)) wrong.Add($"{Man}: the new fight's stance let go by the last fight's end (weight down to {low:0.00}, holds {f.Current})");
+                next.OnEnd();
+                yield return Wait(0.6f);
+                Object.Destroy(v.Body.gameObject);
+                yield return null;
+            }
+            yield return null;
+            if (Loose() > loose) wrong.Add($"{Loose() - loose} weapon(s) left lying loose after their bodies were destroyed");
+            // (any exception thrown into a destroyed body fails the test by itself: the runner fails on an unexpected error)
             Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
         }
 
@@ -294,6 +429,144 @@ namespace SecondFace.Tests
             Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
         }
 
+        /// <summary>The ready holds made for each body (HandsIk.Hold, Core CombatMotion.ReadyHold): in a long gun's ready stance,
+        /// crouched behind cover with it, carrying it over a walk, and in a two-handed club's ready, the off hand on grip_off
+        /// within 2 cm every frame and both elbows bent as a held weapon bends them (the authored stopgap's arms stood straight,
+        /// 0-21°, and its off hand 26-46 cm from the grip, 2026-11-17).</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator TheReadyHoldsHaveBothHandsOnTheWeapon()
+        {
+            yield return Arena();
+            var wrong = new List<string>();
+            static float Bend(Animator a, bool left)
+            {
+                var u = a.GetBoneTransform(left ? HumanBodyBones.LeftUpperArm : HumanBodyBones.RightUpperArm);
+                var l = a.GetBoneTransform(left ? HumanBodyBones.LeftLowerArm : HumanBodyBones.RightLowerArm);
+                var h = a.GetBoneTransform(left ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand);
+                return Vector3.Angle(l.position - u.position, h.position - l.position);
+            }
+            foreach (var item in new[] { "w_carbine556", "w_bolt308", "w_sledge" })
+                foreach (var id in new[] { Man, Woman })
+                {
+                    var v = Person(id, Vector3.zero, item);
+                    var f = v.Fighter;
+                    var a = f.Animator;
+                    var who = $"{id} with {item}";
+                    IEnumerator Watch(string what, float seconds, System.Func<bool> on)
+                    {
+                        var off = new List<float>(); var bendR = new List<float>(); var bendL = new List<float>();
+                        for (var t = 0f; t < seconds; t += Time.deltaTime)
+                        {
+                            if (t > 0.6f && on())
+                            {
+                                if (f.OffError >= 0f) off.Add(f.OffError);
+                                bendR.Add(Bend(a, false)); bendL.Add(Bend(a, true));
+                            }
+                            yield return null;
+                        }
+                        if (off.Count < 20) { wrong.Add($"{who}, {what}: the off hand held {off.Count} frames"); yield break; }
+                        if (off.Max() > 0.02f) wrong.Add($"{who}, {what}: the off hand {off.Max() * 100f:0.0} cm from its grip (≤ 2)");
+                        if (bendR.Min() < 60f) wrong.Add($"{who}, {what}: the main elbow bent {bendR.Min():0}° (a held weapon bends it)");
+                        if (bendL.Min() < 15f) wrong.Add($"{who}, {what}: the off elbow bent {bendL.Min():0}° (straight)");
+                    }
+                    yield return Wait(0.5f);
+                    var idle = CombatMotion.Idle(f.Arms);
+                    yield return Watch("the ready stance", 2f, () => f.Current == idle);
+                    if (f.Arms == Arms.Rifle)
+                    {
+                        v.OnStance("crouch");
+                        // (down into cover too: the way down holds the gun as the crouch does)
+                        yield return Watch("down into cover and crouched behind it", 4f, () => f.Current == "cover_down" || f.Current == CombatMotion.Cover(f.Arms));
+                        v.OnStance("stand");
+                        yield return Wait(1.5f);
+                    }
+                    if (CombatMotion.Carry(f.Arms) != null)
+                    {
+                        f.Locomote(true, false);
+                        var t0 = Time.time;
+                        IEnumerator Walk() { while (Time.time - t0 < 3f) { v.Body.position += v.Body.forward * Walker.WalkSpeed * Time.deltaTime; Pace.Set(a, Walker.WalkSpeed, false, 0.12f, Time.deltaTime); yield return null; } }
+                        _host.StartCoroutine(Walk());
+                        yield return Watch("carried over a walk", 3f, () => f.Carrying == CombatMotion.Carry(f.Arms));
+                        f.Locomote(false, false);
+                        a.SetFloat("Speed", 0f);
+                    }
+                    v.OnEnd();
+                    yield return Wait(0.2f);
+                    Object.Destroy(v.Body.gameObject);
+                    yield return null;
+                }
+            Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
+        }
+
+        /// <summary>The fight's feet (Fighter.Feet; docs/PEOPLE_MOTION.md F1, F4, K1): in the stances that stand (the guard, a
+        /// long gun's and a pistol's ready and aim, the crouch, hands up) the lower foot's sole on its ground within 1 cm (the
+        /// clips as retargeted left both 2.5-4 cm up, F1), a planted foot never sliding (its ankle over 10 cm/s on at most 2 %
+        /// of the frames it is planted, F4: a crossfade between two stances is stepped, not slid: it slid 130-208 cm/s into
+        /// cover and hands up), and the long gun's aim standing on the straight knee its actors stand on (the straighter knee
+        /// within 6° of the clip's own: a held foot bent it 14-22° on a centimetre of the clip's sway, K1).</summary>
+        [UnityTest, Timeout(900000)]
+        public IEnumerator TheFightsFeetStandOnTheGroundAndStepBetweenStances()
+        {
+            yield return Arena();
+            var wrong = new List<string>();
+            var target = new Vector3(0f, 0f, 8f);
+            static float Knee(Animator a, bool left)
+            {
+                var u = a.GetBoneTransform(left ? HumanBodyBones.LeftUpperLeg : HumanBodyBones.RightUpperLeg);
+                var l = a.GetBoneTransform(left ? HumanBodyBones.LeftLowerLeg : HumanBodyBones.RightLowerLeg);
+                var f = a.GetBoneTransform(left ? HumanBodyBones.LeftFoot : HumanBodyBones.RightFoot);
+                return Vector3.Angle(l.position - u.position, f.position - l.position);
+            }
+            foreach (var (item, arms) in new[] { ("w_carbine556", Arms.Rifle), ("w_pistol9", Arms.Pistol), ((string)null, Arms.Unarmed) })
+                foreach (var id in new[] { Man, Woman })
+                {
+                    var v = Person(id, Vector3.zero, item);
+                    var f = v.Fighter; var a = f.Animator;
+                    var who = $"{id} with {item ?? "fists"}";
+                    var low = new List<float>(); var planted = 0; var fast = 0; var knees = new List<float>();
+                    Vector3 wasL = Vector3.zero, wasR = Vector3.zero; var have = false;
+                    var done = false;
+                    IEnumerator Act()
+                    {
+                        yield return Wait(1.5f);
+                        if (arms != Arms.Unarmed) { v.Unit.Watch = new Watch(); v.OnHold(Watch.Overwatch); yield return v.OnAim(target); yield return Wait(2f); v.Unit.Watch = null; }
+                        v.OnStance("crouch"); yield return Wait(3f);
+                        v.OnStance("stand"); yield return Wait(2f);
+                        v.OnYield(); yield return Wait(2f);
+                        done = true;
+                    }
+                    _host.StartCoroutine(Act());
+                    while (!done)
+                    {
+                        yield return null;
+                        var s = CombatMotion.State(f.Current);
+                        if (s == null || f.FullWeight < 0.99f || !(s.Gate is "guard" or "ready" or "aim" or "aim_pistol" or "crouch" or "yield")) { have = false; continue; }
+                        low.Add(Mathf.Min(f.SoleOver.x, f.SoleOver.y));
+                        var l = a.GetBoneTransform(HumanBodyBones.LeftFoot).position; var r = a.GetBoneTransform(HumanBodyBones.RightFoot).position;
+                        if (have && Time.deltaTime > 0f)
+                            foreach (var (now, was, on) in new[] { (l, wasL, f.Planted.x > 0.5f), (r, wasR, f.Planted.y > 0.5f) })
+                                if (on) { planted++; if (new Vector2(now.x - was.x, now.z - was.z).magnitude / Time.deltaTime > 0.10f) fast++; }
+                        wasL = l; wasR = r; have = true;
+                        if (s.Gate == "aim" && !a.IsInTransition(a.GetLayerIndex(CombatMotion.FullLayer))) knees.Add(Mathf.Min(Knee(a, true), Knee(a, false)));
+                    }
+                    if (low.Count < 30) wrong.Add($"{who}: {low.Count} frames in a standing fight stance");
+                    else
+                    {
+                        var sorted = low.OrderBy(x => x).ToList();
+                        float P(float q) => sorted[Mathf.Clamp(Mathf.RoundToInt(q * (sorted.Count - 1)), 0, sorted.Count - 1)];
+                        if (P(0.02f) < -0.01f || P(0.98f) > 0.01f) wrong.Add($"{who}: the lower sole {P(0.02f) * 100f:0.0} … {P(0.98f) * 100f:0.0} cm over its ground (within 1)");
+                    }
+                    if (planted > 0 && fast > 0.02f * planted) wrong.Add($"{who}: a planted foot over 10 cm/s on {100f * fast / planted:0.0} % of its frames (≤ 2)");
+                    // (the long gun's aim: CMU 80_03's straighter knee is 1.2-1.7°, clip QA)
+                    if (arms == Arms.Rifle && knees.Count > 10 && knees.Max() > 1.7f + 6f) wrong.Add($"{who}: the aim's straighter knee bent {knees.Max():0.0}° (the clip's 1.7)");
+                    v.OnEnd();
+                    yield return Wait(0.3f);
+                    Object.Destroy(v.Body.gameObject);
+                    yield return null;
+                }
+            Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
+        }
+
         /// <summary>Every one-shot state of the table, played on its own, goes on where the table says (the weapon's idle, its
         /// crouch, or the named state) within its own length at its speed; the loops hold; nothing is left hanging.</summary>
         [UnityTest, Timeout(1800000)]
@@ -325,6 +598,12 @@ namespace SecondFace.Tests
                         if (!f.Is(s.Name)) wrong.Add($"{id}: {s.Name} (a hold) left for {f.Current}");
                         continue;
                     }
+                    // (the Animator takes a crossfade asked for in its next update: in the frame it is asked, the state is not
+                    // yet current nor next, and timing it from there read every one-shot as "still playing 0.0 s on" once it had
+                    // started, 2026-11-17)
+                    var entered = 0f;
+                    while (entered < 0.5f && !f.Is(s.Name)) { entered += Time.deltaTime; yield return null; }
+                    if (!f.Is(s.Name)) { wrong.Add($"{id}: {s.Name} never began ({f.Current} playing)"); continue; }
                     var limit = length * (s.Cut - s.From) + 1f;
                     var t = 0f;
                     while (t < limit && f.Is(s.Name)) { t += Time.deltaTime; yield return null; }
@@ -365,7 +644,10 @@ namespace SecondFace.Tests
                     if (clip.loopTime != loop) wrong.Add($"{c.Name}: loops {clip.loopTime}, its sidecar {loop}");
                     if (clip.lockRootPositionXZ != (c.XZ == RootXZ.Bake)) wrong.Add($"{c.Name}: XZ baked {clip.lockRootPositionXZ}, the table {c.XZ}");
                     if (!clip.lockRootHeightY) wrong.Add($"{c.Name}: its height is root motion");
-                    if (clip.keepOriginalPositionY != (c.Y == RootY.Keep)) wrong.Add($"{c.Name}: Y as captured {clip.keepOriginalPositionY}, the table {c.Y}");
+                    // (the take's own height over its floor, its T-pose stood on it; a seated take, with no standing stance, the
+                    // table's: CombatImportPostprocessor.FromFeet, 2026-11-18)
+                    var feet = imp.userData != null && imp.userData.EndsWith(" seated") && c.Y == RootY.Feet;
+                    if (clip.keepOriginalPositionY == feet) wrong.Add($"{c.Name}: Y as captured {clip.keepOriginalPositionY}, the table {c.Y}{(feet ? " (seated)" : "")}");
                     if (clip.lockRootRotation == (c.Turn || c.DropTurn)) wrong.Add($"{c.Name}: turn baked {clip.lockRootRotation}");
                 }
                 // the whole take its sidecar describes, at its capture's own rate
@@ -396,6 +678,14 @@ namespace SecondFace.Tests
                     Assert.That(cs.state.transitions.All(t => t.hasExitTime), Is.True, $"{cs.state.name}: goes on at its end");
                 }
             }
+            // the base layer's state for the fight's stance: its own locomotion without Foot IK, which Unity applies by the
+            // base layer's state under the fight's layers too (CombatMotion.StanceBase)
+            var baseSm = ctl.layers[0].stateMachine;
+            var stand = baseSm.states.Select(x => x.state).FirstOrDefault(x => x.name == CombatMotion.StanceBase);
+            Assert.That(stand, Is.Not.Null, "the base layer's " + CombatMotion.StanceBase);
+            Assert.That(stand.iKOnFeet, Is.False, CombatMotion.StanceBase + ": no Foot IK");
+            Assert.That(baseSm.defaultState.motion, Is.Not.Null, "the base layer's locomotion has its motion");
+            Assert.That(stand.motion, Is.SameAs(baseSm.defaultState.motion), CombatMotion.StanceBase + ": the base's own locomotion");
 #else
             Assert.Ignore("editor only");
 #endif

@@ -1,0 +1,1180 @@
+{
+ "name": "melee_forehand_f_built",
+ "src": "CMU 144_20",
+ "loop": false,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.8688,
+ "fps": 30,
+ "frames": 27,
+ "src_fps": 120,
+ "sex": "f",
+ "sex_source": "CMU subject title: punching female",
+ "set": "f",
+ "licence": "CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu): free for all uses, may not be resold as data",
+ "source": "http://mocap.cs.cmu.edu/search.php?subjectnumber=144 (trial 144_20)",
+ "state": "S6a",
+ "gate": "strike",
+ "kind": "one-handed forehand slash (woman; built on her captured cross)",
+ "weapon": "melee1",
+ "two_hands": false,
+ "source_kind": "built",
+ "authoring": "built on capture CMU 144_20 (feet planted; blade line on the captured blow)",
+ "evidence": [
+  "R1",
+  "R2",
+  "R17"
+ ],
+ "range": [
+  1.15,
+  2.05
+ ],
+ "facing": "strike_R",
+ "travel_m": [
+  0.007,
+  0.012
+ ],
+ "root_note": "in place",
+ "closed": false,
+ "inbetween": {
+  "LeftHipJoint": {
+   "rest_lcl_quat": [
+    0.4491612,
+    0.4319617,
+    -0.0,
+    -0.7820891
+   ],
+   "kept": "under the root, never turned: at its rest in the bind and the take"
+  },
+  "RightHipJoint": {
+   "rest_lcl_quat": [
+    0.4611757,
+    0.4052808,
+    0.0,
+    0.7893444
+   ],
+   "kept": "under the root, never turned: at its rest in the bind and the take"
+  },
+  "Neck2": {
+   "rest_lcl_quat": [
+    0.9868471,
+    -0.1570406,
+    -0.0023728,
+    0.0382803
+   ],
+   "mode": "rest",
+   "into": [
+    "Neck",
+    "Head"
+   ],
+   "parent_swung_max_deg": 15.17,
+   "child_joint_moved_max_mm": 2.53
+  },
+  "LeftWristTwist": {
+   "rest_lcl_quat": [
+    1.0,
+    -0.0,
+    0.0,
+    -0.0
+   ],
+   "mode": "straight",
+   "into": [
+    "LeftLowerArm",
+    "LeftHand"
+   ],
+   "parent_swung_max_deg": 0.0,
+   "child_joint_moved_max_mm": 0.0
+  },
+  "RightWristTwist": {
+   "rest_lcl_quat": [
+    1.0,
+    0.0,
+    0.0,
+    -0.0
+   ],
+   "mode": "straight",
+   "into": [
+    "RightLowerArm",
+    "RightHand"
+   ],
+   "parent_swung_max_deg": 0.0,
+   "child_joint_moved_max_mm": 0.0
+  }
+ },
+ "resolved": false,
+ "floor_shift_m": 0.0,
+ "mirrored": false,
+ "events": {
+  "impact": [
+   16
+  ]
+ },
+ "events_kind": "strike:R",
+ "timing": {
+  "what": "onset->impact (hand)",
+  "lo": 0.105,
+  "hi": 0.705,
+  "src": "R1/R2: punch delivery 405 +/- 150 ms (mean +/- 2 SD); hooks deliver slower [R2] (no figure: held to the same span)",
+  "ref": "punch",
+  "measured": {
+   "onset_s": 0.217,
+   "beat_s": 0.517,
+   "span_s": 0.3,
+   "peak_mps": 2.67
+  }
+ },
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [
+   "LeftHipJoint",
+   "LeftWristTwist",
+   "Neck2",
+   "RightHipJoint",
+   "RightWristTwist"
+  ],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "stature_est_m": 1.582,
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     5,
+     26
+    ]
+   ],
+   "Right": [
+    [
+     0,
+     12
+    ],
+    [
+     18,
+     26
+    ]
+   ]
+  },
+  "held_keys": 45,
+  "max_shift_cm": 2.72,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 4,
+  "foot_pitched_max_deg": 3.0,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      5,
+      26
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      12
+     ],
+     [
+      14,
+      26
+     ]
+    ]
+   },
+   "held_keys": 48,
+   "max_shift_cm": 0.94,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 6,
+   "foot_pitched_max_deg": 0.7
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      5,
+      26
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      12
+     ],
+     [
+      14,
+      26
+     ]
+    ]
+   },
+   "held_keys": 48,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 1,
+   "foot_pitched_max_deg": 0.0
+  }
+ },
+ "ik_record": {
+  "cut": "slash",
+  "impact_frame": 16,
+  "onset_s": 0.217,
+  "swing_plane_normal_unity": [
+   -0.322,
+   0.912,
+   -0.253
+  ],
+  "cock_deg": [
+   70,
+   -10,
+   -25,
+   35
+  ],
+  "beyond_reach_cm_max": 0.0
+ },
+ "ik": {
+  "mode": "Arc",
+  "model": "machete",
+  "main_grip": "HammerGrip",
+  "off_grip": null,
+  "keys": [
+   {
+    "grip_main": [
+     0.1825,
+     1.2927,
+     0.2405
+    ],
+    "fwd": [
+     0.7004,
+     0.1918,
+     0.6875
+    ],
+    "up": [
+     0.6935,
+     0.0454,
+     -0.7191
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.034,
+     0.1879,
+     0.2251
+    ],
+    "fwd_chest": [
+     0.1943,
+     0.2395,
+     0.9513
+    ],
+    "up_chest": [
+     0.9809,
+     -0.0586,
+     -0.1856
+    ]
+   },
+   {
+    "grip_main": [
+     0.1864,
+     1.2912,
+     0.2105
+    ],
+    "fwd": [
+     0.718,
+     0.2169,
+     0.6614
+    ],
+    "up": [
+     0.6719,
+     0.032,
+     -0.7399
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0315,
+     0.1896,
+     0.2106
+    ],
+    "fwd_chest": [
+     0.1872,
+     0.2615,
+     0.9469
+    ],
+    "up_chest": [
+     0.9821,
+     -0.0712,
+     -0.1745
+    ]
+   },
+   {
+    "grip_main": [
+     0.1929,
+     1.2891,
+     0.1897
+    ],
+    "fwd": [
+     0.7804,
+     0.2194,
+     0.5856
+    ],
+    "up": [
+     0.6018,
+     -0.009,
+     -0.7986
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0283,
+     0.1904,
+     0.2048
+    ],
+    "fwd_chest": [
+     0.2326,
+     0.2531,
+     0.939
+    ],
+    "up_chest": [
+     0.9711,
+     -0.1129,
+     -0.2102
+    ]
+   },
+   {
+    "grip_main": [
+     0.2019,
+     1.2883,
+     0.1755
+    ],
+    "fwd": [
+     0.8595,
+     0.2003,
+     0.4702
+    ],
+    "up": [
+     0.4909,
+     -0.0675,
+     -0.8686
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0255,
+     0.1917,
+     0.2042
+    ],
+    "fwd_chest": [
+     0.3074,
+     0.222,
+     0.9253
+    ],
+    "up_chest": [
+     0.9463,
+     -0.1731,
+     -0.2729
+    ]
+   },
+   {
+    "grip_main": [
+     0.2127,
+     1.2875,
+     0.1645
+    ],
+    "fwd": [
+     0.9288,
+     0.1604,
+     0.334
+    ],
+    "up": [
+     0.3554,
+     -0.131,
+     -0.9255
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0264,
+     0.1918,
+     0.2074
+    ],
+    "fwd_chest": [
+     0.3964,
+     0.1662,
+     0.9029
+    ],
+    "up_chest": [
+     0.9052,
+     -0.2348,
+     -0.3542
+    ]
+   },
+   {
+    "grip_main": [
+     0.2211,
+     1.2868,
+     0.1569
+    ],
+    "fwd": [
+     0.9716,
+     0.1149,
+     0.2067
+    ],
+    "up": [
+     0.2254,
+     -0.1855,
+     -0.9564
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.03,
+     0.1904,
+     0.2125
+    ],
+    "fwd_chest": [
+     0.4805,
+     0.1004,
+     0.8712
+    ],
+    "up_chest": [
+     0.8538,
+     -0.2806,
+     -0.4385
+    ]
+   },
+   {
+    "grip_main": [
+     0.2228,
+     1.2867,
+     0.1563
+    ],
+    "fwd": [
+     0.9859,
+     0.0969,
+     0.1366
+    ],
+    "up": [
+     0.1546,
+     -0.2128,
+     -0.9648
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0344,
+     0.1879,
+     0.2177
+    ],
+    "fwd_chest": [
+     0.5403,
+     0.0658,
+     0.8389
+    ],
+    "up_chest": [
+     0.8149,
+     -0.2893,
+     -0.5022
+    ]
+   },
+   {
+    "grip_main": [
+     0.2181,
+     1.2868,
+     0.1677
+    ],
+    "fwd": [
+     0.9786,
+     0.1296,
+     0.1597
+    ],
+    "up": [
+     0.1837,
+     -0.2017,
+     -0.9621
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0374,
+     0.1868,
+     0.2225
+    ],
+    "fwd_chest": [
+     0.5634,
+     0.1009,
+     0.82
+    ],
+    "up_chest": [
+     0.8114,
+     -0.2546,
+     -0.5262
+    ]
+   },
+   {
+    "grip_main": [
+     0.2022,
+     1.2867,
+     0.1907
+    ],
+    "fwd": [
+     0.9347,
+     0.2063,
+     0.2894
+    ],
+    "up": [
+     0.3218,
+     -0.1457,
+     -0.9355
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0379,
+     0.1845,
+     0.2267
+    ],
+    "fwd_chest": [
+     0.5366,
+     0.1835,
+     0.8236
+    ],
+    "up_chest": [
+     0.8426,
+     -0.1693,
+     -0.5113
+    ]
+   },
+   {
+    "grip_main": [
+     0.1755,
+     1.2864,
+     0.2242
+    ],
+    "fwd": [
+     0.8127,
+     0.2934,
+     0.5034
+    ],
+    "up": [
+     0.5374,
+     -0.0438,
+     -0.8422
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0379,
+     0.1812,
+     0.2339
+    ],
+    "fwd_chest": [
+     0.4519,
+     0.2706,
+     0.8501
+    ],
+    "up_chest": [
+     0.8875,
+     -0.0402,
+     -0.459
+    ]
+   },
+   {
+    "grip_main": [
+     0.1426,
+     1.2879,
+     0.264
+    ],
+    "fwd": [
+     0.6044,
+     0.3593,
+     0.711
+    ],
+    "up": [
+     0.7404,
+     0.0761,
+     -0.6679
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0421,
+     0.1795,
+     0.2481
+    ],
+    "fwd_chest": [
+     0.3489,
+     0.3289,
+     0.8776
+    ],
+    "up_chest": [
+     0.9105,
+     0.1029,
+     -0.4005
+    ]
+   },
+   {
+    "grip_main": [
+     0.1057,
+     1.2943,
+     0.3093
+    ],
+    "fwd": [
+     0.3534,
+     0.3955,
+     0.8477
+    ],
+    "up": [
+     0.874,
+     0.1836,
+     -0.45
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0538,
+     0.1842,
+     0.2722
+    ],
+    "fwd_chest": [
+     0.267,
+     0.3543,
+     0.8962
+    ],
+    "up_chest": [
+     0.905,
+     0.2274,
+     -0.3595
+    ]
+   },
+   {
+    "grip_main": [
+     0.0649,
+     1.3071,
+     0.3616
+    ],
+    "fwd": [
+     0.0871,
+     0.3876,
+     0.9177
+    ],
+    "up": [
+     0.9394,
+     0.2745,
+     -0.2052
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0729,
+     0.1966,
+     0.3091
+    ],
+    "fwd_chest": [
+     0.1909,
+     0.3332,
+     0.9233
+    ],
+    "up_chest": [
+     0.8958,
+     0.3254,
+     -0.3027
+    ]
+   },
+   {
+    "grip_main": [
+     0.025,
+     1.3257,
+     0.4193
+    ],
+    "fwd": [
+     -0.1426,
+     0.3353,
+     0.9313
+    ],
+    "up": [
+     0.9409,
+     0.3381,
+     0.0224
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.1017,
+     0.2163,
+     0.3558
+    ],
+    "fwd_chest": [
+     0.1359,
+     0.2729,
+     0.9524
+    ],
+    "up_chest": [
+     0.8923,
+     0.3841,
+     -0.2374
+    ]
+   },
+   {
+    "grip_main": [
+     -0.0066,
+     1.3392,
+     0.4739
+    ],
+    "fwd": [
+     -0.2966,
+     0.2453,
+     0.9229
+    ],
+    "up": [
+     0.9075,
+     0.3734,
+     0.1924
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.1362,
+     0.2297,
+     0.4025
+    ],
+    "fwd_chest": [
+     0.111,
+     0.1765,
+     0.978
+    ],
+    "up_chest": [
+     0.8958,
+     0.4083,
+     -0.1753
+    ]
+   },
+   {
+    "grip_main": [
+     -0.0206,
+     1.3371,
+     0.5063
+    ],
+    "fwd": [
+     -0.3791,
+     0.1485,
+     0.9134
+    ],
+    "up": [
+     0.8712,
+     0.3899,
+     0.2982
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.1643,
+     0.2286,
+     0.4258
+    ],
+    "fwd_chest": [
+     0.0947,
+     0.0823,
+     0.9921
+    ],
+    "up_chest": [
+     0.9054,
+     0.4073,
+     -0.1203
+    ]
+   },
+   {
+    "grip_main": [
+     -0.0233,
+     1.3272,
+     0.5055
+    ],
+    "fwd": [
+     -0.4154,
+     0.1038,
+     0.9037
+    ],
+    "up": [
+     0.8508,
+     0.3958,
+     0.3456
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.1621,
+     0.2219,
+     0.4237
+    ],
+    "fwd_chest": [
+     0.05,
+     0.0498,
+     0.9975
+    ],
+    "up_chest": [
+     0.9161,
+     0.3956,
+     -0.0657
+    ]
+   },
+   {
+    "grip_main": [
+     -0.0181,
+     1.3184,
+     0.4698
+    ],
+    "fwd": [
+     -0.4698,
+     0.0841,
+     0.8787
+    ],
+    "up": [
+     0.8231,
+     0.4016,
+     0.4016
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.1298,
+     0.216,
+     0.397
+    ],
+    "fwd_chest": [
+     -0.0781,
+     0.0449,
+     0.9959
+    ],
+    "up_chest": [
+     0.9216,
+     0.3842,
+     0.0549
+    ]
+   },
+   {
+    "grip_main": [
+     0.003,
+     1.3072,
+     0.4092
+    ],
+    "fwd": [
+     -0.5538,
+     0.0628,
+     0.8303
+    ],
+    "up": [
+     0.7737,
+     0.4073,
+     0.4852
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0917,
+     0.2093,
+     0.3426
+    ],
+    "fwd_chest": [
+     -0.2874,
+     0.0472,
+     0.9567
+    ],
+    "up_chest": [
+     0.8912,
+     0.3793,
+     0.249
+    ]
+   },
+   {
+    "grip_main": [
+     0.0352,
+     1.2875,
+     0.342
+    ],
+    "fwd": [
+     -0.6134,
+     0.0257,
+     0.7893
+    ],
+    "up": [
+     0.7269,
+     0.4092,
+     0.5516
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0715,
+     0.1906,
+     0.2786
+    ],
+    "fwd_chest": [
+     -0.4834,
+     0.034,
+     0.8747
+    ],
+    "up_chest": [
+     0.8191,
+     0.3701,
+     0.4383
+    ]
+   },
+   {
+    "grip_main": [
+     0.067,
+     1.2628,
+     0.2758
+    ],
+    "fwd": [
+     -0.6272,
+     -0.0283,
+     0.7784
+    ],
+    "up": [
+     0.7032,
+     0.4091,
+     0.5815
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0672,
+     0.1647,
+     0.218
+    ],
+    "fwd_chest": [
+     -0.6271,
+     0.0051,
+     0.7789
+    ],
+    "up_chest": [
+     0.7287,
+     0.357,
+     0.5844
+    ]
+   },
+   {
+    "grip_main": [
+     0.0886,
+     1.2429,
+     0.2204
+    ],
+    "fwd": [
+     -0.5644,
+     -0.0688,
+     0.8226
+    ],
+    "up": [
+     0.7361,
+     0.409,
+     0.5393
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0703,
+     0.1448,
+     0.1704
+    ],
+    "fwd_chest": [
+     -0.6791,
+     -0.0145,
+     0.7339
+    ],
+    "up_chest": [
+     0.685,
+     0.3467,
+     0.6407
+    ]
+   },
+   {
+    "grip_main": [
+     0.097,
+     1.2336,
+     0.1934
+    ],
+    "fwd": [
+     -0.3674,
+     -0.0256,
+     0.9297
+    ],
+    "up": [
+     0.8502,
+     0.396,
+     0.3468
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0701,
+     0.1378,
+     0.1498
+    ],
+    "fwd_chest": [
+     -0.5881,
+     0.029,
+     0.8083
+    ],
+    "up_chest": [
+     0.7718,
+     0.3191,
+     0.5501
+    ]
+   },
+   {
+    "grip_main": [
+     0.1018,
+     1.2363,
+     0.2031
+    ],
+    "fwd": [
+     -0.0771,
+     0.0685,
+     0.9947
+    ],
+    "up": [
+     0.9376,
+     0.3443,
+     0.049
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0667,
+     0.1431,
+     0.1634
+    ],
+    "fwd_chest": [
+     -0.3668,
+     0.0974,
+     0.9252
+    ],
+    "up_chest": [
+     0.9079,
+     0.2541,
+     0.3333
+    ]
+   },
+   {
+    "grip_main": [
+     0.1076,
+     1.2488,
+     0.241
+    ],
+    "fwd": [
+     0.235,
+     0.1838,
+     0.9545
+    ],
+    "up": [
+     0.9277,
+     0.2506,
+     -0.2766
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0681,
+     0.1573,
+     0.2011
+    ],
+    "fwd_chest": [
+     -0.0267,
+     0.1783,
+     0.9836
+    ],
+    "up_chest": [
+     0.9863,
+     0.1647,
+     -0.0031
+    ]
+   },
+   {
+    "grip_main": [
+     0.1135,
+     1.2668,
+     0.2927
+    ],
+    "fwd": [
+     0.4542,
+     0.279,
+     0.8461
+    ],
+    "up": [
+     0.8472,
+     0.1584,
+     -0.507
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.0852,
+     0.1768,
+     0.2474
+    ],
+    "fwd_chest": [
+     0.3141,
+     0.2523,
+     0.9153
+    ],
+    "up_chest": [
+     0.9335,
+     0.0937,
+     -0.3462
+    ]
+   },
+   {
+    "grip_main": [
+     0.1142,
+     1.2893,
+     0.3513
+    ],
+    "fwd": [
+     0.5141,
+     0.3404,
+     0.7873
+    ],
+    "up": [
+     0.8055,
+     0.1236,
+     -0.5795
+    ],
+    "w_main": 1.0,
+    "w_off": 0.0,
+    "grip_main_chest": [
+     0.1187,
+     0.2014,
+     0.2933
+    ],
+    "fwd_chest": [
+     0.5114,
+     0.3133,
+     0.8002
+    ],
+    "up_chest": [
+     0.8237,
+     0.0866,
+     -0.5604
+    ]
+   }
+  ],
+  "axes": "Unity's (+X the body's right, +Y up, +Z the clip's forward), metres; *_chest: in the UpperChest's frame (its rotation from the T-pose bind), from its joint; w_main / w_off: the hand on its grip (1) or free (0)"
+ }
+}

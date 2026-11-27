@@ -1,0 +1,163 @@
+{
+ "name": "surrender_enter_built",
+ "src": "ACCAD Male2_A1_Stand",
+ "loop": false,
+ "speed": 0.0,
+ "root": false,
+ "hip": 0.9082,
+ "fps": 30,
+ "frames": 61,
+ "src_fps": 30.0,
+ "sex": "m",
+ "sex_source": "ACCAD names its subjects by sex (Male2)",
+ "set": "m",
+ "licence": "ACCAD Open Motion Project (Ohio State University), CC BY 3.0",
+ "source": "https://accad.osu.edu/research/motion-lab/mocap-system-and-data (Male2_bvh.zip: Male2_A1_Stand.bvh)",
+ "state": "S20",
+ "gate": "yield",
+ "kind": "raising the hands into the hold (built)",
+ "weapon": "any",
+ "two_hands": false,
+ "source_kind": "built",
+ "authoring": "built on capture ACCAD Male2_A1_Stand (feet planted; hands up by IK; feet planted (after the stance was lengthened))",
+ "evidence": [
+  "design"
+ ],
+ "range": [
+  0.2,
+  3.8
+ ],
+ "facing": "mean",
+ "travel_m": [
+  -0.001,
+  -0.005
+ ],
+ "root_note": "in place",
+ "closed": false,
+ "resolved": true,
+ "floor_shift_m": 0.0,
+ "mirrored": false,
+ "timing": {
+  "what": "to the hold",
+  "lo": 1.0,
+  "hi": 2.0,
+  "src": "design 1-2 s to the hold (standard S20)",
+  "design": true,
+  "ref": "surrender"
+ },
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "replaces": [
+  "surrender_enter_ual"
+ ],
+ "stature_est_m": 1.366,
+ "root_basis": "take",
+ "chain": "stand_m",
+ "frame": {
+  "yaw_deg": 184.952,
+  "origin_m": [
+   -0.5421,
+   0.4545
+  ],
+  "ref": "pistol_ready_built",
+  "note": "origin and +Z: pistol_ready_built's first-key centre of mass and body orientation",
+  "front": {
+   "by": "body",
+   "clip": "pistol_ready_built"
+  }
+ },
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     0,
+     60
+    ]
+   ],
+   "Right": [
+    [
+     0,
+     60
+    ]
+   ]
+  },
+  "held_keys": 122,
+  "max_shift_cm": 0.0,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 0,
+  "foot_pitched_max_deg": 0.0,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      60
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      60
+     ]
+    ]
+   },
+   "held_keys": 122,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      60
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      60
+     ]
+    ]
+   },
+   "held_keys": 122,
+   "max_shift_cm": 0.0,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 0,
+   "foot_pitched_max_deg": 0.0
+  }
+ },
+ "ik_record": {
+  "hands": "up, open, palms forward",
+  "enter_s": 1.4,
+  "beyond_reach_cm_max": 0.0
+ }
+}

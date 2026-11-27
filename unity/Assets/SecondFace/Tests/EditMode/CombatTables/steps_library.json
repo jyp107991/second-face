@@ -1,0 +1,1195 @@
+{
+ "axes": "Unity's: x right, z forward (m at a 0.935 m hip height), turn degrees about up, + clockwise from above",
+ "steps": [
+  {
+   "name": "step_back_f_7604",
+   "set": "f",
+   "seconds": 0.833,
+   "arms": "quiet",
+   "left": [
+    -0.0047,
+    0.0001,
+    2.5
+   ],
+   "right": [
+    -0.0323,
+    -0.2254,
+    15.2
+   ],
+   "kind": "re-stance step: back (a woman)"
+  },
+  {
+   "name": "step_back_f_76042",
+   "set": "f",
+   "seconds": 1.133,
+   "arms": "quiet",
+   "left": [
+    -0.0737,
+    -0.1388,
+    9.5
+   ],
+   "right": [
+    -0.0088,
+    0.0063,
+    5.7
+   ],
+   "kind": "re-stance step: back (a woman)"
+  },
+  {
+   "name": "step_back_f_76042_mir",
+   "set": "f",
+   "seconds": 1.133,
+   "arms": "quiet",
+   "left": [
+    0.0079,
+    0.0053,
+    -5.0
+   ],
+   "right": [
+    0.0738,
+    -0.1356,
+    -10.1
+   ],
+   "kind": "re-stance step: back (a woman), mirrored"
+  },
+  {
+   "name": "step_back_f_7604_mir",
+   "set": "f",
+   "seconds": 0.833,
+   "arms": "quiet",
+   "left": [
+    0.0331,
+    -0.2293,
+    -15.3
+   ],
+   "right": [
+    0.0044,
+    0.0003,
+    -2.3
+   ],
+   "kind": "re-stance step: back (a woman), mirrored"
+  },
+  {
+   "name": "step_back_m_14320",
+   "set": "m",
+   "seconds": 0.767,
+   "arms": "quiet",
+   "left": [
+    -0.0688,
+    -0.1035,
+    -9.0
+   ],
+   "right": [
+    -0.0026,
+    -0.0002,
+    1.3
+   ],
+   "kind": "re-stance step: back (a man)"
+  },
+  {
+   "name": "step_back_m_14320_mir",
+   "set": "m",
+   "seconds": 0.767,
+   "arms": "quiet",
+   "left": [
+    0.0024,
+    -0.0,
+    -1.2
+   ],
+   "right": [
+    0.0687,
+    -0.1021,
+    9.3
+   ],
+   "kind": "re-stance step: back (a man), mirrored"
+  },
+  {
+   "name": "step_back_m_m2e2turnar",
+   "set": "m",
+   "seconds": 0.733,
+   "arms": "quiet",
+   "left": [
+    0.1043,
+    -0.1772,
+    -43.8
+   ],
+   "right": [
+    -0.0019,
+    -0.0033,
+    1.0
+   ],
+   "kind": "re-stance step: back (a man)"
+  },
+  {
+   "name": "step_back_u_3301",
+   "set": "both",
+   "seconds": 1.1,
+   "arms": "quiet",
+   "left": [
+    -0.0028,
+    -0.0038,
+    2.1
+   ],
+   "right": [
+    0.1028,
+    -0.2732,
+    -0.0
+   ],
+   "kind": "re-stance step: back (sex not recorded)"
+  },
+  {
+   "name": "step_back_u_3301_mir",
+   "set": "both",
+   "seconds": 1.1,
+   "arms": "quiet",
+   "left": [
+    -0.1038,
+    -0.2762,
+    0.1
+   ],
+   "right": [
+    0.0032,
+    -0.0036,
+    -2.3
+   ],
+   "kind": "re-stance step: back (sex not recorded), mirrored"
+  },
+  {
+   "name": "step_back_u_3401",
+   "set": "both",
+   "seconds": 1.4,
+   "arms": "quiet",
+   "left": [
+    -0.0056,
+    -0.0016,
+    2.6
+   ],
+   "right": [
+    0.0481,
+    -0.104,
+    6.1
+   ],
+   "kind": "re-stance step: back (sex not recorded)"
+  },
+  {
+   "name": "step_back_u_3401_mir",
+   "set": "both",
+   "seconds": 1.4,
+   "arms": "quiet",
+   "left": [
+    -0.0402,
+    -0.1027,
+    -6.0
+   ],
+   "right": [
+    0.0048,
+    -0.0019,
+    -2.4
+   ],
+   "kind": "re-stance step: back (sex not recorded), mirrored"
+  },
+  {
+   "name": "step_fwd_m_m2e2turnar",
+   "set": "m",
+   "seconds": 0.7,
+   "arms": "quiet",
+   "left": [
+    0.0116,
+    0.0044,
+    -5.4
+   ],
+   "right": [
+    -0.1608,
+    0.1716,
+    -30.5
+   ],
+   "kind": "re-stance step: fwd (a man)"
+  },
+  {
+   "name": "step_fwd_m_m2e2turnar2",
+   "set": "m",
+   "seconds": 0.7,
+   "arms": "quiet",
+   "left": [
+    0.009,
+    -0.0011,
+    -3.2
+   ],
+   "right": [
+    -0.2034,
+    0.1585,
+    -40.2
+   ],
+   "kind": "re-stance step: fwd (a man)"
+  },
+  {
+   "name": "step_fwd_m_m2e2turnar2_mir",
+   "set": "m",
+   "seconds": 0.7,
+   "arms": "quiet",
+   "left": [
+    0.2027,
+    0.1563,
+    40.2
+   ],
+   "right": [
+    -0.0089,
+    -0.0015,
+    3.1
+   ],
+   "kind": "re-stance step: fwd (a man), mirrored"
+  },
+  {
+   "name": "step_fwd_m_m2e2turnar_mir",
+   "set": "m",
+   "seconds": 0.7,
+   "arms": "quiet",
+   "left": [
+    0.1599,
+    0.1691,
+    30.6
+   ],
+   "right": [
+    -0.0113,
+    0.004,
+    5.3
+   ],
+   "kind": "re-stance step: fwd (a man), mirrored"
+  },
+  {
+   "name": "step_fwd_u_7703",
+   "set": "both",
+   "seconds": 0.733,
+   "arms": "quiet",
+   "left": [
+    0.0157,
+    0.0955,
+    1.8
+   ],
+   "right": [
+    0.0015,
+    -0.0002,
+    -0.8
+   ],
+   "kind": "re-stance step: fwd (sex not recorded)"
+  },
+  {
+   "name": "step_fwd_u_7703_mir",
+   "set": "both",
+   "seconds": 0.733,
+   "arms": "quiet",
+   "left": [
+    -0.0017,
+    -0.0002,
+    0.8
+   ],
+   "right": [
+    -0.0158,
+    0.0953,
+    -1.8
+   ],
+   "kind": "re-stance step: fwd (sex not recorded), mirrored"
+  },
+  {
+   "name": "step_fwd_u_7717",
+   "set": "both",
+   "seconds": 0.833,
+   "arms": "quiet",
+   "left": [
+    -0.0002,
+    -0.0035,
+    0.9
+   ],
+   "right": [
+    -0.0338,
+    0.1531,
+    -14.0
+   ],
+   "kind": "re-stance step: fwd (sex not recorded)"
+  },
+  {
+   "name": "step_fwd_u_7717_mir",
+   "set": "both",
+   "seconds": 0.833,
+   "arms": "quiet",
+   "left": [
+    0.0365,
+    0.1518,
+    14.8
+   ],
+   "right": [
+    0.0008,
+    -0.0031,
+    -1.1
+   ],
+   "kind": "re-stance step: fwd (sex not recorded), mirrored"
+  },
+  {
+   "name": "step_guardin_f_14413",
+   "set": "f",
+   "seconds": 1.133,
+   "arms": "raise",
+   "left": [
+    0.0071,
+    -0.0353,
+    -36.5
+   ],
+   "right": [
+    0.0016,
+    0.3617,
+    -20.7
+   ],
+   "kind": "re-stance step: guard_in (a woman)"
+  },
+  {
+   "name": "step_guardin_f_14413_mir",
+   "set": "f",
+   "seconds": 1.133,
+   "arms": "raise",
+   "left": [
+    -0.0032,
+    0.3559,
+    21.1
+   ],
+   "right": [
+    -0.0095,
+    -0.043,
+    37.0
+   ],
+   "kind": "re-stance step: guard_in (a woman), mirrored"
+  },
+  {
+   "name": "step_guardin_f_14427",
+   "set": "f",
+   "seconds": 0.833,
+   "arms": "raise",
+   "left": [
+    0.0317,
+    0.0173,
+    -15.9
+   ],
+   "right": [
+    0.2086,
+    0.4589,
+    -18.6
+   ],
+   "kind": "re-stance step: guard_in (a woman)"
+  },
+  {
+   "name": "step_guardin_f_14427_mir",
+   "set": "f",
+   "seconds": 0.833,
+   "arms": "raise",
+   "left": [
+    -0.2081,
+    0.4561,
+    18.5
+   ],
+   "right": [
+    -0.0338,
+    0.0183,
+    16.3
+   ],
+   "kind": "re-stance step: guard_in (a woman), mirrored"
+  },
+  {
+   "name": "step_guardout_f_14413",
+   "set": "f",
+   "seconds": 1.633,
+   "arms": "lower",
+   "left": [
+    0.07,
+    0.2041,
+    8.6
+   ],
+   "right": [
+    0.0875,
+    -0.3854,
+    23.5
+   ],
+   "kind": "re-stance step: guard_out (a woman)"
+  },
+  {
+   "name": "step_guardout_f_14413_mir",
+   "set": "f",
+   "seconds": 1.633,
+   "arms": "lower",
+   "left": [
+    -0.0874,
+    -0.3857,
+    -23.4
+   ],
+   "right": [
+    -0.0729,
+    0.199,
+    -9.4
+   ],
+   "kind": "re-stance step: guard_out (a woman), mirrored"
+  },
+  {
+   "name": "step_guardout_f_14421",
+   "set": "f",
+   "seconds": 1.1,
+   "arms": "lower",
+   "left": [
+    -0.0054,
+    -0.0016,
+    2.4
+   ],
+   "right": [
+    -0.153,
+    0.4062,
+    -24.8
+   ],
+   "kind": "re-stance step: guard_out (a woman)"
+  },
+  {
+   "name": "step_guardout_f_14421_mir",
+   "set": "f",
+   "seconds": 1.1,
+   "arms": "lower",
+   "left": [
+    0.1541,
+    0.4042,
+    24.2
+   ],
+   "right": [
+    0.0064,
+    -0.0016,
+    -2.8
+   ],
+   "kind": "re-stance step: guard_out (a woman), mirrored"
+  },
+  {
+   "name": "step_left_f_11411",
+   "set": "f",
+   "seconds": 0.767,
+   "arms": "quiet",
+   "left": [
+    -0.0726,
+    0.0605,
+    -40.3
+   ],
+   "right": [
+    -0.0154,
+    -0.0069,
+    8.0
+   ],
+   "kind": "re-stance step: left (a woman)"
+  },
+  {
+   "name": "step_left_f_11411_mir",
+   "set": "f",
+   "seconds": 0.767,
+   "arms": "quiet",
+   "left": [
+    0.0154,
+    -0.0071,
+    -7.7
+   ],
+   "right": [
+    0.0735,
+    0.056,
+    40.3
+   ],
+   "kind": "re-stance step: left (a woman), mirrored"
+  },
+  {
+   "name": "step_left_m_m2e2jabrig",
+   "set": "m",
+   "seconds": 1.033,
+   "arms": "quiet",
+   "left": [
+    -0.1151,
+    -0.1087,
+    7.8
+   ],
+   "right": [
+    -0.1469,
+    -0.0675,
+    20.8
+   ],
+   "kind": "re-stance step: left (a man)"
+  },
+  {
+   "name": "step_left_m_m2e2jabrig_mir",
+   "set": "m",
+   "seconds": 1.033,
+   "arms": "quiet",
+   "left": [
+    0.1469,
+    -0.0673,
+    -20.7
+   ],
+   "right": [
+    0.1152,
+    -0.1096,
+    -8.0
+   ],
+   "kind": "re-stance step: left (a man), mirrored"
+  },
+  {
+   "name": "step_left_u_7709",
+   "set": "both",
+   "seconds": 0.933,
+   "arms": "quiet",
+   "left": [
+    -0.0178,
+    -0.011,
+    9.9
+   ],
+   "right": [
+    -0.1902,
+    0.0165,
+    -1.4
+   ],
+   "kind": "re-stance step: left (sex not recorded)"
+  },
+  {
+   "name": "step_narrow_m_14320",
+   "set": "m",
+   "seconds": 0.633,
+   "arms": "quiet",
+   "left": [
+    -0.0017,
+    -0.001,
+    1.0
+   ],
+   "right": [
+    -0.068,
+    0.0085,
+    -16.8
+   ],
+   "kind": "re-stance step: narrow (a man)"
+  },
+  {
+   "name": "step_narrow_m_14320_mir",
+   "set": "m",
+   "seconds": 0.633,
+   "arms": "quiet",
+   "left": [
+    0.0693,
+    0.0104,
+    16.0
+   ],
+   "right": [
+    0.0014,
+    -0.0012,
+    -0.8
+   ],
+   "kind": "re-stance step: narrow (a man), mirrored"
+  },
+  {
+   "name": "step_narrow_u_7718",
+   "set": "both",
+   "seconds": 0.833,
+   "arms": "quiet",
+   "left": [
+    -0.006,
+    -0.0099,
+    5.0
+   ],
+   "right": [
+    -0.0755,
+    -0.0867,
+    29.6
+   ],
+   "kind": "re-stance step: narrow (sex not recorded)"
+  },
+  {
+   "name": "step_narrow_u_7718_mir",
+   "set": "both",
+   "seconds": 0.833,
+   "arms": "quiet",
+   "left": [
+    0.0741,
+    -0.087,
+    -29.8
+   ],
+   "right": [
+    0.0055,
+    -0.0083,
+    -4.6
+   ],
+   "kind": "re-stance step: narrow (sex not recorded), mirrored"
+  },
+  {
+   "name": "step_narrow_u_crouchedid",
+   "set": "both",
+   "seconds": 0.833,
+   "arms": "quiet",
+   "left": [
+    -0.0081,
+    -0.0033,
+    2.4
+   ],
+   "right": [
+    -0.1377,
+    0.048,
+    6.2
+   ],
+   "kind": "re-stance step: narrow (sex not recorded)"
+  },
+  {
+   "name": "step_narrow_u_crouchedid_mir",
+   "set": "both",
+   "seconds": 0.833,
+   "arms": "quiet",
+   "left": [
+    0.1377,
+    0.048,
+    -6.2
+   ],
+   "right": [
+    0.0081,
+    -0.0033,
+    -2.4
+   ],
+   "kind": "re-stance step: narrow (sex not recorded), mirrored"
+  },
+  {
+   "name": "step_pivot_f_11107",
+   "set": "f",
+   "seconds": 0.633,
+   "arms": "quiet",
+   "left": [
+    -0.013,
+    0.0021,
+    5.4
+   ],
+   "right": [
+    0.0489,
+    -0.0334,
+    -26.4
+   ],
+   "kind": "re-stance step: pivot (a woman)"
+  },
+  {
+   "name": "step_pivot_f_11107_mir",
+   "set": "f",
+   "seconds": 0.633,
+   "arms": "quiet",
+   "left": [
+    -0.0432,
+    -0.0314,
+    25.3
+   ],
+   "right": [
+    0.0129,
+    -0.0014,
+    -5.7
+   ],
+   "kind": "re-stance step: pivot (a woman), mirrored"
+  },
+  {
+   "name": "step_pivot_u_1323",
+   "set": "both",
+   "seconds": 0.867,
+   "arms": "quiet",
+   "left": [
+    -0.0018,
+    0.0005,
+    0.9
+   ],
+   "right": [
+    0.056,
+    0.0291,
+    22.0
+   ],
+   "kind": "re-stance step: pivot (sex not recorded)"
+  },
+  {
+   "name": "step_pivot_u_1323_mir",
+   "set": "both",
+   "seconds": 0.867,
+   "arms": "quiet",
+   "left": [
+    -0.0524,
+    0.0179,
+    -23.3
+   ],
+   "right": [
+    -0.0019,
+    0.0003,
+    1.0
+   ],
+   "kind": "re-stance step: pivot (sex not recorded), mirrored"
+  },
+  {
+   "name": "step_pivot_u_swatfw",
+   "set": "both",
+   "seconds": 0.767,
+   "arms": "quiet",
+   "left": [
+    -0.0002,
+    0.0008,
+    -0.1
+   ],
+   "right": [
+    -0.0376,
+    -0.0737,
+    26.5
+   ],
+   "kind": "re-stance step: pivot (sex not recorded)"
+  },
+  {
+   "name": "step_pivot_u_swatfw_mir",
+   "set": "both",
+   "seconds": 0.767,
+   "arms": "quiet",
+   "left": [
+    0.0376,
+    -0.0737,
+    -26.5
+   ],
+   "right": [
+    0.0002,
+    0.0008,
+    0.1
+   ],
+   "kind": "re-stance step: pivot (sex not recorded), mirrored"
+  },
+  {
+   "name": "step_right_f_11128b",
+   "set": "f",
+   "seconds": 0.9,
+   "arms": "quiet",
+   "left": [
+    0.006,
+    0.002,
+    -2.8
+   ],
+   "right": [
+    0.2103,
+    -0.09,
+    13.5
+   ],
+   "kind": "re-stance step: right (a woman)"
+  },
+  {
+   "name": "step_right_f_11128b_mir",
+   "set": "f",
+   "seconds": 0.9,
+   "arms": "quiet",
+   "left": [
+    -0.2042,
+    -0.0906,
+    -14.3
+   ],
+   "right": [
+    -0.0053,
+    0.0015,
+    2.3
+   ],
+   "kind": "re-stance step: right (a woman), mirrored"
+  },
+  {
+   "name": "step_right_m_14320",
+   "set": "m",
+   "seconds": 0.833,
+   "arms": "quiet",
+   "left": [
+    0.2106,
+    0.1364,
+    14.5
+   ],
+   "right": [
+    0.0116,
+    -0.0058,
+    -6.5
+   ],
+   "kind": "re-stance step: right (a man)"
+  },
+  {
+   "name": "step_right_m_14320_mir",
+   "set": "m",
+   "seconds": 0.833,
+   "arms": "quiet",
+   "left": [
+    -0.0104,
+    -0.0051,
+    6.0
+   ],
+   "right": [
+    -0.2104,
+    0.1389,
+    -14.8
+   ],
+   "kind": "re-stance step: right (a man), mirrored"
+  },
+  {
+   "name": "step_turnL45_f_11411",
+   "set": "f",
+   "seconds": 1.3,
+   "arms": "quiet",
+   "left": [
+    0.0083,
+    -0.0003,
+    -3.6
+   ],
+   "right": [
+    0.0208,
+    0.3304,
+    -111.0
+   ],
+   "kind": "re-stance step: turn left 45 (a woman)"
+  },
+  {
+   "name": "step_turnL45_f_11411_mir",
+   "set": "f",
+   "seconds": 1.3,
+   "arms": "quiet",
+   "left": [
+    -0.0264,
+    0.3247,
+    111.0
+   ],
+   "right": [
+    -0.0081,
+    -0.0004,
+    3.6
+   ],
+   "kind": "re-stance step: turn left 45 (a woman), mirrored"
+  },
+  {
+   "name": "step_turnL45_m_m2e2turnar",
+   "set": "m",
+   "seconds": 0.633,
+   "arms": "quiet",
+   "left": [
+    0.0138,
+    0.0013,
+    -5.7
+   ],
+   "right": [
+    -0.1374,
+    0.1245,
+    -41.9
+   ],
+   "kind": "re-stance step: turn left 45 (a man)"
+  },
+  {
+   "name": "step_turnL45_m_m2e2turnar2",
+   "set": "m",
+   "seconds": 0.7,
+   "arms": "quiet",
+   "left": [
+    0.0804,
+    -0.1131,
+    -46.8
+   ],
+   "right": [
+    0.0096,
+    -0.0018,
+    -4.2
+   ],
+   "kind": "re-stance step: turn left 45 (a man)"
+  },
+  {
+   "name": "step_turnL45_m_m2e2turnar2_mir",
+   "set": "m",
+   "seconds": 0.7,
+   "arms": "quiet",
+   "left": [
+    -0.0098,
+    -0.0017,
+    4.2
+   ],
+   "right": [
+    -0.0808,
+    -0.1142,
+    46.9
+   ],
+   "kind": "re-stance step: turn left 45 (a man), mirrored"
+  },
+  {
+   "name": "step_turnL45_m_m2e2turnar_mir",
+   "set": "m",
+   "seconds": 0.633,
+   "arms": "quiet",
+   "left": [
+    0.1368,
+    0.1226,
+    42.0
+   ],
+   "right": [
+    -0.0138,
+    0.001,
+    5.7
+   ],
+   "kind": "re-stance step: turn left 45 (a man), mirrored"
+  },
+  {
+   "name": "step_turnL90_m_m2e2turnar",
+   "set": "m",
+   "seconds": 1.133,
+   "arms": "quiet",
+   "left": [
+    0.1151,
+    0.0377,
+    -64.9
+   ],
+   "right": [
+    -0.262,
+    0.3119,
+    -63.2
+   ],
+   "kind": "re-stance step: turn left 90 (a man)"
+  },
+  {
+   "name": "step_turnL90_m_m2e2turnar2",
+   "set": "m",
+   "seconds": 1.333,
+   "arms": "quiet",
+   "left": [
+    0.2297,
+    0.0538,
+    -82.9
+   ],
+   "right": [
+    -0.2912,
+    0.2792,
+    -77.2
+   ],
+   "kind": "re-stance step: turn left 90 (a man)"
+  },
+  {
+   "name": "step_turnL90_m_m2e2turnar2_mir",
+   "set": "m",
+   "seconds": 1.333,
+   "arms": "quiet",
+   "left": [
+    0.2902,
+    0.2763,
+    77.2
+   ],
+   "right": [
+    -0.2324,
+    0.0516,
+    82.9
+   ],
+   "kind": "re-stance step: turn left 90 (a man), mirrored"
+  },
+  {
+   "name": "step_turnL90_m_m2e2turnar_mir",
+   "set": "m",
+   "seconds": 1.133,
+   "arms": "quiet",
+   "left": [
+    0.2609,
+    0.3096,
+    63.4
+   ],
+   "right": [
+    -0.116,
+    0.0363,
+    64.9
+   ],
+   "kind": "re-stance step: turn left 90 (a man), mirrored"
+  },
+  {
+   "name": "step_turnR45_f_11133",
+   "set": "f",
+   "seconds": 0.967,
+   "arms": "quiet",
+   "left": [
+    0.0153,
+    -0.0043,
+    -7.4
+   ],
+   "right": [
+    0.0601,
+    -0.3955,
+    61.5
+   ],
+   "kind": "re-stance step: turn right 45 (a woman)"
+  },
+  {
+   "name": "step_turnR45_f_11133_mir",
+   "set": "f",
+   "seconds": 0.967,
+   "arms": "quiet",
+   "left": [
+    -0.057,
+    -0.393,
+    -61.2
+   ],
+   "right": [
+    -0.0139,
+    -0.0039,
+    6.3
+   ],
+   "kind": "re-stance step: turn right 45 (a woman), mirrored"
+  },
+  {
+   "name": "step_turnR45_f_11313",
+   "set": "f",
+   "seconds": 0.9,
+   "arms": "quiet",
+   "left": [
+    0.0034,
+    0.0003,
+    -1.7
+   ],
+   "right": [
+    0.1699,
+    0.0612,
+    58.3
+   ],
+   "kind": "re-stance step: turn right 45 (a woman)"
+  },
+  {
+   "name": "step_turnR45_f_11313_mir",
+   "set": "f",
+   "seconds": 0.9,
+   "arms": "quiet",
+   "left": [
+    -0.1767,
+    0.0629,
+    -55.0
+   ],
+   "right": [
+    -0.0049,
+    0.0004,
+    2.3
+   ],
+   "kind": "re-stance step: turn right 45 (a woman), mirrored"
+  },
+  {
+   "name": "step_turnR45_m_m2e1turnar",
+   "set": "m",
+   "seconds": 0.567,
+   "arms": "quiet",
+   "left": [
+    -0.0299,
+    0.0722,
+    52.2
+   ],
+   "right": [
+    0.0108,
+    -0.0089,
+    -5.9
+   ],
+   "kind": "re-stance step: turn right 45 (a man)"
+  },
+  {
+   "name": "step_turnR45_m_m2e1turnar2",
+   "set": "m",
+   "seconds": 0.533,
+   "arms": "quiet",
+   "left": [
+    -0.0608,
+    0.0118,
+    53.7
+   ],
+   "right": [
+    0.0132,
+    -0.0105,
+    -7.2
+   ],
+   "kind": "re-stance step: turn right 45 (a man)"
+  },
+  {
+   "name": "step_turnR45_m_m2e1turnar2_mir",
+   "set": "m",
+   "seconds": 0.533,
+   "arms": "quiet",
+   "left": [
+    -0.0131,
+    -0.0102,
+    7.1
+   ],
+   "right": [
+    0.0608,
+    0.0116,
+    -53.9
+   ],
+   "kind": "re-stance step: turn right 45 (a man), mirrored"
+  },
+  {
+   "name": "step_turnR45_m_m2e1turnar_mir",
+   "set": "m",
+   "seconds": 0.567,
+   "arms": "quiet",
+   "left": [
+    -0.0107,
+    -0.0086,
+    5.7
+   ],
+   "right": [
+    0.0299,
+    0.0725,
+    -52.4
+   ],
+   "kind": "re-stance step: turn right 45 (a man), mirrored"
+  },
+  {
+   "name": "step_widen_f_14426",
+   "set": "f",
+   "seconds": 1.633,
+   "arms": "quiet",
+   "left": [
+    0.0224,
+    0.0102,
+    -10.7
+   ],
+   "right": [
+    -0.0563,
+    0.136,
+    -19.9
+   ],
+   "kind": "re-stance step: widen (a woman)"
+  },
+  {
+   "name": "step_widen_f_14426_mir",
+   "set": "f",
+   "seconds": 1.633,
+   "arms": "quiet",
+   "left": [
+    0.0562,
+    0.1343,
+    19.9
+   ],
+   "right": [
+    -0.0236,
+    0.0108,
+    10.9
+   ],
+   "kind": "re-stance step: widen (a woman), mirrored"
+  },
+  {
+   "name": "step_widen_m_m2e6quickr",
+   "set": "m",
+   "seconds": 1.0,
+   "arms": "quiet",
+   "left": [
+    -0.0078,
+    -0.0357,
+    -9.6
+   ],
+   "right": [
+    0.0137,
+    -0.0034,
+    -6.1
+   ],
+   "kind": "re-stance step: widen (a man)"
+  },
+  {
+   "name": "step_widen_m_m2e6quickr_mir",
+   "set": "m",
+   "seconds": 1.0,
+   "arms": "quiet",
+   "left": [
+    -0.0137,
+    -0.0033,
+    6.1
+   ],
+   "right": [
+    0.008,
+    -0.0356,
+    9.7
+   ],
+   "kind": "re-stance step: widen (a man), mirrored"
+  }
+ ]
+}

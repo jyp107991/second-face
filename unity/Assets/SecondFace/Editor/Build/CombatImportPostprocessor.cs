@@ -28,7 +28,7 @@ namespace SecondFace.EditorTools
     public sealed class CombatImportPostprocessor : AssetPostprocessor
     {
         /// <summary>Bump when the rules below change (Unity reimports only on a new version).</summary>
-        public override uint GetVersion() => 1;
+        public override uint GetVersion() => 3;
 
         public const string MotionDir = CombatMotion.Folder + "/";
         public const string WeaponDir = CombatMotion.WeaponFolder + "/";
@@ -50,9 +50,13 @@ namespace SecondFace.EditorTools
             var imp = (ModelImporter)assetImporter;
             if (IsClip)
             {
+                // the avatar's configuration from the file's own T-pose whenever its bytes change, the explicit mapping and the
+                // T-pose stood as the actor stands in the take, as the everyday motion's (MotionImportPostprocessor.Prepare,
+                // Configure; combat set v4 README §1: every v4 meta stores no configuration and no mapping)
+                var first = MotionImportPostprocessor.Prepare(imp, assetPath);
                 imp.animationType = ModelImporterAnimationType.Human;
                 imp.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
-                imp.importAnimation = true;
+                imp.importAnimation = !first;
                 imp.animationCompression = ModelImporterAnimationCompression.Optimal;
                 imp.animationRotationError = 0.3f; imp.animationPositionError = 0.3f;
                 imp.materialImportMode = ModelImporterMaterialImportMode.None;
@@ -97,37 +101,50 @@ namespace SecondFace.EditorTools
                 if (defaults != null)
                     foreach (var d in defaults)
                         if (d.takeName == c.takeName || defaults.Length == 1) { c.firstFrame = d.firstFrame; c.lastFrame = d.lastFrame; break; }
-                Settings(c, loop, clip);
+                Settings(c, loop, clip, MotionImportPostprocessor.Seated(imp), TakeBasis(side));
             }
             imp.clipAnimations = clips;
         }
 
         /// <summary>A clip's settings from the table (also what the build's tests check the imported clips against).</summary>
-        public static void Settings(ModelImporterClipAnimation c, bool loop, MotionClip clip)
+        /// <summary>The height: the take's own over its floor (its T-pose stood on that floor: TakeStance), never "from the
+        /// feet", which Unity reads at the take's first key; a seated take with no standing stance (<paramref name="seated"/>:
+        /// its T-pose kept) the table's (a crouch, a get-up as captured; otherwise from its first key's feet, as before).</summary>
+        public static bool FromFeet(MotionClip clip, bool seated) => seated && (clip == null || clip.Y == RootY.Feet);
+
+        /// <summary>A clip written in its take's frame (its json's "root_basis": "take", combat set v4.1): a chain's clips share
+        /// one frame, so each is stood where the take stood it, based upon Original. Based upon the body orientation and the
+        /// centre of mass, Unity stands every clip at its own first key, and a chain cut from one take parts at its joins (CMU
+        /// 79_96's raise into its own aim: 17.9 / 10.9 cm and 42°; v4.1 README §1).</summary>
+        public static bool TakeBasis(JObject side) => side?.Value<string>("root_basis") == "take";
+
+        public static void Settings(ModelImporterClipAnimation c, bool loop, MotionClip clip, bool seated, bool takeBasis = false)
         {
             var apply = clip != null && clip.XZ == RootXZ.Apply;
-            var keepY = clip != null && clip.Y == RootY.Keep;
+            var feet = FromFeet(clip, seated);
             var turn = clip != null && (clip.Turn || clip.DropTurn);
             c.loopTime = loop; c.loopPose = loop;
-            c.lockRootRotation = !turn; c.keepOriginalOrientation = false;
-            c.lockRootPositionXZ = !apply; c.keepOriginalPositionXZ = false;
-            c.lockRootHeightY = true; c.keepOriginalPositionY = keepY; c.heightFromFeet = !keepY;
+            c.lockRootRotation = !turn; c.keepOriginalOrientation = takeBasis;
+            c.lockRootPositionXZ = !apply; c.keepOriginalPositionXZ = takeBasis;
+            c.lockRootHeightY = true; c.keepOriginalPositionY = !feet; c.heightFromFeet = feet;
         }
 
         private void OnPostprocessAnimation(GameObject root, AnimationClip clip)
         {
             if (!IsClip || clip == null) return;
             var name = Path.GetFileNameWithoutExtension(assetPath);
-            var loop = Sidecar()?.Value<bool?>("loop") ?? false;
+            var side = Sidecar();
+            var loop = side?.Value<bool?>("loop") ?? false;
+            var take = TakeBasis(side);
             var m = CombatMotion.Clip(name);
             var s = AnimationUtility.GetAnimationClipSettings(clip);
             var apply = m != null && m.XZ == RootXZ.Apply;
-            var keepY = m != null && m.Y == RootY.Keep;
+            var feet = FromFeet(m, MotionImportPostprocessor.Seated((ModelImporter)assetImporter));
             var turn = m != null && (m.Turn || m.DropTurn);
             s.loopTime = loop; s.loopBlend = loop;
-            s.loopBlendOrientation = !turn; s.keepOriginalOrientation = false;
-            s.loopBlendPositionXZ = !apply; s.keepOriginalPositionXZ = false;
-            s.loopBlendPositionY = true; s.keepOriginalPositionY = keepY; s.heightFromFeet = !keepY;
+            s.loopBlendOrientation = !turn; s.keepOriginalOrientation = take;
+            s.loopBlendPositionXZ = !apply; s.keepOriginalPositionXZ = take;
+            s.loopBlendPositionY = true; s.keepOriginalPositionY = !feet; s.heightFromFeet = feet;
             AnimationUtility.SetAnimationClipSettings(clip, s);
         }
 

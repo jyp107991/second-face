@@ -283,6 +283,22 @@ frame rates), `/home/user/second-face-staging/motion/README.md` (clip QA, clips 
   arms exactly level, so Unity's levelling moves 0°, and the same on the bodies' avatars) are a rigour item, held: (b)
   matches (a) within 0.7° without it.
 
+- **Everyday C1 of chunk 0 (2026-11-18, editor owner; `C1ProbeTests`, PlayMode, temporary: every forearm and hand vertex of the
+  baked mesh read three ways at 10 Hz in the idles; `unity/test-results/c1_probe.csv`).** The hand-off's reading (the runtime's
+  sparse points under-read a contact the gate reads at 0.5-1.2 cm) is **refuted where reproduced**: (1) the gate's depth (the
+  least of the three nearest body vertices' planes) at its worst vertex: Business_Male_02 idle0 0.53-0.56 cm, Business_Female_03
+  idle0 0.63-0.71 (the gate's own run: 0.53 and 0.62); (2) the same vertex against the body's own triangles, as the mesh is drawn
+  (the nearest point on the torso's and thighs' triangles, inside by the gate's ray parity): **0.13-0.15 and 0.05-0.12 cm**; (3)
+  the runtime's `BodySkin.Depth` at that same point: 0.53 and 0.28-0.40, and at its nearest arm point (0.0-0.4 cm away) 0.30 and
+  0.28-0.40. So the runtime does not under-read the surface: the gate's vertex-plane depth over-reads it by 0.4-0.6 cm where
+  the body's vertices stand 4-7 cm apart over a convex hip (a point under the chord between two vertices is behind both their
+  planes). The forearms rest 1-1.5 mm into the drawn surface. Business_Male_05's idle0 (gate 1.2 cm, 10 % of frames) is not
+  reproduced alone (0 in 41 samples): to trace in the gate's own run. **Decided (coordinator, 2026-11-18): C1 measures the drawn
+  surface**, the exact point-to-triangle depth over the triangles its inside test counts, in every state and on every body; the
+  limit stays 0.5 cm and the runtime keeps its own reading (`MotionProbe.DrawnDepth`, `MotionProbeDepthTests`; the planes'
+  reading written beside each report, `<report>_c1v.json`, for the record of the cells moved both ways; `docs/PEOPLE_MOTION.md`
+  §2.1). A contact that survives the drawn surface (Business_Male_05's 1.2 cm, if it does) is traced as a cause of its own.
+
 ## 8. T3 design: the contact-preserving retarget, baked per body (editor owner, 2026-11-17)
 **What is solved.** For each base body (79) and clip (28; 4,254 frames at 30 fps, about 4,400 with the idle at its true
 speed), every frame once: the clip as Mecanim retargets it to the body (sampled offline on the body's own avatar, muscle
@@ -339,3 +355,505 @@ those states; only then a whole-cast run.
   (anatomy 0-5°): one documented correction is applied to every standing idle alike (knee p98 to ≤ 5°, feet kept, pelvis
   by IK, the size recorded per clip). K1 stays at 8° for the game and the clips. Men's stretch and yawn come from CMU 143_30
   (sex unrecorded) until a documented man's take is found; no free man's chair-sit exists.
+
+## 9. The stance soles' ground: what Unity reads, measured at the source (editor owner, 2026-11-18)
+Gate: red, 6460 (dfc732a4; the batch's tree unmeasured). The bare retarget (the Animator alone: no FootPlant, ArmClearance,
+Gaze or Pace; EditMode probes `SoleProbe*Tests`, diagnostics not committed; `unity/test-results/sole_probe*.txt`), each clip on
+its own avatar and on Sports_Male_04, Construction_Male_02, cap_Military_Male_03n, Medical_Female_01, Business_Female_01 and
+Female_Adult_07 (one skeleton per sex: the men's ankles read the same to 0.1 cm on all three), every height in the Animator's
+own frame, each foot's own lowest skin point in its stance (within 4 cm of its lowest, rising or falling under 0.2 m/s).
+- **What Unity reads as an avatar's feet-bottom height: its configured T-pose ankle's height over the model's root.** On all 15
+  clips tested and both body avatars, `Animator.leftFeetBottomHeight`/`rightFeetBottomHeight` equal the configured T-pose
+  ankles' heights (the `.meta`'s `humanDescription.skeleton`, chained from the root) to 0.01 cm: `jog` 6.86/5.34, `jog_f`
+  3.03/3.58, `sneak` 6.78/4.44, `walk_b` 5.68/3.40, `idle_m` and `run_c` (ACCAD Male2) 8.58/8.53, the men's bodies 12.85, the
+  women's 12.75. Nothing else moves it: a proxy sole (a skinned plate under each foot 6, 9 or 12 cm under the ankle, built
+  into the avatar by `AvatarBuilder`) changes nothing, nor do the toes moved 1.5 times further out, nor the bodies built
+  without their meshes. `humanScale` is the T-pose's centre of mass over the same root: raising a clip's T-pose hips by d
+  raises it by d (jog +2.21 cm, humanScale 1.0029 → 1.0249).
+- **Cause 1, the bodies' T-pose stands 2.69 cm (men) and 2.78 cm (women) over their own bind.** Unity's own avatar setup put
+  the Rocketbox T-pose's hips 92.42 cm over the root against the bind's 89.5 (the T-pose ankle 12.85 against the bind's
+  10.16, which stands its soles on the root within 0.3 cm). So the feet-bottom height is 2.7 cm too large and the humanScale
+  2.6 % too tall: under "from the feet" every clip stands every body 2.6 cm over its ground (the idles' soles +2.0-2.6 cm on
+  the bare retarget; `docs/PEOPLE_MOTION.md` §2.7's "the clips as retargeted stand 2.5-4 cm up" in every fight stance, which
+  `Fighter.Feet` takes out by bringing the hips down). Stood on the root (the hips lowered by the difference, the bones'
+  turns as Unity set them): feet-bottom 10.16/9.97 cm, humanScale 1.0433 → 1.0164 (men), 1.0355 → 1.0077 (women), and
+  `idle_m`'s soles +2.6/+2.2 → 0.0/−0.4 cm (Sports_Male_04), `idle_f`'s +2.3/+2.2 → −0.3/−0.4.
+- **Cause 2, "Root Transform Position (Y): based upon Feet" is read at the take's first key.** The motion clips import with
+  `heightFromFeet` (the lowest feet-bottom at the start on the root's ground). A gait's take begins where its loop was cut:
+  `jog`'s first key is the left foot's touchdown, its ankle 14.4 cm over the capture's floor against 8.7 in mid-stance, so
+  the whole clip sat 8 cm low on its own avatar (the stance ankle 0.6/1.8 cm over the ground, the toe joints −3.6/−4.4) and
+  every body's stance sole −9 cm. The same clip with its loop started at the left foot's mid-stance: its own stance ankle
+  7.6/8.2 cm and Sports_Male_04's stance sole −2.1 cm; with the capture's own height (Original) −0.6 cm. Bare stance soles
+  (p50, left/right, Sports_Male_04) as imported: `jog` −9.0/−9.3, `jog_b` −8.8/−7.7, `run` −6.2/−4.5, `run_c` −19.6/−15.9,
+  `walk` −4.7/−2.7, `walk_b` −2.9/−6.5, `walk_slow` −3.9/−6.5, `sneak` −7.0/−4.8, `idle_m` +2.6/+2.2.
+- **Cause 3, each clip's T-pose stands where the capture's base pose put it, not where its actor stands in the take.** The
+  converters' `t_pose_key` stands the T-pose with its ankles 3.0-9.5 cm over the root (left and right up to 2.3 cm apart),
+  where the actors' flat feet (the ankle and the toe joint each within 1.5 cm of their own floors) stand 4.8-12.3 cm over
+  their takes' floors (`jog` 7.80/8.82, `walk` 9.11/8.18, `jog_f` 6.47/8.51, ACCAD Female1's idles 12.1-12.3: her capture's floor
+  is 4-5 cm under her soles), and the CMU T-pose feet are pitched 12-17° where the actors stand on them at 14-29° (ACCAD's
+  agree within 2°). Unity maps every frame against the T-pose, so with the take's own height a T-pose 3 cm under the take
+  sinks every body 3 cm, one over it floats them, and a flatter T-pose foot turns every body's stance foot toes-down. With the
+  T-pose stood as the actor stands in the take (the hips so the T-pose ankles' mean is the take's flat-foot mean; each foot at
+  the take's flat-foot pitch and roll, the T-pose's heading kept) and the bodies stood on their root, the take's floor no longer
+  matters: `idle_f` (her floor 4-5 cm low) +4.2/+4.1 → +0.1/−0.5, `idle_f_c` +5.7/+4.4 → +0.6/+0.1, `jog_f` (CMU 141, its floor
+  low) +3.7/+6.5 → −0.6/+0.6, `idle_m` −1.2/−1.6 → −0.1/−0.5.
+- **Unity's Foot IK (on in every locomotion state since P4.8) is right only on that consistent reference.** On the clips as
+  imported it reached the feet below the floor (the jog −6.5 cm p50, MOTION_ROOT_CAUSE §7); on the stood T-poses with the
+  bodies grounded and the take's own height it takes out the stance flexion's mismatch (the humanScale ratio is not the legs'):
+  stance soles p50 (left/right; p2 the lowest), Sports_Male_04 / Medical_Female_01: `jog` −0.9/+1.0, −1.3/+2.0 (p2 −1.6, −1.8);
+  `jog_b` −1.3/+1.3, +1.7/+1.0; `jog_f` −1.0/+1.6, −1.1/+1.5 (p2 −3.1, −2.5); `run` +0.7, −0.7; `walk` +0.3/−0.6, 0.0/−0.8; `walk_d`
+  −1.0/+0.4, −1.3/+0.4; `walk_brisk_b` −0.2/−0.8, −0.4/−1.0; `walk_slow_b` +0.9/−1.3, +0.6/−1.0; `walk_slow` −1.1/−0.7, −1.4/+0.4;
+  `walk_f_b` 0.0/+0.2, −0.2/−0.2; `sneak` −1.6/+1.2, −1.9/+0.9 (p2 −3.6, −3.1; −8.7/−7.7 without the IK); `idle_m` +0.3/−0.2,
+  −0.1/−0.6; `idle_f` +0.3/−0.3, −0.1/−0.7. **Left:** `walk_b`'s right foot −6.4 and −5.2 (its T-pose right ankle 2.3 cm under
+  the left where in the take it stands 1.7 cm over it: the capture's two feet on floors of their own, a converter item: one
+  floor for both feet) and `run_c` −2.6/−4.1, −2.7/+0.6 (ACCAD Male2's run, the deepest stance flexion of the set).
+- **Fix, at the source (what Unity reads), in this batch:** (1) `MotionImportPostprocessor` version 13 stands each clip's
+  configured T-pose as its actor stands in the take (`TakeStance`, measured on the file as recorded: each foot's flattest
+  standing keys, the larger of its ankle's and toe joint's heights over their own floors within 1 cm of its least, the hips
+  over the floor at least 0.75 of the T-pose's leg; CMU 07's and 08's right feet never reach both floors together, by 1.4-1.8
+  cm) and imports every clip that plays in place with the take's own height (Original; never from the feet). Two kinds keep the
+  converters' T-pose: a take that travels (`fall`: its height is root motion) and a seated take with no standing stance
+  (`sit`, `sit_ground`, `sit_stool`: their height from their first key's feet on the floor, as before; stamped " seated"); (2) `PeopleImportPostprocessor` stands each
+  body's configured T-pose on the model's root as its bind does (`Ground`, the cast's and the player's base models); (3)
+  `StandOnTheGroundTests` (EditMode, CombatBuild assembly) holds both: each clip's feet-bottom heights the take's flat feet
+  within 1 mm and its feet at their pitch within 0.5°, each body's the bind's ankles within 1 mm, no clip read from the feet.
+  The converters should write the same T-pose (`t_pose_key`: the hips and feet as `TakeStance` measures them) and plant both
+  feet of a take on one floor (offline helper). FootPlant's hold and lift of the bearing foot are traced next on this
+  reference, frame by frame, for what remains.
+- **The 14-person pick on this reference (2026-11-18, against the same people in dfc732a4, the states measured before: 4
+  there):** 87 on the T-pose batch → **74** (A1 57, W6 16 → 7: every jog and sneak passes, the men's walks left at p2 −1.5 … −1.9;
+  W3 7, W1 1; A4 and C1 back to the base, Medical_Male_02's look135 A4 6.2 → 3.7 and Medical_Male_03's wave C1 3.3 → 0.0 fixed).
+- **W6's remainder: FootPlant held the foot by four fixed sole points, not by its underside.** In the walks the gate's lowest foot
+  vertex stood 1.5-1.6 cm under the ground while the heel point FootPlant holds read 0.0 and its ball 0.5 (Medical_Male_02's right
+  foot, `walk:walk`, the soles' trace): pitched toes-up at heel strike, the heel's rounded back and the shoe's rear edge go lower
+  than any of the four points (the heel, the sole's rear end within 2 cm of its lowest, the ball, the tip). **Fix:** FootPlant
+  reads each foot's underside from the body's own mesh at the bind (its vertices under the ankle within 5 cm of the sole's
+  lowest, one a 1.5 cm cell, in the foot's and the toes' frames) and lifts and holds a foot by whichever of them is lowest
+  (`SoleOver`, `Lowest`). Pick: **W6 7 → 0** (and `W6 combat:carry` 2 → 0).
+- **A1's cause, traced step by step (`ArmClearance`'s trace: the hand's depth after each step, what each turn was for, how deep).**
+  On Construction_Male_02 (idle) the third step (the shoulder's remainder, +1.9°) was for a forearm point 0.32 cm into the thigh
+  14 cm under the hips; on cap_Military_Male_03n and Medical_Male_02 the first turn (3.8° idle, 5.8° in the looks) was for the
+  upper arm's third by the elbow, 1-2 cm into the flank 27-29 cm over the hips. Every resting contact was pushed until it stood
+  0.3 cm off the skin: an outward offset at rest. A real arm rests against the hip and the flank with the soft tissue giving
+  (the thigh's fat and muscle shear at 0.5-1.7 kPa, Segain et al. 2024; the gate's own C1 takes a contact to 0.5 cm), and hangs
+  from the shoulders: when the gaze turns the chest, the hand goes with the shoulder (Yoshida et al. 2022: at rest the elbow
+  bends 15.5°, the shoulder abducts 4.5°). **Fix:** at rest the forearm and hand may press into the hip and thigh by
+  `RestGive` (0.25 cm: the skin's points read a contact 0.1-0.25 cm shallower than the gate's mesh on the broad men, so 0.4 read
+  0.5-0.7 cm on the mesh, C1), the upper arm by the elbow lies on the flank at contact (no offset), and nothing that stands
+  clear moves; the resting hand is placed in the shoulders' frame, not the hips'. Pick: **A1 57 → 3** (cap_Police_Male_03n's
+  looks, 21.7: his left forearm by the elbow 2.5 cm into the belly's front-left where the gaze turns his chest, the first turn
+  4.6°; traced below).
+- **The looks' A1: the gaze turned the trunk, which a real look of 20° never does.** `Gaze` holds every look within 20° of the
+  body's front (`MaxYaw`) and gave Unity's look-at a body weight of 0.25. Measured on three people (a probe on the game's own
+  people: the spine's, chest's and upper chest's yaw on the pelvis, the left upper arm, ArmClearance's push): for a look at 45°
+  (held at 20°) the upper chest turned 7.6° on cap_Police_Male_03n, 8.4° on Business_Male_01, 7.4° on Female_Adult_01, and 1-5°
+  even for a look straight ahead (the look-at drawing the idle's raised face level by the trunk); the left shoulder came forward
+  with it and laid his hanging arm across the belly, so ArmClearance turned it out 4.6° (A1 17.0 → 21.6). At body weight 0.1
+  the turn was 3.4° (A1 20.1), at 0 none (A1 18.6, within the idle's own phase-to-phase spread of ±1.5°). Real people: a
+  standing person's torso takes no part in a gaze shift under 45° (Sidenmark & Gellersen 2019, ACM TOCHI 27(1):4: 7,600 gaze
+  shifts of 20 people, seated and standing, eye, head and torso tracked; the torso moved in 85 % of standing horizontal shifts
+  only from 45°), and gaze shifts up to 90° are made mainly by the eyes and head (Cinelli, Patla & Stuart 2007, Exp Brain Res).
+  **Fix:** `Gaze.BodyWeight` 0: a look is the eyes' and the head's (the head on the chest stays within H2: 18-21° at a 20°
+  look, the limit 30). The arm hangs where the clip has it; nothing in ArmClearance changes for it.
+- **What it leaves: the broad men's resting arms at the edge of A1 (pick v4a, 15 cells at 20.0-23.7).**
+  - The men: Construction_Male_02, Medical_Male_02, cap_Military_Male_03n, cap_PM02m, in idles, looks and the moments after
+    gestures.
+  - The gaze's body weight does not decide it. On the same men, 0.25 against 0, A1 p98 moves ±1° either way: 17.0-21.1 and
+    17.1-21.0.
+  - Neither the hand's place nor the elbow's bend reaches it. `RestFront` 15/30/45° and `RestFlex` 15/22° move A1 p98 by at
+    most 0.1°.
+  - The contact is the forearm by the elbow, 1.3-3.0 cm into the waist and its gear, with the upper arm already at
+    `AbdMax` (17°).
+  - On a waist's elliptic section, moving the elbow forward clears less per degree of A1 than moving it out: 5 cm forward
+    (10°) clears about 1.2 cm, which 2.4° outward also clears. So a forward-first order would raise A1, not lower it.
+  - The geometry is T5's (`docs/qa/body_geometry_audit.md`): these bases' waists at the elbow are at real men's 98th
+    percentile, and with their sleeves and gear the least hang is 14-17°, where a real man in a jacket needs at most about
+    11°.
+  - For a decision by the coordinator or the owner, not a silent change: the garments brought to real thickness
+    (`BodySlim`, as for cap_Police_Male_03n's sleeve). The limit stays.
+- **Found on the way, open (the people's own states):** with the references consistent, Unity's Foot IK (on in every locomotion
+  state) still bends a straight leg: on Male_Adult_08 and Female_Adult_01 the standing idle's straighter knee is 0.0° played
+  bare and 18.9° / 21.0° with Foot IK, the ankles moving under 0.4 cm (the goal is the take's foot by the humanScale ratio, and
+  a near-straight knee turns 10-20° for a centimetre). Standing, FootPlant's bearing leg takes it out (K1 passes in the idles);
+  its reason in P4.8 (the feet 1-2 cm off the floor on the old reference) is gone (played bare on the stood reference, the
+  ankles are within 0.9 cm of the bind's). Under the fight's layer it was not taken out (COMBAT_ROOT_CAUSE, 2026-11-18, item 5).
+  To be traced for the people's own states as its own item: whether Foot IK still does any good there.
+- **Everyday C1 on chunk 0 of the v41c whole cast (2026-11-18: 0 → 12 cells against dfc732a4), traced from the gate's own
+  worst-contact lines (`HumanMotionGate clip:`).**
+  - Every cell is the right forearm on the right hip or thigh, at 0.93-1.04 m:
+    - Business_Male_05 1.0-1.2 cm under the gate's mesh;
+    - Business_Female_03 0.5-0.7;
+    - Business_Male_02 0.5, at the limit.
+  - ArmClearance's own skin points read the same contact at 0.1-0.4 cm. The game's nearest forearm point lies 0.0-0.4 cm from
+    the gate's deepest forearm vertex, and its nearest thigh point 0.9-1.5 cm from the gate's thigh vertex.
+  - So the sparse points (the arm about every 3 cm, the body about every 2.5 cm) under-read the forearm's and the hip's
+    convexity by 0.3-1.0 cm.
+  - The change that exposed it is the resting give (`RestGive`, the forearm and hand allowed 0.25 cm into the skin points at
+    rest). Before it, the moving margin kept a resting forearm 0.9 cm off them.
+  - Not yet fixed. The source fix is the skin points' reading of the surface where a forearm rests: denser points on the hips'
+    and thighs' sides and the forearm, or each point's local surface. A smaller give would only shift the threshold. Item for
+    the next batch.
+- **The fight's new head cells (chunk 0: H2 ready 0 → 26, H3 ready 0 → 20, H1/H2 in reload, yield, strike, hit, throw).**
+  Not traced in frames yet. The leading hypothesis has two parts:
+  - The gaze's head weight (0.9) aims the head at nearly the whole look. Real gaze shifts under about 20° are made almost
+    entirely with the eyes, and the head takes about a third at 30° (the 2024 review cited in `docs/qa/arm_build_evidence.md`'s
+    search; Sidenmark & Gellersen 2019).
+  - With the trunk's share now 0, the head's share is no longer offset by the chest.
+  A trunk share as a function of the look angle (none under 45°, rising beyond) changes nothing while every look is held
+  within 20° (`Gaze.MaxYaw`). The candidate cause is the head's share at small angles, which is also what keeps the idle's
+  raised face level (H1). Tracing frames comes first.
+
+- **C1's cause on the way: the upper arm divided differently from the gate.** ArmClearance gave the chest's soft contact
+  (`UpperGive`, 2.5 cm) to the upper arm above its third by the elbow by the distance to the elbow joint; the gate divides it by
+  the share along the bone from the shoulder (0.65): a surface point 4-5 cm off the bone near the boundary was the chest's
+  contact for the one and the elbow's third for the other (Construction_Male_02 idle1: the upper arm 1.6 cm into the chest,
+  unmoved, C1 1.6). **Fix:** the same division as the gate's.
+- **W3's cause: the swinging arm pushed out for a contact C1 leaves out.** Walking, the left arm of Medical_Male_02 and
+  cap_Police_Male_03n was turned out 16-20° (median; p98 24-26°) for the upper arm's upper two-thirds 6 cm into the torso at the
+  armpit (the trace's first-turn depth): the contact both soft tissues take, which C1 does not count. **Fix:** moving, that part
+  of the arm is never a reason to swing the arm out.
+
+## 10. C1's two traces from chunk 0 (editor owner, 2026-11-25, a fresh container)
+Gate: red, 6460 (dfc732a4; the batch's tree unmeasured). The gate's own run on the two men (`PickedPeopleStandAndMove`), every
+state's worst contact written by `MotionProbe.DumpC1` (env `C1_DUMP=1`: the arm vertex, every mesh triangle within 8 cm with its
+corners' parts and normals, the inside test's three rays and their crossings; a diagnostic, never a measure).
+- **Reproduced:** Business_Male_03's left forearm (vertex 698) 0.9-1.16 cm under the drawn surface in idle0, slope, look0 and
+  the moments after the gestures, where the three nearest vertices' planes read 0.2-0.4; Business_Male_05's right forearm
+  (vertex 879) 0.8-1.05 cm, the planes 1.0-1.2. 12 everyday C1 cells between them.
+- **The hole in the triangle set: refuted.** In all 24 dumped worst contacts (the two men's everyday and fight states) the
+  nearest triangle of the whole mesh that has no arm corner is the gate's own body triangle, at the same distance, and each
+  of the three level rays crosses the surface once (inside). The drawn depth is the real distance to the body's surface.
+- **The cause, both men: the runtime's skin reading.** `BodySkin.Depth` gave a point the vote finds inside the least of its
+  three nearest skin points' plane depths. Where the skin curves or creases one of the three stands on a facet turned away:
+  - Business_Male_05: 1.1 / 1.4 / 0.2 cm, the 0.2 from a point 2.2 cm off on the hip's side turned 25° back;
+  - Business_Male_03: 0.2 / 1.2 / 0.7, the 0.2 from a crease vertex whose normal points down (the hip's top under the waist);
+  - read 0.2 cm, under the arm clearance's resting give (0.25 cm): the forearm stayed 1.1 cm in.
+  The gate's own vertex-plane reading before 2026-11-18 had the same fault (0.2-0.35 cm on the same contacts).
+- **Offline, on the dumps:** Kolluri's implicit moving-least-squares surface (each nearby point's tangent plane weighted by a
+  Gaussian of its distance; Kolluri 2008, ACM Trans. Algorithms 4(2):18) reads the resting contacts within 0.1-0.3 cm of the
+  drawn depth at bandwidths of 1.5-2.5 cm, where the least of three is 0.6-0.9 cm short. At the fights' deep torso contacts
+  (1.1-3.2 cm) neither reading is right (least of three 0.1-0.5 cm over on four, 1.5 short on one; the surface reading 0.3-0.7
+  over on four, short on two).
+- **Fix:** `BodySkin.Depth` and its Burst job read a point the vote finds inside against the hips and thighs (the low band,
+  `LowFlag`: torso and thigh points from 45 cm under the hips to 15 cm over them, where resting forearms and hands hang) by
+  that surface (`BodySkin.Surface`: every body point within two bandwidths, the bandwidth the nearest point's spacing within
+  1.5-3 cm, never past a cell); the inside/outside vote is unchanged, and the chest and waist above keep the least of three.
+  - Measured on the two men (the gate's pick): everyday C1 12 -> 0 (Business_Male_03 0.9-1.16 -> 0.0 cm, Business_Male_05
+    0.8-1.05 -> 0.33-0.44), no other cell moved; the arm clearance's cost unchanged (14.7 / 7.7 ms a person a frame in the
+    editor, against 13.9-15.3 / 8.7-9.5).
+  - **Read so in every band (the coordinator's first instruction, since withdrawn), it made things worse:** the whole cast's
+    chunks 1-3 went 2 -> 47 everyday cells, and an A/B on seven of their men (the same group, only `BodySkin.cs` swapped)
+    read 11 cells with the least of three against 38 with the surface everywhere: A1 7 -> 28 (cap_Police_Male_01n,
+    cap_Security_Male_01n in every standing state, p98 20.3-20.5 against limits of 20.3-20.4: the upper arm on the flank read
+    deeper and pushed out), C1 0 -> 6 (the talk gesture's upper arm against the chest's side on cap_Fire_Male_07n,
+    cap_Military_Male_02n, cap_Police_Male_03n). With the surface only in the low band the same seven read 13 (A1 9: the
+    two extra are Construction_Male_02's looks at 20.5 against his 20.1, his forearm now held out of his hip), no C1.
+- **Open, recorded (not this batch's cause): the gate's armpit part filing.** `MotionProbe` files each vertex by its nearest
+  bone line in the neutral pose alone; the runtime's skin (`RocketboxLayers`, 2026-11-08) gives a vertex nearer an arm's line
+  to the torso when the arm's bones weigh it under half. Read from the skin's own response (the upper arm turned 20° about two
+  axes, each vertex's move over a rigid arm's: the arm bones' weight; the meshes are not readable in play mode), every person
+  of the 79 has such vertices: 3,784 in all (13-254 a person, median 36; Police_Male_06 166, cap_Fire_Male_07n 254,
+  cap_Military_Male_03n 143, Medical_Male_01/03 136), all filed under an upper arm (6 of cap_Fire_Male_07n's in its third by the elbow, which C1 counts); the gate's
+  body set drops 3,808 triangles for them (16-197 a person), all 20-60 cm over the hips (30-50 cm on every one of the 79): the
+  chest's side under the armpit. None of the two men's 24 worst contacts lies there. Item: file the gate's vertices as the runtime's skin
+  does (an arm part only when the arm moves it half), with the cells it moves listed.
+
+## 11. The looks' A1: the shoulders hang from the neck (editor owner, 2026-11-26)
+Gate: red, 6460. In the batch's chunks 1-3, cap_Police_Male_01n and cap_Security_Male_01n read A1 23.1-23.4 in look45, look90
+and look135 (their build limits 20.3-20.4; idle 18-19), Construction_Male_02 20.2-21.3 (his 20.1); dfc732a4 passed them all.
+- **Trace (`LookProbeTests`, temporary: each trunk bone's yaw on the pelvis, the line between the shoulders, the right upper
+  arm's forward and outward angles, the arm clearance's push; Gaze.BodyWeight 0.25, 0.1 and 0; looks at 0 and ±45°):** at
+  BodyWeight 0 the spine, chest and upper chest do not turn (the upper chest 2.0° at every angle), yet the line between the
+  shoulders turns 7.1° -> 16.4° for a look right held at 20° (-> -1.8° for one left); the right upper arm swings back (-2.2° ->
+  -6.4°) behind the flank's widest part, the arm clearance pushes it 5.8° out for a contact 1.8 cm deep (0.4-0.8 in the idle),
+  and A1R 18.2 -> 22.8. At BodyWeight 0.25 the chest turned with the shoulders (14.9°), which hid it: dfc732a4's value.
+- **Cause:** the Rocketbox skeleton is 3ds Max's Biped, whose clavicles hang from the neck (`Bip01 L/R Clavicle`, parent
+  `Bip01 Neck`, in every body's `.fbx.meta`), and Unity's look-at gives the neck a share of the head's turn: every look carried
+  both shoulders round on a still chest. A real head's axial turn is made mostly at C1-C2, and the shoulder girdle rides on the
+  thorax, not on the cervical spine.
+- **Fix (`Gaze`):** the head is turned at its own joint after the animation (round the vertical, then up or down about the
+  face's level right, by `HeadWeight`, within the same clamps); Unity's look-at turns only the eyes (and the trunk by
+  `BodyWeight`, 0). The face's axis is taken in the avatar's neutral pose, as the gate takes it (taken from the pose the model
+  was saved in, Female_Adult_01's levelled face stood 15.3-16.1° low, H1). On the nine picked people: the line between the
+  shoulders 0.9° at every look angle, A1R in the looks 17.7-18.0; everyday 13 -> 3 (A1 9 -> 1, W3 3 -> 1); the fight's H2 aim
+  27 -> 0, H3 aim 9 -> 0, H2 strike 16 -> 8, H1 aim_pistol 3 -> 0; worse: A1 combat:aim 2 -> 23 (the rifle aim's upper arm
+  41-49° at p2 against 54.8: the neck's swing had been raising the shoulders; dfc732a4's key stands at 237) and FY2 strike 0
+  -> 8.
+
+## 12. The runtime's skin against the drawn surface: filled points off it, and gear's sharp features (editor owner, 2026-11-26)
+Gate: red, 6460 (dfc732a4). The whole cast of the batch's tree before this round (hash 8d5742a5, three runs of resumable
+chunks): every fight key but a few far down (overall 6460 -> 3815), but the everyday states 4 -> 22: C1 5 (Construction_Male_06's
+right forearm at the hip, 0.5-0.8 cm, slope, look90, after:argue, turn, talk), A1 2 (Construction_Male_02/03 in the second
+men's idle, 21.3/21.5 against 20.1/20.0), A4 1 (cap_DM01s, second idle, 6.6), W1 1 (Female_Adult_01's jog, 6 %), W6 1
+(Medical_Female_01's jog, max 4.4), W3 12 (the women's walks: Female_Adult_15 3, Medical_Female_02 2, Medical_Female_03 3,
+rel_FA06k 2; Police_Male_06 1, cap_Police_Male_03n 1).
+- **Trace (`SkinTruthProbeTests`, temporary: the gate's own pick with a watcher that measures each of the runtime's arm
+  points against the drawn surface every second frame, inside by the gate's ray parity, beside `BodySkin.Depth`, and dumps each
+  state's worst frame with the runtime's body points and the drawn triangles; offline readings of the dumps):**
+  - Construction_Male_06's forearm point 3608 (its sleeve 0.4 cm) stood 0.9-1.03 cm inside the drawn hip while the runtime
+    read it 0.53 cm (the low band's IMLS) in some frames and outside in others. The body points there are a belt pouch's facets
+    (split vertices, the pouch's top facing up 2 cm under the contact, an inward-tilted face kept by the inside-faces test at
+    -0.18 against its -0.2): the three nearest stand within 0.06 cm of one another's distance and vote either way, and the IMLS
+    averages the pouch's top into the trousers' side (a concave corner, which a smoothing kernel under-reads).
+  - **The filled points stood off the drawn surface.** On every body traced the skin's points on mesh vertices sit on the drawn
+    surface (0.00 cm), but the filled points (every 2.5 cm on the big triangles: most of a coarse hip's and flank's points)
+    stood outside it along their normals, less their clothes, by p50 0.58, p90 1.27, p98 1.59 cm (2440 points of
+    Business_Male_03/05, Construction_Male_06, cap_DM01s, Female_Adult_01). RocketboxLayers put them on the curved (Phong)
+    surface of their corners' normals on 2026-11-08, when the gate read the vertices' planes; the gate reads the drawn, flat
+    triangles since 2026-11-18. The arm clearance held elbows, forearms and hands off a surface that is not drawn: the
+    second idle's elbow against Construction_Male_02's flank read 1.3 cm in (the push 4.1°, A1 21.4), cap_DM01s's forearm at
+    the thigh's pocket 2.1 cm (the shoulder's remainder 6.6°, the hand thrown 5.7 cm off the thigh, A4 6.7).
+- **Fix, at the sources:** (1) `RocketboxLayers.Skin`: the filled points on the triangle as drawn, with the face's own normal;
+  every person's skin points rebuilt (`RocketboxPeopleBuild.BuildSkins`: the layers and skin points only, no prefab saved; the
+  79 `_skin.bytes` changed, the layers byte for byte the same). Measured on the rebuilt bodies (2511 filled points of twelve
+  people): off the drawn surface p50 0.00, p90 0.08, p98 0.22 cm. (2) `BodySkin.Depth` in the low band (the hips and thighs):
+  whether a point is inside and how deep from the robust implicit surface of the points near (RIMLS: Öztireli, Guennebaud and
+  Gross 2009, Computer Graphics Forum 28(2), a moving-least-squares surface that keeps sharp features by reweighting each
+  point by its plane's residual and its normal's agreement), in place of the nearest-three vote and the IMLS there. Offline on
+  the first dumps (659 arm points of five people, 75 contacts): under-reads past 0.2 cm 22 -> 4, the inside test wrong 71 ->
+  59 (the rest are the filled points' over-reads, which (1) removes).
+- **Measured in the game (the gate's pick of 18 people: the failing ones and controls; not a verdict):** everyday cells 22 -> 17
+  on those people (the whole cast's run before against the pick after), their fight cells 896 -> 722. Gone: Construction_Male_02's
+  A1 (21.4 -> 18.4, the push 4.1 -> 1.3°), cap_DM01s's A4 (6.7 -> 3.7, the shoulder's remainder 6.6 -> 1.3°),
+  Medical_Female_02's and rel_FA06k's W3, Construction_Male_06's slope, look90 and turn. Lower but still over: Construction_Male_03's
+  A1 21.5 -> 20.5 (his 20.0), Medical_Female_03's W3 39.6/36.8/39.1 -> 36.2/35.1/35.9, Police_Male_06 35.6 -> 35.1,
+  cap_Police_Male_03n 36.3 -> 35.0. The arm clearance's cost in the editor rose from 7.7-8.0 to 13.5-15.2 ms a person a frame in
+  the idles (the robust reading on every query near the hips).
+- **Open (traced, not fixed this round):**
+  - Construction_Male_06's resting right forearm passes 0.6-0.7 cm through the bottom of his hip pouch (idle1, after:argue,
+    after:drink, after:wave; talk 0.51). The runtime reads the contact at the sleeve's point within 0.1 cm of the truth, but the
+    resting give (0.25 cm and half the 0.4 cm sleeve) is set for a sleeve between the arm and the body; here the arm's normal at
+    the deepest vertex points out through the pouch's bottom, so the bare arm lies 0.2 cm deeper than its sleeve's point. Item:
+    the sleeve's and clothes' give only for the share of their offsets that lies along the contact's normal.
+  - W3 in the women's walks (Female_Adult_15 35.7, Medical_Female_03 35.1-36.2): the clip's right upper arm swings back into the
+    back flank (the push at the shoulder p98 32° for a point 8 cm past its margin, Female_Adult_15, whose coat stands 1.9 cm
+    there). Not the gaze: with `Gaze.BodyWeight` back at main's 0.25 (an A/B on the same tree, eight people) Female_Adult_15 reads
+    35.5-35.6 (35.7 at 0), Medical_Female_03 passes, and the men's walks get worse (Police_Male_06 35.1 -> 36.6-37.3,
+    cap_Police_Male_03n 35.0 -> 36.6-39.6). Item: the women's walk (`walk_f_b`, ACCAD Female1) retargeted onto broader, coated
+    bodies swings the right upper arm through the back flank; the contact-preserving retarget (§8) or a re-cut of the walk.
+  - W1 Female_Adult_01's jog (6 %): only her right foot slides (the ball at push-off 0.16-0.34 m/s while held, the heel at
+    touchdown). Its held pivot (the skin's sole point) lies 4.7 cm across the sole from the gate's ball; the hold pitches the foot
+    about the level axis across its heading through that one point, so a sole point off that line circles it as the heel rises.
+    Mirroring the right sole's points from the left's did not change it (6 %); no roll at touchdown (both feet within 1.5°).
+    Item: pitch a held forefoot about its own hinge (the line through the ball band's lowest underside points).
+  - W6 Medical_Female_01's jog (a single frame 4.4 cm, the cap 4.0) and Female_Adult_01's talk C1 0.55: not traced.
+
+## 13. The everyday cells after §12: the striding push, the sleeve's share, the robust reading's reach and cost, the arms' seams (editor owner, 2026-11-26)
+Gate: red, 6460 (dfc732a4). Traced on picks of the batch's tree (the gate's own pick with a temporary probe beside it: the moving
+arm's angle at each step of the arm clearance, the resting forearm's depth at each step, the feet's holds, the runtime's arm
+points against the drawn surface); never a verdict.
+- **W3, the women's walks (and the men's walk_player): the push along the contact's normal lay along the swing.** Female_Adult_15's
+  right upper arm entered the clearance at 18.8° from down (swung 18.6° back, 2.8° out), its third by the elbow 6.8 cm past its
+  margin in her coated back flank; `SkinNeed` pushed it along the contact's normal, 74 % backward, by 32°, to 46° (42° back), and
+  the stride's ease (`Swing`) brought it back to 36°. Medical_Female_03 the same (to 49.7°, eased to 38); the men's left arm the
+  same forward over the belly (the normal 75 % forward, 32 -> 39.7 -> 35.2). The right arm's push was 2-3 times the left's in all
+  three women (`walk_f_b` is a walk after a right turn). **Fix (`ArmClearance.SkinNeed`):** striding, each contact is pushed
+  along its normal or straight out from the body, whichever leaves the upper arm nearer the vertical (the rule the stride's ease
+  already used, `EaseOut`): the clip's swing is kept and the arm stands out for the body's breadth. On the 18-person pick W3 8 -> 0
+  (Female_Adult_15 35.8 -> 31.4, Medical_Female_03 36.5 -> 33.5, Police_Male_06 and cap_Police_Male_03n under 35).
+- **C1, Construction_Male_06's forearm in his hip pouch (five resting states).** (1) The cloth and sleeve give was given whole
+  wherever the arm met the body; it is now given only for the share of each offset that lies between the two along the contact's
+  normal, and where the sleeve's offset points away from the body the bare arm counts deeper than its point by that share
+  (`ArmClearance.Give`): five states -> four, the vertex 0.7 -> 0.54-0.66 cm. (2) The contact's normal was the three nearest
+  points' normals summed, which at the pouch's bottom leaned 16° toward its bevelled edge and gave the sleeve's offset a share
+  of +0.13 where the bare arm lay 0.19 cm under its point (-0.4): inside by the robust surface, the contact's normal is now that
+  surface's own gradient (`BodySkin`). With it and the robust reading kept within its bandwidth (below), the pick's C1 for him 4 -> 0.
+- **The robust reading's cost and reach (`BodySkin`).** The robust reading (RIMLS, §12) ran for every low-band point within a
+  cell. Measured on this tree, idles, the editor: (a) an exact test first (the surface is a weighted mean of the points' plane
+  distances with positive weights, so when no point within reach has the arm's point behind its plane it is outside, as the
+  passes would say): little gain (the passes ran on only 1.7-7.9 % of the asks); (b) the reach's points gathered only for the low
+  band's asks, from the cells the reach touches: no gain over (a); (c) **read only within its bandwidth of the surface** (the
+  nearest point's plane within h): offline on the dumps (the layered surface as the truth), past the bandwidth the extrapolated
+  surface read 11 of 7292 points 2.5-4.3 cm off the body as 0.01-0.5 cm inside, and the vote read none wrong there, so the vote's
+  answer stands past it. Cost on the 18-person pick (idles, a person a frame): 13.5 (§12) -> 10.3 ms, against 7.9 before the robust
+  reading (on the skins before §12's rebuild); with the robust reading switched off on this tree 7.1-8.6 ms for three of them
+  (on 7.6-10.6): the robust reading now costs 0.5-2 ms, and the rest of the rise is the arm clearance's own extra work on the
+  rebuilt skins (more contacts read where they are: asks +0-20 %). Not yet at the cost before it: open.
+- **C1, Female_Adult_01's talk (the left upper arm's third by the elbow on the chest's side, 30 cm over the hips): the arm's
+  seam was not sampled.** The runtime's arm points there read within 0.1 cm of the truth (0.05-0.19 cm outside the drawn body);
+  the gate's vertex 1987 is a sleeve seam (split vertices) 0.65 cm from its cell's point and 0.6 cm out of that point's plane,
+  and the skin samples one vertex a 1.8 cm cell (the one nearest the cell's centre): held at contact by its points, the arm
+  pressed the seam 0.35-0.58 cm into the chest all through the talk. **Fix (`RocketboxLayers.Skin`):** an arm's vertex that stands
+  out of its cell's point's tangent plane by more than the resting give (0.25 cm) is a point of its own (split vertices once);
+  every person's skin rebuilt (`RocketboxPeopleBuild.BuildSkins`; arm points +3.5 %, 47,450 -> 49,108, mostly the hands' folds).
+- **W1, Female_Adult_01's jog: the hinge hypothesis refuted; the gate's right ball lies on the toes.** The foot plant pitches the
+  held foot about the level axis across its heading, exactly (the turn's axis between frames 1.00 across, 0.00-0.01 along and
+  up); the gate's right-foot ball is vertex 2868 on the toes' row (1.9 cm past the toe joint; the left foot's is on the
+  metatarsal row, where the plant holds both), chosen as the lowest of the band in the neutral pose, where the flat sole's two rows
+  tie. At push-off the rigid foot turns at 500-650° a second about the metatarsal row, which the hold keeps still and lifts 2-9 cm,
+  and the toes' row 3.4 cm ahead sweeps 0.16-0.36 m/s. Tried and reverted: the toes held on the ground at their pad (the windlass)
+  took the right ball to 0.10-0.17 m/s and passed W1, but sank the soles 1.6-5.9 cm into the ground (W6) in 16 of 18 people: a
+  rigid foot pivoting on a point under and behind the toe joint lowers the joint, so held toes go into the ground. Open: a
+  rolling forefoot (the contact moving from the metatarsal heads to the toes as the heel rises), or the ball's band defined behind
+  the toe joint in both the gate and the build (a measure's change: for the coordinator).
+- **Measured, the 18-person pick with all of the above (never a verdict):** everyday cells 17 -> 3 (Construction_Male_03's A1
+  20.6, Female_Adult_01's jog W1 6 %, Medical_Female_01's jog W6 4.4), fight cells about level (1046); the arm clearance 9.8 ms a
+  person a frame in the idles (13.5 before this section, 7.9 before the robust reading).
+- **The whole cast's first chunk (ten people, this tree's hash) found a new one: Business_Male_01's right forearm by the elbow,
+  0.59-0.63 cm into the hip in eleven resting states (slope, the looks, after each gesture, turn; C1 drawn, the limit 0.5).** The
+  runtime reads its point there exactly (point 3358: 0.30 cm in, the truth 0.31); the gate's vertex 503, 0.35 cm from it and
+  0.03 cm out of its plane, is 0.63 cm in: the forearm meets the hip obliquely (67° between the two surfaces' normals), so the
+  depth grows 0.9 cm a centimetre along the arm, and the deepest vertex lies between the arm's points (one a 1.8 cm cell). The
+  resting give (`ArmClearance.RestGive`, 0.25 cm) was set for skin points that read contacts 0.1-0.25 cm shallower than the mesh;
+  since §12 they read it within 0.1 cm, so the give and the points' spacing together now pass the gate's 0.5 at an oblique
+  contact. Before §12 the off-surface fills held this arm out and he passed. Tried (kept in the batch): the forearm's and hand's
+  resting give only for the share of the contact that is face to face (`ArmClearance.SkinNeed`: RestGive x the cosine between the
+  arm's and the body's normals): on a 19-person pick he went 0.59-0.63 -> 0.48-0.55 (slope, turn, idle0 pass; the looks and the
+  moments after the gestures still 0.53-0.55, nine cells), nothing else failed (Construction_Male_03's A4 2.5 -> 3.5 of 6.0,
+  Construction_Male_06's A1 17.2 -> 17.8). Not yet fixed: why the looks and the after-gesture states hold the forearm deeper than
+  idle0 (0.24) is to be traced (the hand's learned place, `_adaptL/_adaptR`, drifts across the states, and the hand set at its gap
+  after the clearance moves the forearm by the elbow back in under `SetHand`'s 0.5° check about the elbow); then the arm's
+  body-facing vertices sampled where they rest, if the points' spacing is still what is left.
+- **Open, traced:** Construction_Male_03's A1 in the second men's idle (20.6 against his 20.0: the rest's abduction at its 17°
+  cap with the elbow still 0.9 cm into the jacket's flank at 21 cm over the hips, then the shoulder 3.7° out; the clip's trunk
+  leans back 4° and carries the shoulders 3.6 cm back over the hips, §11); Medical_Female_01's jog W6 (one frame, max 4.4 against
+  the cap of 4.0: the landing foot hovers 4.1-4.4 cm at 0.3-0.5 m/s as the jog slows to a stop, both feet off the ground, so the
+  gate reads it as bearing the weight).
+
+## 14. The resting forearm's deepest vertex, the hand's setting, the toes at push-off, the jog's stop (editor owner, 2026-11-26)
+Gate: red, 6460 (dfc732a4). Traced on picks of the batch's tree (the gate's own pick with a temporary probe beside it); never a
+verdict.
+- **C1, Business_Male_01's forearm by the elbow (nine resting states, 0.53-0.55 cm after §13's face-share give).** (1) The hand's
+  learned place (`_adaptL/_adaptR`) is not the cause: it is updated only when the upper arm is not placed first, and it is.
+  (2) What differs between his first idle (0.24) and the looks and the moments after the gestures (the same clip): the resting
+  upper arm's tilt back (`back`, held in a 4° band) settles at 3.7° in the first idle and 3.3° after the second idle's clip, the
+  shoulder's push is for the forearm from 2.7 against 3.0 cm in; the runtime's deepest forearm point reads the same in all of them
+  (0.21-0.22 cm, the probe's resting-step trace), the gate's vertex does not. (3) **The hand's setting let the forearm back in:**
+  after the clearance, `SetHand` refused a move only past half a degree of the shoulder's need, and the runtime's deepest forearm
+  point went 0.14 -> 0.21-0.22 cm through it in every resting state. Fix: refused when it leaves the arm needing more than before
+  it (0.01°), never past half a degree. (4) **The arm's sampling left out the deepest vertex:** the forearm's points there stand
+  4.4-6.6 cm apart but for one, point 3358, 0.35 cm from the gate's vertex 503 and in its plane; where the arm meets the hip
+  obliquely (56-67° between the surfaces) the depth grows along the arm's own plane, and 503 read 0.63 cm in while its cell's
+  point read 0.31 (`SkinTruthProbeTests`, look0). The drawn arm is flat between its vertices, so its deepest point in a body is
+  always one of them; one point a 1.8 cm cell (the vertex nearest the cell's centre) stood for vertices up to a cell away, and the
+  stand-out rule of §13 caught only those out of the point's plane. Fix (`RocketboxLayers.Skin`): every forearm and lower upper-arm
+  vertex further than the resting give (0.25 cm) from each point its cell keeps is a point of its own (the hands keep the stand-out
+  rule on their 1.2 cm cells); every person's skin rebuilt: arm points 49,108 -> 50,600 (+3 %; the forearms +15 %). On a 14-person
+  pick with both: his C1 0.53-0.55 -> 0.27-0.30 cm (slope 0.48 -> 0.41, turn 0.49 -> 0.17), everyday cells on the 13 people common
+  with the pick before 12 -> 3, none made worse; fight cells 746 -> 748.
+- **W6, Medical_Female_01's jog stop: tried and reverted.** The landing foot hovers 4.1-4.4 cm, 0.3-0.5 m/s across the ground and
+  level, as the jog slows at about 6 m/s²; the foot plant's catch (the hips set down onto a slow lower foot, both feet up) is keyed
+  on its own pace, smoothed over a tenth of a second, under 2.4 m/s, and did not fire. Keyed on the foot's own motion instead (slow
+  across, rising or falling under 0.2 m/s), it fired one frame after the frame the gate counts (the plant sees a foot's level only
+  after the frame) and fired in the jog's flight too: two joggers' W1 p98 went 5.4 -> 32 and 3.5 -> 37 cm/s. Reverted. Open: the
+  stop's blend lands the foot slow and 4 cm up (the clip, or the locomotion's slowing from the jog).
+- **W1, Female_Adult_01's jog: the toes turned into the ground with the foot.** The foot plant holds a moving foot on its ball
+  (the metatarsal row) and turns it there by the clip's pitch; the toes went with it, rigid (`FootPlant.Toes` straightens them to
+  their rest while the ankle is low, for landings), so as the heel rose the toes' row 3.3 cm ahead turned down into the ground, the
+  foot was lifted out by its lowest point, and the row swept along the ground at 0.16-0.36 m/s: the gate's right-foot ball lies on
+  that row (her forefoot is flat, the two rows tie, §13). Tried, then reverted (§15: it moved another flat forefoot's ball; the
+  cell is carried to the next batch) (`FootPlant.ToesDown`): a held foot's toes are bent up at the toe
+  joint until their sole lies as it did with the foot flat, within 50° of their rest (the first toe reaches 40-65° at toe-off in
+  real walking, Nawoczenski, Baumhauer and Umberger 1999), eased back to the clip's over the hold's release when the foot lifts;
+  the foot is still held on its ball, and kept as low as with the toes rigid (laid down, the toes lifted the sole's lowest point
+  off the ground they had been pressed into: the stance soles stood 1-3 cm up, W6 0.3 -> 1.1-2.9 cm at the p98 in four of twelve
+  people, before that was kept). On a 10-person pick her jog's W1 passes (6 % of frames over 15 cm/s before), and the stance soles stand as they did
+  (Male_Adult_06's and Construction_Male_02's jog W6 back under their limits); Business_Female_01's jog W6 reads 2.48 at the p98
+  (2.17 before the toes, limit 2.5).
+- **The rolling forefoot about the toe joint: measured, not applied.** Every body's forefoot in the bind pose (a temporary probe,
+  the gate's own ball band): the Biped toe joint sits at the sole (0.2-0.6 cm over the ball's vertex); 154 of the 158 gate balls lie
+  behind it (median 3.3 cm, the metatarsal row), skinned 0.9 to the foot's bone (median), 4 on the toes; 10 feet are flat (the two
+  rows tie: Female_Adult_01's both, 12, 14, 17, Male_Adult_06). Turned about the toe joint with the toes kept, the foot moves every
+  metatarsal-row ball by its foot-bone share at about the pitch rate x 3.3 cm x sin(pitch), the speed the toes' row has now about
+  the ball: it would trade her one cell for the cast's. The toes laid down while the foot stays held on its ball moves her toes'
+  row only with the toe joint (1.5 cm ahead of the ball).
+- **Cost (the arm clearance, the editor's idles, a person a frame).** (1) The gate traces the first person and the first man of
+  each run with `TraceStages` (the managed depth over the hands and forearms at six steps): their cost reads 5-6 ms high, and the
+  means quoted before mixed them in; compared here without them. (2) Of the clearance's depth asks, 29-50 % a person are the same
+  point at the same place against the same posed body (a forearm asked again after only the hand moved, the hand after only the
+  elbow turned): `BodySkin.DepthRange` now keeps those answers for the pose (the batch reckons each point from its place and the
+  body's points alone, so the answer is the same; `DepthKept` counts them). (3) On ten people of a pick (untraced) against the whole
+  cast's run before the robust reading (hash 8d5742a5, the same people): Medical_Female_01 5.6 -> 6.5, Medical_Female_03 5.6 -> 6.7,
+  Female_Adult_12 5.7 -> 6.3, Female_Adult_14 4.8 -> 4.8, Female_Adult_17 5.6 -> 5.9, Male_Adult_01 6.6 -> 6.2, Male_Adult_06 7.2 ->
+  7.8, Female_Adult_15 8.5 -> 9.2, Construction_Male_02 8.4 -> 10.5 ms: about 9 % over. On the whole cast's first chunk (its eight
+  untraced people): 7.4 ms a person before the robust reading (the run of hash 8d5742a5), 9.5 before this section, 9.0 now (Business_Male_04 8.6 -> 7.3, Business_Male_06 8.3 -> 7.0, Business_Male_03 12.7 -> 11.8). What is left is the robust reading near the hips (0.5-2 ms, its A/B in §13) and the asks of the
+  rebuilt skins' points (the arm's points +3 % here, the filled points on the drawn surface in §12): the price of reading the drawn
+  surface.
+
+## 15. The everyday cells of the batch's whole cast: the drawn body read at runtime, the push judged by where it leaves the arm, the toes reverted (editor owner, 2026-11-26/27)
+Gate: red, 6460 (dfc732a4). The batch's whole cast (cast 5, hash e7b6e14a) stopped at its fifth chunk with 18 everyday cells; an
+everyday-only screen (the gate's own `Gate()` with the fight left out, the everyday measures bit-identical to the gate's: 3,963 of
+3,963 equal to 1e-6 on a chunk) over all 79 found 20, and a bisect of the changes since cast 3's tree on a five-person batch
+attributed them (`EverydayScreenTests`, temporary): Male_Adult_02's C1 in 13 resting states and Female_Adult_11's walk with a bend
+(W3) and the yawn's C1 (Female_Adult_05, rel_FA10k) to the skins rebuilt on the drawn surface in §12 (cast 3's skins pass all
+three), Female_Adult_14's jog (W1) to the toes laid down (§14), and Construction_Male_03's idle (A1) and Medical_Female_01's jog
+(W6) to before (§13).
+- **Satellites (tried, refuted, reverted).** Each arm point read at the drawn vertices its cell stands for, the deepest kept: 35 %
+  of those reads were deeper than their point, at about 0.1 ms a frame, and Male_Adult_02's forearm stood exactly where it was
+  (0.53 cm in): no push happened there at all, so the samples were not what held it.
+- **C1, Male_Adult_02's resting forearm: the runtime's reading under-read a concave waist.** The vote's depth is the least of the
+  three nearest body points' plane depths; at his waist under the ribs (the nearest normals 25° apart) the forearm's point 2831,
+  0.53 cm into the drawn body and 0.93 cm into the layered one, read 0.41 cm (the nearest planes 0.41, 0.56, 1.42 cm), within the
+  resting give. Before §12 the filled points' 0.6 cm stand-off hid it. Every reading of a point cloud (planes, IMLS, RIMLS) errs
+  at concave or sharp places. **Fix (`BodySkin`, `RocketboxLayers`): the runtime reads the drawn body itself.** The skin (RBS6)
+  now carries the body's own torso and thigh triangles as the gate takes them (every mesh vertex filed by its nearest segment in
+  the neutral pose, a triangle the body's when its three corners are), each corner with its own bones and weights, layers and
+  flank delta, and the bones' bind poses. Once a pose the runtime skins those vertices as the mesh is drawn (Burst, the quality's
+  bone count, the flank correctives) and refits a bounding volume hierarchy built over them; every arm point the vote reads within
+  2.5 cm of the body is read again against the triangles: the nearest point on them (exact), inside where the nearest feature's
+  angle-weighted pseudo-normal (Bærentzen and Aanæs 2005, IEEE TVCG 11(3)) or the skin points find it inside and the gate's own
+  three level rays confirm it, and out by the clothes over that point (the corners' layers, interpolated). The drawn body gives
+  the depth; the way out (the contact's normal) stays the skin points', which keep the body's outer surface only. The robust
+  reading's passes (§12-§13) are no longer run where the drawn body answers.
+  - Exactness, measured in game conditions (`SkinTruthProbeTests`, temporary: the gate's pick with a watcher reading every arm
+    point within 2 cm of the body against the gate's own reading of the baked mesh, every second frame): on Male_Adult_02,
+    rel_FA10k and Female_Adult_05 (2,286 frames of six everyday states, 104,479 readings) the posed vertices stand within 0.0043
+    cm of the baked mesh's (0.0001 cm at the median frame), the depth within 0.0017 cm of the gate's (p99 0.0005), and the gate's
+    rays agree with the gate on 104,478; on cap_Police_Male_03n and cap_Fire_Male_07n (53,566 readings) the vertices within
+    0.010 cm, the depth within 0.0055 cm.
+  - The first version took the contact's normal from the drawn body too (toward the nearest triangle). On the batch it took
+    Male_Adult_02's thirteen cells away and made seven on two men in gear: on cap_Police_Male_03n's resting arm the nearest
+    triangle to a forearm in a belt pouch was the pouch's back, turned toward the body, and the shoulder's push along it turned the
+    arm 12° in and the hand 3 -> 5 cm into the thigh (C1 2.7 cm in the talk, 1.6 in the turn); on cap_Fire_Male_07n 83 readings
+    lay between a garment and what it covers, where the nearest face is the covered layer's, turned toward the point (out by it,
+    in by the gate's rays, up to 0.51 cm). Hence the normal from the skin points, and the rays asked where either test finds the
+    point inside.
+  - Cost (the editor, the batch's twelve people, every everyday state): the drawn reading 0.5-1.9 ms a person a frame (250-900
+    readings a frame, about 1.7 µs a reading; posing 0.07-0.16 ms); the arm clearance as a whole +0.12 ms a person a frame on
+    the mean (-0.6 to +0.9), the robust reading's passes no longer run. Over all 79 (the all-79 screen): the drawn reading 0.5-2.6 ms
+    a person a frame (median 0.86, mean 1.03; the heaviest a man in a jacket with a hip pouch), the arm clearance 4.6 ms (median).
+- **W3, Female_Adult_11's walk with a bend: the striding push chosen by the angle it alone leaves.** §13's rule pushed each
+  contact along its normal or straight out, whichever left the upper arm nearer the vertical at once; the stride's ease (`Swing`)
+  then eases only the swing forward and back, so a push out kept a sideways stand the ease could not take back, where a push along
+  the normal would have been eased away (35.5° at the p98 with the rule, 32.7 without). **Fix (`ArmClearance.SkinClear`,
+  `StrideEnd`):** striding, both pushes are tried (every contact along its normal, every contact straight out), each with the
+  stride's ease after it as the frame will run it, and the one that leaves the upper arm nearer the vertical is kept. On the
+  batch her W3 35.5 -> 32.5, nothing else made worse (cap_Police_Male_03n's walk_player 34.7 -> 33.5).
+- **C1 in the yawn (Female_Adult_05, rel_FA10k): the push carried the arm back through the body.** The reading was right (the
+  upper arm's point 4.63 cm read against 4.64 true). The clip takes the forearm 5-9 cm into the body behind the flank; the
+  shoulder's push is for that point along its contact's normal, and for a point deeper than the arm is thick the normal is the
+  nearest surface's, which flips between the flank's side and the back from frame to frame. In the frames where it pointed back
+  the push and its two passes turned the arm back and in (17-26° back, 11-18° in) and left the forearm 1.8-2.8 cm and the elbow up
+  to 4.6 cm in; in the others it turned forward and out (15° and 20°) and cleared it. (Tried first, refuted: the elbow's third
+  filed by its live place along the arm; the point read 0.79 of the way, inside the third.) **Fix (`ArmClearance.SkinClear`,
+  `OutRetry`):** moving or gesturing, a push that leaves the arm more than 2 mm in is tried again from the same start straight out
+  to the side (as the stride's ease already does when a push fails), and whichever leaves the arm less in is kept. On the batch
+  both yawns' maxima 1.6 and 4.7 cm -> 0.00, nothing else made worse.
+- **C1, Construction_Male_03 at rest and turning: found by the all-79 screen with the drawn reading in.** The vote had read his
+  elbow 0.7-1.0 cm into his jacket's flank and pushed it out (his A1 20.6 in the second idle, §13); the drawn body reads it at
+  contact, so his arm hangs in to 17.5°, and his forearm comes to rest under the hip's bulge where it faces down and out at the hip
+  joint's height. There the three rest passes along the contact's normal (3.2-4.5° in all, under their 12° cap) moved the hanging
+  forearm along the bulge and not out of it: at the end of every frame the clearance's own test (`SkinNeed`) still asked for
+  1.1-1.8° (a temporary probe calling it after the frame), and the forearm stayed 0.6 cm in (0.8 in the turn). **Fix
+  (`ArmClearance.SkinClear`, `RestOutRetry`):** at rest, rest passes that leave the arm short of the clearance's target are run
+  again from the same start straight out to the side, and whichever leaves the smaller need kept (G4's rule, at rest); and the
+  stride's two pushes (above) are judged first by which leaves the arm less in, then by which leaves it nearer the vertical. On
+  his chunk (its own ten people): everyday 2 -> 0, his C1 0.61 -> 0.00 and 0.79 -> 0.03, his A1 up 0.3-1.0° (18.45 in the second
+  idle, his limit 20.0), nothing else moved.
+- **W1, Female_Adult_01's jog: a known cell carried to the next batch.** Her right foot's gate ball (vertex 2868) lies on the
+  toes' row, 1.9 cm past the toe joint, where her flat forefoot's two rows tie in the neutral pose (§13); the foot plant holds the
+  metatarsal row, so at push-off the rigid foot's toes' row sweeps 0.16-0.36 m/s about the held row (6 % of the jog's frames over
+  15 cm/s). Laying the toes on the ground (§14) passed her jog but moved Female_Adult_14's ball (her forefoot is flat too): with the
+  toes laid down her gate ball rolled forward 15-22 cm/s at 2.1-2.4 cm through push-off, W1 7.9 % in the jog and 6.5 % with a bend
+  (2.8 % and 0 with the toes rigid, on the same batch). Reverted (`FootPlant` as on cast 3's tree). Open, for the next batch: a
+  forefoot that rolls its contact from the metatarsal heads to the toes as the heel rises, or the ball's band defined behind the toe
+  joint in the gate and the build alike (a change of the measure: the coordinator's).
+- **Measured.** On the twelve-person batch (one composition, the everyday states): 17 everyday cells with none of the above, 14
+  with the two pushes, 1 with the drawn reading too (Female_Adult_01's jog). The all-79 screen on the final tree (hash 262f76da,
+  111 min): 2 everyday cells, Female_Adult_01's jog W1 and Medical_Female_01's jog W6 (one frame 4.4 cm, the cap 4.0; §13).
+  The whole cast on the same tree (2026-11-27 04:34, 79 people, the verdict in `docs/qa/gates/motion_gate.json`): 3,351 failing
+  cells against dfc732a4's 6,460 (the fight's new FY1/FY2 aside, exempt as introduced), the everyday states 4 -> 2 (the same two);
+  F1 1,511 -> 743, C1 614 -> 416, K1 578 -> 133, F4 499 -> 165, A1 474 -> 322, H1 474 -> 237, WG2 414 -> 54, H2 395 -> 54. Fifteen
+  keys stand worse than dfc732a4's, every one but one at its count on cast 3's tree before this round (the fight's clips on every
+  body of a sex, and the two known everyday cells); the one, Kb in the strikes, 129 -> 154: listed with their causes and fix items
+  in `docs/qa/gates/motion_waivers.json` (the waiver policy).

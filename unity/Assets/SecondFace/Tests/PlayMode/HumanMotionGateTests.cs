@@ -57,6 +57,70 @@ namespace SecondFace.Tests
         }
 
         private const float Inf = float.PositiveInfinity;
+
+        // ---------------------------------------------------------------- the arm's hang by build (docs/qa/motion_calibration.md §9)
+        /// <summary>A man's upper arm hangs further out the broader his trunk where the elbow hangs (docs/qa/arm_build_evidence.md:
+        /// Cau et al., Shewhorak's walkers, the clearance geometry on ANSUR II; the coordinator's decision, 2026-11-18): standing,
+        /// A1 ≤ 20 + <see cref="A1PerCm"/>·e, where e is his BODY's breadth at the hanging elbow past ANSUR II men's median at
+        /// his stature (<see cref="AnsurWaistShare"/> of it: the median of waist breadth over stature, 4,082 men, nude), held
+        /// to <see cref="BuildMaxCm"/>, the edge of the data. The body's breadth: his TorsoProfile as built (the game's own
+        /// garment layers left out) less twice his base's baked top (docs/qa/gates/motion_build_tops.json: a shirt 0.3 cm a
+        /// side, a knit 0.6, a jacket or coat 1.3; a top that cannot be classified a jacket's, the stricter limit). The base
+        /// limit of 20 already holds real people's ordinary clothes, so clothes counted into e would count twice. The
+        /// conservative end of the evidence (k 0.43 of its 0.43-1.29° per cm). Women keep 20 until a woman's reference
+        /// exists; the cap stays 28.</summary>
+        public const float A1PerCm = 0.37f, AnsurWaistShare = 0.18588f, BuildMaxCm = 9f;
+        private static readonly Dictionary<string, float> BuildCm = new();
+        private static readonly Dictionary<string, string> BuildTop = new();
+        private static Newtonsoft.Json.Linq.JObject _tops;
+        private static (string Class, float Cm) Top(string id)
+        {
+            if (_tops == null)
+            {
+                var path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "docs", "qa", "gates", "motion_build_tops.json"));
+                _tops = File.Exists(path) ? Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(path)) : new Newtonsoft.Json.Linq.JObject();
+            }
+            var cls = (string)_tops["bases"]?[id] ?? "jacket";
+            var cm = (float?)_tops["allowance_cm"]?[cls] ?? 1.3f;
+            return (cls, cm);
+        }
+
+        /// <summary>A man's e (cm; 0 for a woman, or where his trunk is no broader than the median).</summary>
+        private static float Build(GameObject go, Animator a, bool male, string id)
+        {
+            if (!male || a == null) return 0f;
+            var tp = go.GetComponentInChildren<TorsoProfile>();
+            var hips = a.GetBoneTransform(HumanBodyBones.Hips); var up = a.GetBoneTransform(HumanBodyBones.LeftUpperArm);
+            var lo = a.GetBoneTransform(HumanBodyBones.LeftLowerArm); var upR = a.GetBoneTransform(HumanBodyBones.RightUpperArm);
+            if (tp == null || hips == null || up == null || lo == null || upR == null) return 0f;
+            // the stature: the body's own mesh at its bind, as the audit measures it (a renderer's bounds are padded: 7-9 cm over)
+            var top = float.MinValue; var baked = new Mesh();
+            foreach (var r in go.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                if (r.sharedMesh == null) continue;
+                r.BakeMesh(baked, false);
+                var m = r.transform.localToWorldMatrix;
+                foreach (var v in baked.vertices) top = Mathf.Max(top, m.MultiplyPoint3x4(v).y);
+            }
+            Object.Destroy(baked);
+            if (top == float.MinValue) return 0f;
+            var stature = (top - go.transform.position.y) * 100f;
+            // the hanging elbow's height in the profile's frame (the hips' at rest): the shoulder joints less the upper arm
+            var elbowY = 0.5f * (up.position.y + upR.position.y) - (lo.position - up.position).magnitude - hips.position.y;
+            // the profile as built (its Rx: Sample adds the game's garment layers worn over it)
+            if (tp.Rx == null || tp.Rx.Length < 2) return 0f;
+            var f = (elbowY / Mathf.Max(0.01f, go.transform.lossyScale.y) - tp.Bottom) / tp.Step;
+            if (f < 0f || f > tp.Rx.Length - 1) return 0f;
+            var i0 = Mathf.Min((int)f, tp.Rx.Length - 2);
+            var rx = Mathf.Lerp(tp.Rx[i0], tp.Rx[i0 + 1], f - i0);
+            var built = 2f * rx * go.transform.lossyScale.x * 100f;
+            var (cls, side) = Top(id);
+            var breadth = built - 2f * side;
+            var e = Mathf.Clamp(breadth - AnsurWaistShare * stature, 0f, BuildMaxCm);
+            BuildTop[id] = $"{cls} {side:0.0}";
+            Debug.Log($"HumanMotionGate build: {id} trunk at the hanging elbow {built:0.0} cm as built, its top a {cls} ({side:0.0} cm a side), the body {breadth:0.0}, stature {stature:0.0} cm, the median {AnsurWaistShare * stature:0.0}, e {e:0.0}");
+            return e;
+        }
         private static Lim L(string m, float lo, float hi, float capLo, float capHi) => new() { M = m, Lo = lo, Hi = hi, CapLo = capLo, CapHi = capHi };
 
         private static readonly Lim F4 = new() { M = "F4", MeanMax = 3f, Over = 10f, OverFrac = 0.02f };
@@ -65,9 +129,12 @@ namespace SecondFace.Tests
         private static readonly Lim F1 = L("F1", -1.5f, 2.5f, -3f, 4f);
         private static readonly Lim F2 = L("F2", -2f, 2f, -4f, 4f);
 
+        /// <summary>Standing, the upper arm's hang: 20 (28) for everyone, raised for a broad man by his build (Build).</summary>
+        private static readonly Lim StandA1 = L("A1", -Inf, 20f, -Inf, 28f);
+
         private static readonly Lim[] StandLimits =
         {
-            L("A1", -Inf, 20f, -Inf, 28f), L("A2", 5f, 35f, 0f, 50f), L("A3", -Inf, 30f, -Inf, 40f), L("A4", -Inf, 6f, -Inf, 10f),
+            StandA1, L("A2", 5f, 35f, 0f, 50f), L("A3", -Inf, 30f, -Inf, 40f), L("A4", -Inf, 6f, -Inf, 10f),
             L("A5", 8f, 55f, 3f, 75f), L("S1", -Inf, 6f, -Inf, 10f), L("H1", -15f, 8f, -25f, 12f), L("H2", -Inf, 30f, -Inf, 45f),
             L("H3", -Inf, 10f, -Inf, 15f), F1, F2, L("F3w", 8f, 32f, 5f, 40f), L("F3a", -Inf, 12f, -Inf, 20f), L("F3s", -Inf, 25f, -Inf, 35f), F4, C1,
             new() { M = "F5", MeanMax = 0.12f }, A6,
@@ -121,10 +188,22 @@ namespace SecondFace.Tests
             L("H3", -Inf, 22.1f, -Inf, 25.7f), L("F2", -Inf, 13.2f, -Inf, 14.7f), L("F3w", 16.4f, 83.2f, 1.3f, 90.5f),
         };
         private static readonly Lim[] StrikeArms = { L("A1", -Inf, 88.5f, -Inf, 112f), L("A2", 83.9f, 140.5f, 41.1f, 145.7f) };
-        /// <summary>The long-gun aim: provisional (CMU 79_96 and 80_03, two actors miming a gun; the head from 79_96 alone).</summary>
-        private static readonly Lim[] AimLegs = { L("K1", -Inf, 2.2f, -Inf, 2.5f), L("Kb", -Inf, 20.4f, -Inf, 20.7f), L("F2", -Inf, 1.9f, -Inf, 1.9f), L("F3w", 23.3f, 32.8f, 23.3f, 33.0f) };
-        private static readonly Lim[] AimHead = { L("H1", -3.0f, 1.2f, -3.0f, 1.6f), L("H2", 15.2f, 22.2f, 15.1f, 22.9f), L("H3", 10.6f, 16.6f, 10.4f, 16.7f) };
-        private static readonly Lim[] AimArms = { L("A1", 53.2f, 88.8f, 50.2f, 90.5f), L("A2", 119.6f, 143.0f, 119.5f, 146.6f) };
+        /// <summary>The long-gun aim from three actors (docs/qa/motion_calibration.md §8, combat set v4, 2026-11-17: CMU 79_96, 80_03
+        /// and 100STYLE's Swat_ID, the third bending both knees as real shooters do; the head from 79_96 and 100STYLE). It
+        /// replaced §7's provisional two-actor column (K1 ≤ 2.2, both actors standing straight) on 2026-11-18.</summary>
+        private static readonly Lim[] AimLegs = { L("K1", -Inf, 33.5f, -Inf, 34.9f), L("Kb", -Inf, 37.2f, -Inf, 38.0f), L("F2", -Inf, 1.8f, -Inf, 1.9f), L("F3w", 23.4f, 44.7f, 23.3f, 44.7f) };
+        private static readonly Lim[] AimHead = { L("H1", -7.1f, 0.6f, -7.1f, 1.6f), L("H2", 15.7f, 33.3f, 15.1f, 33.7f), L("H3", 7.9f, 16.3f, 7.8f, 16.7f) };
+        private static readonly Lim[] AimArms = { L("A1", 54.8f, 86.2f, 50.2f, 90.5f), L("A2", 119.7f, 146.1f, 119.5f, 146.6f) };
+        /// <summary>A two-handed weapon's blows from three actors (§8: CMU 79, 80, 124): the arms rise far higher than a punch's and
+        /// the elbows open, the stance wider; the head as the unarmed strike's until a two-handed actor's head can be read.</summary>
+        private static readonly Lim[] Strike2Legs = { L("K1", -Inf, 36.1f, -Inf, 39.3f), L("Kb", -Inf, 54.9f, -Inf, 57.6f), L("F2", -Inf, 15.1f, -Inf, 15.3f), L("F3w", 23.1f, 66.0f, 22.1f, 66.4f) };
+        private static readonly Lim[] Strike2Arms = { L("A1", -Inf, 122.5f, -Inf, 129.4f), L("A2", 13.8f, 128.6f, 11.6f, 135.2f) };
+        /// <summary>A slip or duck from a blow, from four actors (§8: ACCAD Male2, Male1, Female1, CMU 77).</summary>
+        private static readonly Lim[] DodgeLegsHead =
+        {
+            L("K1", -Inf, 122.6f, -Inf, 124f), L("Kb", -Inf, 127.9f, -Inf, 129.2f), L("H1", -47.5f, 3.9f, -54f, 7.9f), L("H2", -Inf, 54.4f, -Inf, 55.4f),
+            L("H3", -Inf, 18.2f, -Inf, 21f), L("F2", -Inf, 6.6f, -Inf, 10.5f), L("F3w", 13.2f, 110.8f, 7.1f, 139.8f),
+        };
         private static readonly Lim[] CrouchLimits =
         {
             L("K1", 16.7f, 147f, 16.1f, 148f), L("Kb", -Inf, 148f, -Inf, 148f), L("H1", -44.7f, 33.8f, -53.3f, 35.4f), L("H2", -Inf, 92.1f, -Inf, 93.2f),
@@ -145,6 +224,10 @@ namespace SecondFace.Tests
             "ready" => GuardLegsHead.Concat(new[] { F1, F4, C1, WG1, WG2 }).ToArray(),
             // blows (feet pivot and step: no F4, which real fighters were not measured on)
             "strike" => StrikeLegsHead.Concat(StrikeArms).Concat(new[] { F1, C1, WG1, WG2 }).ToArray(),
+            // a two-handed weapon's blows (§8): their own legs and arms, the unarmed strike's head
+            "strike2" => Strike2Legs.Concat(StrikeLegsHead.Where(l => l.M is "H1" or "H2" or "H3")).Concat(Strike2Arms).Concat(new[] { F1, C1, WG1, WG2 }).ToArray(),
+            // a slip or a duck (§8): the dodgers' legs, head and feet (the arms are thrown about)
+            "dodge" => DodgeLegsHead.Concat(new[] { F1, C1 }).ToArray(),
             // the long gun's aim and its shots (provisional)
             "aim" => AimLegs.Concat(AimHead).Concat(AimArms).Concat(new[] { F1, F4, C1, WG1, WG2 }).ToArray(),
             // the pistol's aim on the long gun's captured stance: its legs; no stock at the cheek, so the head as standing (§2.1)
@@ -163,9 +246,24 @@ namespace SecondFace.Tests
             _ => StandLimits,
         };
 
+        /// <summary>Facing the fight's target (FY1 the pelvis, FY2 the chest, degrees, + clockwise from above; 2026-11-18, a new
+        /// measure): the §8 actors' own (docs/qa/motion_calibration.md §11, tools/qa/calibration/facing.py), the long gun's aim from
+        /// three, its ready from two (no pistol's or club's ready facing is captured), the blows from ten takes.</summary>
+        private static readonly Lim[] AimFacing = { L("FY1", 45.3f, 60.4f, 44.9f, 68.7f), L("FY2", 56.3f, 76.5f, 56.1f, 84.6f) };
+        private static readonly Lim[] ReadyLongFacing = { L("FY1", 22.3f, 42.4f, 22.3f, 42.5f), L("FY2", 15.4f, 44.3f, 14.9f, 44.3f) };
+        private static readonly Lim[] StrikeFacing = { L("FY1", -69.5f, 47.6f, -87.2f, 109.5f), L("FY2", -64.4f, 50.4f, -80.3f, 99.0f) };
+
         private static Lim[] LimitsFor(string state)
         {
-            if (state.StartsWith("combat:")) return CombatLimits(state.Split(':')[1]);
+            if (state.StartsWith("combat:"))
+            {
+                var set = state.Split(':')[1];
+                var lims = CombatLimits(set);
+                if (set == "aim") return lims.Concat(AimFacing).ToArray();
+                if (set == "strike") return lims.Concat(StrikeFacing).ToArray();
+                if (state == "combat:ready:rifle") return lims.Concat(ReadyLongFacing).ToArray();
+                return lims;
+            }
             if (state.StartsWith("gesture:")) return GestureLimits(state.Substring(8));
             if (state == "pace:walk") return PaceWalkLimits;
             if (state == "pace:jog") return PaceJogLimits;
@@ -378,20 +476,115 @@ namespace SecondFace.Tests
 #else
             var ids = new string[0];
 #endif
-            var failed = new List<string>();
-            var measured = new int[1];
-            var done = 0;
-            for (var i = 0; i < ids.Length; i += 10)
+            // resumable by chunk (the container restarts every 2-3 hours, and a 90-minute run had to finish in one go,
+            // 2026-11-18): each chunk of ten writes its result stamped with the gate inputs' hash of the tree it measured; a
+            // run skips every chunk already measured under the tree's hash and measures the rest; the verdict is written only
+            // when every chunk is there under that one hash (Chunks.Assemble)
+            var dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results"));
+            Directory.CreateDirectory(dir);
+            var batches = Enumerable.Range(0, (ids.Length + 9) / 10).Select(k => ids.Skip(k * 10).Take(10).ToArray()).ToArray();
+            string Hash() => InputsHash("people") + "|" + InputsHash("measures");
+            string ChunkPath(int k) => Path.Combine(dir, $"motion_gate_full_{k}.chunk.json");
+            var hash = Hash();
+            var plan = Chunks.Assemble(batches, Enumerable.Range(0, batches.Length).Select(k => Chunks.Load(ChunkPath(k))).ToArray(), hash);
+            Debug.Log($"HumanMotionGate whole cast: {batches.Length} chunks, {batches.Length - plan.ToRun.Count} already measured under this tree's hash, {plan.ToRun.Count} to run");
+            foreach (var k in plan.ToRun)
             {
-                var batch = ids.Skip(i).Take(10).ToArray();
-                yield return Gate(batch, $"motion_gate_full_{i / 10}", captures: false, failures: failed, assert: false, measured: measured);
-                done += batch.Length;
+                var failed = new List<string>();
+                var measured = new int[1];
+                BuildCm.Clear(); BuildTop.Clear();
+                yield return Gate(batches[k], $"motion_gate_full_{k}", captures: false, failures: failed, assert: false, measured: measured);
+                // (stamped with the hash at its end: a tree changed under a chunk is not this chunk's tree)
+                var after = Hash();
+                Chunks.Save(ChunkPath(k), new Chunks.Result
+                {
+                    Hash = after == hash ? hash : after, Ids = batches[k], Measured = measured[0], Failures = failed,
+                    Build = BuildCm.Where(kv => kv.Value > 0f).ToDictionary(kv => kv.Key, kv => kv.Value),
+                    Top = BuildTop.ToDictionary(kv => kv.Key, kv => kv.Value),
+                });
             }
-            // one verdict for the whole cast (the lock counts the gate green only on it: docs/PEOPLE_MOTION.md §1.9), with the
-            // people it measured (a run stopped in its last batch wrote a verdict of 70 of the 79 as the whole cast's,
-            // 2026-11-08: tools/qa/people_gate.mjs holds a verdict short of the cast red)
-            Verdict("motion_gate_full", measured[0], failed, done, ids.Length);
-            Assert.That(failed, Is.Empty, $"{failed.Count} measures past their limits:\n" + string.Join("\n", failed.Take(80)));
+            // one verdict for the whole cast, only when every chunk is there under the tree's hash (the lock counts the gate
+            // green only on it: docs/PEOPLE_MOTION.md §1.9; a run stopped in its last batch once wrote 70 of 79 as the cast's)
+            hash = Hash();
+            var whole = Chunks.Assemble(batches, Enumerable.Range(0, batches.Length).Select(k => Chunks.Load(ChunkPath(k))).ToArray(), hash);
+            Assert.That(whole.Complete, Is.True, $"the whole cast is not complete under one hash: chunks {string.Join(", ", whole.ToRun)} to run again");
+            BuildCm.Clear(); BuildTop.Clear();
+            foreach (var r in whole.Results) { foreach (var kv in r.Build) BuildCm[kv.Key] = kv.Value; foreach (var kv in r.Top) BuildTop[kv.Key] = kv.Value; }
+            Verdict("motion_gate_full", whole.Measured, whole.Failures, whole.People, ids.Length);
+            Assert.That(whole.Failures, Is.Empty, $"{whole.Failures.Count} measures past their limits:\n" + string.Join("\n", whole.Failures.Take(80)));
+        }
+
+        /// <summary>The whole cast's chunks: each chunk's result with the gate inputs' hash it was measured under, and the
+        /// assembly of a verdict from them (pure: <see cref="ChunksAssembleOnlyUnderOneHash"/>).</summary>
+        public static class Chunks
+        {
+            public sealed class Result
+            {
+                public string Hash;
+                public string[] Ids = new string[0];
+                public int Measured;
+                public List<string> Failures = new();
+                public Dictionary<string, float> Build = new();
+                public Dictionary<string, string> Top = new();
+            }
+
+            public sealed class Plan
+            {
+                public bool Complete;
+                public List<int> ToRun = new();
+                public List<Result> Results = new();
+                public List<string> Failures = new();
+                public int Measured, People;
+            }
+
+            public static Result Load(string path)
+            {
+                try { return File.Exists(path) ? JsonConvert.DeserializeObject<Result>(File.ReadAllText(path)) : null; }
+                catch (System.Exception) { return null; }
+            }
+
+            public static void Save(string path, Result r) => File.WriteAllText(path, JsonConvert.SerializeObject(r, Formatting.Indented));
+
+            /// <summary>Which chunks stand (measured under <paramref name="hash"/>, of the same people) and which are to run
+            /// (missing, of another tree, or of other people); complete only when none is to run.</summary>
+            public static Plan Assemble(string[][] batches, Result[] found, string hash)
+            {
+                var plan = new Plan();
+                for (var k = 0; k < batches.Length; k++)
+                {
+                    var r = k < found.Length ? found[k] : null;
+                    if (r == null || r.Hash != hash || r.Ids == null || !r.Ids.SequenceEqual(batches[k])) { plan.ToRun.Add(k); continue; }
+                    plan.Results.Add(r);
+                    plan.Failures.AddRange(r.Failures ?? new List<string>());
+                    plan.Measured += r.Measured;
+                    plan.People += r.Ids.Length;
+                }
+                plan.Complete = plan.ToRun.Count == 0;
+                return plan;
+            }
+        }
+
+        [Test]
+        public void ChunksAssembleOnlyUnderOneHash()
+        {
+            var batches = new[] { new[] { "a", "b" }, new[] { "c" } };
+            Chunks.Result R(string hash, string[] ids, params string[] fails) => new() { Hash = hash, Ids = ids, Measured = 10 * ids.Length, Failures = fails.ToList() };
+            // every chunk under the tree's hash: the verdict, every chunk's failures
+            var all = Chunks.Assemble(batches, new[] { R("h", batches[0], "a x A1: p98"), R("h", batches[1], "c y W3: p98") }, "h");
+            Assert.That(all.Complete, Is.True);
+            Assert.That(all.Failures, Is.EqualTo(new[] { "a x A1: p98", "c y W3: p98" }));
+            Assert.That(all.Measured, Is.EqualTo(30)); Assert.That(all.People, Is.EqualTo(3));
+            // a chunk missing: no verdict, that chunk to run
+            var missing = Chunks.Assemble(batches, new[] { R("h", batches[0]), null }, "h");
+            Assert.That(missing.Complete, Is.False); Assert.That(missing.ToRun, Is.EqualTo(new[] { 1 }));
+            // a chunk of another tree: run again (mixed hashes never make a verdict)
+            var mixed = Chunks.Assemble(batches, new[] { R("old", batches[0]), R("h", batches[1]) }, "h");
+            Assert.That(mixed.Complete, Is.False); Assert.That(mixed.ToRun, Is.EqualTo(new[] { 0 }));
+            // a chunk of other people (the catalogue changed): run again
+            var other = Chunks.Assemble(batches, new[] { R("h", new[] { "a", "z" }), R("h", batches[1]) }, "h");
+            Assert.That(other.ToRun, Is.EqualTo(new[] { 0 }));
+            // fewer files than chunks
+            Assert.That(Chunks.Assemble(batches, new[] { R("h", batches[0]) }, "h").ToRun, Is.EqualTo(new[] { 1 }));
         }
 
         private sealed class Subject
@@ -483,9 +676,10 @@ namespace SecondFace.Tests
                     Directory.CreateDirectory(Path.GetDirectoryName(probe.TracePath));   // (CI has no test-results folder yet: DirectoryNotFound, 2026-11-16)
                     File.Delete(probe.TracePath.Replace(".csv", "_soles.csv"));   // (it is appended to: each run afresh)
                     probe.TraceState = "";   // every state (the feet, frame by frame)
-                    File.WriteAllText(probe.TracePath, "state,t,rootx,rootz,heelL,ballL,ankleLz,heelR,ballR,ankleRz,speed,hipsz,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR,sink,low,eL,eR,gL,gR,slipL,slipR,rL,rR,a1L,a1R,poleL,poleR,flexL,flexR,adaptL,adaptR,surfL,surfR,hgapL,hgapR,dL0,dL1,dL2,dL3,dL4,dL5,dR0,dR1,dR2,dR3,dR4,dR5,holdtL,holdbL,holdyL,holdgL,holdtR,holdbR,holdyR,holdgR,a4L,a4R,flankL,flankR,outL,fwdL,outR,fwdR,saLclip,saL0,saL1,saL2,saL3,saL4,saL5,saRclip,saR0,saR1,saR2,saR3,saR4,saR5,flankHoldL,flankHoldR,kneeL,kneeR,valgusL,valgusR,sink,pushPartL,pushDegL,pushPartR,pushDegR\n");
+                    File.WriteAllText(probe.TracePath, "state,t,rootx,rootz,heelL,ballL,ankleLz,heelR,ballR,ankleRz,speed,hipsz,dipL,clearL,liftL,lockL,dipR,clearR,liftR,lockR,sink,low,eL,eR,gL,gR,slipL,slipR,rL,rR,a1L,a1R,poleL,poleR,flexL,flexR,adaptL,adaptR,surfL,surfR,hgapL,hgapR,dL0,dL1,dL2,dL3,dL4,dL5,dR0,dR1,dR2,dR3,dR4,dR5,holdtL,holdbL,holdyL,holdgL,holdtR,holdbR,holdyR,holdgR,a4L,a4R,flankL,flankR,outL,fwdL,outR,fwdR,saLclip,saL0,saL1,saL2,saL3,saL4,saL5,saRclip,saR0,saR1,saR2,saR3,saR4,saR5,flankHoldL,flankHoldR,kneeL,kneeR,valgusL,valgusR,sink,pushPartL,pushDegL,pushPartR,pushDegR,restPartL,restDepL,restBodyL,restYL,restDegL,restPartR,restDepR,restBodyR,restYR,restDegR,pushDepL,pushDepR\n");
                 }
                 Assert.That(probe.Calibrate(), Is.True, $"{ids[i]}: {probe.Error}");
+                BuildCm[ids[i]] = Build(go, a, p?.Male ?? ids[i].Contains("Male"), ids[i]);
                 var mark = new GameObject("mark_" + ids[i]).transform;
                 mark.SetParent(root.transform);
                 // (the player's body has no Ambient in the game: it neither idles by a hash nor gestures)
@@ -766,6 +960,9 @@ namespace SecondFace.Tests
             // the verdict
             var fails = failures ?? new List<string>();
             var table = new List<Dictionary<string, object>>();
+            // (C1 by the vertices' planes, its reading before 2026-11-18, judged by the same limit beside the verdict: the record of
+            // the cells the drawn surface changed, docs/PEOPLE_MOTION.md §2.6 C1)
+            var c1v = new List<Dictionary<string, object>>();
             foreach (var s in people)
             {
                 if (s.Probe.Error != null) fails.Add($"{s.Probe.Person}: {s.Probe.Error}");
@@ -780,9 +977,14 @@ namespace SecondFace.Tests
                     string M(int q, float scale = 1f) => (sum[q] / nn * scale).ToString("0.0");
                     Debug.Log($"HumanMotionGate arms: {s.Probe.Person} {st}: resting {rest * 100 / nn}%, L gapE {M(0, 100)} gapH {M(1, 100)} cm in {M(4)} fwd {M(5)} carry {M(6)} out {M(7)} roll {M(12)} back {M(14)}; R gapE {M(2, 100)} gapH {M(3, 100)} cm in {M(10)} fwd {M(11)} carry {M(8)} out {M(9)} roll {M(13)} back {M(15)}");
                 }
+                BuildCm.TryGetValue(s.Id, out var buildE);
                 foreach (var (state, measures) in s.Probe.Samples)
-                    foreach (var lim in LimitsFor(state))
+                    foreach (var lim0 in LimitsFor(state))
                     {
+                        // (standing, a man's A1 by his build: A1PerCm)
+                        var lim = lim0;
+                        if (lim0.M == "A1" && buildE > 0f && LimitsFor(state).Contains(StandA1))
+                            lim = new Lim { M = lim0.M, Lo = lim0.Lo, Hi = lim0.Hi + A1PerCm * buildE, CapLo = lim0.CapLo, CapHi = lim0.CapHi, MeanMax = lim0.MeanMax, Over = lim0.Over, OverFrac = lim0.OverFrac };
                         if (!measures.TryGetValue(lim.M, out var vals) || vals.Count == 0) continue;
                         var sorted = vals.OrderBy(x => x).ToList();
                         float P(double q) => sorted[Mathf.Clamp((int)System.Math.Round(q * (sorted.Count - 1)), 0, sorted.Count - 1)];
@@ -802,11 +1004,22 @@ namespace SecondFace.Tests
                             ["p98"] = p98, ["min"] = min, ["max"] = max, ["mean"] = mean, ["over"] = over, ["pass"] = why.Count == 0, ["why"] = string.Join("; ", why),
                         });
                         if (why.Count > 0) fails.Add($"{s.Probe.Person} {state} {lim.M}: {string.Join("; ", why)}");
+                        if (lim.M == "C1" && measures.TryGetValue("C1v", out var cv) && cv.Count > 0)
+                        {
+                            var sv = cv.OrderBy(x => x).ToList();
+                            var v98 = sv[Mathf.Clamp((int)System.Math.Round(0.98 * (sv.Count - 1)), 0, sv.Count - 1)];
+                            c1v.Add(new Dictionary<string, object>
+                            {
+                                ["person"] = s.Probe.Person, ["state"] = state, ["n"] = sv.Count, ["p98"] = v98, ["max"] = sv[^1],
+                                ["pass"] = v98 <= lim.Hi && sv[^1] <= lim.CapHi, ["drawn_p98"] = p98, ["drawn_max"] = max, ["drawn_pass"] = why.Count == 0,
+                            });
+                        }
                     }
             }
             var dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results"));
             Directory.CreateDirectory(dir);
             File.WriteAllText(Path.Combine(dir, report + ".json"), JsonConvert.SerializeObject(table, Formatting.Indented));
+            File.WriteAllText(Path.Combine(dir, report + "_c1v.json"), JsonConvert.SerializeObject(c1v, Formatting.Indented));
             File.WriteAllText(Path.Combine(dir, report + ".md"), Markdown(table));
             Debug.Log($"HumanMotionGate {report}: {table.Count} measures, {table.Count(r => !(bool)r["pass"])} past their limits\n" + string.Join("\n", fails.Take(200)));
             if (measured != null) measured[0] += table.Count;
@@ -842,6 +1055,8 @@ namespace SecondFace.Tests
             yield return Wait(1f);
             var fx = new CombatFx(root.transform);
             var ahead = Vector3.forward * 8f;
+            // every fight here is at the body's front: what each fighter faces is measured against it (FY1, FY2)
+            foreach (var s in people) s.Probe.FaceTarget = ahead;
             var views = new List<AnimatedUnitView>();
             Camera cam = null;
             if (captures)
@@ -852,9 +1067,13 @@ namespace SecondFace.Tests
                 cam.enabled = false;
             }
 
-            IEnumerator Measure(string state, float hold, System.Func<AnimatedUnitView, IEnumerator> act, MotionProbe.K kind = MotionProbe.K.Stand)
+            // (each person's records under the set of the state they play, so its limits are that state's: combat set v4's
+            // two-handed blows are `strike2`, its slips and ducks `dodge`, a woman's miss a duck where a man's may be a block;
+            // `per` names a person's state, else everyone's is `state`)
+            IEnumerator Measure(string state, float hold, System.Func<AnimatedUnitView, IEnumerator> act, MotionProbe.K kind = MotionProbe.K.Stand, System.Func<int, string> per = null)
             {
                 record(state, kind);
+                if (per != null) for (var k = 0; k < people.Count; k++) people[k].Probe.State = per(k);
                 var running = 0;
                 if (act != null)
                     foreach (var v in views)
@@ -866,10 +1085,12 @@ namespace SecondFace.Tests
                 for (int n = Frames(hold), cap = Frames(25f), i = 0; (i < n || running > 0) && i < cap; i++)
                 {
                     yield return null;
-                    for (var k = 0; k < people.Count && k < views.Count; k++) Grips(people[k], views[k], state);
+                    for (var k = 0; k < people.Count && k < views.Count; k++) Grips(people[k], views[k], per != null ? per(k) : state);
                 }
                 stop();
             }
+            // the set a person's state is measured under: the gate of the state the table plays for them
+            string SetOf(int k, string state, string otherwise) => CombatMotion.State(state)?.Gate ?? otherwise;
 
             IEnumerator Shoot(AnimatedUnitView v, int rounds) { for (var i = 0; i < rounds; i++) yield return v.OnFire(v.Body.position + ahead + Vector3.up * 1.1f, true, i, rounds); }
             IEnumerator Blows(AnimatedUnitView v, int n) { for (var i = 0; i < n; i++) { yield return v.OnStrike(v.Body.position + ahead * 0.12f, true); yield return Wait(0.9f); } }
@@ -950,15 +1171,21 @@ namespace SecondFace.Tests
                         yield return Measure("combat:crouch:rifle", 3.5f, v => Then(() => v.OnStance("crouch"), 0.1f));
                         yield return Shot("crouch_rifle", 0);
                         foreach (var v in views) v?.OnStance("stand");
-                        yield return Wait(1.2f);
+                        // (up through the rise, combat set v4.4, before the next order: as the game's next turn)
+                        yield return Wait(0.5f);
+                        for (var rise = 0f; rise < 5f && views.Any(v => v != null && v.Fighter.Current != null && v.Fighter.Current.StartsWith("cover_rise")); rise += Time.deltaTime) yield return null;
+                        yield return Wait(0.7f);
                         yield return Measure("combat:throw:rifle", 0f, Throw);
                         yield return Measure("combat:hit:rifle", 2.5f, v => Then(() => v.OnHit(v.Body.position + ahead, "torso", "crit"), 0.1f));
                     }
                 }
                 else
                 {
-                    yield return Measure($"combat:strike:{arms}", 0f, v => Blows(v, 3));
-                    yield return Measure($"combat:strike:{arms}_block", 0f, v => Then(() => v.OnMiss(v.Body.position + ahead * 0.12f, true), 1.8f));
+                    var held = arms == "melee" ? Arms.Melee : arms == "club2" ? Arms.Club2 : Arms.Unarmed;
+                    yield return Measure($"combat:strike:{arms}", 0f, v => Blows(v, 3),
+                        per: k => $"combat:{SetOf(k, CombatMotion.Strike(held, Female(people[k].Id), 0), "strike")}:{arms}");
+                    yield return Measure($"combat:strike:{arms}_block", 0f, v => Then(() => v.OnMiss(v.Body.position + ahead * 0.12f, true), 1.8f),
+                        per: k => $"combat:{SetOf(k, CombatMotion.Miss(held, Female(people[k].Id), true, 0), "strike")}:{arms}_block");
                 }
                 if (arms == "unarmed")
                 {
@@ -978,6 +1205,7 @@ namespace SecondFace.Tests
                 yield return Wait(0.5f);
             }
             if (cam != null) Object.Destroy(cam.gameObject);
+            foreach (var s in people) s.Probe.FaceTarget = null;
         }
 
         private static IEnumerator Counted(IEnumerator inner, System.Action done)
@@ -1032,6 +1260,10 @@ namespace SecondFace.Tests
                 ["byMeasure"] = fails.Select(MeasureKey).GroupBy(m => m).OrderBy(g => g.Key, System.StringComparer.Ordinal)
                     .ToDictionary(g => g.Key, g => g.Count()),
                 ["lastGreen"] = green ? now : lastGreen, ["failing"] = fails.OrderBy(f => f.Contains(" combat:") ? 1 : 0).Take(80).ToList(),
+                // each man's build past the median (cm; docs/qa/motion_calibration.md §9): his A1 limit standing is 20 + 0.37·e
+                ["buildCm"] = BuildCm.Where(kv => kv.Value > 0f).OrderBy(kv => kv.Key, System.StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => (float)System.Math.Round(kv.Value, 2)),
+                // each man's base's baked top and its allowance a side (cm; docs/qa/gates/motion_build_tops.json)
+                ["buildTop"] = BuildTop.OrderBy(kv => kv.Key, System.StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value),
             };
             File.WriteAllText(path, JsonConvert.SerializeObject(verdict, Formatting.Indented));
         }

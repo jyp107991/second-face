@@ -14,7 +14,8 @@ as they are, with a smooth fade. Vertices weighted to several bones move by thei
 
     python3 -I tools/unity/people/body_slim.py <dump_dir> <out_dir> [id ...]
 
-Held, not in use (2026-11-17): the A1 failures on these bases came from the old idles and the arm stack, not the sleeves
+In use (2026-11-18, the coordinator on T5: garments and gear brought to real thickness on six broad bases, the sleeves and the flanks;
+docs/qa/body_geometry_audit.md §6). Held before (2026-11-17): the A1 failures on these bases came from the old idles and the arm stack, not the sleeves
 (docs/MOTION_ROOT_CAUSE.md §7). Ready for one case only: if the review at the game camera or the garment rule (§2.6 of
 docs/PEOPLE_MOTION.md: never padded or rubbery) finds a padded sleeve or slab on a base. To use it: copy BodySlim.cs (beside
 this file) into unity/Assets/SecondFace/Editor/Build/, run body_slim_patch_import.py (RocketboxImportPostprocessor applies
@@ -34,12 +35,21 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, '..', '..', 'qa', 'calibration'))
 
-# the bases slimmed (the five whose hanging arm must stand 14-17° out with their own sleeves; the audit's §2)
-BASES = ['Construction_Male_02', 'cap_Police_Male_03n', 'cap_Military_Male_03n', 'cap_PM02m', 'Male_Adult_05']
-EASE = 0.016            # a jacket's radial ease at most (m)
+# the bases slimmed: the five whose hanging arm must stand 14-17° out with their own sleeves and gear (the audit's §2 and
+# item 6: Medical_Male_02 14°), and Male_Adult_05, cap_PM02m's own mesh (the coordinator's decision, 2026-11-18)
+BASES = ['Construction_Male_02', 'cap_Police_Male_03n', 'cap_Military_Male_03n', 'cap_PM02m', 'Male_Adult_05', 'Medical_Male_02']
+# a jacket sleeve over the arm: real fabric plus ease, about 1 cm radial (2026-11-18; 1.6 before, the most a jacket stands
+# off, docs/PEOPLE_MOTION.md §2.6)
+EASE = 0.010
 # the real cap (m) along each segment (t from its joint), a broad man's arm at p90 plus the ease
-UA_CAP = [(0.0, 0.087), (0.7, 0.087), (1.0, 0.068)]           # biceps r 7.1 cm; the elbow ~0.9 of the forearm's 5.8
-FA_CAP = [(0.0, 0.068), (0.3, 0.074), (1.0, 0.046)]           # forearm r 5.8 cm at its widest; wrist r 3.0
+UA_CAP = [(0.0, 0.081), (0.7, 0.081), (1.0, 0.062)]           # biceps r 7.1 cm; the elbow ~0.9 of the forearm's 5.8
+FA_CAP = [(0.0, 0.062), (0.3, 0.068), (1.0, 0.040)]           # forearm r 5.8 cm at its widest; wrist r 3.0
+# the flanks where the arms hang: gear standing out of the trunk's own side (a belt rig, side pouches, a carrier's edge) is
+# drawn in to the side's own smooth line plus a thin layer, as real kit is worn clear of the flanks (pouches front and back)
+FLANK_LAYER = 0.010     # what may stand on the flank's own line (a belt flat on the side), m
+FLANK_KEEP = 0.25       # the share of the gear's excess kept (its shape, folds and texture, only flatter)
+FLANK_BAND = (-0.12, 0.12)  # the band, m, about the hanging elbow's height (the forearm's top to the elbow's)
+FLANK_FADE = 0.04
 FADE = {'ua': (0.12, 0.25), 'fa_end': (0.85, 0.97)}           # left alone: the shoulder's cap, the cuff over the hand
 OUTLIER = 0.5           # a vertex further than the ease past its section's median: this share of the excess kept
 
@@ -142,6 +152,58 @@ def slim(m, bones):
     return D
 
 
+def section(P, T, keep, h):
+    """The points where a level plane at height h cuts the triangles kept (the audit's own cut)."""
+    y = P[:, 1] - h; tri = T[keep]; pts = []
+    for a, b in ((0, 1), (1, 2), (2, 0)):
+        ia, ib = tri[:, a], tri[:, b]; ya, yb = y[ia], y[ib]; cut = ya * yb < 0
+        t = (ya[cut] / (ya[cut] - yb[cut]))[:, None]
+        pts.append(P[ia[cut]] + t * (P[ib[cut]] - P[ia[cut]]))
+    return np.concatenate(pts) if pts else np.zeros((0, 3))
+
+
+def flanks(m, bones, D):
+    """Position deltas (world) drawing gear on the trunk's flanks where the arms hang in to the flank's own line.
+    The line: each side's lateral extent, the mesh cut every centimetre from the pelvis to the chest (the audit's cut, so a
+    coarse mesh's sparse vertices do not read as a narrow trunk), fitted by a quadratic in height; slices standing out of
+    that fit by more than 5 mm (a pouch, a belt rig's side, a carrier's edge) are left out and the fit made again. Gear is
+    what stands more than FLANK_LAYER over the line within FLANK_BAND of the hanging elbow's height; a smooth trunk, however
+    broad, is left as it is."""
+    P = m['P'] + D; T = m['T']
+    arm = weight_on(m, ['UpperArm', 'UpArmTwist', 'Forearm', 'ForeTwist', 'Hand', 'Finger'])
+    keep_t = (arm[T] < 0.5).all(axis=1)
+    pel = bones['Bip01 Pelvis']; ch = bones.get('Bip01 Spine2', pel + np.array([0, 0.35, 0]))
+    ua_len = np.linalg.norm(bones['Bip01 L Forearm'] - bones['Bip01 L UpperArm'])
+    elbow_y = 0.5 * (bones['Bip01 L UpperArm'][1] + bones['Bip01 R UpperArm'][1]) - ua_len
+    mid = pel[0]
+    hs = np.arange(pel[1], ch[1] + 0.001, 0.01)
+    secs = [section(P, T, keep_t, h) for h in hs]
+    secs = [s_[np.abs(s_[:, 0] - mid) < 0.30] for s_ in secs]
+    trunk_v = (arm < 0.2) & (P[:, 1] > pel[1] - 0.02) & (P[:, 1] < ch[1] + 0.02) & (np.abs(P[:, 0] - mid) < 0.32)
+    band = smoothstep(elbow_y + FLANK_BAND[0] - FLANK_FADE, elbow_y + FLANK_BAND[0], P[:, 1]) * (1 - smoothstep(elbow_y + FLANK_BAND[1], elbow_y + FLANK_BAND[1] + FLANK_FADE, P[:, 1]))
+    out = np.zeros_like(P); report = {}
+    for sgn, name in ((1, '+x'), (-1, '-x')):
+        ys, ws = [], []
+        for h, s_ in zip(hs, secs):
+            l = sgn * (s_[:, 0] - mid)
+            if len(l) >= 4 and (l > 0).any(): ys.append(h); ws.append(l.max())
+        ys, ws = np.array(ys), np.array(ws)
+        if len(ys) < 10: continue
+        c = np.polyfit(ys, ws, 2)
+        ok = ws - np.polyval(c, ys) < 0.005
+        if ok.sum() >= 10: c = np.polyfit(ys[ok], ws[ok], 2)
+        lat = sgn * (P[:, 0] - mid)
+        edge = np.polyval(c, P[:, 1]) + FLANK_LAYER
+        over = trunk_v & (lat > edge)
+        new_lat = np.where(over, edge + (lat - edge) * FLANK_KEEP, lat)
+        move = (new_lat - lat) * band * (1 - arm)
+        out[:, 0] += sgn * move
+        inb = (ys > elbow_y + FLANK_BAND[0]) & (ys < elbow_y + FLANK_BAND[1])
+        report[name] = {'gear_cm_max': round(float(np.max(ws[inb] - np.polyval(c, ys[inb]))) * 100, 2) if inb.any() else 0.0,
+                        'moved_cm_max': round(float(np.max(np.abs(move))) * 100, 2)}
+    return out, report
+
+
 def normals_after(m, D):
     """The normals turned by the deformation: each vertex's neighbourhood (its triangles) refit before and after."""
     P0, P1, T = m['P'], m['P'] + D, m['T']
@@ -225,6 +287,10 @@ def main(dump_dir, out_dir, ids):
         meshes, bones = read_dump(os.path.join(dump_dir, id_ + '.slimdump'))
         body = next(m for m in meshes if m['body'])
         D = slim(body, bones) if id_ in BASES else np.zeros_like(body['P'])
+        flank = {}
+        if id_ in BASES:
+            Df, flank = flanks(body, bones, D)
+            D = D + Df
         tmp = os.path.join(out_dir, '_audit'); os.makedirs(tmp, exist_ok=True)
         audit_npz(meshes, bones, None, os.path.join(tmp, id_ + '_before.npz'))
         audit_npz(meshes, bones, D, os.path.join(tmp, id_ + '_after.npz'))
@@ -236,13 +302,14 @@ def main(dump_dir, out_dir, ids):
             Nafter = normals_after(body, D)
             moved = write_bytes(os.path.join(out_dir, id_ + '_slim.bytes'), body, D, Nafter)
         mv = np.linalg.norm(D, axis=1) * 100
-        rows.append({'base': id_, 'before': before, 'after': after, 'moved_vertices': moved,
+        rows.append({'base': id_, 'before': before, 'after': after, 'moved_vertices': moved, 'flanks': flank,
                      'move_cm_p50_max': [round(float(np.median(mv[mv > 0.01])), 2) if (mv > 0.01).any() else 0, round(float(mv.max()), 2)]})
         b, a = before, after
         print(f"{id_:22s} sleeve r {b['arm_r_med_cm']:.1f}/{b['arm_r_p90_cm']:.1f} -> {a['arm_r_med_cm']:.1f}/{a['arm_r_p90_cm']:.1f}  "
               f"elbow r {b['elbow_r_cm']:.1f}/{b['elbow_r_p90_cm']:.1f} -> {a['elbow_r_cm']:.1f}/{a['elbow_r_p90_cm']:.1f}  "
               f"chest depth {b['chest_depth_cm']:.1f} -> {a['chest_depth_cm']:.1f}  hang {b['least_hang_sleeve_deg']:.1f} -> {a['least_hang_sleeve_deg']:.1f}  "
-              f"moved {moved} (cm p50 {rows[-1]['move_cm_p50_max'][0]}, max {rows[-1]['move_cm_p50_max'][1]})")
+              f"moved {moved} (cm p50 {rows[-1]['move_cm_p50_max'][0]}, max {rows[-1]['move_cm_p50_max'][1]})  waist at elbow "
+              f"{b['waist_at_elbow_cm']:.1f} -> {a['waist_at_elbow_cm']:.1f}  flanks {flank}")
     json.dump(rows, open(os.path.join(out_dir, 'body_slim.json'), 'w'), indent=1)
 
 

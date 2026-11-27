@@ -717,6 +717,55 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-27, the gate batch committed under the waiver policy: the runtime reads the drawn body (editor owner).**
+  Gate: red, 3,351 (the whole cast, 2026-11-27 04:34; dfc732a4's 6,460; the fight's new FY1/FY2, 667, exempt as introduced).
+  - Whole cast of the batch's tree, 79 people: failing cells 6,460 -> 3,351, the everyday states 4 -> 2 (Female_Adult_01's jog W1,
+    Medical_Female_01's jog W6: both known, carried to the next batch). By measure against dfc732a4: F1 1,511 -> 743, C1 614 -> 416,
+    K1 578 -> 133, F4 499 -> 165, A1 474 -> 322, H1 474 -> 237, WG2 414 -> 54, H2 395 -> 54. Fifteen keys stand worse, every one
+    but Kb in the strikes (129 -> 154) at its count on cast 3's tree before this round: listed with their causes and fix items in
+    `docs/qa/gates/motion_waivers.json` (with `TheFightsFeetStandOnTheGroundAndStepBetweenStances`, still failing).
+  - Causes found and removed at their sources (`docs/MOTION_ROOT_CAUSE.md` §15, `docs/COMBAT_ROOT_CAUSE.md` 17): the runtime's
+    skin reading under-read a concave waist (the least of three points' planes; every reading of a point cloud errs at concave or
+    sharp places): the skin now carries the body's own torso and thigh triangles, posed as the mesh is drawn, and an arm's depth
+    is read against them, within 0.002 cm of the gate's own reading (the push's direction stays the outer skin points', since the
+    nearest drawn triangle can be a pouch's back or a covered layer); the stride's push chosen by the angle it alone left (now by
+    what the stride's ease leaves: the arm less in, then nearer the vertical); a moving push that carried the arm back through
+    the body, and resting passes that slid a forearm along the hip instead of out (each now tried straight out to the side as
+    well, the better kept); the fight's trunk corrections turned the bone the legs hang from, and the fight's hips were set for
+    the lower sole alone (now the bones above the legs, and each planted leg's reach).
+  - Tried and reverted: arm satellites (the drawn vertices each skin point stands for: no push happened there at all); a held
+    foot's toes laid down (passed one flat forefoot's jog, broke another's). Refuted: the arm's third by the elbow filed live.
+  - Cost (the editor, all 79): the drawn reading 0.9 ms a person a frame at the median (max 2.8), the arm clearance 4.6 ms.
+  - Next: the fight's largest groups by count from this verdict (`docs/COMBAT_ROOT_CAUSE.md` 17's remainder, then 18), the waived
+    keys first (each must be back within two batches); then the two everyday cells.
+- **2026-11-26 (later), the gate batch: the striding push, the give's share, the robust reading's reach, the arms' seams (editor
+  owner; not committed, the batch on `wip/gate-batch`).**
+  Gate: red, 6460 (dfc732a4).
+  - Causes found and removed at their sources (`docs/MOTION_ROOT_CAUSE.md` §13): a striding arm pushed along the contact's normal
+    swung further along its own swing (the women's walks, W3); the cloth and sleeve give granted whole where the sleeve was not
+    between the arm and the body, and the contact's normal at a pouch's bevel (C1); the robust reading extrapolated past its
+    bandwidth of the surface (false insides, and most of its cost); a sleeve's seam between the arm's sampled points (C1).
+  - On the 18-person pick: everyday cells 17 -> 3, fight cells about level; the arm clearance 13.5 -> 9.8 ms a person a frame in
+    the editor's idles (7.9 before the robust reading: still over, open).
+  - The whole cast's first chunk found a new everyday failure outside the pick (one man's forearm by the elbow 0.6 cm into the hip
+    in eleven resting states: an oblique contact between the arm's points, the resting give set for readings §12 corrected);
+    the cast was stopped there, nothing committed. The resting give taken only for the face-to-face share of a contact brought him
+    0.6 -> 0.53 (nine cells left); with him the pick reads everyday 12. Next: that contact's remaining cause (§13), then the
+    pick, then the whole cast.
+    Tried and reverted: the toes held on the ground at push-off (W1 passed, W6 failed in 16 of 18 people).
+- **2026-11-26, the gate batch: the skin's filled points on the drawn surface, the hips read by a robust surface (editor owner;
+  not committed, the batch on `wip/gate-batch`).**
+  Gate: red, 6460 (dfc732a4).
+  - Whole cast of the batch's tree before this round (hash 8d5742a5): overall 6460 -> 3815 (the fight's states), but the everyday
+    states 4 -> 22 (W3 12 in the walks, C1 5 on one man's hip pouch, A1 2, A4 1, W1 1, W6 1): the waiver rule needs both to fall.
+  - Causes found and removed at their sources (`docs/MOTION_ROOT_CAUSE.md` §12): the skin's filled points stood off the drawn body
+    (p50 0.6, p90 1.3 cm; now on the drawn triangles, every person's skin points rebuilt with `RocketboxPeopleBuild.BuildSkins`);
+    the hips and thighs read by the robust implicit surface (RIMLS) where the nearest-three vote and the IMLS failed at a belt
+    pouch's facets.
+  - On a pick of 18 people (the failing ones and controls) everyday 22 -> 17 and fight 896 -> 722; open, traced, with their
+    source items in §12: one man's forearm through his pouch at rest (C1), the women's walking right arm through the back flank
+    (W3, not the gaze: A/B), one woman's right foot held by a pivot off its hinge in the jog (W1). The arm clearance's cost about
+    doubled in the editor (the robust reading near the hips): to bring down before the whole cast.
 - **2026-11-25, resume after a usage pause: the container was rebuilt from scratch.**
   Gate: red, 6460 (dfc732a4; nothing of the batch committed).
   - Lost with the old container: the local Unity editor and its Library, dotnet, the scratchpad tools (runfull.sh,

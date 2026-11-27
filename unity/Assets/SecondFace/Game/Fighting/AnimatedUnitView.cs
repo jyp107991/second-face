@@ -39,7 +39,7 @@ namespace SecondFace.Game.Fighting
         public bool Down => _down;
 
         private bool _down, _yielded, _holding, _aiming, _rising, _ended, _walking;
-        private float _quietFor;   // since the last shot or aim (s), for lowering the weapon
+        private float _quietFor;   // the aim held with nothing done (s): since it was reached or the last round; lowers the weapon
         private int _blows, _misses, _moves;
         private string _stance = "stand";
         private string _heldItem;
@@ -99,7 +99,12 @@ namespace SecondFace.Game.Fighting
                     }
                     if (_walking && !_walk.Moving) { _walking = false; Fighter.Locomote(false, _stance == "crouch"); }
                     if (_holding && Unit.Watch == null) { _holding = false; _quietFor = 99f; }
-                    _quietFor += Time.deltaTime;
+                    // the quiet that lowers a raised weapon counts only while the aim is held: from the moment it is reached
+                    // (and from each round), never through the raise, the turn and the facing learnt before it. Counted from
+                    // the aim's start, a first long-gun aim (the raise 0.94 s, the crossfade, the facing 0.2 s) was past the
+                    // delay as it was reached and came down at once; the shot that followed fired on the lowering gun
+                    // (CombatMotionPlayTests: "a shot played rifle_lower", 2026-11-17)
+                    _quietFor = _aiming ? _quietFor + Time.deltaTime : 0f;
                     if (_aiming && !_holding && _quietFor > Mathf.Max(0.6f, Secs(1.1f))) Lower();
                 }
                 yield return null;
@@ -230,16 +235,14 @@ namespace SecondFace.Game.Fighting
             _quietFor = 0f;
             if (Fighter.Arms == Arms.Rifle && Fighter.InHand)
             {
-                var burst = rounds >= 2 && Fighter.Set != null && Fighter.Set.Beats("rifle_burst", Fighter.Female, "fire") > 0;
-                var state = burst ? "rifle_burst" : "rifle_fire";
-                var per = Mathf.Max(1, Fighter.Set != null ? Fighter.Set.Beats(state, Fighter.Female, "fire") : 1);
-                var k = round % per;
-                var first = Fighter.Set != null ? Fighter.Set.Beat(state, Fighter.Female, "fire", 0) : 0.2f;
-                // the clip from its start for the first round; again from just before its first shot for a long burst's next
-                if (k == 0) Fighter.Play(state, round == 0 ? null : 0.05f, restart: true, from: round == 0 ? (float?)null : Mathf.Max(0f, first - 0.04f));
-                var beat = Fighter.Set != null ? Fighter.Set.Beat(state, Fighter.Female, "fire", k) : 0.25f;
-                if (beat < 0f) beat = first >= 0f ? first : 0.25f;
-                yield return Fighter.Until(state, beat, 1.2f);
+                // every round on the hold itself (rifle_aim: CMU 80_03), its recoil at run time (Fighter.Recoil): the authored
+                // shot takes (rifle_fire/burst_cmu) are CMU 79's, a stance 9 cm wider, and every shot crossfaded the feet
+                // between the two actors' stances and back (F4 in the shots, 2026-11-17)
+                if (!Fighter.Is("rifle_aim")) { Fighter.Play("rifle_aim", 0.12f); yield return Wait(Mathf.Max(0.1f, Secs(0.2f))); }
+                // (a burst's rounds 0.1 s apart, as the authored burst's frames 7, 10 and 13 at 30 fps; the kick climbs a
+                // little a round)
+                if (round > 0) yield return Wait(Mathf.Max(0.05f, Secs(0.1f)));
+                Fighter.Recoil(2.6f + 0.6f * Mathf.Min(round, 4));
                 Shot(at, 1f);
                 yield return Wait(Mathf.Max(0.03f, Secs(0.05f)));
                 _fx.FlashOff();
@@ -260,6 +263,8 @@ namespace SecondFace.Game.Fighting
                 yield break;
             }
             yield return Wait(Secs(round + 1 < rounds ? 0.02f : 0.18f));
+            // (the quiet before the weapon comes down counts from the round, not from the start of its beat)
+            _quietFor = 0f;
         }
 
         /// <summary>A round leaves the muzzle: its flash, a spent case, the kick, the tracer to where it went.</summary>
@@ -271,7 +276,7 @@ namespace SecondFace.Game.Fighting
             else muzzle = Body.position + Vector3.up * 1.35f + Body.forward * 0.4f;
             _fx.Flash(muzzle);
             if (w != null) _fx.Shell(w.position + w.up * 0.06f, w.right);
-            if (Fighter.Arms == Arms.Rifle) Fighter.Kick(0.6f * kick);
+            // (a long gun's kick is its recoil, given with the round: Fighter.Recoil)
             _host.StartCoroutine(_fx.Tracer(muzzle, at, Mathf.Max(0.04f, Secs(0.07f)), 0f));
         }
 
@@ -324,8 +329,10 @@ namespace SecondFace.Game.Fighting
 
         public void OnRise()
         {
-            if (Body == null || !_down || _rising) return;
-            _host.StartCoroutine(Rise());
+            if (Body == null || !_down || _rising || Fighter == null || !Fighter.isActiveAndEnabled) return;
+            // (on the body, as the hand-back: a get-up waits up to 14 s and then takes the weapon up; on the fight's host it
+            // would do so on a body destroyed meanwhile)
+            Fighter.StartCoroutine(Rise());
         }
 
         /// <summary>Back up from the ground: the ragdoll hands the body back, the captured get-up for the side it lies on is
@@ -395,7 +402,12 @@ namespace SecondFace.Game.Fighting
         private IEnumerator RiseUnlessMoving(int moves)
         {
             yield return Wait(Mathf.Max(0.15f, Secs(0.3f)));
-            if (_moves == moves && !_down && !_yielded && _stance == "stand") Fighter.Play(CombatMotion.Idle(Fighter.Arms), 0.45f);
+            if (_moves != moves || _down || _yielded || _stance != "stand") yield break;
+            // (combat set v4.4: up from the crouched hold through the hold's own actor's rise on the hold's feet, then the
+            // standing state; from anywhere else, as before)
+            var from = Fighter.Current;
+            if (from != null && from.StartsWith("cover_hold")) Fighter.Play(CombatMotion.StandUp(Fighter.Arms), 0.2f);
+            else Fighter.Play(CombatMotion.Idle(Fighter.Arms), 0.45f);
         }
 
         public IEnumerator OnThrow(IReadOnlyList<Vector3> arc, string item = null)
@@ -410,7 +422,11 @@ namespace SecondFace.Game.Fighting
             Fighter.Play("throw", null, restart: true);
             var release = Fighter.Set != null ? Fighter.Set.Beat("throw", Fighter.Female, "release") : -1f;
             if (release < 0f) release = 0.35f;
-            yield return Fighter.Until("throw", release, 2.5f);
+            // (combat set v4.5: a throw from a still stance resolves at its release, CombatMotion.ResolveAt: 2.4 s into the
+            // men's, 1.9 s into the women's; the wait reaches it at any pace, and the recovery plays on after)
+            var st = CombatMotion.State("throw");
+            var toRelease = Fighter.Set != null && st != null ? Mathf.Max(0f, release - st.From) * Fighter.Set.Length("throw", Fighter.Female) / Mathf.Max(0.1f, st.Speed) : 1f;
+            yield return Fighter.Until("throw", release, Mathf.Max(2.5f, Secs(toRelease) + 1f));
             var t = Fighter.Release();
             var flight = Mathf.Max(0.15f, Secs(0.65f));
             if (t != null) yield return Fly(t, arc, flight);
@@ -443,6 +459,8 @@ namespace SecondFace.Game.Fighting
             _aiming = false; Fighter.ClearAim();
             var state = CombatMotion.Reload(Fighter.Arms);
             if (state == null || !Fighter.InHand) { yield return Wait(Secs(0.3f)); yield break; }
+            // (a raised long gun comes down through its lower first: v4.1's routing)
+            if (Raised()) { Fighter.Play("rifle_lower", null, restart: true); yield return Fighter.Until("rifle_lower", CombatMotion.State("rifle_lower").Cut, 3f); }
             Fighter.Play(state, null, restart: true);
             yield return Fighter.Until(state, CombatMotion.State(state).Cut, 4f);
         }
@@ -456,18 +474,35 @@ namespace SecondFace.Game.Fighting
             if (aim == null) return;
             if (!Fighter.InHand) Fighter.Draw();
             Fighter.AimAt(Body.position + Body.forward * 8f + Vector3.up * 1.2f);
-            Fighter.Play(aim, 0.3f);
+            // (a standing long gun reaches its aim only through the raise: the take's actor pivots his feet into it, v4.1)
+            if (Fighter.Arms == Arms.Rifle && _stance == "stand" && !Fighter.Is("rifle_aim") && !Fighter.Is("rifle_raise")) Fighter.Play("rifle_raise");
+            else if (!Fighter.Is(aim)) Fighter.Play(aim, 0.3f);
             _aiming = true; _quietFor = 0f;
         }
+
+        /// <summary>A long gun up at the shoulder (or on its way up), standing: it leaves the aim only through the lower.</summary>
+        private bool Raised() => Fighter.Arms == Arms.Rifle && _stance == "stand" && (Fighter.Is("rifle_aim") || Fighter.Is("rifle_raise"));
 
         public void OnYield()
         {
             if (Body == null || _down || _yielded) return;
             _yielded = true; _aiming = false; _holding = false;
             Fighter.ClearAim();
-            Fighter.Drop();
             Rate();
-            Fighter.Play("yield_enter", null, restart: true);
+            // (hands up on the class's own stance, the class held as they go up; a raised long gun through its lower first)
+            var enter = CombatMotion.Yield(Fighter.Arms, Fighter.Female);
+            if (Raised()) { Fighter.StartCoroutine(YieldThroughLower(enter)); return; }
+            Fighter.Drop();
+            Fighter.Play(enter, null, restart: true);
+        }
+
+        private IEnumerator YieldThroughLower(string enter)
+        {
+            Fighter.Play("rifle_lower", null, restart: true);
+            yield return Fighter.Until("rifle_lower", CombatMotion.State("rifle_lower").Cut, 3f);
+            if (Body == null || _down) yield break;
+            Fighter.Drop();
+            Fighter.Play(enter, null, restart: true);
         }
 
         public void Place(Vector3 at, Quaternion facing)
@@ -482,18 +517,22 @@ namespace SecondFace.Game.Fighting
             if (_ended) return;
             _ended = true;
             if (_tick != null && _host != null) _host.StopCoroutine(_tick);
-            if (_host != null && _host.isActiveAndEnabled) _host.StartCoroutine(End());
+            // (the hand-back runs on the body itself (Fighter.HandBack), not on the fight's host: it ends with the body, and a
+            // later fight's view on the same body stops it. Run by the host it outlived the body: a yielded fighter's end
+            // picked its weapon up on a Fighter destroyed meanwhile, MissingReferenceException at Fighter.Make, 2026-11-17)
+            if (Fighter != null) Fighter.HandBack(End());
         }
 
         /// <summary>Out of the fight: once up off the ground, the guard relaxed (a man's captured relax), the weapon back in
-        /// its holster or sling, the body to the people's own motion. The dead stay where they fell.</summary>
+        /// its holster or sling, the body to the people's own motion, at once (hands held up come down as the fight's layer
+        /// lets go: a hold of yield_hold for 1.5 s after the end kept the layer at full weight past the end and let the
+        /// body go only then, 2026-11-17). The dead stay where they fell.</summary>
         private IEnumerator End()
         {
             var w = 0f;
             while (_rising && w < 15f) { w += Time.deltaTime; yield return null; }
             if (Unit != null && !Unit.Alive) yield break;
             if (_down) yield break;
-            if (_yielded && Body != null) { Fighter.Play("yield_hold"); yield return Wait(1.5f); }
             if (!Fighter.Female && Fighter.Arms == Arms.Unarmed && _stance == "stand" && !_yielded)
             {
                 Fighter.Play("unarmed_relax");

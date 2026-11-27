@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using SecondFace.Core.Combat;
 using SecondFace.Game.People;
@@ -45,8 +46,15 @@ namespace SecondFace.Game.Fighting
 
         private Animator _a;
         private int _full = -1, _armsLayer = -1;
+        // the trunk's bones from the hips up (the spine, the chest, the upper chest: those the body has), for AimFix
+        private Transform[] _trunk = new Transform[0];
+        // the base layer's locomotion and its state without Foot IK for the fight's stance (CombatMotion.StanceBase)
+        private int _loco, _stanceBase;
+        private static readonly int StanceBaseId = Animator.StringToHash(CombatMotion.StanceBase), LocomotionId = Animator.StringToHash("Locomotion");
         private Hand _right, _left;
         private Transform _hips, _spine, _chest, _head, _upL, _loL, _footL, _upR, _loR, _footR;
+        // the lowest bone of the trunk above the legs (the hit's lean starts there)
+        private Transform _lean;
         private FootPlant _plant;
         private Gaze _gaze;
         private ArmClearance _clear;
@@ -57,7 +65,7 @@ namespace SecondFace.Game.Fighting
         private float _gazeYaw0 = 26f, _gazeRoll0 = 6f;
         private bool _hasSneak, _hasSneakRate;
         private Vector3 _chestFront;   // the chest's front in its own space (standing, at bind)
-        private float _hipHeight = 0.935f, _ankleL = 0.08f, _ankleR = 0.08f;
+        private float _hipHeight = 0.935f;
 
         public bool Ready { get; private set; }
         public Animator Animator => _a;
@@ -93,7 +101,7 @@ namespace SecondFace.Game.Fighting
 
         // ------------------------------------------------------------------------------------------- the hands
 
-        private float _offW, _pistolW, _arcW, _fixW, _fistW;
+        private float _offW, _pistolW, _arcW, _fixW, _fistW, _holdW;
         private Vector3 _aimAt;
         private bool _haveAim;
         /// <summary>The off hand's palm from its grip_off this frame (m; -1: not held), and the weapon's main grip from the
@@ -127,12 +135,22 @@ namespace SecondFace.Game.Fighting
         private Vector3 _hitA, _hitV;   // degrees about the body's right (back +), up (twist), forward (roll)
         private float _hitHead = 0.2f, _hitChest = 0.6f, _hitSpine = 0.4f;
         private float _kick, _kickV;
+        private float _recoil;
+        private Transform _shoulderR;
 
         // ------------------------------------------------------------------------------------------- the feet
 
-        private struct Foot { public bool Locked; public Vector3 At; public float W; public Vector3 Was; public bool HaveWas; }
+        private struct Foot { public bool Pinned, Stepping; public Vector3 Pin, From; public float T, W, Lift; public Vector3 Was; public bool HaveWas; }
         private Foot _fl, _fr;
         private bool _turning;
+        // each foot's sole in its bone's frame (the heel's and the ball's contact, from the bind with the feet flat; the body's
+        // own mesh soles where BodySkin has them), and how far the hips are moved to put the soles on the ground
+        private Vector3 _heelL, _ballL, _heelR, _ballR;
+        private float _sink;
+        /// <summary>A planted foot the clip has moved this far from where it stands (a crossfade between two stances) steps there
+        /// (m at a 0.935 m hip height); one the clip has moved more than <see cref="Replant"/> and then held still re-plants with a
+        /// short step.</summary>
+        public float StepReach = 0.07f, Replant = 0.025f, StepTime = 0.3f, StepLift = 0.05f;
 
         // ------------------------------------------------------------------------------------------- making one
 
@@ -142,6 +160,9 @@ namespace SecondFace.Game.Fighting
             if (a == null || !a.isHuman || set == null || !HasLayers(a)) return null;
             var f = a.GetComponent<Fighter>();
             if (f == null) f = a.gameObject.AddComponent<Fighter>();
+            // (a new fight's view takes the body: the last fight's hand-back, still waiting on a get-up or a relax, stops here,
+            // or it would let go of the new fight's stance when it finished)
+            f.StopHandBack();
             f.Set = set; f.Female = female; f.Body = body != null ? body : a.transform; f.Who = who;
             f.Bind();
             return f;
@@ -160,13 +181,23 @@ namespace SecondFace.Game.Fighting
             if (Names.Count == 0) foreach (var s in CombatMotion.States) { Names[Animator.StringToHash(s.AnimName(false))] = s.Name; Names[Animator.StringToHash(s.AnimName(true))] = s.Name; }
             _full = _a.GetLayerIndex(CombatMotion.FullLayer);
             _armsLayer = _a.GetLayerIndex(CombatMotion.ArmsLayer);
+            _stanceBase = _a.HasState(0, StanceBaseId) ? StanceBaseId : 0;
+            _loco = _a.HasState(0, LocomotionId) ? LocomotionId : 0;
             _right = new Hand(_a, false); _left = new Hand(_a, true);
             _hips = _a.GetBoneTransform(HumanBodyBones.Hips);
             _spine = _a.GetBoneTransform(HumanBodyBones.Spine);
             _chest = _a.GetBoneTransform(HumanBodyBones.UpperChest) ?? _a.GetBoneTransform(HumanBodyBones.Chest) ?? _spine;
             _head = _a.GetBoneTransform(HumanBodyBones.Head);
+            _shoulderR = _a.GetBoneTransform(HumanBodyBones.RightShoulder);
             _upL = _a.GetBoneTransform(HumanBodyBones.LeftUpperLeg); _loL = _a.GetBoneTransform(HumanBodyBones.LeftLowerLeg); _footL = _a.GetBoneTransform(HumanBodyBones.LeftFoot);
             _upR = _a.GetBoneTransform(HumanBodyBones.RightUpperLeg); _loR = _a.GetBoneTransform(HumanBodyBones.RightLowerLeg); _footR = _a.GetBoneTransform(HumanBodyBones.RightFoot);
+            // the trunk the fight's corrections turn: its bones above the legs. Biped's thighs hang from its Spine (Unity's
+            // Spine bone, Bip01 Spine, not the Hips): turned after the feet were set, it swung both legs about it, the planted
+            // feet 1.5-2.2 cm in a frame at every round of a long gun's aim (the correction taking a third of the recoil),
+            // 88-135 cm/s (F4 in every aim, docs/COMBAT_ROOT_CAUSE.md 17)
+            bool Carries(Transform b) => b != null && ((_upL != null && _upL.IsChildOf(b)) || (_upR != null && _upR.IsChildOf(b)));
+            _trunk = new[] { _spine, _a.GetBoneTransform(HumanBodyBones.Chest), _a.GetBoneTransform(HumanBodyBones.UpperChest) }.Where(b => b != null && !Carries(b)).Distinct().ToArray();
+            _lean = _trunk.Length > 0 ? _trunk[0] : null;
             _plant = GetComponent<FootPlant>();
             _ambient = GetComponent<Ambient>();
             _gaze = GetComponent<Gaze>();
@@ -177,9 +208,18 @@ namespace SecondFace.Game.Fighting
             foreach (var p in _a.parameters) { if (p.nameHash == SneakId) _hasSneak = true; if (p.nameHash == SneakRateId) _hasSneakRate = true; }
             var ground = Body != null ? Body.position.y : transform.position.y;
             if (_hips != null) _hipHeight = Mathf.Max(0.5f, _hips.position.y - ground);
-            if (_footL != null) _ankleL = Mathf.Clamp(_footL.position.y - GroundAt(_footL.position, ground), 0.03f, 0.16f);
-            if (_footR != null) _ankleR = Mathf.Clamp(_footR.position.y - GroundAt(_footR.position, ground), 0.03f, 0.16f);
             if (_chest != null) _chestFront = Quaternion.Inverse(_chest.rotation) * Front;
+            if (_footL != null && _footR != null)
+            {
+                SolePoints(_footL, _a.GetBoneTransform(HumanBodyBones.LeftToes), ground, out _heelL, out _ballL);
+                SolePoints(_footR, _a.GetBoneTransform(HumanBodyBones.RightToes), ground, out _heelR, out _ballR);
+                if (TryGetComponent<BodySkin>(out var skin))
+                {
+                    if (skin.SoleL is { Length: 4 }) { _heelL = skin.SoleL[0]; _ballL = skin.SoleL[2]; }
+                    if (skin.SoleR is { Length: 4 }) { _heelR = skin.SoleR[0]; _ballR = skin.SoleR[2]; }
+                }
+            }
+            _fl = default; _fr = default; _sink = 0f;
             _holsters.Clear();
             foreach (var arms in new[] { Arms.Pistol, Arms.Rifle, Arms.Melee, Arms.Club2 })
                 HolsterPlace(arms);
@@ -222,8 +262,9 @@ namespace SecondFace.Game.Fighting
 
         private GameObject Make(CombatSet.Weapon w, int variant)
         {
-            var go = Instantiate(w.Prefab);
-            go.name = "held_" + w.Id;
+            // (the model laid in the weapon's own frame, the frame the grips, holsters and points are in: placed by its root
+            // alone it lay a quarter turn off, CombatSet.Weapon.ModelRot)
+            var go = w.Spawn("held_" + w.Id);
             foreach (var c in go.GetComponentsInChildren<Collider>()) Destroy(c);
             if (variant == 2 && w.Paint1 != null && w.Paint2 != null && w.Paint2.Length > 0)
                 foreach (var r in go.GetComponentsInChildren<Renderer>())
@@ -345,9 +386,12 @@ namespace SecondFace.Game.Fighting
             var length = Set != null ? Set.Length(state, Female) : 1f;
             _a.CrossFadeInFixedTime(s.AnimName(Female), f, layer, (from ?? s.From) * length);
             Bring(layer, f);
-            if (layer == _full) Current = state; else Carrying = state;
+            if (layer == _full) { Current = state; _askedFull = Time.frameCount; } else { Carrying = state; _askedArms = Time.frameCount; }
             return true;
         }
+
+        // the frame a crossfade was last asked on each layer (the Animator takes it at its next update)
+        private int _askedFull = -1, _askedArms = -1;
 
         /// <summary>Plays a state at once, its first frame written now (after a fall: the get-up from where the body lies).</summary>
         public void PlayNow(string state)
@@ -412,8 +456,24 @@ namespace SecondFace.Game.Fighting
 
         public void SetRate(float rate) { Rate = rate; if (_a != null && _a.runtimeAnimatorController != null) _a.SetFloat(RateId, rate); }
 
-        /// <summary>Whether the whole-body (or carry) layer is in this state or crossfading into it.</summary>
-        public bool Is(string state) => Progress(state) >= 0f;
+        /// <summary>Whether the whole-body (or carry) layer is in this state or crossfading into it: where the layer is going,
+        /// never a state it is crossfading out of (that one is being left: a gun being lowered is not aimed, and a loop being
+        /// left is crossfaded back into by <see cref="Play"/>, not kept). A crossfade asked this frame counts at once (the
+        /// Animator takes it at its next update; until then its current state is the one being left).
+        /// (Counting the state being left, a shot asked while the gun was being lowered found it "aimed", raised nothing and
+        /// fired on the lowering gun, and asking for the hold again was ignored: CombatMotionPlayTests, 2026-11-17.)</summary>
+        public bool Is(string state)
+        {
+            if (_a == null || !_a.isActiveAndEnabled) return false;
+            var s = CombatMotion.State(state);
+            if (s == null) return false;
+            var arms = s.Layer == CombatMotion.ArmsLayer;
+            var layer = arms ? _armsLayer : _full;
+            if (layer < 0) return false;
+            if ((arms ? _askedArms : _askedFull) == Time.frameCount) return (arms ? Carrying : Current) == state;
+            var info = _a.IsInTransition(layer) ? _a.GetNextAnimatorStateInfo(layer) : _a.GetCurrentAnimatorStateInfo(layer);
+            return info.shortNameHash == Animator.StringToHash(s.AnimName(Female));
+        }
 
         /// <summary>A state's normalized time now (its own layer's current state, or the one being crossfaded into); -1: not playing.</summary>
         public float Progress(string state)
@@ -463,6 +523,14 @@ namespace SecondFace.Game.Fighting
             _hitV += new Vector3(60f, 0f, 0f) * strength * (Held.Arms == Arms.Rifle ? 1.4f : 0.7f);
         }
 
+        /// <summary>A long gun's round (A3): the chest kicked back <paramref name="degrees"/> in the frame it fires and settling
+        /// over about 0.25 s, the head counter-turned to keep the eye on the sights, the stock's shoulder pushed back (the
+        /// recoil authored for combat v3's shots, played on the hold itself: the shots were the other actor's takes, CMU 79 on
+        /// 80's hold, and every shot crossfaded the feet between two stances 9 cm apart).</summary>
+        public void Recoil(float degrees) => _recoil += Mathf.Max(0f, degrees);
+        /// <summary>The chest's kick now (degrees; tests read it).</summary>
+        public float RecoilNow => _recoil;
+
         /// <summary>Struck (A5): the spine, chest and head turned away from where it came from, by where it struck and how
         /// hard (a graze, a hit, a crit; a miss flinches), springing back (A5's procedural directional hit, README v3 §2).</summary>
         public void Hit(Vector3 from, string zone, string kind)
@@ -491,6 +559,7 @@ namespace SecondFace.Game.Fighting
         private void Update()
         {
             if (!Ready || _a == null || !_a.enabled) return;
+            if (_sheatheDue) { _sheatheDue = false; if (_fullWant < 0.5f) Sheathe(); }
             var dt = Time.deltaTime;
             _fullW = Mathf.MoveTowards(_fullW, _fullWant, _fullRate * dt);
             _armsW = Mathf.MoveTowards(_armsW, _armsWant, _armsRate * dt);
@@ -506,6 +575,7 @@ namespace SecondFace.Game.Fighting
                 if (fightStance) { if (!_pausedPlant) { _plantWasOn = _plant.enabled; _pausedPlant = true; } if (_plant.enabled) _plant.enabled = false; }
                 else if (_pausedPlant) { _plant.enabled = _plantWasOn; _pausedPlant = false; }
             }
+            Base(fightStance);
             // a person in a fight makes no idle gestures (the ambient's waves and stretches wait until it is over)
             var fighting = _fullWant > 0.5f || _armsWant > 0.5f || Moving || _fullW > 0.02f || _armsW > 0.02f;
             if (_ambient != null)
@@ -541,8 +611,9 @@ namespace SecondFace.Game.Fighting
         private (float Yaw, float Roll) HeadLimits(string gate) => gate switch
         {
             "guard" or "ready" => (53f, 18f),
-            "strike" or "hit" or "throw" => (54f, 20f),
-            "aim" => (21f, 16f),
+            "strike" or "strike2" or "hit" or "throw" => (54f, 20f),
+            "dodge" => (52f, 17f),
+            "aim" => (31f, 16f),
             "crouch" or "rise" => (88f, 34f),
             _ => (_gazeYaw0, _gazeRoll0),
         };
@@ -580,11 +651,34 @@ namespace SecondFace.Game.Fighting
                 var ai = _a.IsInTransition(_armsLayer) ? _a.GetNextAnimatorStateInfo(_armsLayer) : _a.GetCurrentAnimatorStateInfo(_armsLayer);
                 if (Names.TryGetValue(ai.shortNameHash, out var carry)) Carrying = carry;
             }
-            if (_pausedPlant && _fullW > 0.01f) Feet(Smooth(_fullW), dt);
+            if (_pausedPlant && _fullW > 0.01f) Feet(Smooth(_fullW), dt, Pins(CombatMotion.State(Current)?.Gate));
+            else { _fl = default; _fr = default; _sink = 0f; }
             LearnFacing();
             Springs(dt);
             Hands(dt);
         }
+
+        /// <summary>
+        /// Unity's Foot IK goes by the base layer's state, under every layer over it: the people's locomotion has it on, so
+        /// the fight's clips, built without it, were played with it (the long gun aim's straight leg bent from the take's
+        /// 7.2° to 17-21° on the bodies; on the base's "sit", which has none, 7.2°, 2026-11-18). While the fight's stance has
+        /// the body the base plays its locomotion in <see cref="CombatMotion.StanceBase"/> (the same motion without Foot IK,
+        /// at the same phase), and goes back as the stance gives the body up; a base in any other state (a sneak, a sit) is
+        /// left as it is.
+        /// </summary>
+        private void Base(bool stance)
+        {
+            if (_stanceBase == 0 || _loco == 0 || _a.IsInTransition(0)) return;
+            var info = _a.GetCurrentAnimatorStateInfo(0);
+            var from = stance ? _loco : _stanceBase;
+            if (info.shortNameHash != from) return;
+            var phase = info.loop ? info.normalizedTime - Mathf.Floor(info.normalizedTime) : Mathf.Clamp01(info.normalizedTime);
+            _a.CrossFadeInFixedTime(stance ? _stanceBase : _loco, BaseFade, 0, phase * info.length);
+        }
+
+        /// <summary>The base layer's crossfade into and out of <see cref="CombatMotion.StanceBase"/> (s): the fight's
+        /// layer's own (<see cref="Locomote"/>'s 0.25 s), so Foot IK eases out as the stance comes in.</summary>
+        public const float BaseFade = 0.25f;
 
         // ------------------------------------------------------------------------------------------- the feet
 
@@ -596,40 +690,135 @@ namespace SecondFace.Game.Fighting
             return fallback;
         }
 
-        /// <summary>The fight's stance on the ground: each foot at the clip's own height over the ground under it (the hips
-        /// lowered when one must go down), a foot that is down and still held where it was put down until the clip lifts it
-        /// (a crossfade between two stances does not slide it), the feet's own turn kept.</summary>
-        private void Feet(float w, float dt)
+        /// <summary>A foot's sole at rest, flat on the floor at <paramref name="floor"/> (as FootPlant reads it): the heel's
+        /// contact a fifth of the foot's length behind the ankle, the ball's under the toe joint, in the foot bone's frame.</summary>
+        private void SolePoints(Transform foot, Transform toe, float floor, out Vector3 heel, out Vector3 ball)
         {
-            if (_footL == null || _footR == null || _hips == null || Body == null) return;
+            var ahead = toe != null ? toe.position - foot.position : Front * 0.14f; ahead.y = 0f;
+            var len = Mathf.Max(0.08f, ahead.magnitude);
+            var dir = ahead.sqrMagnitude > 1e-6f ? ahead.normalized : Front;
+            var at = foot.position; at.y = floor;
+            heel = foot.InverseTransformPoint(at - dir * (0.2f * len));
+            ball = foot.InverseTransformPoint(at + dir * len);
+        }
+
+        /// <summary>The lower of a foot's heel and ball, in the world, now.</summary>
+        private static float SoleLow(Transform foot, Vector3 heel, Vector3 ball) => Mathf.Min(foot.TransformPoint(heel).y, foot.TransformPoint(ball).y);
+
+        /// <summary>Whether the fight's stance holds its planted feet against a slide (the gate's F4 sets: a stance stands still;
+        /// a blow pivots and steps on its own feet, a hit or a throw is thrown about, a get-up draws its heels).</summary>
+        private static bool Pins(string gate) => gate is "guard" or "ready" or "aim" or "aim_pistol" or "crouch" or "reload" or "yield";
+
+        /// <summary>
+        /// The fight's stance on the ground (docs/PEOPLE_MOTION.md F1, F4; the foot plant gives way to it):
+        /// <list type="bullet">
+        /// <item>Soles on the ground: the clips as retargeted leave both soles 2.5-4 cm over the floor on these bodies (F1 in
+        /// every fight stance, 2026-11-17: the standing foot plant puts them down, and it is paused here), so the hips come down
+        /// until the lower foot's lowest sole point meets its ground (or the higher one's, less 1.5 cm, on a slope), and a foot
+        /// the clip has down (its sole within 3 cm of the other's) is set on its own ground by the leg; a foot the clip lifts is
+        /// left as the clip has it.</item>
+        /// <item>Planted feet (in the stances that stand: <see cref="Pins"/>): the clip's own planted foot creeping or swaying is
+        /// followed (held at the place it came down, a straight standing knee bent 14-22° on a centimetre of the clip's sway: K1
+        /// in the aim, 2026-11-17); a foot the clip slides fast (a crossfade between two stances: F4 130-208 cm/s going into
+        /// cover and hands up) stays where it stands and steps to the new place once it is <see cref="StepReach"/> away, lifted on
+        /// an arc, one foot at a time; one left more than <see cref="Replant"/> off when the clip is still steps there too.</item>
+        /// </list>
+        /// </summary>
+        private void Feet(float w, float dt, bool pin)
+        {
+            if (_footL == null || _footR == null || _hips == null || Body == null || dt <= 0f) return;
             var root = Body.position.y;
-            var aL = _footL.position; var aR = _footR.position;
-            var gL = GroundAt(aL, root); var gR = GroundAt(aR, root);
-            var wantL = new Vector3(aL.x, gL + (aL.y - root), aL.z);
-            var wantR = new Vector3(aR.x, gR + (aR.y - root), aR.z);
-            Hold(ref _fl, aL, aL.y - root - _ankleL, dt, ref wantL);
-            Hold(ref _fr, aR, aR.y - root - _ankleR, dt, ref wantR);
-            var dy = Mathf.Clamp(Mathf.Min(0f, Mathf.Min(wantL.y - aL.y, wantR.y - aR.y)), -0.3f, 0f) * w;
-            if (dy < 0f) _hips.position += Vector3.up * dy;
+            var gL = GroundAt(_footL.position, root); var gR = GroundAt(_footR.position, root);
+            var eL = SoleLow(_footL, _heelL, _ballL) - gL; var eR = SoleLow(_footR, _heelR, _ballR) - gR;
+            // the hips: the lower sole onto its ground (on a slope, the higher one's less 1.5 cm, so the downhill leg reaches),
+            // and down at least as far as each foot the clip has down needs for its leg to reach its ground nearly straight
+            // (FootPlant.LegNeed's rule): set by the lower sole alone, the clip's straight standing leg could not reach its
+            // ground, its foot hung 1-3 cm up at the leg's full reach (the knee at the solver's limit, 1.8°) and swung with the
+            // hips' sway (F1 and F4 in the guard, the ready and both aims, docs/COMBAT_ROOT_CAUSE.md 17)
+            var lo = Mathf.Min(eL, eR); var hi = Mathf.Max(eL, eR);
+            var want = -Mathf.Clamp(hi - 0.015f, lo, hi);
+            want = Mathf.Min(want, -LegNeed(_upL, _loL, _footL, eL, _fl, want));
+            want = Mathf.Min(want, -LegNeed(_upR, _loR, _footR, eR, _fr, want));
+            want = Mathf.Clamp(want, -0.2f, 0.2f);
+            _sink = _fl.HaveWas || _fr.HaveWas ? Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-25f * dt)) : want;
+            _hips.position += Vector3.up * (_sink * w);
+            eL += _sink * w; eR += _sink * w;
+            var k = _hipHeight / 0.935f;
+            var wantL = Place(ref _fl, _footL.position, eL, dt, pin, _fr.Stepping, k);
+            var wantR = Place(ref _fr, _footR.position, eR, dt, pin, _fl.Stepping, k);
             var rotL = _footL.rotation; var rotR = _footR.rotation;
             TwoBone.Solve(_upL, _loL, _footL, wantL, w, _loL.position + Front * 0.3f);
             TwoBone.Solve(_upR, _loR, _footR, wantR, w, _loR.position + Front * 0.3f);
             _footL.rotation = rotL; _footR.rotation = rotR;
+            SoleOver = new Vector2(SoleLow(_footL, _heelL, _ballL) - gL, SoleLow(_footR, _heelR, _ballR) - gR);
+            Planted = new Vector2(_fl.Pinned && !_fl.Stepping ? 1f : 0f, _fr.Pinned && !_fr.Stepping ? 1f : 0f);
         }
 
-        private void Hold(ref Foot f, Vector3 clip, float lift, float dt, ref Vector3 want)
+        /// <summary>A standing leg's reach as a share of its length (FootPlant.StanceStraight's: the knee bent about 3.6°).</summary>
+        public float StandStraight = 0.9995f;
+
+        /// <summary>How far the hips must come down (m, from where they are) for this leg to reach the ground under its foot
+        /// (held where it is planted) nearly straight (<see cref="StandStraight"/>); -infinity for a foot the clip lifts
+        /// (over 3 cm up once the hips are at <paramref name="sink"/>), one stepping, or a place out of reach along the
+        /// ground.</summary>
+        private float LegNeed(Transform up, Transform lo, Transform ft, float e, in Foot f, float sink)
         {
-            var speed = f.HaveWas && dt > 0f ? new Vector2(clip.x - f.Was.x, clip.z - f.Was.z).magnitude / dt : 0f;
-            f.Was = clip; f.HaveWas = true;
-            if (!f.Locked && lift < 0.03f && speed < 0.25f) { f.Locked = true; f.At = new Vector3(clip.x, 0f, clip.z); }
-            if (f.Locked)
+            if (f.Stepping || e + sink > 0.03f) return float.NegativeInfinity;
+            var a = ft.position;
+            var at = f.Pinned && f.W > 0f ? Vector3.Lerp(Flat(a), f.Pin, f.W) : Flat(a);
+            var target = new Vector3(at.x, a.y - e, at.z);
+            var reach = StandStraight * ((lo.position - up.position).magnitude + (a - lo.position).magnitude);
+            var hv = target - up.position; var flat = new Vector2(hv.x, hv.z).magnitude;
+            return reach > flat ? up.position.y - (target.y + Mathf.Sqrt(reach * reach - flat * flat)) : float.NegativeInfinity;
+        }
+
+        /// <summary>Each foot's lowest sole point over its ground after the fight's feet (m; left, right), and whether each is
+        /// planted (1) this frame: tests read them.</summary>
+        public Vector2 SoleOver { get; private set; }
+        public Vector2 Planted { get; private set; }
+
+        private static Vector3 Flat(Vector3 v) => new(v.x, 0f, v.z);
+
+        /// <summary>Where a foot goes (its ankle): down on its ground where the clip has it down (<paramref name="e"/>: its lowest
+        /// sole point over its ground now), held, stepped or following as <see cref="Feet"/> says.</summary>
+        private Vector3 Place(ref Foot f, Vector3 a, float e, float dt, bool pin, bool otherStepping, float k)
+        {
+            var down = Mathf.Clamp01((0.04f - e) / 0.02f);
+            var want = new Vector3(a.x, a.y - e * down, a.z);
+            var speed = f.HaveWas ? Flat(a - f.Was).magnitude / dt : 0f;
+            f.Was = a; f.HaveWas = true;
+            if (!pin || (down < 0.5f && !f.Stepping)) { f.Pinned = false; f.Stepping = false; }
+            else if (!f.Pinned) { f.Pinned = true; f.Pin = Flat(a); }
+            // (a body set down somewhere else, an undo or a fall's rise: its feet come down where it is now)
+            if (f.Pinned && Flat(a - f.Pin).sqrMagnitude > 0.25f) { f.Pin = Flat(a); f.Stepping = false; }
+            if (f.Pinned && !f.Stepping)
             {
-                var off = new Vector2(clip.x - f.At.x, clip.z - f.At.z).magnitude;
-                if (lift > 0.045f || off > 0.14f || _turning) f.Locked = false;
+                var drift = Flat(a) - f.Pin;
+                var far = drift.magnitude;
+                if (speed > 0.1f)
+                {
+                    // the clip slides it (a crossfade between stances): it stays, and steps once the new place is far enough
+                    if (far > StepReach * k && !otherStepping) { f.Stepping = true; f.From = f.Pin; f.T = 0f; }
+                }
+                else if (far > Replant * k && !otherStepping) { f.Stepping = true; f.From = f.Pin; f.T = 0f; }
+                // the clip's own planted foot creeping or swaying: followed, never faster than a planted foot is allowed (F4)
+                else f.Pin += Vector3.ClampMagnitude(drift, 0.02f * dt);
             }
-            f.W = Mathf.MoveTowards(f.W, f.Locked ? 1f : 0f, dt / 0.12f);
-            if (f.W > 0f) { want.x = Mathf.Lerp(want.x, f.At.x, f.W); want.z = Mathf.Lerp(want.z, f.At.z, f.W); }
-            if (!f.Locked && f.W <= 0f) f.At = new Vector3(clip.x, 0f, clip.z);
+            f.Lift = 0f;
+            if (f.Stepping)
+            {
+                f.T += dt * Rate / StepTime;
+                var t = Mathf.Clamp01(f.T);
+                // lifted first, across while up (as the standing foot plant steps: FootPlant.StepTravel), down where it goes
+                var u = Mathf.Clamp01((t - 0.15f) / 0.7f); u = u * u * (3f - 2f * u);
+                f.Pin = Vector3.Lerp(f.From, Flat(a), u);
+                f.Lift = StepLift * k * Mathf.Sin(Mathf.PI * t);
+                if (f.T >= 1f) { f.Stepping = false; f.Pin = Flat(a); }
+            }
+            f.W = Mathf.MoveTowards(f.W, f.Pinned ? 1f : 0f, dt / 0.1f);
+            if (f.W > 0f) { want.x = Mathf.Lerp(want.x, f.Pin.x, f.W); want.z = Mathf.Lerp(want.z, f.Pin.z, f.W); }
+            want.y += f.Lift;
+            return want;
         }
 
         // ------------------------------------------------------------------------------------------- springs
@@ -642,13 +831,25 @@ namespace SecondFace.Game.Fighting
             _hitA += _hitV * dt;
             _kickV += (-KickOmega * KickOmega * _kick - 2f * KickDamp * KickOmega * _kickV) * dt;
             _kick += _kickV * dt;
+            // a long gun's recoil (author.py's model: the kick k pitches the chest back k°, the head forward 0.6 k°, the stock's
+            // shoulder back 1.2 k°, settling as exp(-t / 0.1 s))
+            if (_recoil > 0.01f)
+            {
+                var r = RightAx;
+                if (_chest != null) _chest.rotation = Quaternion.AngleAxis(-_recoil, r) * _chest.rotation;
+                if (_head != null) _head.rotation = Quaternion.AngleAxis(0.6f * _recoil, r) * _head.rotation;
+                if (_shoulderR != null) _shoulderR.rotation = Quaternion.AngleAxis(1.2f * _recoil, Vector3.up) * _shoulderR.rotation;
+                _recoil *= Mathf.Exp(-dt * Rate / 0.1f);
+            }
+            else _recoil = 0f;
             if (_hitA.sqrMagnitude < 1e-4f && _hitV.sqrMagnitude < 1e-3f) { _hitA = _hitV = Vector3.zero; return; }
             var fwd = Front; var right = RightAx;
             Quaternion Turn(float k) =>
                 // (+x leans back: a positive turn about the right axis tips the top forward in Unity's frame)
                 Quaternion.AngleAxis(-_hitA.x * k, right) * Quaternion.AngleAxis(_hitA.y * k, Vector3.up) * Quaternion.AngleAxis(_hitA.z * k, fwd);
-            if (_spine != null) _spine.rotation = Turn(_hitSpine * 0.5f) * _spine.rotation;
-            if (_chest != null && _chest != _spine) _chest.rotation = Turn(_hitChest * 0.5f) * _chest.rotation;
+            // (from the lowest trunk bone above the legs: the Spine on these rigs carries the legs, and turned it swung the feet)
+            if (_lean != null && _lean != _chest) _lean.rotation = Turn(_hitSpine * 0.5f) * _lean.rotation;
+            if (_chest != null) _chest.rotation = Turn((_hitChest + (_lean == _chest ? _hitSpine : 0f)) * 0.5f) * _chest.rotation;
             if (_head != null) _head.rotation = Turn(_hitHead * 0.6f) * _head.rotation;
         }
 
@@ -662,16 +863,21 @@ namespace SecondFace.Game.Fighting
                 Mathf.Max(full != null && full.Hands == mode ? Smooth(_fullW) : 0f, carry != null && carry.Hands == mode ? Smooth(_armsW) : 0f);
             var weapon = InHand && _weapon != null && _w != null;
             var step = dt / 0.15f;
-            _offW = Mathf.MoveTowards(_offW, weapon && (_w.HasOff || Held.Arms == Arms.Pistol) ? Mathf.Max(Want(HandsIk.OffHand), 0f) : 0f, step);
+            // a long gun's or a two-handed club's ready hold, made for this body (CombatMotion.ReadyHold): both hands on it
+            // (a state that holds is a two-handed weapon's hold: with any other weapon its hands are the clip's)
+            var holds = weapon && _w.HasOff && CombatMotion.Hold(Held.Arms, false) != null;
+            _holdW = Mathf.MoveTowards(_holdW, holds ? Want(HandsIk.Hold) : 0f, step);
+            _offW = Mathf.MoveTowards(_offW, weapon && (_w.HasOff || Held.Arms == Arms.Pistol) ? Mathf.Max(Want(HandsIk.OffHand), holds ? Want(HandsIk.Hold) : 0f) : 0f, step);
             _pistolW = Mathf.MoveTowards(_pistolW, weapon && _haveAim ? Want(HandsIk.PistolAim) : 0f, step);
             _arcW = Mathf.MoveTowards(_arcW, weapon && Current == "melee_slash" ? Smooth(_fullW) : 0f, step);
             _fixW = Mathf.MoveTowards(_fixW, weapon && _haveAim && Held.Arms == Arms.Rifle && full != null && full.Gate == "aim" ? Smooth(_fullW) : 0f, step);
             var fists = full != null && (full.Gate == "guard" || full.Gate == "strike") && !weapon ? Smooth(_fullW) : 0f;
             _fistW = Mathf.MoveTowards(_fistW, fists, step);
+            if (_holdW > 0f) ReadyHold(_holdW, full != null && full.Gate == "crouch");
             if (_pistolW > 0f) PistolAim(_pistolW);
             if (_arcW > 0f) Arc(_arcW, full);
             if (_fixW > 0f) AimFix(_fixW);
-            if (_offW > 0f && _pistolW < 0.99f) OffHand(_offW * (1f - _pistolW));
+            if (_offW > 0f && _pistolW < 0.99f) OffHand(_offW * (1f - _pistolW), _holdW);
             // the fingers round what they hold
             var grip = Mathf.Max(Smooth(_fullW), Smooth(_armsW));
             if (weapon) _right.Close(CombatMotion.MainGrip(Held.Model), grip);
@@ -695,14 +901,49 @@ namespace SecondFace.Game.Fighting
             return t.position + t.rotation * local;
         }
 
-        private void OffHand(float w)
+        private void OffHand(float w, float hold = 0f)
         {
             // (the weight eases out after the weapon is put away: nothing left to hold)
             if (_weapon == null || _w == null || _left == null) return;
             var t = _weapon.transform;
             var palm = Hand.PalmOn(t.rotation, CombatMotion.OffGrip(Held.Model));
-            _left.Reach_(OffPoint(), palm, w);
+            // in the ready hold the elbow bends down and out (the stopgap's own arm is straight: its bend says nothing)
+            Vector3? pole = null;
+            if (hold > 0.5f && _left.Ready) pole = _left.Upper.position + Vector3.down * 0.3f - RightAx * 0.12f;
+            _left.Reach_(OffPoint(), palm, w, pole);
         }
+
+        private static (double X, double Y, double Z) T(Vector3 v) => (v.x, v.y, v.z);
+
+        /// <summary>A long gun's or a two-handed club's ready hold made for this body (Core <see cref="CombatMotion.ReadyHold"/>,
+        /// <see cref="HandsIk.Hold"/>), in the frame of its own shoulders as the clip has them now (the line from the off
+        /// shoulder's joint to the main one, level; up the world's): the main grip at the hold's share of this arm's reach
+        /// (Core <see cref="CombatMotion.PlaceHold"/>, which keeps the off hand's wrist, its palm on grip_off, within 0.95 of
+        /// the off arm's chain to the wrist, the chain this IK solves), the weapon's line
+        /// tipped and turned by the hold, the main hand put on its grip with the elbow bent down and out; the off hand goes to
+        /// grip_off after (<see cref="OffHand"/>).</summary>
+        private void ReadyHold(float w, bool crouched)
+        {
+            var h = CombatMotion.Hold(Held.Arms, crouched || Crouched);
+            if (h == null || _w == null || !_w.HasOff || !_right.Ready || !_left.Ready) return;
+            var hold = h.Value;
+            var sR = _right.Upper.position; var sL = _left.Upper.position;
+            var across = sR - sL; across.y = 0f;
+            if (across.sqrMagnitude < 1e-4f) across = RightAx;
+            var fwd = Vector3.Cross(across.normalized, Vector3.up);
+            var frame = Quaternion.LookRotation(fwd, Vector3.up);
+            var inv = Quaternion.Inverse(frame);
+            // (the off hand's wrist, where its IK chain ends, from its palm on grip_off: the palm in the off grip's frame)
+            var offPalm = Quaternion.LookRotation(Hand.V(CombatMotion.OffGrip(Held.Model).Across), Hand.V(CombatMotion.OffGrip(Held.Model).Palm)) * _left.PalmFromWrist;
+            var (local, line) = CombatMotion.PlaceHold(hold, T(inv * (sL - sR)), _right.Reach, _left.Arm, T(_w.GripOff), T(offPalm));
+            var grip = sR + frame * Hand.V(local);
+            var weapon = frame * Quaternion.Euler(0f, -(float)line.Across, 0f) * Quaternion.Euler((float)line.Pitch, 0f, 0f);
+            HoldGrip = grip;
+            _right.Reach_(grip, Hand.PalmOn(weapon, CombatMotion.MainGrip(Held.Model)), w, sR + Vector3.down * 0.3f + frame * Vector3.right * 0.15f - fwd * 0.1f);
+        }
+
+        /// <summary>Where the ready hold put the main grip this frame (tests read it).</summary>
+        public Vector3 HoldGrip { get; private set; }
 
         /// <summary>The pistol's aim: both hands on the line from the eyes to the target at the arms' reach, the support hand
         /// wrapping the grip; the recoil flips the muzzle up and back.</summary>
@@ -755,7 +996,20 @@ namespace SecondFace.Game.Fighting
             _right.Reach_(at, Hand.PalmOn(weapon, CombatMotion.MainGrip(Held.Model)), w * Smooth(ramp));
         }
 
-        /// <summary>A long gun's muzzle onto the target by the wrist (the captured hands mimed a gun: at most 12°).</summary>
+        /// <summary>The most <see cref="AimFix"/> turns a long gun onto its target (°): the captured hands mimed a gun, and the
+        /// held aim's line misses by up to 7.8° (the target's height and the take's own line; 4.4° median, mostly in pitch).</summary>
+        public const float AimFixMax = 12f;
+
+        /// <summary>
+        /// A long gun's muzzle onto the target, by the upper body: the gun held in both hands, its stock in the shoulder and the
+        /// cheek on it, turns with the trunk as one piece, each of its bones above the legs a share (the chest and the upper
+        /// chest: Biped's thighs hang from its Spine, whose turn swung the planted feet at every round; the arms, the head and
+        /// the gun go with them, so the off hand keeps the reach the take gives it). It corrects an aim, never a gun
+        /// still coming up: fully within <see cref="AimFixMax"/> of the target, fading out to none at twice that.
+        /// (Turned at the main wrist alone, up to 12° over the whole raise into the aim, where the take's gun is still 18-83°
+        /// off the target, it swung the fore-end 40-55 cm ahead of that hand by 8-11 cm: a woman's off hand 2.6-5.3 cm off its
+        /// grip, out of her reach, 2026-11-18; docs/COMBAT_ROOT_CAUSE.md.)
+        /// </summary>
         private void AimFix(float w)
         {
             if (_w == null || !_w.HasMuzzle) return;
@@ -766,9 +1020,15 @@ namespace SecondFace.Game.Fighting
             var turn = Quaternion.FromToRotation(t.forward, want.normalized);
             turn.ToAngleAxis(out var angle, out var axis);
             if (angle > 180f) angle -= 360f;
-            angle = Mathf.Clamp(angle, -12f, 12f) * w;
-            // (turned at the wrist itself: the hand stays on the forearm, the grip moves a centimetre at most)
-            _right.Bone.rotation = Quaternion.AngleAxis(angle, axis) * _right.Bone.rotation;
+            var near = Mathf.Clamp01((2f * AimFixMax - Mathf.Abs(angle)) / AimFixMax);
+            angle = Mathf.Clamp(angle, -AimFixMax, AimFixMax) * w * near;
+            if (Mathf.Abs(angle) < 1e-3f) return;
+            var chain = 0;
+            foreach (var b in _trunk) if (b != null) chain++;
+            if (chain == 0) { _right.Bone.rotation = Quaternion.AngleAxis(angle, axis) * _right.Bone.rotation; return; }
+            // (each bone about the same world axis: they add up along the chain to the whole turn at the shoulders)
+            var share = Quaternion.AngleAxis(angle / chain, axis);
+            foreach (var b in _trunk) if (b != null) b.rotation = share * b.rotation;
         }
 
         // ------------------------------------------------------------------------------------------- the end
@@ -780,7 +1040,36 @@ namespace SecondFace.Game.Fighting
             Release(fade);
             ClearAim();
             if (_hasSneak && _a != null) _a.SetBool(SneakId, false);
-            StartCoroutine(SheatheLater(fade * 0.5f));
+            if (isActiveAndEnabled) _sheathing = StartCoroutine(SheatheLater(fade * 0.5f));
+            else Sheathe();
+        }
+
+        private Coroutine _handBack, _sheathing;
+        private bool _handingBack, _sheatheDue;
+
+        /// <summary>A fight's hand-back of this body (its view's end: the get-up waited for, the guard relaxed, the weapon put
+        /// away, the layers let go), run on the body itself: a body destroyed while it runs takes it with it, a later fight's
+        /// view taking the body stops it (<see cref="Ensure"/>), and a body put away (inactive) is let go at once
+        /// (<see cref="OnDisable"/>), so the fight's layers are never left on a body that leaves the fight.</summary>
+        public void HandBack(IEnumerator steps)
+        {
+            StopHandBack();
+            if (!isActiveAndEnabled) { End(0f); return; }
+            _handingBack = true;
+            _handBack = StartCoroutine(HandingBack(steps));
+        }
+
+        private IEnumerator HandingBack(IEnumerator steps)
+        {
+            yield return steps;
+            _handingBack = false;
+        }
+
+        private void StopHandBack()
+        {
+            _handingBack = false; _sheatheDue = false;
+            if (_handBack != null) { StopCoroutine(_handBack); _handBack = null; }
+            if (_sheathing != null) { StopCoroutine(_sheathing); _sheathing = null; }
         }
 
         private IEnumerator SheatheLater(float after)
@@ -792,10 +1081,19 @@ namespace SecondFace.Game.Fighting
 
         private void OnDisable()
         {
+            // (put away during its hand-back, which stops with it: the layers let go at once, the weapon put away in the first
+            // frame it is back; the hierarchy cannot be changed while it is being deactivated)
+            if (_handingBack) { StopHandBack(); Release(0.05f); ClearAim(); _sheatheDue = true; }
             if (_pausedPlant && _plant != null) { _plant.enabled = _plantWasOn; _pausedPlant = false; }
             if (_pausedAmbient && _ambient != null) { _ambient.enabled = _ambientWasOn; _pausedAmbient = false; }
             if (_clear != null) _clear.Holding = false;
             if (_gaze != null) { _gaze.MaxNeckYaw = _gazeYaw0; _gaze.MaxRoll = _gazeRoll0; }
+            // (the base layer back to its locomotion, Foot IK and all, if the fighter stops while the stance had it)
+            if (_a != null && _a.isActiveAndEnabled && _stanceBase != 0 && _loco != 0)
+            {
+                var info = _a.GetCurrentAnimatorStateInfo(0);
+                if (info.shortNameHash == _stanceBase) _a.Play(_loco, 0, info.normalizedTime - Mathf.Floor(info.normalizedTime));
+            }
         }
 
         private void OnDestroy()

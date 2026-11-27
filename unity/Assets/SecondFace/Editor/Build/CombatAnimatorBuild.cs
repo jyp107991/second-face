@@ -23,8 +23,8 @@ namespace SecondFace.EditorTools
     /// the import of the rebuilt controller puts these back (CombatImportPostprocessor).</item>
     /// <item>The weapons: each staged model's materials (URP Lit from its BaseColor, Normal and Mask: R metallic, G occlusion,
     /// A smoothness; the bottle's glass transparent, premultiplied) in both lore paints, remapped onto the model by name.</item>
-    /// <item>The set (Combat/CombatSet.asset): the controller, the weapons with their grip, muzzle and tip points (the
-    /// sidecars' <c>points_unity</c>), each clip's length and beats (impact, release, fire, the magazine) as normalized
+    /// <item>The set (Combat/CombatSet.asset): the controller, the weapons with their grip, muzzle, tip and butt points (the
+    /// sidecars' <c>points_unity</c>) and the model's place in that frame fitted from its own nulls, each clip's length and beats (impact, release, fire, the magazine) as normalized
     /// times; given to WorldAssets.Combat so the game's fights use it.</item>
     /// </list>
     /// </summary>
@@ -64,7 +64,8 @@ namespace SecondFace.EditorTools
 
         /// <summary>The controller carries this version's fight layers.</summary>
         public static bool HasLayers(AnimatorController ctl) =>
-            ctl != null && ctl.parameters.Any(p => p.name == VersionParam) && ctl.layers.Any(l => l.name == CombatMotion.FullLayer) && ctl.layers.Any(l => l.name == CombatMotion.ArmsLayer);
+            ctl != null && ctl.parameters.Any(p => p.name == VersionParam) && ctl.layers.Any(l => l.name == CombatMotion.FullLayer) && ctl.layers.Any(l => l.name == CombatMotion.ArmsLayer)
+            && ctl.layers.Length > 0 && ctl.layers[0].stateMachine.states.Any(s => s.state.name == CombatMotion.StanceBase);
 
         /// <summary>The fight's clips are in (every state's clip imported): a fresh checkout imports them before the
         /// controller is rebuilt.</summary>
@@ -98,8 +99,29 @@ namespace SecondFace.EditorTools
             ctl.AddParameter(VersionParam, AnimatorControllerParameterType.Bool);
             Layer(ctl, CombatMotion.FullLayer, null);
             Layer(ctl, CombatMotion.ArmsLayer, ArmsMask());
+            StanceBase(ctl);
             EditorUtility.SetDirty(ctl);
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>The base layer's state for the fight's stance (<see cref="CombatMotion.StanceBase"/>): the base's own
+        /// locomotion (its default state's motion, speed and parameter) without Foot IK, which Unity applies by the base
+        /// layer's state under the fight's layers too. Fighter moves the base into it while the stance has the body and back
+        /// after, at the same phase.</summary>
+        private static void StanceBase(AnimatorController ctl)
+        {
+            var sm = ctl.layers[0].stateMachine;
+            var loco = sm.defaultState;
+            if (loco == null || loco.motion == null) { Debug.LogError("CombatAnimatorBuild: the base layer has no default state with a motion for the fight's stance"); return; }
+            // (updated in place, never removed: AnimatorStateMachine.RemoveState destroys the state's blend tree with it, and the
+            // two states share the locomotion's tree: a second build left every person's locomotion with no motion, 2026-11-18)
+            var st = sm.states.Select(s => s.state).FirstOrDefault(s => s.name == CombatMotion.StanceBase) ?? sm.AddState(CombatMotion.StanceBase);
+            st.motion = loco.motion;
+            st.speed = loco.speed;
+            st.speedParameterActive = loco.speedParameterActive;
+            st.speedParameter = loco.speedParameter;
+            st.writeDefaultValues = loco.writeDefaultValues;
+            st.iKOnFeet = false;
         }
 
         private static void Purge(AnimatorController ctl, AnimatorStateMachine sm)
@@ -249,12 +271,21 @@ namespace SecondFace.EditorTools
                 if (!File.Exists(jsonPath) || !File.Exists(fbx)) { Debug.LogWarning($"CombatAnimatorBuild: weapon {id} not staged"); continue; }
                 var j = JObject.Parse(File.ReadAllText(jsonPath));
                 var pts = (JObject)j["points_unity"];
-                Vector3 P(string k) => pts?[k] is JArray a ? new Vector3(a[0].Value<float>(), a[1].Value<float>(), a[2].Value<float>()) : Vector3.zero;
+                Vector3 V(JToken t) => t is JArray a ? new Vector3(a[0].Value<float>(), a[1].Value<float>(), a[2].Value<float>()) : Vector3.zero;
+                // where the hands hold, if not on the nulls of those names (`hands`: a two-handed club held as real right-handed
+                // people hold it, the dominant hand toward the head and the off hand at the butt, 2026-11-18): the weapon's frame
+                // is the main hand's, so every point is taken from there
+                var hands = (JObject)j["hands"];
+                var main = hands?["main"] != null ? V(hands["main"]) : Vector3.zero;
+                Vector3 P(string k) => (pts?[k] is JArray ? V(pts[k]) : Vector3.zero) - (pts?[k] is JArray ? main : Vector3.zero);
                 var w = new CombatSet.Weapon
                 {
                     Id = id, HasOff = pts?["grip_off"] != null, HasMuzzle = pts?["muzzle"] != null,
-                    GripOff = P("grip_off"), Muzzle = P("muzzle"), Tip = pts?["tip"] != null ? P("tip") : P("muzzle"),
+                    GripOff = hands?["off"] != null ? V(hands["off"]) - main : P("grip_off"), Muzzle = P("muzzle"), Tip = pts?["tip"] != null ? P("tip") : P("muzzle"),
+                    HasButt = pts?["butt"] != null, Butt = P("butt"),
+                    PointNames = pts != null ? pts.Properties().Select(x => x.Name).ToArray() : new string[0],
                 };
+                w.PointsAt = w.PointNames.Select(P).ToArray();
                 var size = j["size_m"] is JArray sz ? sz[2].Value<float>() : 0.4f;
                 w.Length = Mathf.Max(size, Mathf.Max(Mathf.Abs(w.Tip.z), Mathf.Abs(w.Muzzle.z)));
                 // both paints, the first on the model by name
@@ -285,6 +316,15 @@ namespace SecondFace.EditorTools
                 w.Prefab = AssetDatabase.LoadAssetAtPath<GameObject>(fbx);
                 w.Paint1 = paint1.ToArray(); w.Paint2 = paint2.ToArray();
                 l.Add(w);
+            }
+            // each model laid in its weapon's frame by its own nulls (the FBX root carries the exporter's axis turn); a weapon
+            // whose points lie on one line takes its twist from one whose points fix it (one exporter, one import)
+            Quaternion? like = null;
+            foreach (var w in l) { w.Fit(); if (w.FittedFull && like == null) like = w.ModelRot; }
+            foreach (var w in l)
+            {
+                var fit = w.FittedFull ? w.Fit() : w.Fit(like);
+                if (fit > 0.001f) Debug.LogWarning($"CombatAnimatorBuild: {w.Id}: its nulls fit the sidecar's points within {fit * 100f:0.0} cm only");
             }
             return l.ToArray();
         }

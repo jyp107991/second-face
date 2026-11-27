@@ -1,0 +1,289 @@
+{
+ "name": "crouch_walk_100s",
+ "src": "100STYLE Crouched_FW",
+ "loop": true,
+ "speed": 0.659,
+ "root": false,
+ "hip": 0.871,
+ "fps": 30,
+ "frames": 38,
+ "src_fps": 60.0,
+ "sex": "u",
+ "sex_source": "not recorded (100STYLE: one actor, 182 cm)",
+ "set": "both",
+ "licence": "The 100STYLE Dataset - Ian Mason, CC BY 4.0 (https://www.ianxmason.com/100style/)",
+ "source": "https://www.ianxmason.com/100style/ (Crouched_FW.bvh)",
+ "state": "S16",
+ "gate": "carry",
+ "kind": "walk crouched (100STYLE Crouched; sex not recorded)",
+ "weapon": "any",
+ "two_hands": false,
+ "source_kind": "captured",
+ "authoring": "captured (as captured)",
+ "range": [
+  10.5,
+  13.3
+ ],
+ "facing": "mean",
+ "travel_m": [
+  0.0,
+  0.0
+ ],
+ "root_note": "in place",
+ "closed": true,
+ "cycle": "near",
+ "inbetween": {
+  "Chest3": {
+   "rest_lcl_quat": [
+    1.0,
+    -0.0,
+    0.0,
+    0.0
+   ],
+   "mode": "rest",
+   "into": [
+    "Chest",
+    "UpperChest"
+   ],
+   "parent_swung_max_deg": 2.6,
+   "child_joint_moved_max_mm": 0.19
+  }
+ },
+ "resolved": false,
+ "floor_shift_m": 0.0,
+ "mirrored": false,
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [
+   "Chest3"
+  ],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "stature_est_m": 1.776,
+ "speed_root": 0.674,
+ "plant": {
+  "method": "each stance foot's contact point (the heel, then the ball once down) held still on the ground by two-bone leg IK on the loop as Unity plays it, the hips' height and path, the foot's turn and the toes as captured (plant.py); the speed the planted stride over the loop's time",
+  "speed_root": 0.6744,
+  "speed": 0.6587,
+  "stride_m": 0.8014,
+  "cycle_s": 1.2167,
+  "played_stride_m": 0.8124,
+  "ik": {
+   "residual_cm": 0.0,
+   "unreachable_keys": 0,
+   "foot_turned_keys": 7,
+   "foot_turned_max_deg": 17.681,
+   "knee_change_deg": 12.922,
+   "knee_change_step_deg": 11.838,
+   "knee_change_stance_deg": 12.922,
+   "knee_change_swing_deg": 4.517
+  },
+  "extended_keys": {
+   "Left": [],
+   "Right": [
+    8
+   ]
+  },
+  "stances": {
+   "Left": [
+    {
+     "touchdown": 30,
+     "toe_off": 62,
+     "planted": [
+      30,
+      62
+     ],
+     "contact_heel_to_ball": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "fit_weight": [
+      0.0,
+      0.04,
+      0.11,
+      0.81,
+      0.87,
+      0.75,
+      1.0,
+      1.0,
+      0.95,
+      0.89,
+      0.84,
+      0.9,
+      0.99,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      0.99,
+      0.98,
+      0.97,
+      1.0,
+      0.92,
+      0.86,
+      0.79,
+      0.56,
+      0.11,
+      0.03,
+      0.02,
+      0.02,
+      0.01,
+      0.01
+     ],
+     "ankle_moved_cm": 34.37
+    }
+   ],
+   "Right": [
+    {
+     "touchdown": 12,
+     "toe_off": 45,
+     "planted": [
+      12,
+      45
+     ],
+     "contact_heel_to_ball": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "fit_weight": [
+      0.0,
+      0.04,
+      0.17,
+      0.85,
+      0.94,
+      0.9,
+      0.99,
+      0.99,
+      0.99,
+      0.99,
+      0.99,
+      0.99,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      0.99,
+      1.0,
+      1.0,
+      0.99,
+      0.99,
+      0.78,
+      0.8,
+      0.91,
+      0.11,
+      0.04,
+      0.02,
+      0.01,
+      0.01,
+      0.01,
+      0.01
+     ],
+     "ankle_moved_cm": 42.8
+    }
+   ]
+  },
+  "stance_max_ms": {
+   "ankle_ball": [
+    1.992,
+    0.15
+   ],
+   "with_contact_point": [
+    1.992,
+    0.0
+   ],
+   "order": "unplanted, planted"
+  }
+ },
+ "travel_vs_facing_deg": -9.9
+}

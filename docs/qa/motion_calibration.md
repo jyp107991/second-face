@@ -317,7 +317,40 @@ their max and min; quiet standing's limits never loosened for them; applied only
    now, with K, A and TL bounded by the seven actors' caps (Kmax ≤ 160.2, TL ≤ 102.1).
 5. The clips' own figures against these are in each v4 clip's `stance` (combat v4 `clip_qa.json`), for the same comparison as §7.
 
-## 9. Sources
+## 9. The upper arm's hang by build (2026-11-18; applied, the coordinator's decision on `docs/qa/arm_build_evidence.md`)
+
+Standing, a man's A1 limit is **20 + 0.37·e** (the cap stays 28): e = max(0, his trunk's breadth at the hanging elbow − ANSUR
+II men's median at his stature), held to 9 cm, the edge of the data. Women keep 20 until a woman's reference exists.
+- **The breadth** is the game's own: each man's `TorsoProfile` (the body and what it wears) at the hanging elbow's height
+  (the shoulder joints less the upper arm), 2·Rx. **The median** is 0.18588 of the stature (the median of waist breadth over
+  stature among ANSUR II's 4,082 men, scaled to the stature as `docs/qa/body_geometry_audit.md` scales them: 33.5 cm at 180,
+  34.2 at 184). Both are computed by the gate for each body and written to the verdict (`buildCm`).
+- **k**, the outward arm per cm of breadth past the median, is the conservative end of the evidence. The evidence's centre is
+  0.75° per cm (Cau 0.61, the clearance geometry 0.75, Shewhorak 0.86); its only formal interval is 0.43-1.29 (Shewhorak's).
+  Quiet standing's A1 p98 rises by 0.87 of the geometry's rise, and 0.87 × 0.43 = 0.37.
+- **Consistency:** the game's push raises A1 from the slim actor's 16.4° to 20.0-22.6° on the five broad men, a rise of
+  3.6-6.2°. The rise the evidence predicts for real men that broad is 4.2-5.7°.
+- **W3 is not changed:** no study shows heavier people swing further, and the frontal part is the push's (ArmClearance turns
+  a walking swing toward the sagittal plane before it turns the arm out).
+- **Code and hash:** `HumanMotionGateTests` (`A1PerCm`, `AnsurWaistShare`, `BuildMaxCm`, `Build`), a gate input (measures).
+- **Sources:** `docs/qa/arm_build_evidence.md` (Cau et al.; Shewhorak; ANSUR II, Gordon et al. 2014).
+
+## 11. Facing the target in a fight (2026-11-18; applied as FY1/FY2, the coordinator's decision closing a gate hole)
+
+`tools/qa/calibration/facing.py` (numpy, the §8 loaders; `docs/qa/calibration_facing.json`): the pelvis's (hip joints' line) and
+the chest's (shoulder joints' line) front against the target's line, + clockwise from above, the target read from the action:
+the aim's gun line (main hand to off hand), the ready's own take's later median gun line over its frames before the gun comes up,
+each blow's line (upper chest to the striking hand at its furthest, combat_states' strike frames, one run a blow).
+- **Aim** (CMU 79_96, 80_03, 100STYLE Swat_ID): pelvis p2 … p98 45.3 … 60.4 (44.9 … 68.7), chest 56.3 … 76.5 (56.1 … 84.6); per
+  actor pelvis p50 47.9, 49.7, 59.4, chest 69.6, 57.3, 63.9: every one bladed to his right of the gun line.
+- **Ready, long gun** (CMU 79_96 for 1.83 s, 80_03 for 1.85 s before the raise): pelvis 22.4 and 41.9, chest 15.5 and 44.1, each
+  nearly still. 100STYLE's actor walks and turns into his aim (81° off its line before it): no ready, left out.
+- **Strike** (ACCAD Male2 jab, cross, hooks, body cross; CMU 143_23, 144_13, 144_20, 141_14, 113_13; 89 blows): pelvis −69.5 …
+  +47.6 (−87.2 … +109.5), chest −64.4 … +50.4 (−80.3 … +99.0); a jab blades the lead side on (Male2's +74), a cross turns square
+  or past (−1 … −37), hooks swing through.
+- Not measured: a pistol's aim or ready, a two-handed weapon's ready (no capture holds one facing a known line).
+
+## 10. Sources
 
 - Winter DA (1992) Foot trajectory in human gait: a precise and multifactorial motor control task. Phys Ther 72:45-56
   (minimum toe clearance 1.29 cm). https://consensus.app/papers/details/w:233e28a0-4591-4a8b-9b7e-0ceb2f9be716/

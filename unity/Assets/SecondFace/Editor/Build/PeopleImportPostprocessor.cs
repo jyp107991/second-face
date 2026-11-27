@@ -25,16 +25,27 @@ namespace SecondFace.EditorTools
             var imp = (ModelImporter)assetImporter;
             imp.animationType = ModelImporterAnimationType.Human;
             imp.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
-            // Map the bones afresh on every import: the .meta keeps the mapping of the first import, and when the rig
+            // Map the bones afresh whenever the file changes: the .meta keeps the mapping of the first import, and when the rig
             // changed (the jaw was merged into the head) the stale map failed every avatar ("Transform 'Jaw' for human
-            // bone 'Jaw' not found").
+            // bone 'Jaw' not found"). A file whose configuration was stood on its root for these bytes (Ground) keeps it.
             // A new HumanDescription zeroes the muscle settings (twist 0, stretch 0); Unity's defaults put half of each
             // limb's roll in each of its joints and let the limbs stretch a little to reach (P4.8).
-            imp.humanDescription = new HumanDescription
+            var stamp = Groundable(assetPath) ? Stamp(assetPath) : "";
+            if (stamp == "" || imp.userData != "ground " + stamp || imp.humanDescription.human == null || imp.humanDescription.human.Length == 0)
             {
-                upperArmTwist = 0.5f, lowerArmTwist = 0.5f, upperLegTwist = 0.5f, lowerLegTwist = 0.5f,
-                armStretch = 0.05f, legStretch = 0.05f, feetSpacing = 0f, hasTranslationDoF = false,
-            };
+                imp.humanDescription = new HumanDescription
+                {
+                    upperArmTwist = 0.5f, lowerArmTwist = 0.5f, upperLegTwist = 0.5f, lowerLegTwist = 0.5f,
+                    armStretch = 0.05f, legStretch = 0.05f, feetSpacing = 0f, hasTranslationDoF = false,
+                };
+                // (a model that is not a person's body, a garment's or a hair's rig, is mapped afresh every time, as before)
+                if (stamp != "" && imp.userData != "unmapped " + stamp)
+                {
+                    imp.userData = "fresh " + stamp;
+                    var path = assetPath;
+                    EditorApplication.delayCall += () => Ground(path);
+                }
+            }
             imp.autoGenerateAvatarMappingIfUnspecified = true;
             imp.importBlendShapes = true;
             imp.importBlendShapeNormals = ModelImporterNormals.None;
@@ -50,6 +61,79 @@ namespace SecondFace.EditorTools
             imp.materialLocation = ModelImporterMaterialLocation.InPrefab;
             imp.optimizeGameObjects = false;
         }
+
+        /// <summary>The bodies clips are played on: the cast's (Rocketbox) and the player's base models.</summary>
+        public static bool Groundable(string path) =>
+            path.StartsWith("Assets/SecondFace/People/Rocketbox/") || path == "Assets/SecondFace/People/Player/player_m.fbx" || path == "Assets/SecondFace/People/Player/player_f.fbx";
+
+        private static string Stamp(string path)
+        {
+            using var sha = System.Security.Cryptography.SHA256.Create();
+            return System.BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(path))).Replace("-", "").ToLowerInvariant();
+        }
+
+        /// <summary>
+        /// The person's configured T-pose stood on the model's root, as the model's own bind stands (docs/MOTION_ROOT_CAUSE.md
+        /// §9, 2026-11-18). Unity's own avatar setup put the Rocketbox bodies' T-pose 2.69 cm (men) and 2.78 cm (women) over
+        /// their bind: the T-pose ankle 12.85 cm over the root against the bind's 10.16. Unity reads that ankle height as the
+        /// feet-bottom height and the T-pose's centre of mass over the root as the humanScale, so every clip played every body
+        /// 2.6 cm over the floor (the idles' soles +2.0-2.6 cm, the fight's stances 2.5-4 cm) and its normalised heights against
+        /// a stature 2.6 % too tall. The configuration's hips are lowered by the difference (the mean of the two ankles); the
+        /// bones' turns are left as Unity set them. Runs after an import that mapped the bones afresh (from the editor's next
+        /// update, or <see cref="GroundAll"/> in a batch run), then imports again with the stamp that keeps it.
+        /// </summary>
+        public static bool Ground(string path)
+        {
+            var imp = AssetImporter.GetAtPath(path) as ModelImporter;
+            if (imp == null || !File.Exists(path) || !Groundable(path)) return false;
+            var stamp = Stamp(path);
+            if (imp.userData == "ground " + stamp || imp.userData == "unmapped " + stamp) return false;
+            // (an import from before 2026-11-18 mapped the bones afresh every time: what it stored is a fresh mapping)
+            if (imp.userData != "fresh " + stamp && !string.IsNullOrEmpty(imp.userData)) { imp.SaveAndReimport(); return Ground(path); }
+            var hd = imp.humanDescription;
+            var bone = hd.human?.ToDictionary(h => h.humanName, h => h.boneName) ?? new System.Collections.Generic.Dictionary<string, string>();
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            var avatar = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Avatar>().FirstOrDefault();
+            if (model == null || avatar == null || !avatar.isValid || hd.skeleton == null || hd.skeleton.Length < 2
+                || !bone.ContainsKey("Hips") || !bone.ContainsKey("LeftFoot") || !bone.ContainsKey("RightFoot"))
+            {
+                imp.userData = "unmapped " + stamp; imp.SaveAndReimport(); return false;
+            }
+            var w = TakeStance.World(hd.skeleton, model);
+            var all = model.GetComponentsInChildren<Transform>(true).GroupBy(t => t.name).ToDictionary(g => g.Key, g => g.First());
+            float Bind(string b) => model.transform.InverseTransformPoint(all[bone[b]].position).y;
+            var dz = (Bind("LeftFoot") + Bind("RightFoot")) * 0.5f - (w[bone["LeftFoot"]].p.y + w[bone["RightFoot"]].p.y) * 0.5f;
+            var sk = hd.skeleton.ToArray();
+            var hipsParent = TakeStance.ParentOf(model, bone["Hips"], sk);
+            for (var i = 0; i < sk.Length; i++)
+                if (sk[i].name == bone["Hips"]) sk[i].position += Quaternion.Inverse(w[hipsParent].r) * new Vector3(0f, dz, 0f);
+            // (the getter gives the skeleton in metres, the setter stores what it is given in the file's units: the Rocketbox
+            // FBX are in centimetres, and set back as read the configuration came in 100 times too large, its feet-bottom
+            // height 10.16 m, 2026-11-18; so the positions go in scaled by the file's own scale)
+            var k = imp.useFileScale && imp.fileScale > 0f ? imp.fileScale : 1f;
+            for (var i = 0; i < sk.Length; i++) sk[i].position *= k;
+            hd.skeleton = sk;
+            imp.humanDescription = hd;
+            imp.userData = "ground " + stamp;
+            imp.SaveAndReimport();
+            // what Unity built from it: the feet-bottom height is the bind's ankles
+            var go = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(path));
+            try
+            {
+                var a = go.GetComponent<Animator>();
+                a.avatar = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Avatar>().FirstOrDefault(); a.Rebind();
+                var want = (Bind("LeftFoot") + Bind("RightFoot")) * 0.5f; var got = (a.leftFeetBottomHeight + a.rightFeetBottomHeight) * 0.5f;
+                if (Mathf.Abs(got - want) > 0.001f) Debug.LogError($"PeopleImportPostprocessor: {path}: grounded, yet the feet-bottom height is {got * 100f:0.00} cm against the bind's ankles {want * 100f:0.00}");
+                else Debug.Log($"PeopleImportPostprocessor: {path}: the configured T-pose stood on the root, hips {dz * 100f:+0.00;-0.00} cm, feet-bottom {got * 100f:0.00} cm, humanScale {a.humanScale:0.0000}");
+            }
+            finally { Object.DestroyImmediate(go); }
+            return true;
+        }
+
+        /// <summary>Every person's model whose configuration is not yet stood on its root (a batch run's first step: the
+        /// editor's delayed calls do not run before -executeMethod or the tests).</summary>
+        public static int GroundAll() =>
+            Directory.GetFiles("Assets/SecondFace/People/", "*.fbx", SearchOption.AllDirectories).Select(p => p.Replace('\\', '/')).Where(Groundable).Count(Ground);
 
         /// <summary>The levels of detail mh_build exports (objects named _LOD0.._LOD2, which the importer groups into a
         /// LODGroup) switch by the person's share of the screen's height: LOD0 for close-ups (conversation, portraits,

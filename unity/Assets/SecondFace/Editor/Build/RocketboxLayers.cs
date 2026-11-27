@@ -339,6 +339,12 @@ namespace SecondFace.EditorTools
         /// <summary>The body's skin points filled in every this far (m) over its triangles, where no vertex stands within
         /// <see cref="FillGap"/>.</summary>
         private const float FillStep = 0.025f, FillGap = 0.02f;
+        /// <summary>How far a forearm's or lower upper arm's vertex may stand from each point its cell keeps, and a hand's vertex out
+        /// of its cell's point's tangent plane, before it is a skin point of its own (m): the resting give (ArmClearance.RestGive).
+        /// (The drawn arm is flat between its vertices, so its deepest point in a body is one of them: where the arm meets the body
+        /// obliquely the depth grows along the arm's own plane, and a vertex the cell's point stood for 0.35 cm off in that plane
+        /// lay 0.32 cm deeper than it, C1, Business_Male_01, 2026-11-26.)</summary>
+        private const float ArmStandOut = 0.0025f;
         /// <summary>The covered test's cell and reach (m): a surface over a point, facing its way, this near hides it.</summary>
         private const float CovCell = 0.04f, CovReach = 0.05f;
 
@@ -361,14 +367,13 @@ namespace SecondFace.EditorTools
             return dist > 0f;
         }
 
-        /// <summary>The point at (<paramref name="u"/>, <paramref name="v"/>, <paramref name="w"/>) of a triangle on the curved
-        /// surface its corners' normals make (Phong tessellation: the flat point projected onto each corner's tangent plane,
-        /// blended).</summary>
-        private static Vector3 Phong(Vector3 a, Vector3 b, Vector3 c, Vector3 na, Vector3 nb, Vector3 nc, float u, float v, float w)
+        /// <summary>A triangle's own normal, turned to the side its corners' normals face (<paramref name="corners"/>, their sum):
+        /// the face as it is drawn. A degenerate triangle takes its corners' normal.</summary>
+        private static Vector3 FaceNormal(Vector3 a, Vector3 b, Vector3 c, Vector3 corners)
         {
-            var p = a * u + b * v + c * w;
-            Vector3 On(Vector3 q, Vector3 n) { n = n.sqrMagnitude > 1e-8f ? n.normalized : Vector3.zero; return p - Vector3.Dot(p - q, n) * n; }
-            return On(a, na) * u + On(b, nb) * v + On(c, nc) * w;
+            var n = Vector3.Cross(b - a, c - a);
+            if (n.sqrMagnitude < 1e-12f) return corners.normalized;
+            return (Vector3.Dot(n, corners) < 0f ? -n : n).normalized;
         }
 
         private static BoneWeight BlendWeights(BoneWeight a, float wa, BoneWeight b, float wb, BoneWeight c, float wc)
@@ -467,11 +472,13 @@ namespace SecondFace.EditorTools
                     {
                         var (a, b, c, u, v, w) = fillOf[k];
                         var i = n0 + k;
-                        // on the surface the vertices' facings make (Phong): on the flat triangle, a thigh's filled point lay up
-                        // to 0.4 cm under the planes the gate measures by, and a hand held off it by 2 mm lay 0.6 cm in (C1,
-                        // 2026-11-08)
-                        pos[i] = Phong(pos[a], pos[b], pos[c], nor[a], nor[b], nor[c], u, v, w);
-                        nor[i] = (nor[a] * u + nor[b] * v + nor[c] * w).normalized;
+                        // on the triangle as it is drawn, facing as its face does: the gate's C1 and A4 read the drawn (flat)
+                        // triangles since 2026-11-18. On the curved surface the corners' normals make (Phong, set for the gate's
+                        // vertex planes on 2026-11-08) the filled points of the coarse hips and flanks stood 0.5-0.9 cm (p50) and
+                        // up to 1.0-1.75 cm (p90) outside the drawn surface, and the arm clearance held forearms, hands and
+                        // elbows off a surface that is not there (docs/MOTION_ROOT_CAUSE.md §12, 2026-11-26)
+                        pos[i] = pos[a] * u + pos[b] * v + pos[c] * w;
+                        nor[i] = FaceNormal(pos[a], pos[b], pos[c], nor[a] + nor[b] + nor[c]);
                         bw[i] = BlendWeights(bw[a], u, bw[b], v, bw[c], w);
                         world[i] = (bones[bw[i].boneIndex0].localToWorldMatrix * bp[bw[i].boneIndex0]).MultiplyPoint3x4(pos[i]);
                         foreach (var x in keepsX) x[i] = (x[a] ? 1 : 0) + (x[b] ? 1 : 0) + (x[c] ? 1 : 0) >= 2;
@@ -520,7 +527,7 @@ namespace SecondFace.EditorTools
                         {
                             var (a, b, c, u, v, w) = fillOf[k];
                             lpx[n0 + k] = lp[a] * u + lp[b] * v + lp[c] * w;
-                            if (lnx != null) lnx[n0 + k] = (ln[a] * u + ln[b] * v + ln[c] * w).normalized;
+                            if (lnx != null) lnx[n0 + k] = FaceNormal(lp[a], lp[b], lp[c], ln[a] + ln[b] + ln[c]);
                         }
                         lp = lpx; ln = lnx;
                     }
@@ -620,6 +627,7 @@ namespace SecondFace.EditorTools
                 return false;
             }
             var cells = new Dictionary<(int, int, int, SkinPart), (int I, float D)>();
+            var armCell = new List<(int I, (int, int, int, SkinPart) Key)>();
             var inner = 0;
             // the bones under each arm's upper arm, forearm and hand (the original's: the skin's weights name them)
             HashSet<Transform> Under(HumanBodyBones hb) { var set = new HashSet<Transform>(); var t = anim.GetBoneTransform(hb); if (t != null) foreach (var c in t.GetComponentsInChildren<Transform>(true)) set.Add(c); return set; }
@@ -718,6 +726,33 @@ namespace SecondFace.EditorTools
                 var centre = new Vector3(key.Item1 + 0.5f, key.Item2 + 0.5f, key.Item3 + 0.5f) * cell;
                 var dc = (world[i] - centre).sqrMagnitude;
                 if (!cells.TryGetValue(key, out var have) || dc < have.D) cells[key] = (i, dc);
+                if (part is not (SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR)) armCell.Add((i, key));
+            }
+            // an arm's vertex that stands out of its cell's point's tangent plane by more than the resting give (a seam, a hem, a
+            // fold of the sleeve) is a point of its own: it touches first. One point a cell, nearest the cell's centre, left them
+            // out, and a resting arm held at contact by its points pressed them in (a sleeve's seam 0.65 cm from its cell's point
+            // and 0.6 cm out of its plane lay 0.35-0.58 cm into the chest's side all through the talk, C1, Female_Adult_01,
+            // 2026-11-26)
+            // (and the forearm's and the lower upper arm's every vertex further than the resting give from each point its cell keeps,
+            // in any direction: where the arm meets the hip obliquely the depth grows along the arm's own plane, 0.9 cm a centimetre
+            // at 67°, and one point a cell, nearest its centre, read a forearm 0.31 cm in while its vertex 0.35 cm off in that plane
+            // lay 0.63 cm in, C1, Business_Male_01, eleven resting states, 2026-11-26)
+            var standOut = new List<(int I, SkinPart Part)>();
+            var keptIn = new Dictionary<(int, int, int, SkinPart), List<int>>();
+            foreach (var (i, key) in armCell)
+            {
+                var r0 = cells[key].I;
+                if (r0 == i) continue;
+                var hand = key.Item4 is SkinPart.HandL or SkinPart.HandR;
+                if (hand ? Vector3.Dot(world[i] - world[r0], wnor[r0]) <= ArmStandOut : (world[i] - world[r0]).sqrMagnitude <= ArmStandOut * ArmStandOut) continue;
+                if (!keptIn.TryGetValue(key, out var kept)) keptIn[key] = kept = new List<int> { r0 };
+                var near = false;
+                if (!hand) foreach (var j in kept) if ((world[j] - world[i]).sqrMagnitude <= ArmStandOut * ArmStandOut) { near = true; break; }
+                // (a seam's split vertices once)
+                if (!near) foreach (var (j, _) in standOut) if ((world[j] - world[i]).sqrMagnitude < 1e-6f) { near = true; break; }
+                if (near) continue;
+                kept.Add(i);
+                standOut.Add((i, key.Item4));
             }
             // each vertex's foot as the gate tells it (MotionProbe: the nearest of its segments in the neutral pose, the foot's
             // being the foot to the toes and on 7 cm past them): the soles' points are chosen from these, as the gate's are
@@ -748,20 +783,32 @@ namespace SecondFace.EditorTools
                     footOf[i] = fpart;
                 }
             }
+            // the drawn body (RBS6): the torso's and thighs' own triangles as the gate takes them (MotionProbe.Calibrate: every
+            // mesh vertex filed by its nearest segment in the neutral pose, every submesh; a triangle is the body's when its three
+            // corners are), so the runtime reads an arm's depth from the surface that is drawn, not from points sampled off it
+            var gateBody = new bool[n0];
+            for (var i = 0; i < n0; i++)
+            {
+                var best = float.MaxValue; var part = SkinPart.None;
+                foreach (var (a, b, p) in segs) { var d = Along(lp[i], a, b, out _); if (d < best) { best = d; part = p; } }
+                gateBody[i] = part is SkinPart.Torso or SkinPart.ThighL or SkinPart.ThighR;
+            }
             boneSrc = anim;
             if (copy != null) UnityEngine.Object.DestroyImmediate(copy);
             var byPart = new List<int>[9];
             for (var p = 0; p < 9; p++) byPart[p] = new List<int>();
             foreach (var (key, (i, _)) in cells) byPart[(int)key.Item4].Add(i);
+            foreach (var (i, part) in standOut) byPart[(int)part].Add(i);
             if (System.Environment.GetEnvironmentVariable("SKIN_DIAG") is { Length: > 0 } diag) SkinDiag(diag, id, lp, use, fate, partOf, byPart, cells.Count);
             for (var p = 0; p < 9; p++) byPart[p].Sort();
             var female = mats.Any(m => m != null && m.name.ToLowerInvariant().TrimStart('s').StartsWith("f") && m.name.ToLowerInvariant().EndsWith("_body"));
 
             using var ms = new MemoryStream();
+            var drawnLog = "";
             using (var gz = new GZipStream(ms, System.IO.Compression.CompressionLevel.Optimal, true))
             using (var w = new BinaryWriter(gz))
             {
-                w.Write("RBS4".ToCharArray());
+                w.Write("RBS6".ToCharArray());
                 w.Write(Defs.Length);
                 foreach (var def in Defs) { w.Write(def.Id); w.Write((byte)(def.ThinSides ? 1 : 0)); }
                 for (var p = 0; p < 9; p++) w.Write(byPart[p].Count);
@@ -801,6 +848,55 @@ namespace SecondFace.EditorTools
                         w.Write((byte)fs);
                         if (fs != 0) { Put(bp[b0].MultiplyVector(fd)); Put(bp[b1].MultiplyVector(fd)); foreach (var (xb, _) in extra) Put(bp[xb].MultiplyVector(fd)); }
                     }
+                // RBS6: the drawn body (gateBody, above). The bones that skin it with their bind poses; each corner vertex (its
+                // index in the mesh, its place in the mesh as imported, its bones and weights as the mesh has them, strongest
+                // first, the layers over it, how far it faces sideways, the flank corrective's delta in the mesh); each triangle
+                // (its corners in that list, and whether its winding faces against its corners' normals, as the build's own
+                // FaceNormal turns it)
+                {
+                    var tris = mesh.triangles;
+                    var dIdx = new Dictionary<int, int>(); var dList = new List<int>(); var dTris = new List<(int A, int B, int C, bool Flip)>();
+                    int Id(int v) { if (!dIdx.TryGetValue(v, out var k)) { k = dList.Count; dIdx[v] = k; dList.Add(v); } return k; }
+                    for (var t = 0; t + 2 < tris.Length; t += 3)
+                    {
+                        int a = tris[t], b = tris[t + 1], c = tris[t + 2];
+                        if (a >= n0 || b >= n0 || c >= n0 || !gateBody[a] || !gateBody[b] || !gateBody[c]) continue;
+                        var fn = Vector3.Cross(pos[b] - pos[a], pos[c] - pos[a]);
+                        dTris.Add((Id(a), Id(b), Id(c), Vector3.Dot(fn, nor[a] + nor[b] + nor[c]) < 0f));
+                    }
+                    (int B, float W)[] Weights(int v)
+                    {
+                        var b = bw[v];
+                        var l = new List<(int B, float W)> { (b.boneIndex0, b.weight0), (b.boneIndex1, b.weight1), (b.boneIndex2, b.weight2), (b.boneIndex3, b.weight3) };
+                        return l.Where(x => x.W > 0f).OrderByDescending(x => x.W).ToArray();
+                    }
+                    var usedBones = new SortedSet<int>();
+                    foreach (var v in dList) foreach (var (b, _) in Weights(v)) usedBones.Add(b);
+                    w.Write(usedBones.Count);
+                    foreach (var b in usedBones) { w.Write((byte)b); for (var e = 0; e < 16; e++) w.Write(bp[b][e]); }
+                    w.Write(dList.Count);
+                    foreach (var v in dList)
+                    {
+                        w.Write(v);
+                        w.Write(pos[v].x); w.Write(pos[v].y); w.Write(pos[v].z);
+                        var ws = Weights(v);
+                        w.Write((byte)ws.Length);
+                        foreach (var (b, wt) in ws) { w.Write((byte)b); w.Write(wt); }
+                        uint mask = 0;
+                        for (var k = 0; k < keeps.Count && k < 32; k++) if (keeps[k][v]) mask |= 1u << k;
+                        w.Write(mask);
+                        var b0 = bw[v].boneIndex0;
+                        var nw = (bones[b0].localToWorldMatrix * bp[b0]).MultiplyVector(nor[v]);
+                        w.Write((byte)Mathf.RoundToInt(BodySkin.SideShare(root.InverseTransformDirection(nw).normalized.x) * 255f));
+                        var fd = flL != null && flL[v] != Vector3.zero ? flL[v] : flR != null && flR[v] != Vector3.zero ? flR[v] : Vector3.zero;
+                        var fs = fd == Vector3.zero ? 0 : flL != null && flL[v] != Vector3.zero ? 1 : 2;
+                        w.Write((byte)fs);
+                        if (fs != 0) { w.Write(fd.x); w.Write(fd.y); w.Write(fd.z); }
+                    }
+                    w.Write(dTris.Count);
+                    foreach (var (a, b, c, flip) in dTris) { w.Write(a); w.Write(b); w.Write(c); w.Write((byte)(flip ? 1 : 0)); }
+                    drawnLog = $"; drawn body {dList.Count} vertices, {dTris.Count} triangles, {usedBones.Count} bones";
+                }
             }
             var outPath = $"{dir}/{id}_skin.bytes";
             File.WriteAllBytes(outPath, ms.ToArray());
@@ -843,7 +939,7 @@ namespace SecondFace.EditorTools
                 return new[] { foot.InverseTransformPoint(world[heel]), foot.InverseTransformPoint(world[back]), foot.InverseTransformPoint(world[ball]), (toe != null ? toe : foot).InverseTransformPoint(world[tip]) };
             }
             skin.Built = BodySkin.Version;
-            Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")}; {inner} inside faces left out; {relabelled} points the arms do not move given to the torso; parts told apart in the neutral pose)");
+            Debug.Log($"RocketboxLayers: {id}: skin points {string.Join("/", byPart.Select(l => l.Count))} ({(female ? "carrying 14°" : "carrying 10°")}; {inner} inside faces left out; {relabelled} points the arms do not move given to the torso; parts told apart in the neutral pose{drawnLog})");
         }
 
         private static HumanBodyBones Parse(string name) => (HumanBodyBones)Enum.Parse(typeof(HumanBodyBones), name);

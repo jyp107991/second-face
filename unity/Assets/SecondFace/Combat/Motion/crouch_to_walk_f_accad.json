@@ -6,32 +6,184 @@
  "root": true,
  "hip": 0.8747,
  "fps": 30,
- "frames": 178,
+ "frames": 177,
  "src_fps": 30.0,
  "sex": "f",
  "sex_source": "ACCAD names its subjects by sex (Female1)",
  "set": "f",
  "licence": "ACCAD Open Motion Project (Ohio State University), CC BY 3.0",
  "source": "https://accad.osu.edu/research/motion-lab/mocap-system-and-data (Female1_bvh.zip: Female1_B25_CrouchToWalk.bvh)",
- "kind": "A6 rise from a crouch and walk off (woman); travels",
- "weapon": "none",
+ "state": "S17",
+ "gate": "crouch",
+ "kind": "rise from a crouch and walk off (woman); travels",
+ "weapon": "any",
  "two_hands": false,
- "authoring": "captured (optical mocap, no fingers)",
+ "source_kind": "captured",
+ "authoring": "captured (feet planted)",
  "range": [
-  0,
+  0.0,
   5.9
  ],
  "facing": "travel",
  "travel_m": [
   -0.0,
-  3.905
+  3.874
  ],
- "root_note": "travels 3.90 m: apply as root motion, or bake into the pose",
+ "root_note": "travels 3.87 m: apply as root motion",
  "closed": false,
- "cycle": null,
- "flips_repaired": null,
- "inbetween": null,
  "resolved": false,
  "floor_shift_m": -0.055,
- "group": "use"
+ "mirrored": false,
+ "humanoid": {
+  "mapping": {
+   "Hips": "Hips",
+   "Spine": "Spine",
+   "Chest": "Chest",
+   "UpperChest": "UpperChest",
+   "Neck": "Neck",
+   "Head": "Head",
+   "LeftShoulder": "LeftShoulder",
+   "LeftUpperArm": "LeftUpperArm",
+   "LeftLowerArm": "LeftLowerArm",
+   "LeftHand": "LeftHand",
+   "LeftUpperLeg": "LeftUpperLeg",
+   "LeftLowerLeg": "LeftLowerLeg",
+   "LeftFoot": "LeftFoot",
+   "LeftToes": "LeftToes",
+   "RightShoulder": "RightShoulder",
+   "RightUpperArm": "RightUpperArm",
+   "RightLowerArm": "RightLowerArm",
+   "RightHand": "RightHand",
+   "RightUpperLeg": "RightUpperLeg",
+   "RightLowerLeg": "RightLowerLeg",
+   "RightFoot": "RightFoot",
+   "RightToes": "RightToes"
+  },
+  "inbetween": [],
+  "rule": "explicit: each Humanoid bone is the bone of its own name (LeftHand/RightHand are the hands); every other bone is in-between (the wrist twist bones, Neck2, the hip joints, 100STYLE's Chest3), held at its rest under convention D (docs/MOTION_ROOT_CAUSE.md \u00a77, motion v6.1)"
+ },
+ "stature_est_m": 1.726,
+ "plant_record": {
+  "stances": {
+   "Left": [
+    [
+     0,
+     61
+    ],
+    [
+     79,
+     100
+    ],
+    [
+     118,
+     137
+    ],
+    [
+     155,
+     176
+    ]
+   ],
+   "Right": [
+    [
+     0,
+     82
+    ],
+    [
+     100,
+     118
+    ],
+    [
+     136,
+     156
+    ]
+   ]
+  },
+  "held_keys": 263,
+  "max_shift_cm": 3.15,
+  "out_of_reach_keys": 0,
+  "foot_pitched_keys": 10,
+  "foot_pitched_max_deg": 3.7,
+  "second_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      61
+     ],
+     [
+      79,
+      100
+     ],
+     [
+      118,
+      137
+     ],
+     [
+      155,
+      176
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      82
+     ],
+     [
+      100,
+      118
+     ],
+     [
+      136,
+      156
+     ]
+    ]
+   },
+   "held_keys": 253,
+   "max_shift_cm": 0.74,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 1,
+   "foot_pitched_max_deg": 0.0
+  },
+  "third_pass": {
+   "stances": {
+    "Left": [
+     [
+      0,
+      61
+     ],
+     [
+      79,
+      100
+     ],
+     [
+      118,
+      137
+     ],
+     [
+      155,
+      176
+     ]
+    ],
+    "Right": [
+     [
+      0,
+      82
+     ],
+     [
+      100,
+      118
+     ],
+     [
+      136,
+      156
+     ]
+    ]
+   },
+   "held_keys": 250,
+   "max_shift_cm": 0.06,
+   "out_of_reach_keys": 0,
+   "foot_pitched_keys": 3,
+   "foot_pitched_max_deg": 0.1
+  }
+ }
 }

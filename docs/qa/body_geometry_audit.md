@@ -90,6 +90,7 @@ and Business_Female_04, rel_FA06k and Medical_Female_02.)
   bases need it more than any.
 - The limits stay: A1's ≤ 20° is at real people's top in quiet standing (`docs/qa/motion_calibration.md` §3.1).
 
+
 ## 5. Limits of this audit
 
 - Bind meshes, before the game's Proportions (its calibrated sliders scale bodies at runtime) and its garment layers:
@@ -100,6 +101,37 @@ and Business_Female_04, rel_FA06k and Medical_Female_02.)
   takes with the arms hanging, so it reads 1-3 cm short for most men and is not judged; padded shoulders (cap_DM01s,
   cap_Military_Male_02n/05n, rel_MA15s) read 10 cm, past real people's 9.3.
 - The joint centre from the biacromial breadth (−2.0 cm each side) is an estimate (±0.5-1 cm).
+
+## 6. The garments brought to real thickness (2026-11-18, the coordinator's decision on T5's remedy)
+
+The men's breadth is not changed; their garments and gear are (`tools/unity/people/body_slim.py`, applied on import by
+`BodySlim`; each base's deltas in `People/Rocketbox/<base>/<base>_slim.bytes`). Measured on the meshes as the game imports
+them (the audit's own measures, `body_geometry.py`):
+
+- **Sleeves**: each cross-section of the upper arm and forearm scaled about the bone so that its median radius is at most
+  a broad man's arm (ANSUR II men 176-186 cm with a waist over 38 cm, p90: flexed biceps r 7.1 cm, forearm 5.8, wrist 3.0)
+  plus **1.0 cm** of real fabric and ease (1.6 before: the most a jacket stands off); a fold or hem past that drawn halfway
+  in; the shoulder's cap and the cuff left as they are.
+- **Gear at the flanks where the arms hang** (±12 cm of the hanging elbow's height): each side's lateral extent cut every
+  centimetre from the pelvis to the chest and fitted by a quadratic in height (slices more than 5 mm out of the first fit
+  left out of the second); what stands more than 1.0 cm over that line is drawn in to it, a quarter of the excess kept (its
+  shape and texture, flatter). A smooth trunk, however broad, has nothing over its own line and is left as it is.
+
+| Base | Sleeve r med / p90 cm | Elbow r med / p90 cm | Gear over the flank line cm (+x / −x), moved | Waist at the elbow cm | Least hang with the sleeve ° | Vertices moved |
+|---|---|---|---|---|---|---|
+| Construction_Male_02 | 7.6 / 10.2 → 7.6 / 9.4 | 6.0 / 8.3 → 5.8 / 7.8 | 0.3 / 0.3, 0.0 | 41.5 → 41.5 | 16.0 → 14.7 | 96 |
+| cap_Police_Male_03n | 9.7 / 11.4 → 9.6 / 10.4 | 6.3 / 9.7 → 5.9 / 8.6 | 0.5 / 1.4, 0.3 | 41.1 → 40.9 | 17.5 → 15.8 | 235 |
+| cap_Military_Male_03n | 7.2 / 10.2 → 7.2 / 9.4 | 5.7 / 7.8 → 5.7 / 7.4 | 0.6 / 4.6, 2.7 | 39.9 → 39.3 | 14.3 → 12.3 | 202 |
+| cap_PM02m | 5.4 / 9.0 → 5.4 / 8.7 | 5.0 / 8.9 → 5.0 / 8.2 | 0.4 / 0.4, 0.0 | 42.1 → 42.1 | 14.7 → 14.2 | 166 |
+| Male_Adult_05 | 5.4 / 9.0 → 5.4 / 8.7 | 5.0 / 8.9 → 5.0 / 8.2 | 0.4 / 0.4, 0.0 | 42.1 → 42.1 | 14.7 → 14.2 | 166 |
+| Medical_Male_02 | 9.1 / 10.7 → 7.9 / 9.3 | 7.2 / 8.8 → 6.5 / 7.8 | 0.4 / 0.4, 0.0 | 39.1 → 39.1 | 14.3 → 12.0 | 224 |
+
+Only cap_Military_Male_03n carries gear on a flank where the arm hangs (a pouch on his −x side, 4.6 cm over the flank's own
+line at 114-124 cm, drawn in 2.7 cm); cap_Police_Male_03n's belt rig stands 1.4 cm over it on one side (0.35 cm drawn in).
+The others' trunks are smooth at the elbow: Construction_Male_02, cap_PM02m (and Male_Adult_05, the same mesh) and
+Medical_Male_02 are broad bodies (41.5, 42.1, 39.1 cm at the elbow), left as they are. With their own trunks, after the
+garments, the least hang is 12.0-15.8°, still over a real man in a jacket (about 11° at p98): the remainder is their breadth,
+which the decision keeps. The in-game result (A1 on the pick) is in `docs/MOTION_ROOT_CAUSE.md` §9.
 
 Sources: ANSUR II public data (Gordon et al. 2014, US Army Natick; `tools/unity/people/gate/README.md`); Meskers CGM et al.
 (1998) In vivo estimation of the glenohumeral joint rotation center from scapular bony landmarks by linear regression, J

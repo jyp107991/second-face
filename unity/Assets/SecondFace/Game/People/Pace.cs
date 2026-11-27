@@ -16,33 +16,34 @@ namespace SecondFace.Game.People
         private static readonly int SpeedId = Animator.StringToHash("Speed"), SneakRateId = Animator.StringToHash("SneakRate"),
             RateId = Animator.StringToHash("LocoRate"), SexId = Animator.StringToHash("Sex"), GaitId = Animator.StringToHash("Gait");
         /// <summary>The captured sneak's own speed (Motion/sneak.json), m/s, and its subject's hip height, m.</summary>
-        public const float SneakSpeed = 0.849f, SneakHip = 0.9411f;
+        public const float SneakSpeed = 0.780f, SneakHip = 0.9411f;
         /// <summary>The men's moving clips, by gait set, each slowest first (Motion/&lt;clip&gt;.json: their speed, m/s, and their
         /// subject's hip height, m; LocomotionBuild puts them at these speeds in the men's trees; the gate checks the two agree).
         /// Each man walks one set, by a hash of who he is (<see cref="SetSex"/>), so a crowd does not move in step; a set mixes
-        /// subjects but plays one clip at a time. Motion set v5 but the walks (2026-11-17, docs/MOTION_ROOT_CAUSE.md §7): men's
-        /// walks from CMU 07, 08, 104 and ACCAD Male1/Male2 in set v4's cut (v5's open-loop walks lifted a stance foot 2.7-3.1 cm
-        /// on two men in the game, W6); jogs v5's open loops of CMU 35_17 (`jog`) and 16_35 (`jog_b`), which pass W1 and W6
-        /// where set v4's closed cut lifted a stance foot 4-6 cm; out: `walk_brisk` (138 steps/min at 1.97 m/s, past real
+        /// subjects but plays one clip at a time. Motion set v6 (2026-11-17, docs/MOTION_ROOT_CAUSE.md §7): every gait's stance
+        /// feet planted in the converter (the sole's contact point held still from touchdown to toe-off by leg IK) and its speed
+        /// the one at which that point stands still; walks closed loops (v4's convention: v5's open walks lifted a stance foot
+        /// 2.7-3.1 cm on two men in the game, W6), jogs and runs open (v5's); men's walks from CMU 07, 08, 104 and ACCAD
+        /// Male1/Male2, jogs CMU 35_17 (`jog`) and 16_35 (`jog_b`); out: `walk_brisk` (138 steps/min at 1.97 m/s, past real
         /// walkers' 135), `walk_c` (its walk ratio past real people's), `jog_c` and `run_b` (CMU 104's runs: the capture's
         /// solver turns the feet over 60-160° between frames).</summary>
         public static readonly (string Name, float Speed, float Hip)[][] MenSets =
         {
-            new[] { ("walk_slow", 0.997f, 0.9317f), ("walk", 1.404f, 0.9317f), ("jog", 3.156f, 1.0002f), ("run", 3.632f, 0.9924f) },
-            new[] { ("walk_slow_b", 0.920f, 0.9337f), ("walk_d", 1.311f, 0.9859f), ("walk_brisk_b", 1.684f, 0.9082f), ("jog_b", 2.815f, 0.9684f), ("run_c", 3.764f, 0.9082f) },
+            new[] { ("walk_slow", 0.959f, 0.9317f), ("walk", 1.356f, 0.9317f), ("jog", 3.119f, 1.0002f), ("run", 3.261f, 0.9924f) },
+            new[] { ("walk_slow_b", 0.880f, 0.9337f), ("walk_d", 1.310f, 0.9859f), ("walk_brisk_b", 1.663f, 0.9082f), ("jog_b", 2.729f, 0.9684f), ("run_c", 3.726f, 0.9082f) },
             // (walk_b alone after the slow walk left the townsfolk's 1.25 m/s between the two, played at 0.78: P1)
-            new[] { ("walk_slow", 0.997f, 0.9317f), ("walk", 1.404f, 0.9317f), ("walk_b", 1.612f, 0.8998f), ("jog", 3.156f, 1.0002f), ("run", 3.632f, 0.9924f) },
+            new[] { ("walk_slow", 0.959f, 0.9317f), ("walk", 1.356f, 0.9317f), ("walk_b", 1.567f, 0.8998f), ("jog", 3.119f, 1.0002f), ("run", 3.261f, 0.9924f) },
         };
         /// <summary>The women's (one set: the free captures hold one woman's normal walk and one usable jog): ACCAD Female1's
         /// walk (B13, 1.15 m/s, set v4's cut; the player's 1.4 m/s plays it at about 1.2, a brisk 120 steps a minute, the
-        /// townsfolk's 1.25 at about 1.09: game speed never depends on sex) and CMU 141_02's jog (`jog_f`, a woman's capture, v5's
-        /// open loop), with set v1's `jog_v1` after it only for a woman whose legs would play `jog_f` past <see cref="RateMax"/>
-        /// (P1). Her slower walks (`walk_f`, `walk_f_c`, `walk_f_long`, 0.96-1.08 m/s) would be picked at the townsfolk's pace
+        /// townsfolk's 1.25 at about 1.09: game speed never depends on sex) and CMU 141_02's jog (`jog_f`, a woman's capture, an
+        /// open loop), with `jog` (CMU 35_17, set v6's plant of the take set v1's retired `jog_v1` cut) after it only for a woman
+        /// whose legs would play `jog_f` past <see cref="RateMax"/> (P1). Her slower walks (`walk_f`, `walk_f_c`, `walk_f_long`, 0.96-1.08 m/s) would be picked at the townsfolk's pace
         /// past a natural cadence; `walk_f_n` fails the clip QA's slide check; `jog_f_b` (CMU 141_03) creeps through its stance
         /// in the clip itself, so its stride is 0.70 of its speed and it would play at 1.59 (P1).</summary>
         public static readonly (string Name, float Speed, float Hip)[][] WomenSets =
         {
-            new[] { ("walk_f_b", 1.149f, 0.8747f), ("jog_f", 2.374f, 0.8433f), ("jog_v1", 3.159f, 1.0002f) },
+            new[] { ("walk_f_b", 1.110f, 0.8747f), ("jog_f", 2.063f, 0.8433f), ("jog", 3.119f, 1.0002f) },
         };
         /// <summary>Every moving clip any set holds (the gate checks each against its sidecar).</summary>
         public static readonly (string Name, float Speed, float Hip)[] Clips =
@@ -99,18 +100,22 @@ namespace SecondFace.Game.People
         /// <summary>The stride each clip takes on a body, as a share of what its speed scaled by the body's hip height over its
         /// actor's gives: measured on the sole's contact points at their lowest (in contact in the capture), the clip played
         /// in place at its own cadence on bodies as the game makes them (PaceCalibrationTests: the same to three decimals on
-        /// every body of a sex). The walks and `jog_v1` measured on their set v4 and v1 cuts, the jogs and runs on set v5's
-        /// (2026-11-17). Before it, the men's clips were played 4-13 % faster than their strides covered the ground and the
+        /// every body of a sex). Measured on motion set v6.1's planted gaits, each retargeted from its own file's T-pose
+        /// (2026-11-17, Business_Female_01, Female_Adult_07, Construction_Male_02, Male_Adult_11: test-results/pace_calibration.txt;
+        /// the clips' own factor is 1.000, so what is left is the retarget to the body; retargeted from configurations of the
+        /// takes' first keys instead, as Unity fills them, they read up to 0.07 apart). Before it, the men's clips were played 4-13 % faster than their strides covered the ground and the
         /// women's jog 9 %: the planted foot ran back under a held foot, at a woman's jog's touchdown 0.3-0.45 m/s before the
-        /// hold took it (W1 0 → 13 over the cast, docs/MOTION_ROOT_CAUSE.md §7). 1 where unmeasured.</summary>
+        /// hold took it (W1 0 → 13 over the cast, docs/MOTION_ROOT_CAUSE.md §7). Measured again on 2026-11-18 (Business_Female_01,
+        /// Construction_Male_02) with the T-poses stood on their ground (docs/MOTION_ROOT_CAUSE.md §9: each clip's as its actor
+        /// stands in the take, the bodies' on their root, their humanScale 2.6 % smaller): 2-4 % shorter. 1 where unmeasured.</summary>
         public static readonly System.Collections.Generic.Dictionary<string, float> StrideMen = new()
         {
-            ["walk_slow"] = 1.069f, ["walk_slow_b"] = 1.127f, ["walk_d"] = 1.037f, ["walk"] = 1.087f, ["walk_b"] = 1.105f, ["walk_brisk_b"] = 1.058f,
-            ["jog"] = 1.119f, ["jog_b"] = 1.046f, ["jog_v1"] = 1.130f, ["run"] = 0.995f, ["run_c"] = 1.019f
+            ["walk_slow"] = 1.097f, ["walk_slow_b"] = 1.114f, ["walk_d"] = 1.008f, ["walk"] = 1.100f, ["walk_b"] = 1.102f, ["walk_brisk_b"] = 1.017f,
+            ["jog"] = 1.085f, ["jog_b"] = 1.092f, ["run"] = 1.129f, ["run_c"] = 0.983f
         };
         public static readonly System.Collections.Generic.Dictionary<string, float> StrideWomen = new()
         {
-            ["walk_f_b"] = 1.007f, ["jog_f"] = 1.065f, ["jog_f_b"] = 0.702f, ["jog_v1"] = 1.091f
+            ["walk_f_b"] = 0.989f, ["jog_f"] = 1.068f, ["jog"] = 1.044f
         };
         public static float Stride(string clip, bool female) => (female ? StrideWomen : StrideMen).TryGetValue(clip, out var k) ? k : 1f;
 

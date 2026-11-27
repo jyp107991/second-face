@@ -1,0 +1,134 @@
+{
+  "about": "The motion gate's waivers (the owner's waiver policy, 2026-11-18; CLAUDE.md §2; docs/PEOPLE_MOTION.md §1.9). A batch commits on a whole-cast verdict of its own tree when its failing cells fall, overall and within the everyday states, and every key worse than the verdict it replaces is listed here: key (as the verdict keys it, aliases folded: '<measure>' or '<measure> combat:<set>'), before (its count in the verdict it replaces), after (no less than its count now), cause (or \"unknown\"), fix (the item that brings it back), since (the date of the verdict it was waived on). A waived key ratchets from its new value and must be back at or below its pre-waiver value within two batches, or the next batch is blocked. tools/qa/gate_ratchet.mjs judges it; npm run check enforces it.",
+  "waivers": [
+    {
+      "key": "W1",
+      "before": 0,
+      "after": 1,
+      "cause": "Female_Adult_01's jog: the gate's right-foot ball (vertex 2868) lies on her flat forefoot's toes' row while the foot plant holds the metatarsal row, and at push-off the rigid foot's toes' row sweeps 0.16-0.36 m/s about it (6 % of the jog's frames over 15 cm/s); the toes laid down passed it but moved another flat forefoot's ball and were reverted (docs/MOTION_ROOT_CAUSE.md §13-§15)",
+      "fix": "docs/MOTION_ROOT_CAUSE.md §15, open: a forefoot that rolls its contact from the metatarsal heads to the toes as the heel rises, or the ball's band defined behind the toe joint in the gate and the build alike (a change of the measure)",
+      "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "key": "W6",
+      "before": 0,
+      "after": 1,
+      "cause": "Medical_Female_01's jog as it stops: the landing foot hovers 4.1-4.4 cm at 0.3-0.5 m/s with both feet up, one frame over the 4.0 cm cap (docs/MOTION_ROOT_CAUSE.md §13-§14; the catch by the foot's own motion came a frame late, reverted)",
+      "fix": "docs/MOTION_ROOT_CAUSE.md §14, open: the stop's blend from the jog lands the foot slow and 4 cm up (the clip, or the locomotion's slowing)",
+      "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "key": "A2 combat:aim",
+      "before": 76,
+      "after": 237,
+      "cause": "clip-level: the same value on every body of every person in the rifle's aim, shot and burst (the elbow's bend p2 18-27° against 119.7), as on cast 3's tree (hash 8d5742a5) before this round's changes: the combat set's clip (v4.1-v4.6), not yet traced",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 18: the fight's largest groups by count from this verdict, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there",
+      "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "key": "C1 combat:crouch",
+      "before": 1,
+      "after": 68,
+      "cause": "unknown: the rifle's crouch, 68 of 79 people, the forearm or hand 0.6-1.6 cm into the thigh (p98), as on cast 3's tree (hash 8d5742a5); not traced",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 18: the fight's largest groups by count from this verdict, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there",
+      "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "key": "F2 combat:crouch",
+      "before": 0,
+      "after": 2,
+      "cause": "unknown: the rifle's crouch, two men's heels 18.0-18.2 cm over their balls against 17.1-17.2, as on cast 3's tree",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 18: the fight's largest groups by count from this verdict, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there",
+      "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "key": "F2 combat:strike",
+      "before": 3,
+      "after": 75,
+      "cause": "clip-level: the same value on every body of every woman in the three blocks folded into the strike (melee, unarmed, the second club: the heel over the ball p98 9.7-9.8 against 6.6), as on cast 3's tree (hash 8d5742a5) before this round's changes: the combat set's clip (v4.1-v4.6), not yet traced",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 18: the fight's largest groups by count from this verdict, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there",
+      "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "key": "F2 combat:yield",
+      "before": 0,
+      "after": 25,
+      "cause": "clip-level: the same value on every body of every woman in the unarmed yield (the heel over the ball p98 6.6-7.2 against 2.0), as on cast 3's tree (hash 8d5742a5) before this round's changes: the combat set's clip (v4.1-v4.6), not yet traced",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 18: the fight's largest groups by count from this verdict, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there",
+      "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "key": "F3w combat:aim_pistol",
+      "before": 0,
+      "after": 75,
+      "cause": "clip-level: the same value on every body of every woman in the pistol's aim, shot and burst (14.3 against 23.4), as on cast 3's tree (hash 8d5742a5) before this round's changes: the combat set's clip (v4.1-v4.6), not yet traced",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 18: the fight's largest groups by count from this verdict, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there",
+      "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "key": "F3w combat:crouch",
+      "before": 0,
+      "after": 79,
+      "cause": "clip-level: the same value on every body of a sex in the rifle's crouch (women 5.8, men 7.5, against 18.9), as on cast 3's tree (hash 8d5742a5) before this round's changes: the combat set's clip (v4.1-v4.6), not yet traced",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 18: the fight's largest groups by count from this verdict, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there",
+      "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "key": "F3w combat:ready",
+      "before": 0,
+      "after": 50,
+      "cause": "clip-level: the same value on every body of every woman in the pistol's and the second club's ready (14.2-14.3 against 21.2), as on cast 3's tree (hash 8d5742a5) before this round's changes: the combat set's clip (v4.1-v4.6), not yet traced",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 18: the fight's largest groups by count from this verdict, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there",
+      "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "key": "F3w combat:throw",
+      "before": 25,
+      "after": 79,
+      "cause": "clip-level: the same value on every body of a sex in the rifle's throw (women 1.0, men 8.6, against 16.4), as on cast 3's tree (hash 8d5742a5) before this round's changes: the combat set's clip (v4.1-v4.6), not yet traced",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 18: the fight's largest groups by count from this verdict, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there",
+      "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "key": "F4 combat:guard",
+      "before": 0,
+      "after": 104,
+      "cause": "the guard's feet over 10 cm/s on 3 % of frames against 2 %, every person (unarmed) and every woman (melee), as on cast 3's tree: the fight's feet (docs/COMBAT_ROOT_CAUSE.md 17: the planted feet off their pins fixed, the aims' and the guard's remainder measured at the gate's fixed 1/60 s step still to trace)",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 17, open: the remainder of the fight's foot speeds at the gate's fixed step",
+      "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "key": "K1 combat:strike",
+      "before": 25,
+      "after": 54,
+      "cause": "clip-level: the same value on every body of every man in the second club strike (the straighter knee p98 52.1 against 36.1), as on cast 3's tree (hash 8d5742a5) before this round's changes: the combat set's clip (v4.1-v4.6), not yet traced",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 18: the fight's largest groups by count from this verdict, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there",
+      "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "key": "Kb combat:crouch",
+      "before": 25,
+      "after": 54,
+      "cause": "clip-level: the same value on every body of every man in the rifle's crouch (the knees' bend p98 155.0 against 148.0), as on cast 3's tree (hash 8d5742a5) before this round's changes: the combat set's clip (v4.1-v4.6), not yet traced",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 18: the fight's largest groups by count from this verdict, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there",
+      "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "key": "Kb combat:strike",
+      "before": 104,
+      "after": 154,
+      "cause": "129 on cast 3's tree from the club's second strike and block on every body (p98 61.9 against 54.9; the women's block 150.9 against 127.9); +25 this round, likely the hips brought down for each planted leg's reach (docs/COMBAT_ROOT_CAUSE.md 17), which bends the knees further: not yet confirmed by an A/B",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 18: the fight's largest groups by count from this verdict, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there; and an A/B of item 17's hips rule on the club states",
+      "since": "2026-11-27T04:34:21Z"
+    }
+  ],
+  "failing_tests": [
+    {
+      "test": "SecondFace.Tests.CombatMotionPlayTests.TheFightsFeetStandOnTheGroundAndStepBetweenStances",
+      "status": "fails (local run on this tree, 2026-11-27)",
+      "cause": "the aim's straighter knee 23.5-25.1° where its clip (CMU 79_96) holds 1.7 (the standing leg as the other foot steps between the ready's and the aim's stances, items 5b and 15, as before this batch's fixes); the fists' lower sole 0.0-1.4 cm over its ground against 1 (1.9-4.6 cm before item 17; the skate gone)",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 5b, 15 and 17, open",
+      "since": "2026-11-27T04:34:21Z"
+    }
+  ]
+}

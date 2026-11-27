@@ -61,6 +61,11 @@ namespace SecondFace.Game.Fighting
         public float Length { get; private set; } = 0.09f;
         /// <summary>The arm's length (shoulder to the palm's centre), m.</summary>
         public float Reach { get; private set; } = 0.6f;
+        /// <summary>The arm's chain the IK solves (shoulder to elbow to wrist), m.</summary>
+        public float Arm { get; private set; } = 0.55f;
+        /// <summary>The palm's centre from the wrist in the palm's own frame (right, up out of the palm, forward across the
+        /// knuckles), m: where the hand bone has to be for the palm to be on a grip.</summary>
+        public Vector3 PalmFromWrist => Quaternion.Inverse(Frame) * Vector3.Scale(Centre, Bone.lossyScale);
         private Joint[] _joints;
         private Transform _thumb;
         private Vector3 _thumbAxis;
@@ -101,10 +106,11 @@ namespace SecondFace.Game.Fighting
             across = Vector3.ProjectOnPlane(across, normal).normalized;
             // the handle's axis in a closed hand: halfway from the wrist to the knuckles, a hand's thickness and a handle's
             // radius into the palm (a palm is ~3 cm thick at the metacarpals; handles 3-4 cm across)
-            var centre = wrist + along * (Length * 0.55f) + normal * (Length * 0.33f);
+            var centre = wrist + along * (Length * (float)CombatMotion.PalmAlong) + normal * (Length * (float)CombatMotion.PalmOut);
             Centre = Bone.InverseTransformPoint(centre);
             Frame = Quaternion.Inverse(Bone.rotation) * Quaternion.LookRotation(across, normal);
-            Reach = (Lower.position - Upper.position).magnitude + (wrist - Lower.position).magnitude + Length * 0.55f;
+            Arm = (Lower.position - Upper.position).magnitude + (wrist - Lower.position).magnitude;
+            Reach = Arm + Length * (float)CombatMotion.PalmAlong;
             // the fingers' joints, each turned about the axis across it in the palm's plane (as HandPose finds them)
             var l = new System.Collections.Generic.List<Joint>();
             var names = new[] { "Index", "Middle", "Ring", "Little" };

@@ -70,6 +70,33 @@ namespace SecondFace.EditorTools
             return cat;
         }
 
+        /// <summary>Every person's layers and skin points (<c>&lt;id&gt;_layers.bytes</c>, <c>&lt;id&gt;_skin.bytes</c>) built again
+        /// from their FBX as <see cref="Build"/> builds them, and nothing else: no materials, no flank correctives, no prefab
+        /// saved (the prefabs reference both files by their GUIDs, which stay). For a change to how the skin's points are made
+        /// (RocketboxLayers.Skin) without rewriting the rest of the people. PEOPLE_SKINS="id,id" builds only those.
+        /// <c>tools/unity/editor.sh run SecondFace.EditorTools.RocketboxPeopleBuild.BuildSkins</c>.</summary>
+        [MenuItem("Second Face/Build Rocketbox people's skin points")]
+        public static void BuildSkins()
+        {
+            var root = RocketboxImportPostprocessor.People.TrimEnd('/');
+            if (!Directory.Exists(root)) { Debug.LogWarning($"RocketboxPeopleBuild: no {root}"); return; }
+            var only = (System.Environment.GetEnvironmentVariable("PEOPLE_SKINS") ?? "").Split(',').Select(x => x.Trim()).Where(x => x.Length > 0).ToHashSet();
+            _cloths = null;
+            var n = 0;
+            foreach (var dir in Directory.GetDirectories(root).OrderBy(d => d))
+            {
+                var id = Path.GetFileName(dir);
+                if (only.Count > 0 && !only.Contains(id)) continue;
+                var model = AssetDatabase.LoadAssetAtPath<GameObject>($"{root}/{id}/{id}.fbx");
+                if (model == null) continue;
+                var go = (GameObject)PrefabUtility.InstantiatePrefab(model);
+                try { if (RocketboxLayers.Build(go, $"{root}/{id}", id, _cloths ??= RocketboxLayers.Materials())) n++; }
+                finally { Object.DestroyImmediate(go); }
+            }
+            AssetDatabase.SaveAssets();
+            Debug.Log($"RocketboxPeopleBuild: skin points for {n} people");
+        }
+
         /// <summary>SKIN_DIAG ("id:vertex,..."): the named people built again and the coverage of their skin points reported
         /// (RocketboxLayers.SkinDiag), for the gate's clip lines whose nearest game point stood far off.</summary>
         public static void DiagSkin()
