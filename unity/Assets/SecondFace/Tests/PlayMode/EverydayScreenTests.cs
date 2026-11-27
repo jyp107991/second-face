@@ -313,18 +313,19 @@ namespace SecondFace.Tests
                 var dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results"));
                 _w = new StreamWriter(Path.Combine(dir, $"catch_{Probe.Person}.csv")) { AutoFlush = false };
                 _w.WriteLine($"# CatchPace {_fp.CatchPace} CatchSlow {_fp.CatchSlow} CatchLift {_fp.CatchLift} StandSpeed {_fp.StandSpeed} WalkFlight {_fp.WalkFlight} SlowingAccel {_fp.SlowingAccel}");
-                _w.WriteLine("frame,t,state,moved,speedParam,rate,haveDipWas,dipWasL,dipWasR,soleVWasL,soleVWasR,bodyWas,accelWas,lowWas,sinkWas,plantWas,halted,body,accel,low,sink,plant,dipL,dipR,lockL,lockR,liftL,liftR,g_have,g_notStanding,g_pace,g_dipL,g_dipR,g_slowL,g_slowR,caught");
+                _w.WriteLine("frame,t,state,moved,speedParam,rate,haveDipWas,dipWasL,dipWasR,soleVWasL,soleVWasR,bodyWas,accelWas,lowWas,sinkWas,plantWas,halted,body,accel,low,sink,plant,dipL,dipR,lockL,lockR,liftL,liftR,g_have,g_notStanding,g_pace,g_dipL,g_dipR,g_slowL,g_slowR,caught,g_paceMin,caughtMin,hipsY,rootY,drawnL,drawnR");
             }
             public void Pre()
             {
-                if (_fp == null || Probe == null || Probe.State == null || !Probe.State.Contains("jog")) { _pre = ""; return; }
+                if (_fp == null || Probe == null || Probe.State == null) { _pre = ""; return; }
                 _pre = $"{B("_haveDipWas")},{Fl("_dipWasL"):0.0000},{Fl("_dipWasR"):0.0000},{Fl("_soleVWasL"):0.000},{Fl("_soleVWasR"):0.000},{Fl("_bodySpeed"):0.000},{Fl("_accel"):0.000},{Fl("_low"):0.0000},{Fl("_sink"):0.0000},{Fl("_plant"):0.000}";
             }
             private void LateUpdate()
             {
                 if (_w == null || _pre.Length == 0) { _haveRoot = false; return; }
                 var dt = Time.deltaTime; var root = _fp.transform.position;
-                var moved = _haveRoot && dt > 0f ? new Vector2(root.x - _rootWas.x, root.z - _rootWas.z).magnitude / dt : float.NaN;
+                // (as the plant reads it: none across a teleport, a body set down elsewhere)
+                var moved = _haveRoot && dt > 0f ? ((root - _rootWas).sqrMagnitude > 0.25f ? 0f : new Vector2(root.x - _rootWas.x, root.z - _rootWas.z).magnitude / dt) : float.NaN;
                 _rootWas = root; _haveRoot = true;
                 float P(string n) { foreach (var p in _a.parameters) if (p.name == n && p.type == AnimatorControllerParameterType.Float) return _a.GetFloat(n); return float.NaN; }
                 var speed = P("Speed"); var rate = P("LocoRate");
@@ -334,10 +335,89 @@ namespace SecondFace.Tests
                 bool have = pre[0] == "1"; float dl = float.Parse(pre[1]), dr = float.Parse(pre[2]), vl = float.Parse(pre[3]), vr = float.Parse(pre[4]);
                 var gPace = body < _fp.CatchPace; var gDL = dl > _fp.CatchLift; var gDR = dr > _fp.CatchLift; var gSL = vl < _fp.CatchSlow; var gSR = vr < _fp.CatchSlow;
                 var caught = have && !standing && gPace && gDL && gDR && (gSL || gSR);
+                var gPaceMin = Mathf.Min(float.IsNaN(moved) ? body : moved, body) < _fp.CatchPace;
+                var caughtMin = have && !standing && gPaceMin && gDL && gDR && (gSL || gSR);
                 string Bo(bool b) => b ? "1" : "0";
-                _w.WriteLine($"{Time.frameCount},{Time.time:0.000},{Probe.State},{moved:0.000},{speed:0.000},{rate:0.000},{_pre},{halted},{body:0.000},{Fl("_accel"):0.000},{Fl("_low"):0.0000},{Fl("_sink"):0.0000},{Fl("_plant"):0.000},{_fp.Diag[0]:0.0000},{_fp.Diag[4]:0.0000},{_fp.Diag[3]:0.0},{_fp.Diag[7]:0.0},{_fp.Diag[2]:0.0000},{_fp.Diag[6]:0.0000},{Bo(have)},{Bo(!standing)},{Bo(gPace)},{Bo(gDL)},{Bo(gDR)},{Bo(gSL)},{Bo(gSR)},{Bo(caught)}");
+                var hips = F("_hips") as Transform;
+                string Drawn(string f, string t)
+                {
+                    var foot = F(f) as Transform; var toe = F(t) as Transform;
+                    var hl = typeof(FootPlant).GetMethod("HullLow", NP); var ga = typeof(FootPlant).GetMethod("GroundAt", NP);
+                    if (foot == null || hl == null || ga == null) return "";
+                    var g = (float)ga.Invoke(_fp, new object[] { foot.position, null });
+                    return ((float)hl.Invoke(_fp, new object[] { foot, toe }) - g).ToString("0.0000");
+                }
+                _w.WriteLine($"{Time.frameCount},{Time.time:0.000},{Probe.State},{moved:0.000},{speed:0.000},{rate:0.000},{_pre},{halted},{body:0.000},{Fl("_accel"):0.000},{Fl("_low"):0.0000},{Fl("_sink"):0.0000},{Fl("_plant"):0.000},{_fp.Diag[0]:0.0000},{_fp.Diag[4]:0.0000},{_fp.Diag[3]:0.0},{_fp.Diag[7]:0.0},{_fp.Diag[2]:0.0000},{_fp.Diag[6]:0.0000},{Bo(have)},{Bo(!standing)},{Bo(gPace)},{Bo(gDL)},{Bo(gDR)},{Bo(gSL)},{Bo(gSR)},{Bo(caught)},{Bo(gPaceMin)},{Bo(caughtMin)},{(hips != null ? hips.position.y : float.NaN):0.0000},{root.y:0.0000},{Drawn("_footL", "_toeL")},{Drawn("_footR", "_toeR")}");
             }
             private void OnDestroy() { _w?.Flush(); _w?.Close(); _w = null; }
+        }
+
+        // TEMP (1127f, v6): in any play-mode test run with CATCH_WATCH=1 (the game's own walkers and followers on their navigation
+        // agents), every frame a foot plant's catch fires by the smoothed pace or by the slower of the raw and the smoothed one:
+        // test-results/game_catch.csv
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void CatchWatch()
+        {
+            if (System.Environment.GetEnvironmentVariable("CATCH_WATCH") != "1") return;
+            var go = new GameObject("catch watch"); Object.DontDestroyOnLoad(go); go.AddComponent<GameCatchWatch>();
+        }
+        public sealed class GameCatchWatch : MonoBehaviour
+        {
+            public static StreamWriter W;
+            private void Update()
+            {
+                if (W == null)
+                {
+                    var dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results")); Directory.CreateDirectory(dir);
+                    W = new StreamWriter(Path.Combine(dir, "game_catch.csv")) { AutoFlush = true };
+                    W.WriteLine("t,who,moved,body,accel,speedParam,dipWasL,dipWasR,soleVWasL,soleVWasR,caught,caughtMin,sinkWas,sink,hipsY,drawnL,drawnR,frames");
+                }
+                foreach (var fp in Object.FindObjectsByType<FootPlant>(FindObjectsSortMode.None))
+                    if (fp.GetComponent<GameCatch>() == null) { var c = fp.gameObject.AddComponent<GameCatch>(); fp.gameObject.AddComponent<GameCatchPre>().P = c; }
+            }
+            private void OnDestroy() { W?.Flush(); W?.Close(); W = null; }
+        }
+        [DefaultExecutionOrder(-25)]
+        public sealed class GameCatchPre : MonoBehaviour { public GameCatch P; private void LateUpdate() { if (P != null) P.Pre(); } }
+        [DefaultExecutionOrder(-19)]
+        public sealed class GameCatch : MonoBehaviour
+        {
+            private const BindingFlags NP = BindingFlags.NonPublic | BindingFlags.Instance;
+            private FootPlant _fp; private Animator _a; private Vector3 _was; private bool _have; private int _n;
+            private bool _hd; private float _dl, _dr, _vl, _vr, _sinkWas;
+            private object F(string n) => typeof(FootPlant).GetField(n, NP)?.GetValue(_fp);
+            private float Fl(string n) => F(n) is float x ? x : float.NaN;
+            public void Pre()
+            {
+                if (_fp == null) { _fp = GetComponent<FootPlant>(); _a = GetComponent<Animator>(); }
+                if (_fp == null) return;
+                _hd = F("_haveDipWas") is bool b && b; _dl = Fl("_dipWasL"); _dr = Fl("_dipWasR"); _vl = Fl("_soleVWasL"); _vr = Fl("_soleVWasR"); _sinkWas = Fl("_sink");
+            }
+            private void LateUpdate()
+            {
+                if (_fp == null || !_fp.enabled) { _have = false; return; }
+                _n++;
+                var dt = Time.deltaTime; var root = _fp.transform.position;
+                var moved = _have && dt > 0f ? ((root - _was).sqrMagnitude > 0.25f ? 0f : new Vector2(root.x - _was.x, root.z - _was.z).magnitude / dt) : float.NaN;
+                _was = root; _have = true;
+                if (float.IsNaN(moved)) return;
+                var body = Fl("_bodySpeed"); var speed = 0f;
+                if (_a != null) foreach (var p in _a.parameters) if (p.name == "Speed" && p.type == AnimatorControllerParameterType.Float) speed = _a.GetFloat("Speed");
+                var standing = speed < _fp.StandSpeed || (F("_halted") is bool h && h);
+                var rest = _hd && !standing && _dl > _fp.CatchLift && _dr > _fp.CatchLift && (_vl < _fp.CatchSlow || _vr < _fp.CatchSlow);
+                var c1 = rest && body < _fp.CatchPace; var c2 = rest && Mathf.Min(moved, body) < _fp.CatchPace;
+                if (!c1 && !c2) return;
+                var hips = F("_hips") as Transform;
+                string Drawn(string f, string t)
+                {
+                    var foot = F(f) as Transform; var toe = F(t) as Transform;
+                    var hl = typeof(FootPlant).GetMethod("HullLow", NP); var ga = typeof(FootPlant).GetMethod("GroundAt", NP);
+                    if (foot == null || hl == null || ga == null) return "";
+                    var g = (float)ga.Invoke(_fp, new object[] { foot.position, null });
+                    return ((float)hl.Invoke(_fp, new object[] { foot, toe }) - g).ToString("0.0000");
+                }
+                GameCatchWatch.W?.WriteLine($"{Time.time:0.000},{_fp.gameObject.name}#{_fp.GetInstanceID()},{moved:0.000},{body:0.000},{Fl("_accel"):0.000},{speed:0.000},{_dl:0.0000},{_dr:0.0000},{_vl:0.000},{_vr:0.000},{(c1 ? 1 : 0)},{(c2 ? 1 : 0)},{_sinkWas:0.0000},{Fl("_sink"):0.0000},{(hips != null ? hips.position.y : float.NaN):0.0000},{Drawn("_footL", "_toeL")},{Drawn("_footR", "_toeR")},{_n}");
+            }
         }
 
         // TEMP (1127e): each traced person's base layer, frame by frame: the state's phase and the clips playing, by file

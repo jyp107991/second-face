@@ -997,9 +997,9 @@ Found under three CI regressions of 71ba0e5b (`CapturedMotionHoldsHumanPosesWhen
   match no record: the walk's starts and stops, blended from the idle, where cases 1 and 2 and the relock fall.
 - **Rejected: the lowest point's speed.** It cures the jog's W1 on the gate by holding the foot up to two frames before the
   actor's recorded touchdown, not by matching the contact: a gate passed by locking early. Neither speed proxy is right.
-- **The root cause, and the fix built at its source.** The plant inferred contact from one point's speed in a single frame, and
-  every proxy (the ankle, the lowest sole point, the slowest) runs ahead in some kind of landing. Now the clips' own record holds
-  the foot: each locomotion clip's recorded stances (its sidecar's `plant.stances`: the take's touchdown to toe-off) are built with
+- **The record-driven lock: built, measured, not taken.** The plant inferred contact from one point's speed in a single frame, and
+  every proxy (the ankle, the lowest sole point, the slowest) runs ahead in some kind of landing. So the clips' own record was made
+  to hold the foot: each locomotion clip's recorded stances (its sidecar's `plant.stances`: the take's touchdown to toe-off) are built with
   the people's controller into `StepRecord` (`LocomotionBuild.Steps`, stamped, `TheStepsAreBuiltFromTheClipsOwnRecords`) as spans
   of the clip's normalized time, the form of the fight's `ClipFacts.DownL/DownR`. Each frame a foot's down weight is the sum, over
   the base layer's clips (the next state's too, across a crossfade), of each clip's weight where its actor had that foot down at
@@ -1007,7 +1007,12 @@ Found under three CI regressions of 71ba0e5b (`CapturedMotionHoldsHumanPosesWhen
   down (and it stands within LockDown of the ground: a foot recorded down but drawn high is never pinned in the air) and let go
   when most has it up; the record says when the foot lifts, so NoRelock and the lift test have no part there. Elsewhere (the idles
   and gestures carry no record; the walk's starts and stops blended from the idle) the ankle test stands as before. No threshold
-  was added: one half is a majority. RECORD_RESULT
+  was added: one half is a majority. On the eleven it cured Female_Adult_01's jog (5.8 -> 2.9 %) but failed her bend:jog W1 (5 %,
+  4.3 before) and took feet in their flight (10-18 lock onsets a person, 3-6 under the ankle test, the record down while the drawn
+  heel stood 5.7 cm up at 2.7 m/s: Construction_Male_03's walk at 139.739 s); its 98 % of onsets on the record are its own
+  definition. The touchdown below explains why: the clip lands the foot early and fast, so a lock by the record's phase holds a
+  foot still in its swing. Main's ankle test stays; the record's bake (`StepRecord`, `LocomotionBuild.Steps`, its build test and
+  gate input) stays in the tree unused, for the touchdown's next batch.
 - **The foot plant's sole against the drawn mesh: the hull cleared** (relaunch 15; a temporary probe, not hashed, on the ankle
   test; the eleven-person pick and the other flat forefoots, Female_Adult_12, _14, _17 and Male_Adult_06). The lead was that
   `FootPlant.Hull()` bakes every skinned renderer, clothes included, and keeps their low vertices rigid in the foot's frame, so a
