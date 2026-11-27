@@ -51,6 +51,7 @@ namespace SecondFace.EditorTools
             if (set == null) { Debug.LogError("CombatAnimatorBuild: no CombatSet to refresh"); return; }
             set.Clips = Facts();
             set.TurnStamp = Turns(set.Clips);
+            set.SeatStamp = Seats(set);
             EditorUtility.SetDirty(set);
             AssetDatabase.SaveAssets();
             Debug.Log($"CombatAnimatorBuild: facts refreshed: {set.Clips.Length} clips, {set.Clips.Count(c => c.DownL.Length > 0 || c.DownR.Length > 0)} with a plant record, {set.Clips.Count(c => c.Turns.Length > 0)} with turns");
@@ -69,6 +70,7 @@ namespace SecondFace.EditorTools
             set.Controller = ctl;
             set.Clips = Facts();
             set.TurnStamp = Turns(set.Clips);
+            set.SeatStamp = Seats(set);
             set.Weapons = Weapons();
             if (fresh) AssetDatabase.CreateAsset(set, SetPath); else EditorUtility.SetDirty(set);
             var world = AssetDatabase.LoadAssetAtPath<SecondFace.Game.World.WorldAssets>(WorldAssetsPath);
@@ -385,11 +387,13 @@ namespace SecondFace.EditorTools
         public static CombatSet.ClipTurn BakeTurn(string clipName, string skeleton, GameObject bodyPrefab, out int samples, out float maxDeg, out float maxShift) =>
             BakeTurn(clipName, skeleton, bodyPrefab, out samples, out maxDeg, out maxShift, out _, out _);
 
-        public static CombatSet.ClipTurn BakeTurn(string clipName, string skeleton, GameObject bodyPrefab, out int samples, out float maxDeg, out float maxShift, out float maxThigh, out float residual)
+        public static CombatSet.ClipTurn BakeTurn(string clipName, string skeleton, GameObject bodyPrefab, out int samples, out float maxDeg, out float maxShift, out float maxThigh, out float residual) =>
+            BakeTurnAt($"{CombatMotion.Folder}/{clipName}.fbx", Clip(clipName), skeleton, bodyPrefab, out samples, out maxDeg, out maxShift, out maxThigh, out residual);
+
+        /// <summary><see cref="BakeTurn"/> for a clip in any model file (its own actor: that file's avatar).</summary>
+        public static CombatSet.ClipTurn BakeTurnAt(string path, AnimationClip clip, string skeleton, GameObject bodyPrefab, out int samples, out float maxDeg, out float maxShift, out float maxThigh, out float residual)
         {
             samples = 0; maxDeg = 0f; maxShift = 0f; maxThigh = 0f; residual = 0f;
-            var path = $"{CombatMotion.Folder}/{clipName}.fbx";
-            var clip = Clip(clipName);
             var own = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Avatar>().FirstOrDefault();
             var model = AssetDatabase.LoadAssetAtPath<GameObject>(path);
             if (clip == null || own == null || !own.isHuman || model == null || bodyPrefab == null) return null;
@@ -509,6 +513,87 @@ namespace SecondFace.EditorTools
                 if (gb.IsValid()) gb.Destroy();
                 Object.DestroyImmediate(actor); Object.DestroyImmediate(body);
             }
+        }
+
+        // ------------------------------------------------------------------------------------------- the seats' turns
+
+        /// <summary>The base layer's seated states (the people's controller's states tagged <see cref="LocomotionBuild.SitTag"/>),
+        /// each with its clip and the clip's model file, by name.</summary>
+        public static List<(string State, AnimationClip Clip, string Path)> SeatStates()
+        {
+            var l = new List<(string, AnimationClip, string)>();
+            var ctl = AssetDatabase.LoadAssetAtPath<AnimatorController>(LocomotionBuild.ControllerPath);
+            if (ctl == null || ctl.layers.Length == 0) return l;
+            void Walk(AnimatorStateMachine m)
+            {
+                foreach (var c in m.states)
+                    if (c.state.tag == LocomotionBuild.SitTag && c.state.motion is AnimationClip clip) l.Add((c.state.name, clip, AssetDatabase.GetAssetPath(clip)));
+                foreach (var sm in m.stateMachines) Walk(sm.stateMachine);
+            }
+            Walk(ctl.layers[0].stateMachine);
+            return l.OrderBy(x => x.Item1, System.StringComparer.Ordinal).ToList();
+        }
+
+        /// <summary>The seats' turns' inputs: the bake's version, each seated state's name, its clip's file and import settings
+        /// (as committed) and every skeleton's key.</summary>
+        public static string SeatStamp(IEnumerable<(string State, AnimationClip Clip, string Path)> seats, IEnumerable<string> skeletons)
+        {
+            ulong h = 14695981039346656037UL;
+            void Add(byte b) { h ^= b; h *= 1099511628211UL; }
+            void Text(string s) { foreach (var b in System.Text.Encoding.UTF8.GetBytes(s)) Add(b); }
+            Text($"seats v{TurnBake};");
+            foreach (var (state, _, path) in seats)
+            {
+                Text(state + "=" + path + ":");
+                foreach (var file in new[] { path, path + ".meta" })
+                    if (File.Exists(file)) foreach (var b in File.ReadAllBytes(file)) if (b != (byte)'\r') Add(b);
+                Text(";");
+            }
+            foreach (var k in skeletons) Text(k + ";");
+            return h.ToString("x16", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Bakes each seated state's turn for every body skeleton of the game's people into <see cref="CombatSet.Seats"/>, as the
+        /// fight's (<see cref="BakeTurnAt"/>: the sit on its own actor and on the skeleton, bare); returns the stamp. The sits are
+        /// retargeted as the fight's clips are, and at a sit's hip bend (about 90°) the Biped bodies' thighs stand rolled and
+        /// their pelvis turned from the actor's (docs/MOTION_ROOT_CAUSE.md §16): the walker's feet off the floor on a chair.
+        /// </summary>
+        public static string Seats(CombatSet set)
+        {
+            var skels = Skeletons();
+            var seats = SeatStates();
+            var log = new System.Text.StringBuilder($"CombatAnimatorBuild: turns for {seats.Count} seated states on {skels.Count} body skeletons:\n");
+            var l = new List<CombatSet.ClipFacts>();
+            foreach (var (state, clip, path) in seats)
+            {
+                var f = new CombatSet.ClipFacts { Name = state, Length = clip.length, Loop = clip.isLooping };
+                var turns = new List<CombatSet.ClipTurn>();
+                foreach (var (k, v) in skels)
+                {
+                    var tu = BakeTurnAt(path, clip, k, v.Prefab, out var n, out var maxDeg, out var maxShift, out var maxThigh, out var residual);
+                    if (tu == null) { log.AppendLine($"  {state}: no turn baked on {k} (no clip or humanoid avatar in {path})"); continue; }
+                    turns.Add(tu);
+                    log.AppendLine(string.Format(System.Globalization.CultureInfo.InvariantCulture, "  {0} ({1}) on {2}: {3} samples, {4} keys, hips up to {5:0.0}°, thighs up to {6:0.0}°, shift up to {7:0.0} cm, shanks and feet left within {8:0.00}°", state, path, k, n, tu.Keys, maxDeg, maxThigh, maxShift * 100f, residual));
+                }
+                f.Turns = turns.ToArray();
+                l.Add(f);
+            }
+            set.Seats = l.ToArray();
+            var stamp = SeatStamp(seats, skels.Keys);
+            log.AppendLine($"  stamp {stamp}");
+            Debug.Log(log.ToString());
+            return stamp;
+        }
+
+        /// <summary>For the command line: the seats' turns baked again (nothing else in the set touched).</summary>
+        public static void RefreshSeats()
+        {
+            var set = AssetDatabase.LoadAssetAtPath<CombatSet>(SetPath);
+            if (set == null) { Debug.LogError("CombatAnimatorBuild: no CombatSet to refresh"); return; }
+            set.SeatStamp = Seats(set);
+            EditorUtility.SetDirty(set);
+            AssetDatabase.SaveAssets();
         }
 
         // ------------------------------------------------------------------------------------------- the weapons

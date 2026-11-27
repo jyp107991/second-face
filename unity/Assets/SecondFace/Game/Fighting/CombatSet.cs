@@ -282,6 +282,28 @@ namespace SecondFace.Game.Fighting
             return _weapons.TryGetValue(id, out var x) ? x : null;
         }
 
+        /// <summary>The base layer's sits' turns back onto their actors (one per seated state: <see cref="ClipFacts.Name"/> the
+        /// state's name, <see cref="ClipFacts.Turns"/> per body skeleton), baked as the fight's whole-body clips' are
+        /// (CombatAnimatorBuild.Seats; applied by SecondFace.Game.People.SeatTurn).</summary>
+        public ClipFacts[] Seats = new ClipFacts[0];
+        /// <summary>What the seats' turns were baked from (CombatAnimatorBuild.SeatStamp: the bake's version, each sit's clip
+        /// file and import settings, every skeleton's key).</summary>
+        public string SeatStamp = "";
+        private Dictionary<int, ClipFacts> _seats;
+
+        /// <summary>A seated state's turns for a skeleton at a normalized time (by the state's short name hash); false
+        /// (identity) when none was baked.</summary>
+        public bool SeatTurnOf(int state, string skeleton, float t, out Quaternion hips, out Quaternion thighL, out Quaternion thighR, out Vector3 shift)
+        {
+            hips = thighL = thighR = Quaternion.identity; shift = Vector3.zero;
+            if (skeleton == null || Seats == null) return false;
+            if (_seats == null) { _seats = new Dictionary<int, ClipFacts>(); foreach (var c in Seats) if (c != null && c.Name != null) _seats[Animator.StringToHash(c.Name)] = c; }
+            if (!_seats.TryGetValue(state, out var f) || f.Turns == null) return false;
+            foreach (var tu in f.Turns)
+                if (tu != null && tu.Skeleton == skeleton) { tu.At(t, out hips, out thighL, out thighR, out shift); return true; }
+            return false;
+        }
+
         public ClipFacts ClipOf(string name)
         {
             if (name == null) return null;

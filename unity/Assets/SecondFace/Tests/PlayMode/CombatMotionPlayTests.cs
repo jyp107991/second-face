@@ -573,7 +573,9 @@ namespace SecondFace.Tests
         /// for a man and a woman with every weapon, the turns and shift the fighter puts on the hips and thighs never jump in one frame (no
         /// frame's change past 1° and 0.5 cm more than twice the larger of its neighbours', a one-frame spike; a clip's own turn may
         /// change as fast as the clip moves, the women's rise from cover about 4° a frame, smoothly); and the turn is on (over 0.5°)
-        /// in the stances that need it.</summary>
+        /// in the stances that need it. And the sits' turn (SeatTurn, docs/MOTION_ROOT_CAUSE.md §16) the same way, on the walker's
+        /// bodies made as the game makes them (Walker.Animate), into and out of each of the base layer's sits (the controller's
+        /// states tagged "sit") by Walker.Sit's and Walker.Stand's crossfades: on while seated, nothing popping.</summary>
         [UnityTest, Timeout(1200000)]
         public IEnumerator TheTurnOntoTheActorEasesAcrossEveryCrossfade()
         {
@@ -634,6 +636,69 @@ namespace SecondFace.Tests
                         Object.Destroy(v.Body.gameObject);
                         yield return null;
                     }
+                // the sits
+                var sits = new List<string>();
+#if UNITY_EDITOR
+                if (_assets.Locomotion is UnityEditor.Animations.AnimatorController ctl)
+                    foreach (var c in ctl.layers[0].stateMachine.states) if (c.state.tag == SeatTurn.Tag) sits.Add(c.state.name);
+#endif
+                sits.Sort(System.StringComparer.Ordinal);
+                if (sits.Count == 0) wrong.Add("no sits tagged \"sit\" in the people's controller");
+                foreach (var id in new[] { Man, Woman })
+                {
+                    var go = Object.Instantiate(_cat.Get(id), Vector3.zero, Quaternion.identity, _root.transform);
+                    var p = RbPeople.Of(id);
+                    RbDress.Apply(go, RbPeople.DyesFor(p, "walker_" + id, p?.Roles?.FirstOrDefault() ?? "settler", null));
+                    var a = go.GetComponentInChildren<Animator>();
+                    Walker.Animate(a, _assets.Locomotion, p?.Male ?? true);
+                    var seat = a.GetComponent<SeatTurn>();
+                    Assert.That(seat, Is.Not.Null, "the walker's body turns its sits");
+                    seat.Set = _assets.Combat;
+                    var rot = new List<Quaternion>(); var thighL = new List<Quaternion>(); var thighR = new List<Quaternion>(); var shift = new List<Vector3>(); var where = new List<string>();
+                    var on = new Dictionary<string, float>();
+                    var done = false;
+                    void Planting(bool up) { if (a.TryGetComponent<FootPlant>(out var fp)) fp.enabled = up; if (a.TryGetComponent<ArmClearance>(out var ac)) ac.enabled = up; }
+                    IEnumerator Sit()
+                    {
+                        yield return Wait(1f);
+                        foreach (var s in sits)
+                        {
+                            Planting(false); a.CrossFadeInFixedTime(s, Walker.SitTime * 0.8f, 0);
+                            yield return Wait(3f);
+                            a.CrossFadeInFixedTime("Locomotion", Walker.SitTime * 0.6f, 0); Planting(true);
+                            yield return Wait(1.5f);
+                        }
+                        done = true;
+                    }
+                    _host.StartCoroutine(Sit());
+                    while (!done)
+                    {
+                        yield return null;
+                        rot.Add(seat.TurnRot); thighL.Add(seat.TurnThighL); thighR.Add(seat.TurnThighR); shift.Add(a.transform.InverseTransformVector(seat.TurnShift));
+                        var st = a.GetCurrentAnimatorStateInfo(0);
+                        var name = sits.FirstOrDefault(s => st.IsName(s)) ?? "Locomotion";
+                        where.Add(name + (a.IsInTransition(0) ? "~" : ""));
+                        if (name != "Locomotion") on[name] = Mathf.Max(on.TryGetValue(name, out var o) ? o : 0f, Mathf.Max(seat.TurnAngle, Quaternion.Angle(Quaternion.identity, seat.TurnThighL), Quaternion.Angle(Quaternion.identity, seat.TurnThighR)));
+                    }
+                    var dR = new List<float> { 0f }; var dS = new List<float> { 0f };
+                    for (var i = 1; i < rot.Count; i++)
+                    {
+                        dR.Add(Mathf.Max(Quaternion.Angle(rot[i - 1], rot[i]), Quaternion.Angle(thighL[i - 1], thighL[i]), Quaternion.Angle(thighR[i - 1], thighR[i])));
+                        dS.Add((shift[i] - shift[i - 1]).magnitude);
+                    }
+                    var pops = new List<string>();
+                    for (var i = 1; i < dR.Count; i++)
+                    {
+                        var nR = Mathf.Max(dR[i - 1], i + 1 < dR.Count ? dR[i + 1] : 0f); var nS = Mathf.Max(dS[i - 1], i + 1 < dS.Count ? dS[i + 1] : 0f);
+                        if (dR[i] > 1f + 2f * nR || dS[i] > 0.005f + 2f * nS)
+                            pops.Add($"{where[i - 1]} -> {where[i]} frame {i}: {dR[i]:0.00}° and {dS[i] * 100f:0.00} cm in a frame (neighbours {nR:0.00}°, {nS * 100f:0.00} cm)");
+                    }
+                    report.Add($"{id} seated: {rot.Count} frames, the turn up to {string.Join(", ", sits.Select(s => $"{s} {(on.TryGetValue(s, out var o) ? o : 0f):0.0}°"))}, its change at most {dR.Max():0.00}° and {dS.Max() * 100f:0.00} cm a frame");
+                    if (pops.Count > 0) wrong.Add($"{id} seated: {pops.Count} pop(s): {string.Join("; ", pops.Take(5))}");
+                    foreach (var s in sits) if (!on.TryGetValue(s, out var o) || o < 0.5f) wrong.Add($"{id}: the turn never on in {s} (at most {(on.TryGetValue(s, out var o2) ? o2 : 0f):0.00}°)");
+                    Object.Destroy(go);
+                    yield return null;
+                }
             }
             finally { Time.captureDeltaTime = keep; }
             Debug.Log("TheTurnOntoTheActorEasesAcrossEveryCrossfade:\n" + string.Join("\n", report));

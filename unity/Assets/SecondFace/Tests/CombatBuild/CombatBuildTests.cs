@@ -312,5 +312,39 @@ namespace SecondFace.Tests
                 }
             Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
         }
+
+        /// <summary>The sits' turns (CombatSet.Seats, SeatTurn) are baked from the base layer's seated states (the people's
+        /// controller's states tagged "sit") on every body skeleton there is, from the clips as committed: the stamp matches,
+        /// each sit has a turn for each skeleton with ordered keys over the whole clip, and one baked again equals the stored.</summary>
+        [Test]
+        public void TheSeatsTurnsAreBakedFromTheSitsAndSkeletonsThereAre()
+        {
+            var set = AssetDatabase.LoadAssetAtPath<CombatSet>(CombatAnimatorBuild.SetPath);
+            if (set == null) Assert.Ignore("not built (Second Face/Build the fight's motion and weapons)");
+            var skels = CombatAnimatorBuild.Skeletons();
+            var seats = CombatAnimatorBuild.SeatStates();
+            Assert.That(seats.Count, Is.EqualTo(3), "the base layer's sits, tagged: " + string.Join(", ", seats.Select(s => s.State)));
+            Assert.That(set.SeatStamp, Is.EqualTo(CombatAnimatorBuild.SeatStamp(seats, skels.Keys)),
+                "the seats' turns were baked from other sits or skeletons: bake them again (CombatAnimatorBuild.RefreshSeats)");
+            var wrong = new System.Collections.Generic.List<string>();
+            foreach (var (state, clip, path) in seats)
+            {
+                var f = set.Seats.FirstOrDefault(x => x.Name == state);
+                if (f == null) { wrong.Add($"{state}: no turns"); continue; }
+                foreach (var (k, v) in skels)
+                {
+                    var tu = f.Turns.FirstOrDefault(x => x.Skeleton == k);
+                    var fl = tu?.Floats();
+                    if (tu == null || tu.Keys < 2 || fl.Length != tu.Keys * CombatSet.ClipTurn.Stride) { wrong.Add($"{state}: no turn for skeleton {k}"); continue; }
+                    var times = Enumerable.Range(0, tu.Keys).Select(i => fl[i * CombatSet.ClipTurn.Stride]).ToArray();
+                    if (times[0] != 0f || times[^1] != 1f || times.Zip(times.Skip(1), (a, b) => b > a).Any(x => !x)) wrong.Add($"{state} on {k}: its keys' times");
+                    var again = CombatAnimatorBuild.BakeTurnAt(path, clip, k, v.Prefab, out _, out _, out _, out _, out _).Floats();
+                    if (again.Length != fl.Length) { wrong.Add($"{state} on {k}: baked again {again.Length} floats, stored {fl.Length}"); continue; }
+                    var off = again.Zip(fl, (a, b) => Mathf.Abs(a - b)).Max();
+                    if (off > 1e-4f) wrong.Add($"{state} on {k}: baked again differs by up to {off}");
+                }
+            }
+            Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
+        }
     }
 }
