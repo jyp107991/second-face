@@ -99,7 +99,7 @@ namespace SecondFace.Tests
             {
                 watch = new GameObject("stage watcher");
                 Object.DontDestroyOnLoad(watch);
-                throw new System.InvalidOperationException("SCREEN_WATCH: StageProbeTests is not in the tree (1127e)");
+                watch.AddComponent<PhaseWatcher>();
             }
             var combat = assets.Combat;
             var everyday = new List<string>();
@@ -144,6 +144,57 @@ namespace SecondFace.Tests
             Assert.Ignore("editor only");
             yield break;
 #endif
+        }
+
+        // TEMP (1127e): each traced person's base layer, frame by frame: the state's phase and the clips playing, by file
+        public sealed class PhaseWatcher : MonoBehaviour
+        {
+            private static readonly string[] Who = (System.Environment.GetEnvironmentVariable("GATE_TRACE") ?? "").Split(',').Where(x => x.Length > 0).ToArray();
+            private void Update()
+            {
+                foreach (var p in Object.FindObjectsByType<MotionProbe>(FindObjectsSortMode.None))
+                {
+                    if (p.Person == null || p.GetComponent<PhaseRec>() != null || !Who.Contains(p.Person)) continue;
+                    var r = p.gameObject.AddComponent<PhaseRec>(); r.Probe = p;
+                }
+            }
+        }
+
+        [DefaultExecutionOrder(10006)]
+        public sealed class PhaseRec : MonoBehaviour
+        {
+            public MotionProbe Probe; private StreamWriter _w; private Animator _a;
+            private static readonly Dictionary<AnimationClip, string> Names = new();
+            private void Start()
+            {
+                _a = GetComponent<Animator>();
+                var dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results"));
+                _w = new StreamWriter(Path.Combine(dir, $"phase_{Probe.Person}.csv")) { AutoFlush = false };
+                _w.WriteLine("state,t,norm,trans,nextnorm,clips");
+            }
+            private static string Name(AnimationClip c)
+            {
+                if (c == null) return "-";
+                if (Names.TryGetValue(c, out var n)) return n;
+#if UNITY_EDITOR
+                n = Path.GetFileNameWithoutExtension(AssetDatabase.GetAssetPath(c));
+#else
+                n = c.name;
+#endif
+                Names[c] = n; return n;
+            }
+            private void LateUpdate()
+            {
+                if (_w == null || _a == null || Probe.State == null) return;
+                if (!Probe.State.Contains("walk") && !Probe.State.Contains("jog") && !Probe.State.Contains("sneak")) return;
+                var st = _a.GetCurrentAnimatorStateInfo(0); var tr = _a.IsInTransition(0);
+                var nx = tr ? _a.GetNextAnimatorStateInfo(0) : default;
+                var sb = new System.Text.StringBuilder();
+                foreach (var ci in _a.GetCurrentAnimatorClipInfo(0)) if (ci.weight > 0.01f) sb.Append($"{Name(ci.clip)}:{ci.weight:0.000}:{ci.clip.length:0.0000}:{st.normalizedTime:0.0000};");
+                if (tr) foreach (var ci in _a.GetNextAnimatorClipInfo(0)) if (ci.weight > 0.01f) sb.Append($"{Name(ci.clip)}:{ci.weight:0.000}:{ci.clip.length:0.0000}:{nx.normalizedTime:0.0000}:next;");
+                _w.WriteLine($"{Probe.State},{Time.time:0.000},{st.normalizedTime:0.0000},{(tr ? _a.GetAnimatorTransitionInfo(0).normalizedTime : -1f):0.000},{(tr ? nx.normalizedTime : -1f):0.0000},{sb}");
+            }
+            private void OnDestroy() { _w?.Flush(); _w?.Close(); _w = null; }
         }
     }
 }
