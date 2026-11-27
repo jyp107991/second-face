@@ -46,6 +46,26 @@ namespace SecondFace.Tests
             done(boot);
         }
 
+        private static readonly Dictionary<int, string> _names = new();
+        private static string Name(Animator a, int hash)
+        {
+#if UNITY_EDITOR
+            if (_names.Count == 0 && a.runtimeAnimatorController != null)
+            {
+                var path = UnityEditor.AssetDatabase.GetAssetPath(a.runtimeAnimatorController);
+                var ctl = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.Animations.AnimatorController>(path);
+                void Walk(UnityEditor.Animations.AnimatorStateMachine m)
+                {
+                    foreach (var c in m.states) _names[Animator.StringToHash(c.state.name)] = c.state.name;
+                    foreach (var sm in m.stateMachines) Walk(sm.stateMachine);
+                }
+                if (ctl != null) foreach (var l in ctl.layers) Walk(l.stateMachine);
+                _names[0] = "?";
+            }
+#endif
+            return _names.TryGetValue(hash, out var n) ? n : hash.ToString();
+        }
+
         private static string States(Animator a)
         {
             if (a == null) return "";
@@ -59,7 +79,10 @@ namespace SecondFace.Tests
                 sb.Append($"L{l} {w:0.00} {(ci.Length > 0 ? top.clip.name + " " + top.weight.ToString("0.00") : "-")}; ");
             }
             var sp = a.parameters.Any(p => p.name == "Speed") ? a.GetFloat("Speed") : -1f;
-            return sb + $"speed {sp:0.00}";
+            var ac = a.GetComponent<ArmClearance>();
+            var rw = typeof(ArmClearance).GetField("_restW", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var st = a.GetCurrentAnimatorStateInfo(0); var nx = a.IsInTransition(0) ? a.GetNextAnimatorStateInfo(0) : default;
+            return sb + $"speed {sp:0.00}; state {Name(a, st.shortNameHash)} t {st.normalizedTime:0.00} tag {(st.IsTag("sit") ? "sit" : "")}{(a.IsInTransition(0) ? " -> " + Name(a, nx.shortNameHash) : "")}; resting {(ac != null && ac.DiagResting)}; holding {(ac != null && ac.Holding)}; restW {(ac != null && rw != null ? ((float)rw.GetValue(ac)).ToString("0.00") : "")}";
         }
 
         [UnityTest, Timeout(1800000)]

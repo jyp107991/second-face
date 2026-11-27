@@ -31,7 +31,7 @@ namespace SecondFace.EditorTools
             // A new HumanDescription zeroes the muscle settings (twist 0, stretch 0); Unity's defaults put half of each
             // limb's roll in each of its joints and let the limbs stretch a little to reach (P4.8).
             var stamp = Groundable(assetPath) ? Stamp(assetPath) : "";
-            if (stamp == "" || imp.userData != "ground " + stamp || imp.humanDescription.human == null || imp.humanDescription.human.Length == 0)
+            if (stamp == "" || imp.userData != Mark(assetPath) + stamp || imp.humanDescription.human == null || imp.humanDescription.human.Length == 0)
             {
                 imp.humanDescription = new HumanDescription
                 {
@@ -64,10 +64,13 @@ namespace SecondFace.EditorTools
 
         /// <summary>The bodies clips are played on: the cast's (Rocketbox) and the player's base models.</summary>
         public static bool Groundable(string path) =>
-            path.StartsWith("Assets/SecondFace/People/Rocketbox/") || (!SkipPlayersTemp && (path == "Assets/SecondFace/People/Player/player_m.fbx" || path == "Assets/SecondFace/People/Player/player_f.fbx"));
+            path.StartsWith("Assets/SecondFace/People/Rocketbox/") || IsPlayer(path);
 
-        /// <summary>TEMP (1127d probe; remove before commit).</summary>
-        public static bool SkipPlayersTemp;
+        /// <summary>The player's two base models (MakeHuman's rig: its spine stands curved in the bind).</summary>
+        public static bool IsPlayer(string path) => path == "Assets/SecondFace/People/Player/player_m.fbx" || path == "Assets/SecondFace/People/Player/player_f.fbx";
+
+        /// <summary>What a stood configuration is stamped with: the players' also have their trunk stood upright.</summary>
+        private static string Mark(string path) => IsPlayer(path) ? "ground upright " : "ground ";
 
         private static string Stamp(string path)
         {
@@ -90,7 +93,7 @@ namespace SecondFace.EditorTools
             var imp = AssetImporter.GetAtPath(path) as ModelImporter;
             if (imp == null || !File.Exists(path) || !Groundable(path)) return false;
             var stamp = Stamp(path);
-            if (imp.userData == "ground " + stamp || imp.userData == "unmapped " + stamp) return false;
+            if (imp.userData == Mark(path) + stamp || imp.userData == "unmapped " + stamp) return false;
             // (an import from before 2026-11-18 mapped the bones afresh every time: what it stored is a fresh mapping)
             if (imp.userData != "fresh " + stamp && !string.IsNullOrEmpty(imp.userData)) { imp.SaveAndReimport(); return Ground(path); }
             var hd = imp.humanDescription;
@@ -110,6 +113,7 @@ namespace SecondFace.EditorTools
             var hipsParent = TakeStance.ParentOf(model, bone["Hips"], sk);
             for (var i = 0; i < sk.Length; i++)
                 if (sk[i].name == bone["Hips"]) sk[i].position += Quaternion.Inverse(w[hipsParent].r) * new Vector3(0f, dz, 0f);
+            if (IsPlayer(path)) Upright(sk, bone, model);
             // (the getter gives the skeleton in metres, the setter stores what it is given in the file's units: the Rocketbox
             // FBX are in centimetres, and set back as read the configuration came in 100 times too large, its feet-bottom
             // height 10.16 m, 2026-11-18; so the positions go in scaled by the file's own scale)
@@ -117,7 +121,7 @@ namespace SecondFace.EditorTools
             for (var i = 0; i < sk.Length; i++) sk[i].position *= k;
             hd.skeleton = sk;
             imp.humanDescription = hd;
-            imp.userData = "ground " + stamp;
+            imp.userData = Mark(path) + stamp;
             imp.SaveAndReimport();
             // what Unity built from it: the feet-bottom height is the bind's ankles
             var go = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(path));
@@ -131,6 +135,41 @@ namespace SecondFace.EditorTools
             }
             finally { Object.DestroyImmediate(go); }
             return true;
+        }
+
+        /// <summary>
+        /// The configured T-pose's trunk stood upright: each of the spine's, chest's, upper chest's and neck's segments (the
+        /// bone to the next one up) turned to the vertical in the root's frame, the bones above carried with it. Unity's
+        /// humanoid takes muscle zero as a straight T-pose with the spine upright (what its Enforce T-Pose builds, and how the
+        /// cast's Biped T-poses stand: the spine and chest segments vertical), but its avatar setup straightens only the limbs and
+        /// leaves the spine as the bind has it: on the players' MakeHuman rig a curve (player_m's segments -8.3, -8.7, +16.2,
+        /// +19.4° from the vertical, player_f's -9.7, +2.9, -5.1, +21.1°), so every clip's upright trunk was played bent on
+        /// them, the walk's face 17-24° under the level (docs/MOTION_ROOT_CAUSE.md §17, 2026-11-27).
+        /// </summary>
+        private static void Upright(SkeletonBone[] sk, System.Collections.Generic.Dictionary<string, string> bone, GameObject model)
+        {
+            var chain = new[] { "Spine", "Chest", "UpperChest", "Neck", "Head" }.Where(bone.ContainsKey).ToList();
+            // (the head keeps its own turn, the face as the bind holds it: carried by the neck's, the face stood 11° up on
+            // muscle zero, where Gaze holds it level, against the bind's level face, 2026-11-27)
+            var w0 = TakeStance.World(sk, model);
+            var head = bone.TryGetValue("Head", out var hb) && w0.ContainsKey(hb) ? hb : null;
+            var headWas = head != null ? w0[head].r : Quaternion.identity;
+            for (var i = 0; i + 1 < chain.Count; i++)
+            {
+                var w = TakeStance.World(sk, model);
+                var b = bone[chain[i]]; var c = bone[chain[i + 1]];
+                var par = TakeStance.ParentOf(model, b, sk);
+                var j = System.Array.FindIndex(sk, x => x.name == b);
+                if (j < 0 || par == null || !w.ContainsKey(par) || !w.ContainsKey(b) || !w.ContainsKey(c)) continue;
+                var dir = w[c].p - w[b].p;
+                if (dir.sqrMagnitude < 1e-8f) continue;
+                sk[j].rotation = Quaternion.Inverse(w[par].r) * (Quaternion.FromToRotation(dir, Vector3.up) * w[b].r);
+            }
+            if (head == null) return;
+            var wh = TakeStance.World(sk, model);
+            var hp = TakeStance.ParentOf(model, head, sk);
+            var hj = System.Array.FindIndex(sk, x => x.name == head);
+            if (hj >= 0 && hp != null && wh.ContainsKey(hp)) sk[hj].rotation = Quaternion.Inverse(wh[hp].r) * headWas;
         }
 
         /// <summary>Every person's model whose configuration is not yet stood on its root (a batch run's first step: the

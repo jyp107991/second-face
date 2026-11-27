@@ -206,16 +206,21 @@ namespace SecondFace.Tests
                 foreach (var a in people)
                 {
                     var hips = a.GetBoneTransform(HumanBodyBones.Hips).position;
+                    // (ahead of the hip joints' middle, the anatomy a real person's hand is measured from: MakeHuman's rig, the
+                    // player's, puts its Hips bone toward the sacrum, 5.8-8.2 cm behind the hip joints, where the cast's Biped
+                    // stands it on their line within 0.5 cm; docs/MOTION_ROOT_CAUSE.md §17, 2026-11-27)
+                    var joints = (a.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position + a.GetBoneTransform(HumanBodyBones.RightUpperLeg).position) * 0.5f;
                     var chest = (a.GetBoneTransform(HumanBodyBones.Chest) ?? a.GetBoneTransform(HumanBodyBones.Spine)).position;
                     var fwd = a.transform.forward;
                     foreach (var hb in new[] { HumanBodyBones.LeftHand, HumanBodyBones.RightHand })
                     {
                         var hand = a.GetBoneTransform(hb).position;
-                        var ahead = Vector3.Dot(hand - hips, fwd);
+                        var ahead = Vector3.Dot(hand - joints, fwd);
+                        var aheadOfBone = Vector3.Dot(hand - hips, fwd);
                         var lower = a.GetBoneTransform(hb == HumanBodyBones.LeftHand ? HumanBodyBones.LeftLowerArm : HumanBodyBones.RightLowerArm).position;
                         var upper = a.GetBoneTransform(hb == HumanBodyBones.LeftHand ? HumanBodyBones.LeftUpperArm : HumanBodyBones.RightUpperArm).position;
                         var elbow = Vector3.Angle(upper - lower, hand - lower);
-                        Debug.Log($"people_motion_frames: {label} {a.name} {hb} {hand.y - hips.y:+0.00;-0.00} m over the hips, {ahead:+0.00;-0.00} m ahead, elbow {elbow:0}°");
+                        Debug.Log($"people_motion_frames: {label} {a.name} {hb} {hand.y - hips.y:+0.00;-0.00} m over the hips, {ahead:+0.000;-0.000} m ahead of the hip joints ({aheadOfBone:+0.000;-0.000} of the Hips bone), elbow {elbow:0}°");
                         if (speed == 0f)
                         {
                             // standing in the common idle (the others fold the arms, put hands on hips): the hand hangs at
@@ -236,8 +241,11 @@ namespace SecondFace.Tests
                 sheet.ReadPixels(new Rect(0, 0, w, h), 0, (poses.Length - 1 - p) * h);
                 RenderTexture.active = active;
             }
-            // the walk round its cycle on the first person: each hand ahead of the hips (they must alternate) and the face's
-            // pitch against the model's own neutral head (up positive)
+            // the walk round its cycle on the first person: each hand ahead of the hip joints (they must alternate) and the
+            // face's pitch against the model's own neutral head (up positive). Each phase is read as the game shows it, after the
+            // frame's LateUpdate, the clip held at its phase (the animator's speed 0): Gaze turns the head at its own joint there
+            // (2026-11-26), not in the animator's IK pass, so a pose read straight after Animator.Update(0) is the bare clip with
+            // no Gaze in it (docs/MOTION_ROOT_CAUSE.md §17)
             var w0 = people[0];
             var still = Made(Object.Instantiate(prefabs[0], new Vector3(-5f, 0, 0), Quaternion.identity)).GetComponent<Animator>();
             var neutral = FacePitch(still);
@@ -245,14 +253,19 @@ namespace SecondFace.Tests
             var phaseLog = new System.Text.StringBuilder($"people_motion_frames: neutral face {neutral:0}°, walk cycle");
             for (var k = 0; k < 8; k++)
             {
-                w0.SetFloat("Speed", walk); w0.Play("Locomotion", 0, k / 8f); w0.Update(0f);
-                var hips = w0.GetBoneTransform(HumanBodyBones.Hips).position;
+                w0.speed = 1f; w0.SetFloat("Speed", walk); w0.Play("Locomotion", 0, k / 8f); w0.Update(0f);
+                w0.speed = 0f;
+                yield return null;
+                var hips = (w0.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position + w0.GetBoneTransform(HumanBodyBones.RightUpperLeg).position) * 0.5f;
                 float Ahead(HumanBodyBones b) => Vector3.Dot(w0.GetBoneTransform(b).position - hips, w0.transform.forward);
-                phaseLog.Append($" | {k / 8f:0.000}: L {Ahead(HumanBodyBones.LeftHand):+0.00;-0.00} R {Ahead(HumanBodyBones.RightHand):+0.00;-0.00} face {Face(w0):+0;-0}°");
+                phaseLog.Append($" | {k / 8f:0.000}: L {Ahead(HumanBodyBones.LeftHand):+0.00;-0.00} R {Ahead(HumanBodyBones.RightHand):+0.00;-0.00} face {Face(w0):+0.0;-0.0}°");
                 if (Mathf.Abs(Face(w0)) > 10f) problems.Add($"walk {k / 8f:0.000}: the face is {Face(w0):0}° off level");
             }
-            w0.SetFloat("Speed", 0f); w0.SetFloat("Idle", 0f); w0.Play("Locomotion", 0, 0.3f); w0.Update(0f);
-            phaseLog.Append($" | idle face {Face(w0):+0;-0}°");
+            w0.speed = 1f; w0.SetFloat("Speed", 0f); w0.SetFloat("Idle", 0f); w0.Play("Locomotion", 0, 0.3f); w0.Update(0f);
+            w0.speed = 0f;
+            yield return null;
+            phaseLog.Append($" | idle face {Face(w0):+0.0;-0.0}°");
+            w0.speed = 1f;
             if (Mathf.Abs(Face(w0)) > 10f) problems.Add($"idle: the face is {Face(w0):0}° off level");
             Debug.Log(phaseLog.ToString());
             sheet.Apply();

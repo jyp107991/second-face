@@ -102,7 +102,7 @@ namespace SecondFace.Tests
                 var layer = f != null && FullL != null ? (int)FullL.GetValue(f) : -1;
                 var trans = layer >= 0 && A.IsInTransition(layer);
                 var tn = trans ? A.GetAnimatorTransitionInfo(layer).normalizedTime : -1f;
-                Out.AppendLine(string.Join(",", P.Person, P.State, Time.frameCount, (dt * 1000f).ToString("0.0"), (l.y - A.transform.position.y).ToString("0.000"), (r.y - A.transform.position.y).ToString("0.000"),
+                Out.AppendLine(string.Join(",", P.Person, P.State, Time.frameCount, Time.time.ToString("0.000"), (dt * 1000f).ToString("0.0"), (l.y - A.transform.position.y).ToString("0.000"), (r.y - A.transform.position.y).ToString("0.000"),
                     vl.ToString("0.0"), vr.ToString("0.0"), f != null ? f.Planted.x.ToString("0") : "", f != null ? f.Planted.y.ToString("0") : "",
                     rec(true), rec(false), f != null && FullS != null ? (string)FullS.GetValue(f) : "", f != null && FullT != null ? ((float)FullT.GetValue(f)).ToString("0.000") : "",
                     f != null && FullW != null ? ((float)FullW.GetValue(f)).ToString("0.000") : "", trans ? "1" : "0", tn.ToString("0.000"),
@@ -163,7 +163,7 @@ namespace SecondFace.Tests
             if (turnOff != null) turnOff.SetValue(null, noTurn);
             if (turnTicks != null) { turnTicks.SetValue(null, 0L); turnCalls.SetValue(null, 0L); }
             Debug.Log($"FIGHT SCREEN config [{label}] rule {(ruleField != null ? ruleField.GetValue(null) : "n/a")} turn {(turnOff == null ? "n/a" : noTurn ? "off" : "on")}");
-            var f4trace = new System.Text.StringBuilder("person,state,frame,dtms,ankLy,ankRy,vL,vR,pinL,pinR,recL,recR,fullState,fullT,fullW,trans,transT,turn,shiftcm,current\n");
+            var f4trace = new System.Text.StringBuilder("person,state,frame,time,dtms,ankLy,ankRy,vL,vR,pinL,pinR,recL,recR,fullState,fullT,fullW,trans,transT,turn,shiftcm,current\n");
             var knees = new System.Text.StringBuilder("person,state,frame,KLr,KRr,A1Lr,A1Rr,A1Lb,A1Rb,A1La,A1Ra,A2Lr,A2Rr,A2Lb,A2Rb,A2La,A2Ra,KLb,KRb,KLa,KRa,hipsYb,hipsYa,ankLb,ankRb,ankLa,ankRa,sink,soleOverL,soleOverR,current\n");
             foreach (var k in want.OrderBy(x => x))
             {
@@ -214,6 +214,9 @@ namespace SecondFace.Tests
                     if (!string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("F4_TRACE")))
                     {
                         var ft = a.gameObject.AddComponent<FTrace>(); ft.A = a; ft.P = probe; ft.Out = f4trace; ft.Only = System.Environment.GetEnvironmentVariable("F4_TRACE");
+                        probe.TracePath = Path.Combine(Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results")), "f4probe_" + batch[i] + ".csv");
+                        File.Delete(probe.TracePath); File.Delete(probe.TracePath.Replace(".csv", "_soles.csv"));
+                        probe.TraceState = System.Environment.GetEnvironmentVariable("F4_TRACE");
                     }
                     if (System.Environment.GetEnvironmentVariable("KNEE_TRACE") == "1")
                     {
