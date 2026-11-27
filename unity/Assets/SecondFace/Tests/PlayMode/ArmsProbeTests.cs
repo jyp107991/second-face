@@ -13,6 +13,7 @@ using SecondFace.Game.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+using UnityEngine.UIElements;
 
 namespace SecondFace.Tests
 {

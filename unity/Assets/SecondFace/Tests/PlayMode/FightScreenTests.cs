@@ -79,6 +79,36 @@ namespace SecondFace.Tests
                     (sink * 100f).ToString("0.00"), f != null ? (f.SoleOver.x * 100f).ToString("0.00") : "", f != null ? (f.SoleOver.y * 100f).ToString("0.00") : "", f != null ? f.Current : ""));
             }
         }
+        [DefaultExecutionOrder(10001)]
+        public sealed class FTrace : MonoBehaviour
+        {
+            public Animator A; public MotionProbe P; public System.Text.StringBuilder Out; public string Only;
+            private static readonly FieldInfo FullW = typeof(Fighter).GetField("_fullW", BindingFlags.NonPublic | BindingFlags.Instance);
+            private static readonly FieldInfo FullS = typeof(Fighter).GetField("_fullState", BindingFlags.NonPublic | BindingFlags.Instance);
+            private static readonly FieldInfo FullT = typeof(Fighter).GetField("_fullT", BindingFlags.NonPublic | BindingFlags.Instance);
+            private static readonly FieldInfo FullL = typeof(Fighter).GetField("_full", BindingFlags.NonPublic | BindingFlags.Instance);
+            private static readonly MethodInfo RecDown = typeof(Fighter).GetMethod("RecordDown", BindingFlags.NonPublic | BindingFlags.Instance);
+            private Vector3 _pl, _pr; private bool _have;
+            private void LateUpdate()
+            {
+                if (A == null || P == null || P.State == null || !P.State.StartsWith(Only)) { _have = false; return; }
+                var f = A.GetComponent<Fighter>();
+                var l = A.GetBoneTransform(HumanBodyBones.LeftFoot).position; var r = A.GetBoneTransform(HumanBodyBones.RightFoot).position;
+                var dt = Time.deltaTime;
+                float V(Vector3 a, Vector3 b) => new Vector2(a.x - b.x, a.z - b.z).magnitude / Mathf.Max(1e-5f, dt) * 100f;
+                var vl = _have ? V(l, _pl) : 0f; var vr = _have ? V(r, _pr) : 0f;
+                _pl = l; _pr = r; _have = true;
+                string rec(bool left) { if (f == null || RecDown == null) return ""; var o = RecDown.Invoke(f, new object[] { left }); return o == null ? "n" : (bool)o ? "1" : "0"; }
+                var layer = f != null && FullL != null ? (int)FullL.GetValue(f) : -1;
+                var trans = layer >= 0 && A.IsInTransition(layer);
+                var tn = trans ? A.GetAnimatorTransitionInfo(layer).normalizedTime : -1f;
+                Out.AppendLine(string.Join(",", P.Person, P.State, Time.frameCount, (dt * 1000f).ToString("0.0"), (l.y - A.transform.position.y).ToString("0.000"), (r.y - A.transform.position.y).ToString("0.000"),
+                    vl.ToString("0.0"), vr.ToString("0.0"), f != null ? f.Planted.x.ToString("0") : "", f != null ? f.Planted.y.ToString("0") : "",
+                    rec(true), rec(false), f != null && FullS != null ? (string)FullS.GetValue(f) : "", f != null && FullT != null ? ((float)FullT.GetValue(f)).ToString("0.000") : "",
+                    f != null && FullW != null ? ((float)FullW.GetValue(f)).ToString("0.000") : "", trans ? "1" : "0", tn.ToString("0.000"),
+                    f != null ? f.TurnAngle.ToString("0.0") : "", f != null ? (f.TurnShift.magnitude * 100f).ToString("0.00") : "", f != null ? f.Current : ""));
+            }
+        }
         private static (float, float, float, float, float) Legs(Animator a)
         {
             float K(HumanBodyBones u, HumanBodyBones l, HumanBodyBones ft) { var U = a.GetBoneTransform(u).position; var L = a.GetBoneTransform(l).position; var F = a.GetBoneTransform(ft).position; return Vector3.Angle(L - U, F - L); }
@@ -133,6 +163,7 @@ namespace SecondFace.Tests
             if (turnOff != null) turnOff.SetValue(null, noTurn);
             if (turnTicks != null) { turnTicks.SetValue(null, 0L); turnCalls.SetValue(null, 0L); }
             Debug.Log($"FIGHT SCREEN config [{label}] rule {(ruleField != null ? ruleField.GetValue(null) : "n/a")} turn {(turnOff == null ? "n/a" : noTurn ? "off" : "on")}");
+            var f4trace = new System.Text.StringBuilder("person,state,frame,dtms,ankLy,ankRy,vL,vR,pinL,pinR,recL,recR,fullState,fullT,fullW,trans,transT,turn,shiftcm,current\n");
             var knees = new System.Text.StringBuilder("person,state,frame,KLr,KRr,A1Lr,A1Rr,A1Lb,A1Rb,A1La,A1Ra,A2Lr,A2Rr,A2Lb,A2Rb,A2La,A2Ra,KLb,KRb,KLa,KRa,hipsYb,hipsYa,ankLb,ankRb,ankLa,ankRa,sink,soleOverL,soleOverR,current\n");
             foreach (var k in want.OrderBy(x => x))
             {
@@ -180,6 +211,10 @@ namespace SecondFace.Tests
                     void F(string n, object v) => subjT.GetField(n, Any).SetValue(s, v);
                     F("Id", batch[i]); F("Go", go); F("A", a); F("Ambient", amb); F("Gaze", a.GetComponent<Gaze>()); F("Probe", probe); F("Mark", mark); F("Home", home);
                     people.Add(s); probes.Add(probe); gos.Add(go); homes.Add(home);
+                    if (!string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("F4_TRACE")))
+                    {
+                        var ft = a.gameObject.AddComponent<FTrace>(); ft.A = a; ft.P = probe; ft.Out = f4trace; ft.Only = System.Environment.GetEnvironmentVariable("F4_TRACE");
+                    }
                     if (System.Environment.GetEnvironmentVariable("KNEE_TRACE") == "1")
                     {
                         var kr = a.gameObject.AddComponent<KRaw>(); kr.A = a;
@@ -250,6 +285,7 @@ namespace SecondFace.Tests
                 var calls = (long)turnCalls.GetValue(null); var ticks = (long)turnTicks.GetValue(null);
                 Debug.Log($"FIGHT SCREEN [{label}] turn cost: {calls} calls, {(calls > 0 ? ticks * 1e6 / System.Diagnostics.Stopwatch.Frequency / calls : 0):0.00} us a call (a person a frame)");
             }
+            if (!string.IsNullOrEmpty(System.Environment.GetEnvironmentVariable("F4_TRACE"))) File.WriteAllText(Path.Combine(dir, "f4_trace" + (label.Length > 0 ? "_" + label : "") + ".csv"), f4trace.ToString());
             if (System.Environment.GetEnvironmentVariable("KNEE_TRACE") == "1") File.WriteAllText(Path.Combine(dir, "knee_trace" + (label.Length > 0 ? "_" + label : "") + ".csv"), knees.ToString());
             knees.Clear(); knees.Append("person,state,frame,KLr,KRr,A1Lr,A1Rr,A1Lb,A1Rb,A1La,A1Ra,A2Lr,A2Rr,A2Lb,A2Rb,A2La,A2Ra,KLb,KRb,KLa,KRa,hipsYb,hipsYa,ankLb,ankRb,ankLa,ankRa,sink,soleOverL,soleOverR,current\n");
             total = 0;
