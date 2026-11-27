@@ -86,8 +86,38 @@ namespace SecondFace.Game.People
         private Vector3 _lastL, _lastR; private bool _haveLast;
         // moving, a foot down on the ground is held where it came down until the clip lifts it (W1: a planted foot
         // does not creep; the clips' strides never quite match the body's pace): its place, and a short release after
-        private struct Lock { public bool On, HaveTurn, NoRelock, HaveP; public Vector3 At, From, Fwd, P0, P1; public Quaternion Rest, Corr; public float Release, Last, Min, W, Drop, Wait; public int Pivot; }
+        private struct Lock { public bool On, HaveTurn, NoRelock; public Vector3 At, From, Fwd; public Quaternion Rest, Corr; public float Release, Last, Min, W, Drop, Wait; public int Pivot; }
         private Lock _lockL, _lockR;
+        // this frame's recorded contact (StepRecord): each foot's down weight, the sum over the base layer's clips (the next
+        // state's too, across a crossfade) of each clip's weight where its actor had that foot down at its phase; and the
+        // weight of the clips that carry a record at all
+        private float _recL, _recR, _recW;
+        private readonly System.Collections.Generic.List<AnimatorClipInfo> _clipInfo = new();
+
+        /// <summary>
+        /// The clips' own record of each foot's contact, weighed as the base layer plays them (docs/MOTION_ROOT_CAUSE.md §17):
+        /// each speed the plant could judge a landing by (the ankle's, the lowest sole point's, the slowest's) runs ahead in some
+        /// kind of landing (a heel strike, a set-down pitching about the ankle), and the take's own touchdown and toe-off are the
+        /// truth. Where the clips that carry a record hold most of the base layer's weight, a moving foot is held while most of
+        /// it has that foot down, and let go when most of it has it up.
+        /// </summary>
+        private void Record()
+        {
+            _recL = _recR = _recW = 0f;
+            var steps = StepRecord.Loaded;
+            if (steps == null || _animator == null || _animator.runtimeAnimatorController == null) return;
+            void Add(AnimatorStateInfo st)
+            {
+                var t = st.loop ? st.normalizedTime - Mathf.Floor(st.normalizedTime) : Mathf.Clamp01(st.normalizedTime);
+                foreach (var ci in _clipInfo)
+                {
+                    if (ci.weight <= 0f || !steps.Down(ci.clip, t, out var l, out var r)) continue;
+                    _recW += ci.weight; if (l) _recL += ci.weight; if (r) _recR += ci.weight;
+                }
+            }
+            _animator.GetCurrentAnimatorClipInfo(0, _clipInfo); Add(_animator.GetCurrentAnimatorStateInfo(0));
+            if (_animator.IsInTransition(0)) { _animator.GetNextAnimatorClipInfo(0, _clipInfo); Add(_animator.GetNextAnimatorStateInfo(0)); }
+        }
         /// <summary>A foot locks when its sole is this near the ground and slower than <see cref="SwingSlow"/>; it lets go
         /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
         /// <see cref="LockRelease"/> s.</summary>
@@ -590,8 +620,12 @@ namespace SecondFace.Game.People
                 }
                 // (the other foot down by the clip's height: by its height as shown, after its swing's clearance, the
                 // sneak's rear foot was let go unlifted and slid, W2 1 → 10, 2026-11-06)
-                wantL = Held(ref _lockL, wantL, dipL, speedL, body, _footL, _toeL, _heelL, _ballL, _tipL, gL, dt, dipR < SwingClear - 0.005f);
-                wantR = Held(ref _lockR, wantR, dipR, speedR, body, _footR, _toeR, _heelR, _ballR, _tipR, gR, dt, dipL < SwingClear - 0.005f);
+                // (by the record where the recorded clips hold the majority of the base layer's weight; elsewhere, as before, by
+                // the ankle's pace)
+                Record();
+                var byRecord = _recW > 0.5f;
+                wantL = Held(ref _lockL, wantL, dipL, speedL, body, _footL, _toeL, _heelL, _ballL, _tipL, gL, dt, dipR < SwingClear - 0.005f, byRecord ? _recL : -1f);
+                wantR = Held(ref _lockR, wantR, dipR, speedR, body, _footR, _toeR, _heelR, _ballR, _tipR, gR, dt, dipL < SwingClear - 0.005f, byRecord ? _recR : -1f);
                 Diag[3] = _lockL.On ? 1f : _lockL.Release > 0f ? 0.5f : 0f; Diag[7] = _lockR.On ? 1f : _lockR.Release > 0f ? 0.5f : 0f;
                 // within the leg's reach, by height alone: an unreachable place (a held foot put down under a straight leg)
                 // was reached toward and slid the foot along the ground (W1, 2026-11-06)
@@ -617,7 +651,7 @@ namespace SecondFace.Game.People
         /// slow for the pace) the point it stands on (the heel, then the ball, then the toe's tip, as a foot rolls) is held
         /// where it touched, the ankle following the clip's roll about it; let go back to the clip's over
         /// <see cref="LockRelease"/> s.</summary>
-        private Vector3 Held(ref Lock k, Vector3 want, float sole, float speed, float body, Transform foot, Transform toe, Vector3 heel, Vector3 ball, Vector3 tip, float ground, float dt, bool otherDown)
+        private Vector3 Held(ref Lock k, Vector3 want, float sole, float speed, float body, Transform foot, Transform toe, Vector3 heel, Vector3 ball, Vector3 tip, float ground, float dt, bool otherDown, float rec = -1f)
         {
             // held, the foot keeps the turn and the roll it came down with, and takes only the clip's pitch about its own
             // side-to-side axis (a foot on the ground neither spins nor rocks sideways on it: the clip turned and rolled the
@@ -642,24 +676,10 @@ namespace SecondFace.Game.People
             // a forefoot comes down on its ball: held on the toe's tip, the foot turned about it and the ball slid (the
             // jog, 0.5 m/s while held, W1/W2, 2026-11-06)
             if (low == 2 && At(1).y - lowY < BallOverTip) low = 1;
-            // how fast the sole moves across the ground where it touches: the slower of its heel and its ball (the same points
-            // of the clip's foot at its wanted place last frame; a foot lands when a sole point is low and slow), and a landing
-            // is judged by it, not by the ankle's pace. At a heel strike the ankle swings on over the heel: a jogging heel 1.3 cm
-            // up at 1.05 m/s read 1.62 m/s at the ankle, was not held, and came down sliding 0.43-0.47 m/s in the frame it
-            // touched (Female_Adult_01's jog, W1, 2026-11-27); by the lower point alone, a walk's set-down pitching about the
-            // ankle (the heel 0.51 m/s, the ball 0.47) was held a frame late. A proxy still: the clip's own recorded contact
-            // is the source fix (docs/MOTION_ROOT_CAUSE.md §17)
-            var contact = speed;
-            if (k.HaveP && dt > 0f)
-            {
-                var h = At(0); var b = At(1);
-                contact = Mathf.Min(new Vector2(h.x - k.P0.x, h.z - k.P0.z).magnitude, new Vector2(b.x - k.P1.x, b.z - k.P1.z).magnitude) / dt;
-            }
-            k.P0 = At(0); k.P1 = At(1); k.HaveP = true;
             var slow = Mathf.Max(SwingSlow, 0.35f * body);
             // down: slow for the pace, or coming down onto the ground (a heel that touched at 0.4-0.7 m/s slid 3-4 frames
             // before it was slow enough to hold, 2026-11-06)
-            var landing = sole < k.Last - 0.001f && contact < SwingFast;
+            var landing = sole < k.Last - 0.001f && speed < SwingFast;
             k.Last = sole;
             // (walking, a foot coming down while the other is in the air waits for it from its first held frame: eased in over
             // 0.06 s, the foot landing as a jog slowed to a stop rose 4.5-5 cm with the clip while held, W6, 2026-11-07)
@@ -672,7 +692,11 @@ namespace SecondFace.Game.People
             // (jogging, by leaving the ground only: the ankle runs ahead fast as the heel rises over the ball, and read as a
             // swing it let the foot lock again mid-roll, W1, 2026-11-07)
             if (sole > LockLift || (speed > slow && body < WalkFlight)) k.NoRelock = false;
-            if (!k.On && k.Release <= 0f && sole < LockDown && (contact < slow || landing) && !(k.NoRelock && body > StandStill)) { k.On = true; k.Pivot = low; k.At = At(low); k.Min = Mathf.Max(0f, sole); k.Wait = !otherDown && body < WalkFlight && body > StandStill ? 1f : 0f; k.W = k.Wait; Hold(ref k, foot, toe); turned = true; }
+            // (by the record, where it holds: down by most of the base layer's weight, and low enough to stand on; the record says
+            // when the foot lifts, so a foot let go of is not kept from holding again by its pace)
+            var recorded = rec >= 0f;
+            var down = recorded ? rec > 0.5f : (speed < slow || landing) && !(k.NoRelock && body > StandStill);
+            if (!k.On && k.Release <= 0f && sole < LockDown && down) { k.On = true; k.Pivot = low; k.At = At(low); k.Min = Mathf.Max(0f, sole); k.Wait = !otherDown && body < WalkFlight && body > StandStill ? 1f : 0f; k.W = k.Wait; Hold(ref k, foot, toe); turned = true; }
             if (k.On)
             {
                 // rolling: the pivot moves to whichever point is now the lower, pinned where it is (forward as a heel-first
@@ -699,7 +723,7 @@ namespace SecondFace.Game.People
                 // (pushing off into a jog's flight, the other foot in the air, let go lower: held to 3 cm, the foot rose slow
                 // and still, the lower of two in the air read as bearing the weight 4-5 cm up, W6, 2026-11-07)
                 var lift = !otherDown && !Walkish(body) ? LockLiftFlight : LockLift;
-                var lifted = sole > lift && k.Wait < 0.05f;
+                var lifted = recorded ? rec < 0.5f : sole > lift && k.Wait < 0.05f;
                 if (lifted || off.magnitude > LockReach)
                 {
                     // lifted into a jog's flight, the foot goes with the clip at once: eased out of the hold it crept along

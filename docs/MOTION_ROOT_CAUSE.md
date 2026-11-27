@@ -959,6 +959,60 @@ Found under three CI regressions of 71ba0e5b (`CapturedMotionHoldsHumanPosesWhen
   walker today: `Walker.Planting(false)` turns the arm clearance off while seated. `SeatedArmsStayOutOfTheBody` (new) found the
   sits' own hands 1.3-8.5 cm into the drawn body (the chair and the ground; the stool 0.0): a pre-existing defect, the fix a seated
   clearance that holds the hands on the lap's surface (`docs/PROGRESS.md`).
+- **W1, Female_Adult_01's jog, and how the foot plant decides a foot has landed.** Her jog's W1 is 24 of 413 weight-bearing
+  samples over 15 cm/s (5.8 %; the limit 5 %). 15 are at the right foot's push-off: the gate's ball (vertex 2868) lies on her
+  flat forefoot's toes' row and sweeps 16-34 cm/s at 1.2-2.4 cm about the metatarsal row the plant holds. That is the open cause
+  of §13-§15, unchanged. 8 are at the right foot's touchdown: the heel 43-47 cm/s at 0.5-0.6 cm and the ball 28-29 at 1.2 cm, one
+  frame a landing. 1 is at the stop. At the touchdown the plant held the foot only in the frame it touched: it judged a landing by
+  the ankle's pace, and at a heel strike the ankle swings on over the heel (the heel 1.3 cm up at 1.05 m/s, the ankle 1.62 m/s,
+  past the jog's 1.12 m/s and SwingFast's 1.5).
+- **Three proxies, measured on the same eleven people** (the quick ten and Medical_Female_01, one batch, every frame traced):
+  the ankle's pace (as before), the lowest sole point's, and the slower of the heel's and the ball's. The lowest point cures the
+  jog's touchdown slide across the pick (walk:jog W1 maxima 43-116 -> 3-26 cm/s; Female_Adult_01 5.8 -> 3.6 %, every other 0.0 %),
+  but holds a walk's first set-down a frame late where the sole pitches about the ankle (the heel 0.51 m/s, the ball 0.47, the
+  ankle slower: 45 cm/s the frame after, in Female_Adult_01's, _09's and Medical_Female_01's walk) and the stop's last set-down
+  (the sole points 0.65 m/s about a still ankle: 18-24 cm/s), with knock-on cells after both (Male_Adult_03's bend:jog W1 0.0 ->
+  0.8 %, max 52; Male_Adult_08's and _03's bend:walk W6 max 1.07 -> 3.04): every one passing. The slower of heel and ball holds the
+  first set-down in time, but takes a walking foot again at its first toe-off (Construction_Male_03, Male_Adult_03, _08 at the
+  start of the player's walk: let go by its reach two frames before while still under 2.5 cm, the heel rising 3 -> 5 cm, the heel
+  the slow point at 0.44 m/s: held five frames, the ball 74 cm/s): a latent fault of the hold, not of the proxy (a walking foot
+  let go by its reach while still low may lock again once LockRelease has run out; NoRelock covers only a foot let go in a jog),
+  a next-batch item.
+- **Against the clips' own record** (independent of the gate, which shares a proxy's definition of contact): every lock onset
+  against the recorded touchdown of the clip the base layer plays (each sidecar's `plant.stances`, by the dominant clip's phase
+  as played, frame by frame), the share within ±1 frame:
+
+  | state | the ankle | the lowest point | the slower of heel and ball |
+  |---|---|---|---|
+  | walk:jog | 219/226 (96.9 %) | 206/225 (91.6 %) | 206/225 (91.6 %) |
+  | bend:jog | 195/195 (100 %) | 191/197 (97.0 %) | 191/197 (97.0 %) |
+  | walk:sneak | 132/143 (92.3 %) | 132/143 (92.3 %) | 132/143 (92.3 %) |
+  | walk:walk | 106/138 (76.8 %) | 93/138 (67.4 %) | 109/138 (79.0 %) |
+  | walk:walk_player | 122/148 (82.4 %) | 116/148 (78.4 %) | 116/148 (78.4 %) |
+  | bend:walk | 83/124 (66.9 %) | 80/124 (64.5 %) | 80/124 (64.5 %) |
+  | all | 857/974 (88 %) | 818/975 (84 %) | 834/975 (86 %) |
+
+  The medians are 0. The two sole proxies cure the jog's skate by holding the foot up to two frames before the actor's recorded
+  touchdown (Female_Adult_09's right foot -1/-2 frames; the ankle 0/+1): the gate's cure is partly self-confirming. About 70 onsets
+  match no record: the walk's starts and stops, blended from the idle, where cases 1 and 2 and the relock fall.
+- **Rejected: the lowest point's speed.** It cures the jog's W1 on the gate by holding the foot up to two frames before the
+  actor's recorded touchdown, not by matching the contact: a gate passed by locking early. Neither speed proxy is right.
+- **The root cause, and the fix built at its source.** The plant inferred contact from one point's speed in a single frame, and
+  every proxy (the ankle, the lowest sole point, the slowest) runs ahead in some kind of landing. Now the clips' own record holds
+  the foot: each locomotion clip's recorded stances (its sidecar's `plant.stances`: the take's touchdown to toe-off) are built with
+  the people's controller into `StepRecord` (`LocomotionBuild.Steps`, stamped, `TheStepsAreBuiltFromTheClipsOwnRecords`) as spans
+  of the clip's normalized time, the form of the fight's `ClipFacts.DownL/DownR`. Each frame a foot's down weight is the sum, over
+  the base layer's clips (the next state's too, across a crossfade), of each clip's weight where its actor had that foot down at
+  its phase. Where the recorded clips hold most of the base layer's weight, a moving foot is held when most of the weight has it
+  down (and it stands within LockDown of the ground: a foot recorded down but drawn high is never pinned in the air) and let go
+  when most has it up; the record says when the foot lifts, so NoRelock and the lift test have no part there. Elsewhere (the idles
+  and gestures carry no record; the walk's starts and stops blended from the idle) the ankle test stands as before. No threshold
+  was added: one half is a majority. RECORD_RESULT
+- **W6, Medical_Female_01's jog stop, and the walk's starts and stops.** One frame: the landing right foot 4.4 cm up, 0.47 m/s
+  across the ground, rising 0.18 m/s, both feet up, the body at 2.3 m/s (its p98 1.3 passes): the catch (the hips set down onto a
+  slow lower foot, both feet up) is gated by the plant's smoothed pace, which lags the stop's deceleration, and did not fire. The
+  stop's blend from the jog lands the foot slow and 4 cm up: the same kind of event as the walk's start and stop blends, where no
+  clip's record applies. Open, the next batch (`docs/PROGRESS.md`).
 - **The configured trunks, for the next batch's trunk convention item** (each model's configured T-pose, in its importer: each trunk
   segment's angle from the vertical, + forward; Hips-Spine is the rig's own offset between its hips and spine bones, near ±80-90°
   where the two stand level, one behind or ahead of the other, not a bend). The everyday clips and the bodies:

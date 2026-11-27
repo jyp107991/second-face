@@ -195,6 +195,7 @@ namespace SecondFace.EditorTools
             }
             EditorUtility.SetDirty(ctl);
             AssetDatabase.SaveAssets();
+            Steps(ctl);
             return ctl;
         }
 
@@ -234,6 +235,92 @@ namespace SecondFace.EditorTools
             AssetDatabase.SaveAssets();
             Debug.Log($"LocomotionBuild: {n} of the sits tagged \"{SitTag}\"");
         }
+
+        // ------------------------------------------------------------------------------------------- the clips' record of contact
+
+        public const string StepsPath = "Assets/SecondFace/Game/Resources/StepRecord.asset";
+        /// <summary>The record's build (its version is in <see cref="StepStamp"/>).</summary>
+        public const int StepsBake = 1;
+
+        /// <summary>Every clip the base layer plays (its states' motions, through their blend trees), by file, in order.</summary>
+        public static System.Collections.Generic.List<AnimationClip> BaseClips(AnimatorController ctl)
+        {
+            var seen = new System.Collections.Generic.HashSet<AnimationClip>();
+            void Motion(Motion m)
+            {
+                if (m is AnimationClip c) seen.Add(c);
+                else if (m is BlendTree t) foreach (var ch in t.children) Motion(ch.motion);
+            }
+            void Walk(AnimatorStateMachine sm)
+            {
+                foreach (var s in sm.states) Motion(s.state.motion);
+                foreach (var c in sm.stateMachines) Walk(c.stateMachine);
+            }
+            if (ctl != null && ctl.layers.Length > 0) Walk(ctl.layers[0].stateMachine);
+            return seen.Where(c => AssetDatabase.GetAssetPath(c).StartsWith("Assets/SecondFace/Motion/")).OrderBy(c => AssetDatabase.GetAssetPath(c), System.StringComparer.Ordinal).ToList();
+        }
+
+        /// <summary>What the record is built from: its version, each clip's sidecar, model and import settings, as committed.</summary>
+        public static string StepStamp(System.Collections.Generic.IEnumerable<AnimationClip> clips)
+        {
+            ulong h = 14695981039346656037UL;
+            void Add(byte b) { h ^= b; h *= 1099511628211UL; }
+            void Text(string s) { foreach (var b in System.Text.Encoding.UTF8.GetBytes(s)) Add(b); }
+            Text($"steps v{StepsBake};");
+            foreach (var c in clips)
+            {
+                var path = AssetDatabase.GetAssetPath(c);
+                Text(path + ":");
+                foreach (var file in new[] { Path.ChangeExtension(path, ".json"), path + ".meta" })
+                    if (File.Exists(file)) foreach (var b in File.ReadAllBytes(file)) if (b != (byte)'\r') Add(b);
+                Text(";");
+            }
+            return h.ToString("x16", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>One clip's record of contact from its sidecar (null: none): each stance's touchdown to toe-off, the take's
+        /// frames at its rate, as the clip's normalized time.</summary>
+        public static SecondFace.Game.People.StepRecord.Clip StepsOf(AnimationClip c)
+        {
+            var path = AssetDatabase.GetAssetPath(c);
+            var json = Path.ChangeExtension(path, ".json");
+            if (!File.Exists(json) || c.length <= 0f) return null;
+            var j = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(json));
+            var st = j["plant"]?["stances"] as Newtonsoft.Json.Linq.JObject;
+            if (st == null) return null;
+            var fps = j["fps"] != null ? (float)j["fps"] : 30f;
+            float[] Spans(string side)
+            {
+                var l = new System.Collections.Generic.List<float>();
+                if (st[side] is Newtonsoft.Json.Linq.JArray a)
+                    foreach (var s in a)
+                    {
+                        float N(float frame) { var t = frame / fps / c.length; return t - Mathf.Floor(t); }
+                        l.Add(N((float)s["touchdown"])); l.Add(N((float)s["toe_off"]));
+                    }
+                return l.ToArray();
+            }
+            var r = new SecondFace.Game.People.StepRecord.Clip { Name = Path.GetFileNameWithoutExtension(path), Motion = c, Length = c.length, DownL = Spans("Left"), DownR = Spans("Right") };
+            return r.DownL.Length + r.DownR.Length > 0 ? r : null;
+        }
+
+        /// <summary>Builds the record (<see cref="StepsPath"/>) from the controller's base layer's clips; returns it.</summary>
+        public static SecondFace.Game.People.StepRecord Steps(AnimatorController ctl)
+        {
+            var rec = AssetDatabase.LoadAssetAtPath<SecondFace.Game.People.StepRecord>(StepsPath);
+            var fresh = rec == null;
+            if (fresh) rec = ScriptableObject.CreateInstance<SecondFace.Game.People.StepRecord>();
+            var clips = BaseClips(ctl);
+            rec.Clips = clips.Select(StepsOf).Where(x => x != null).ToArray();
+            rec.Stamp = StepStamp(clips);
+            if (fresh) AssetDatabase.CreateAsset(rec, StepsPath); else EditorUtility.SetDirty(rec);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"LocomotionBuild: the record of contact for {rec.Clips.Length} of the base layer's {clips.Count} clips ({string.Join(", ", rec.Clips.Select(x => x.Name))}); stamp {rec.Stamp}");
+            return rec;
+        }
+
+        /// <summary>For the command line: the record of contact built again from the committed controller.</summary>
+        public static void RefreshSteps() => Steps(AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath));
 
         /// <summary>A clip's ground speed from its sidecar (tools/unity/motion/cmu2fbx.py), m/s.</summary>
         private static float Speed(string name)
