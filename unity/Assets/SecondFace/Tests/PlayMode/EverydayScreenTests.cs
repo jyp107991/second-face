@@ -156,6 +156,8 @@ namespace SecondFace.Tests
                 {
                     if (p.Person == null || p.GetComponent<PhaseRec>() != null || !Who.Contains(p.Person)) continue;
                     var r = p.gameObject.AddComponent<PhaseRec>(); r.Probe = p;
+                    var sp = p.gameObject.AddComponent<SoleProbe>(); sp.Probe = p;
+                    p.gameObject.AddComponent<SolePre>().P = sp; p.gameObject.AddComponent<SoleMid>().P = sp;
                 }
             }
         }
@@ -195,6 +197,336 @@ namespace SecondFace.Tests
                 _w.WriteLine($"{Probe.State},{Time.time:0.000},{st.normalizedTime:0.0000},{(tr ? _a.GetAnimatorTransitionInfo(0).normalizedTime : -1f):0.000},{(tr ? nx.normalizedTime : -1f):0.0000},{sb}");
             }
             private void OnDestroy() { _w?.Flush(); _w?.Close(); _w = null; }
+        }
+
+        // TEMP (1127f): the foot plant's sole model against the mesh as drawn, frame by frame, for each traced person in the
+        // walks: each sole term (heel, back, ball, tip and the hull's lowest) where the plant evaluates them (the clip's pose, the
+        // hips' sink and the toes' straightening put back on: the pose of FootPlant.SoleOver, checked against its own Diag dip),
+        // which is the lowest, the hull's lowest point's source (renderer, vertex, dominant bone and weight, found on the pose the
+        // hull was made on) and where that vertex really is; the mesh's own lowest foot-skinned vertex (more than half its weight
+        // on the foot and toe bones) on the same pose; then the same on the pose as drawn (after every runtime system), with the
+        // gate's own foot part and its heel and ball points. Writes test-results/sole_<person>.csv and sole_<person>.txt.
+        [DefaultExecutionOrder(-25)]
+        public sealed class SolePre : MonoBehaviour { public SoleProbe P; private void LateUpdate() { if (P != null) P.Pre(); } }
+
+        [DefaultExecutionOrder(-19)]
+        public sealed class SoleMid : MonoBehaviour { public SoleProbe P; private void LateUpdate() { if (P != null) P.Mid(); } }
+
+        [DefaultExecutionOrder(10007)]
+        public sealed class SoleProbe : MonoBehaviour
+        {
+            public MotionProbe Probe;
+            private const BindingFlags NP = BindingFlags.NonPublic | BindingFlags.Instance;
+            private FootPlant _fp; private Transform _hips;
+            private readonly Transform[] _foot = new Transform[2], _toe = new Transform[2];
+            private readonly Vector3[] _heel = new Vector3[2], _back = new Vector3[2], _ball = new Vector3[2], _tip = new Vector3[2];
+            private readonly Vector3[][] _hf = new Vector3[2][], _ht = new Vector3[2][];
+            private readonly Quaternion[] _toeRest = new Quaternion[2];
+            private MethodInfo _soleOver, _groundAt; private FieldInfo _plantF, _clockF;
+            private SkinnedMeshRenderer[] _rs; private Mesh _baked; private int _body = -1;
+            private int[][] _off; private BoneWeight1[][] _bw;
+            private int[][][] _footVerts;                  // [renderer][side]: vertices with more than half their weight on that foot and its toes
+            private readonly (int r, int v, float d)[][] _src = new (int r, int v, float d)[2][];      // [side][hull index: the foot frame's points, then the toes']: the source vertex
+            private Transform[] _all; private Vector3[] _p1, _p2, _s1, _s2; private Quaternion[] _q1, _q2;
+            private bool _init, _snap, _bad;
+            private StreamWriter _w;
+            private readonly Matrix4x4[] _footRestM = new Matrix4x4[2];
+            private readonly Vector3[] _ankleRest = new Vector3[2], _fwdRest = new Vector3[2];
+            private string _midRow = "";
+            private byte[] _seg; private int[] _solePoint; private SkinnedMeshRenderer _gateSmr;
+            private static readonly string[] Sides = { "L", "R" };
+
+            private object F(string n) => typeof(FootPlant).GetField(n, NP)?.GetValue(_fp);
+            private static string PathOf(Transform root, Transform t)
+            {
+                var parts = new List<string>();
+                for (var x = t; x != null && x != root; x = x.parent) parts.Add(x.name);
+                parts.Reverse(); return string.Join("/", parts);
+            }
+            private static bool Walks(string s) => s != null && (s.Contains("walk") || s.Contains("jog") || s.Contains("sneak"));
+            private float Ground(Vector3 p)
+            {
+                var args = new object[] { p, null };
+                return (float)_groundAt.Invoke(_fp, args);
+            }
+            private float Along(int s, Vector3 local) => Vector3.Dot(_footRestM[s].MultiplyPoint3x4(local) - _ankleRest[s], _fwdRest[s]);
+
+            private Vector3[] BakeWorld(SkinnedMeshRenderer r, bool fullTransform)
+            {
+                r.BakeMesh(_baked, true);
+                var v = _baked.vertices; var tr = r.transform;
+                var m = fullTransform ? tr.localToWorldMatrix : Matrix4x4.TRS(tr.position, tr.rotation, Vector3.one);
+                for (var i = 0; i < v.Length; i++) v[i] = m.MultiplyPoint3x4(v[i]);
+                return v;
+            }
+
+            private void Init()
+            {
+                _init = true;
+                var dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results"));
+                var info = new System.Text.StringBuilder();
+                try
+                {
+                    _fp = GetComponent<FootPlant>();
+                    _foot[0] = (Transform)F("_footL"); _toe[0] = (Transform)F("_toeL"); _foot[1] = (Transform)F("_footR"); _toe[1] = (Transform)F("_toeR");
+                    _heel[0] = (Vector3)F("_heelL"); _back[0] = (Vector3)F("_backL"); _ball[0] = (Vector3)F("_ballL"); _tip[0] = (Vector3)F("_tipL");
+                    _heel[1] = (Vector3)F("_heelR"); _back[1] = (Vector3)F("_backR"); _ball[1] = (Vector3)F("_ballR"); _tip[1] = (Vector3)F("_tipR");
+                    _hf[0] = (Vector3[])F("_hullFL"); _ht[0] = (Vector3[])F("_hullTL"); _hf[1] = (Vector3[])F("_hullFR"); _ht[1] = (Vector3[])F("_hullTR");
+                    _toeRest[0] = (Quaternion)F("_toeRestL"); _toeRest[1] = (Quaternion)F("_toeRestR");
+                    _hips = (Transform)F("_hips");
+                    _soleOver = typeof(FootPlant).GetMethod("SoleOver", NP); _groundAt = typeof(FootPlant).GetMethod("GroundAt", NP);
+                    _plantF = typeof(FootPlant).GetField("_plant", NP); _clockF = typeof(MotionProbe).GetField("_clock", NP);
+                    _seg = (byte[])typeof(MotionProbe).GetField("_seg", NP).GetValue(Probe);
+                    _solePoint = (int[])typeof(MotionProbe).GetField("_solePoint", NP).GetValue(Probe);
+                    _gateSmr = (SkinnedMeshRenderer)typeof(MotionProbe).GetField("_smr", NP).GetValue(Probe);
+                    _baked = new Mesh();
+                    _rs = _fp.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => r.sharedMesh != null).ToArray();
+                    _body = System.Array.IndexOf(_rs, _gateSmr);
+                    _all = _fp.GetComponentsInChildren<Transform>(true);
+                    var n = _all.Length;
+                    _p1 = new Vector3[n]; _p2 = new Vector3[n]; _s1 = new Vector3[n]; _s2 = new Vector3[n]; _q1 = new Quaternion[n]; _q2 = new Quaternion[n];
+                    // each renderer's skin weights, and its vertices skinned mostly to each foot
+                    _off = new int[_rs.Length][]; _bw = new BoneWeight1[_rs.Length][]; _footVerts = new int[_rs.Length][][];
+                    for (var ri = 0; ri < _rs.Length; ri++)
+                    {
+                        var r = _rs[ri]; var m = r.sharedMesh; var bones = r.bones;
+                        _footVerts[ri] = new[] { new int[0], new int[0] };
+                        try
+                        {
+                            var bpv = m.GetBonesPerVertex(); var bw = m.GetAllBoneWeights();
+                            var off = new int[bpv.Length + 1];
+                            for (var i = 0; i < bpv.Length; i++) off[i + 1] = off[i] + bpv[i];
+                            _off[ri] = off; _bw[ri] = bw.ToArray();
+                            var lists = new[] { new List<int>(), new List<int>() };
+                            for (var v = 0; v < bpv.Length; v++)
+                                for (var s = 0; s < 2; s++)
+                                {
+                                    var share = 0f;
+                                    for (var j = off[v]; j < off[v + 1]; j++)
+                                    {
+                                        var b = _bw[ri][j].boneIndex < bones.Length ? bones[_bw[ri][j].boneIndex] : null;
+                                        if (b != null && (b == _foot[s] || (_toe[s] != null && b == _toe[s]))) share += _bw[ri][j].weight;
+                                    }
+                                    if (share > 0.5f) lists[s].Add(v);
+                                }
+                            _footVerts[ri] = new[] { lists[0].ToArray(), lists[1].ToArray() };
+                        }
+                        catch (System.Exception e) { info.AppendLine($"renderer {r.name}: no skin weights read: {e.Message}"); }
+                        info.AppendLine($"renderer {ri} {r.name} active={r.gameObject.activeInHierarchy} enabled={r.enabled} verts={m.vertexCount} lossyScale={r.transform.lossyScale.x:0.0000},{r.transform.lossyScale.y:0.0000},{r.transform.lossyScale.z:0.0000} footVertsL={_footVerts[ri][0].Length} footVertsR={_footVerts[ri][1].Length}{(ri == _body ? " (the gate's body)" : "")}");
+                    }
+                    Provenance(info);
+                }
+                catch (System.Exception e) { _bad = true; info.AppendLine("INIT FAILED: " + e); }
+                File.WriteAllText(Path.Combine(dir, $"sole_{Probe.Person}.txt"), info.ToString());
+                if (_bad) return;
+                _w = new StreamWriter(Path.Combine(dir, $"sole_{Probe.Person}.csv")) { AutoFlush = false };
+                var head = new System.Text.StringBuilder("frame,t,clock,state,moving,sink");
+                foreach (var pre in new[] { "M", "D" })
+                    foreach (var s in Sides)
+                    {
+                        head.Append($",{pre}{s}_heel,{pre}{s}_back,{pre}{s}_ball,{pre}{s}_tip,{pre}{s}_hull,{pre}{s}_arg,{pre}{s}_hi,{pre}{s}_hsrc,{pre}{s}_mesh,{pre}{s}_meshr,{pre}{s}_mesha,{pre}{s}_body,{pre}{s}_bodya");
+                        if (pre == "M") head.Append($",{pre}{s}_chk,{pre}{s}_dip");
+                        else head.Append($",{pre}{s}_seg,{pre}{s}_gheel,{pre}{s}_gball,{pre}{s}_lock");
+                    }
+                _w.WriteLine(head.ToString());
+            }
+
+            // the hull's points' sources: on the pose the hull was made on (the person's prefab, as at FootPlant.Awake), each stored
+            // point is one baked vertex of one renderer, in its foot's (or toes') frame
+            private void Provenance(System.Text.StringBuilder info)
+            {
+#if UNITY_EDITOR
+                var root = transform; while (root.parent != null && !root.name.StartsWith("gate_")) root = root.parent;
+                var id = Probe.Person.Replace(" (player)", "");
+                var cat = AssetDatabase.LoadAssetAtPath<RocketboxCatalog>("Assets/SecondFace/People/Rocketbox/RocketboxCatalog.asset");
+                var prefab = cat.Get(id);
+                var map = new Dictionary<string, Transform>(); var dup = 0;
+                foreach (var t in prefab.GetComponentsInChildren<Transform>(true)) if (!map.TryAdd(PathOf(prefab.transform, t), t)) dup++;
+                var inst = root.GetComponentsInChildren<Transform>(true);
+                var lp = inst.Select(t => t.localPosition).ToArray(); var lq = inst.Select(t => t.localRotation).ToArray(); var ls = inst.Select(t => t.localScale).ToArray();
+                var set = 0;
+                for (var i = 0; i < inst.Length; i++)
+                {
+                    if (inst[i] == root || !map.TryGetValue(PathOf(root, inst[i]), out var pt)) continue;
+                    inst[i].localPosition = pt.localPosition; inst[i].localRotation = pt.localRotation; inst[i].localScale = pt.localScale; set++;
+                }
+                info.AppendLine($"provenance pose: {set} of {inst.Length} transforms set from the prefab {prefab.name} ({dup} duplicate paths)");
+                try
+                {
+                    var verts = _rs.Select(r => BakeWorld(r, true)).ToArray();   // (as FootPlant.Hull bakes: TransformPoint)
+                    for (var s = 0; s < 2; s++)
+                    {
+                        _footRestM[s] = _foot[s].localToWorldMatrix;
+                        var a = _foot[s].position; var d = (_toe[s] != null ? _toe[s].position : a + transform.forward * 0.12f) - a; d.y = 0f;
+                        _ankleRest[s] = a; _fwdRest[s] = d.normalized;
+                        var toesAlong = Vector3.Dot((_toe[s] != null ? _toe[s].position : a + d) - a, _fwdRest[s]);
+                        var low = verts.SelectMany((vv, ri) => _footVerts[ri][s].Select(ix => vv[ix].y)).DefaultIfEmpty(float.NaN).Min();
+                        string P(Vector3 local, bool toes)
+                        {
+                            var w = toes && _toe[s] != null ? _toe[s].TransformPoint(local) : _foot[s].TransformPoint(local);
+                            return $"along {Vector3.Dot(w - a, _fwdRest[s]) * 100f:0.0} cm, {(w.y - low) * 100f:0.00} cm over the foot-skinned lowest";
+                        }
+                        info.AppendLine($"foot {Sides[s]}: toe joint along {toesAlong * 100f:0.0} cm; ankle {(a.y - low) * 100f:0.0} cm over the foot-skinned lowest; plant heel {P(_heel[s], false)}; back {P(_back[s], false)}; ball {P(_ball[s], false)}; tip {P(_tip[s], true)}");
+                        if (_gateSmr != null && _solePoint != null)
+                        {
+                            var gv = BakeWorld(_gateSmr, false);
+                            for (var q = 0; q < 2; q++)
+                            {
+                                var j = _solePoint[s * 2 + q];
+                                if (j >= 0) info.AppendLine($"  gate {(q == 0 ? "heel" : "ball")} vertex {j}: along {Vector3.Dot(gv[j] - a, _fwdRest[s]) * 100f:0.0} cm, {(gv[j].y - low) * 100f:0.00} cm over the foot-skinned lowest");
+                            }
+                        }
+                        var n = _hf[s].Length + _ht[s].Length;
+                        _src[s] = new (int, int, float)[n];
+                        for (var k = 0; k < n; k++)
+                        {
+                            var toes = k >= _hf[s].Length;
+                            var local = toes ? _ht[s][k - _hf[s].Length] : _hf[s][k];
+                            var w = toes ? _toe[s].TransformPoint(local) : _foot[s].TransformPoint(local);
+                            var best = (r: -1, v: -1, d: float.MaxValue);
+                            for (var ri = 0; ri < verts.Length; ri++)
+                                for (var v = 0; v < verts[ri].Length; v++)
+                                {
+                                    var dd = (verts[ri][v] - w).sqrMagnitude;
+                                    if (dd < best.d) best = (ri, v, dd);
+                                }
+                            best.d = Mathf.Sqrt(best.d);
+                            _src[s][k] = best;
+                            var (bone, bw, share) = Dominant(best.r, best.v, s);
+                            info.AppendLine($"  hull {Sides[s]} {k} {(toes ? "toes" : "foot")}: {P(local, toes)}, below the ankle {(a.y - w.y) * 100f:0.0} cm; source {(best.r >= 0 ? _rs[best.r].name : "-")} vertex {best.v} at {best.d * 1000f:0.000} mm; dominant bone {bone} {bw:0.000}; this foot+toes share {share:0.000}");
+                        }
+                    }
+                }
+                finally
+                {
+                    for (var i = 0; i < inst.Length; i++) { inst[i].localPosition = lp[i]; inst[i].localRotation = lq[i]; inst[i].localScale = ls[i]; }
+                }
+#endif
+            }
+
+            private (string bone, float w, float share) Dominant(int ri, int v, int side)
+            {
+                if (ri < 0 || _off[ri] == null || v < 0 || v + 1 >= _off[ri].Length) return ("-", 0f, 0f);
+                var bones = _rs[ri].bones; var best = -1; var bw = 0f; var share = 0f;
+                for (var j = _off[ri][v]; j < _off[ri][v + 1]; j++)
+                {
+                    var e = _bw[ri][j];
+                    if (e.weight > bw) { bw = e.weight; best = e.boneIndex; }
+                    var b = e.boneIndex < bones.Length ? bones[e.boneIndex] : null;
+                    if (b != null && (b == _foot[side] || (_toe[side] != null && b == _toe[side]))) share += e.weight;
+                }
+                return (best >= 0 && best < bones.Length && bones[best] != null ? bones[best].name : "-", bw, share);
+            }
+
+            public void Pre()
+            {
+                if (!_init) Init();
+                _snap = false;
+                if (_bad || Probe == null || !Walks(Probe.State)) return;
+                for (var i = 0; i < _all.Length; i++) { _p1[i] = _all[i].localPosition; _q1[i] = _all[i].localRotation; _s1[i] = _all[i].localScale; }
+                _snap = true;
+            }
+
+            // the sole terms on a pose: over the ground under the ankle; the lowest of them; the hull's lowest point and its index
+            private string Terms(int s, float g, out float min, out int hi, out string arg)
+            {
+                var foot = _foot[s]; var toe = _toe[s] != null ? _toe[s] : _foot[s];
+                var h = foot.TransformPoint(_heel[s]).y - g; var k = foot.TransformPoint(_back[s]).y - g;
+                var b = foot.TransformPoint(_ball[s]).y - g; var t = toe.TransformPoint(_tip[s]).y - g;
+                var u = float.MaxValue; hi = -1;
+                for (var i = 0; i < _hf[s].Length; i++) { var y = foot.TransformPoint(_hf[s][i]).y; if (y < u) { u = y; hi = i; } }
+                if (_toe[s] != null) for (var i = 0; i < _ht[s].Length; i++) { var y = _toe[s].TransformPoint(_ht[s][i]).y; if (y < u) { u = y; hi = _hf[s].Length + i; } }
+                u -= g;
+                min = h; arg = "heel";
+                if (k < min) { min = k; arg = "back"; }
+                if (b < min) { min = b; arg = "ball"; }
+                if (t < min) { min = t; arg = "tip"; }
+                if (u < min) { min = u; arg = "hull"; }
+                return $"{h:0.0000},{k:0.0000},{b:0.0000},{t:0.0000},{(hi >= 0 ? u.ToString("0.0000") : "")},{arg},{hi}";
+            }
+
+            // the mesh on the pose now: each side's lowest foot-skinned vertex (any renderer; the body alone), its renderer and
+            // how far along the foot it is; and where the hull's lowest point's source vertex is
+            private string MeshLow(int s, float g, Vector3[][] verts, int hi)
+            {
+                var best = float.MaxValue; var br = -1; var bv = -1; var body = float.MaxValue; var bodyV = -1;
+                for (var ri = 0; ri < verts.Length; ri++)
+                    foreach (var v in _footVerts[ri][s])
+                    {
+                        var y = verts[ri][v].y;
+                        if (y < best) { best = y; br = ri; bv = v; }
+                        if (ri == _body && y < body) { body = y; bodyV = v; }
+                    }
+                var src = hi >= 0 ? _src[s][hi] : (r: -1, v: -1, d: 0f);
+                var hsrc = src.r >= 0 ? (verts[src.r][src.v].y - g).ToString("0.0000") : "";
+                string A(int ri, int v) => ri >= 0 && v >= 0 ? (Along(s, _foot[s].InverseTransformPoint(verts[ri][v])) * 100f).ToString("0.0") : "";
+                return $"{hsrc},{(br >= 0 ? (best - g).ToString("0.0000") : "")},{br},{A(br, bv)},{(bodyV >= 0 ? (body - g).ToString("0.0000") : "")},{A(_body, bodyV)}";
+            }
+
+            public void Mid()
+            {
+                _midRow = "";
+                if (!_snap || _bad) return;
+                var moving = _fp.enabled && (float)_plantF.GetValue(_fp) <= 0f;
+                if (!moving) return;
+                for (var i = 0; i < _all.Length; i++) { _p2[i] = _all[i].localPosition; _q2[i] = _all[i].localRotation; _s2[i] = _all[i].localScale; }
+                try
+                {
+                    // the pose FootPlant.SoleOver saw: the clip's, the hips sunk, each toe straightened toward flat
+                    for (var i = 0; i < _all.Length; i++) { _all[i].localPosition = _p1[i]; _all[i].localRotation = _q1[i]; _all[i].localScale = _s1[i]; }
+                    _hips.position += Vector3.up * _fp.Diag[8];
+                    for (var s = 0; s < 2; s++)
+                    {
+                        var e = _fp.Diag[10 + s];
+                        var w = Mathf.Clamp01((_fp.PitchLow.y - e) / (_fp.PitchLow.y - _fp.PitchLow.x));
+                        if (w > 0f && _toe[s] != null) _toe[s].localRotation = Quaternion.Slerp(_toe[s].localRotation, _toeRest[s], w);
+                    }
+                    var verts = _rs.Select(r => BakeWorld(r, false)).ToArray();
+                    var sb = new System.Text.StringBuilder();
+                    for (var s = 0; s < 2; s++)
+                    {
+                        var g = Ground(_foot[s].position);
+                        var off = Mathf.Clamp(g - _fp.transform.position.y, -_fp.Reach, _fp.Reach);
+                        var terms = Terms(s, g, out var min, out var hi, out _);
+                        var sole = (float)_soleOver.Invoke(_fp, new object[] { _foot[s], _toe[s], _heel[s], _back[s], _ball[s], _tip[s], g });
+                        var dip = _fp.Diag[s == 0 ? 0 : 4];
+                        sb.Append($",{terms},{MeshLow(s, g, verts, hi)},{(sole + off - dip) * 1000f:0.000},{dip:0.0000}");
+                    }
+                    _midRow = sb.ToString();
+                }
+                catch (System.Exception ex) { Debug.LogWarning("SoleProbe.Mid: " + ex.Message); }
+                finally
+                {
+                    for (var i = 0; i < _all.Length; i++) { _all[i].localPosition = _p2[i]; _all[i].localRotation = _q2[i]; _all[i].localScale = _s2[i]; }
+                }
+            }
+
+            private void LateUpdate()
+            {
+                if (!_snap || _bad || _w == null) return;
+                try
+                {
+                    var verts = _rs.Select(r => BakeWorld(r, false)).ToArray();
+                    var gv = _body >= 0 ? verts[_body] : null;
+                    var sb = new System.Text.StringBuilder();
+                    for (var s = 0; s < 2; s++)
+                    {
+                        var g = Ground(_foot[s].position);
+                        var terms = Terms(s, g, out _, out var hi, out _);
+                        var seg = float.MaxValue;
+                        if (gv != null && _seg != null && _seg.Length == gv.Length)
+                            for (var i = 0; i < gv.Length; i++) if (_seg[i] == (byte)(13 + s) && gv[i].y < seg) seg = gv[i].y;
+                        string GP(int q) { var j = _solePoint != null ? _solePoint[s * 2 + q] : -1; return gv != null && j >= 0 && j < gv.Length ? (gv[j].y - g).ToString("0.0000") : ""; }
+                        sb.Append($",{terms},{MeshLow(s, g, verts, hi)},{(seg < float.MaxValue ? (seg - g).ToString("0.0000") : "")},{GP(0)},{GP(1)},{_fp.Diag[s == 0 ? 3 : 7]:0.0}");
+                    }
+                    var mid = _midRow.Length > 0 ? _midRow : string.Concat(Enumerable.Repeat(",,,,,,,,,,,,,,,", 2));
+                    var clock = _clockF != null ? (float)_clockF.GetValue(Probe) : 0f;
+                    _w.WriteLine($"{Time.frameCount},{Time.time:0.000},{clock:0.000},{Probe.State},{(_midRow.Length > 0 ? 1 : 0)},{_fp.Diag[8]:0.0000}{mid}{sb}");
+                }
+                catch (System.Exception ex) { Debug.LogWarning("SoleProbe.LateUpdate: " + ex.Message); }
+            }
+
+            private void OnDestroy() { _w?.Flush(); _w?.Close(); _w = null; if (_baked != null) Destroy(_baked); }
         }
     }
 }
