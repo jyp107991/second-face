@@ -32,6 +32,10 @@ namespace SecondFace.EditorTools
         /// again by 3.7 s: it is played from 0.7 s in, 1.4 times as fast, and leaves for the locomotion at 62 %.</summary>
         public const float PickupFrom = 0.7f, PickupSpeed = 1.4f, PickupExit = 0.62f;
         public static readonly string[] Sits = { "sit", "sit_stool", "sit_ground" };
+        /// <summary>The sits' tag: what the game knows a seated state by (ArmClearance leaves a seated person's arms unrested,
+        /// SeatTurn turns the body back onto the sit's actor, CombatAnimatorBuild.Seats bakes that turn for each). Until
+        /// 2026-11-27 the sits were built untagged, and ArmClearance's test for it never held (since b2a82298).</summary>
+        public const string SitTag = "sit";
         public const string GestureLayer = "Gesture";
         /// <summary>The idles by sex (Ambient.MenIdles, WomenIdles: motion set v2, 2026-11-17).</summary>
         public static string[] Idles => SecondFace.Game.People.Ambient.MenIdles;
@@ -158,6 +162,7 @@ namespace SecondFace.EditorTools
                 if (clip == null) continue;
                 var sit = baseSm.AddState(name);
                 sit.motion = clip;
+                sit.tag = SitTag;
             }
             var layers = ctl.layers;
             layers[0].iKPass = true;
@@ -213,6 +218,21 @@ namespace SecondFace.EditorTools
             var clip = AssetDatabase.LoadAllAssetsAtPath(path).OfType<AnimationClip>().FirstOrDefault(c => !c.name.StartsWith("__preview"));
             if (clip == null) Debug.LogWarning($"LocomotionBuild: no clip in {path}");
             return clip;
+        }
+
+        /// <summary>For the command line (tools/unity/editor.sh run): the sits' tag (<see cref="SitTag"/>, as <see cref="Build"/>
+        /// gives it) set on the committed controller's states, the controller not built again (a rebuild makes every state,
+        /// transition and the fight's layers anew).</summary>
+        public static void TagSits()
+        {
+            var ctl = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
+            if (ctl == null || ctl.layers.Length == 0) { Debug.LogError("LocomotionBuild: no controller to tag"); return; }
+            var n = 0;
+            foreach (var c in ctl.layers[0].stateMachine.states)
+                if (Sits.Contains(c.state.name) && c.state.tag != SitTag) { c.state.tag = SitTag; EditorUtility.SetDirty(c.state); n++; }
+            EditorUtility.SetDirty(ctl);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"LocomotionBuild: {n} of the sits tagged \"{SitTag}\"");
         }
 
         /// <summary>A clip's ground speed from its sidecar (tools/unity/motion/cmu2fbx.py), m/s.</summary>

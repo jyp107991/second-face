@@ -48,25 +48,64 @@ namespace SecondFace.Game.People
             // (in the avatar's neutral pose, every muscle at nought: Unity's human reference, by which the gate measures the
             // face (MotionProbe), not the pose the model was saved in: levelled by the saved head's axes, Female_Adult_01's
             // face stood 15.3-16.1° under the horizon in every idle, H1, 2026-11-26)
-            HumanPoseHandler hp = null; var pose = new HumanPose(); float[] saved = null;
-            if (_animator.avatar != null && _animator.avatar.isHuman)
+            if (_animator.avatar == null || !_animator.avatar.isHuman)
             {
-                hp = new HumanPoseHandler(_animator.avatar, transform);
-                hp.GetHumanPose(ref pose);
-                saved = (float[])pose.muscles.Clone();
-                for (var i = 0; i < pose.muscles.Length; i++) pose.muscles[i] = 0f;
-                hp.SetHumanPose(ref pose);
+                _faceOff = Quaternion.Inverse(_head.rotation) * transform.rotation;
+                if (_chest != null) _chestOff = Quaternion.Inverse(_chest.rotation) * transform.rotation;
+                return;
             }
-            _faceOff = Quaternion.Inverse(_head.rotation) * transform.rotation;
-            if (_chest != null) _chestOff = Quaternion.Inverse(_chest.rotation) * transform.rotation;
-            if (hp != null)
-            {
-                for (var i = 0; i < saved.Length; i++) pose.muscles[i] = saved[i];
-                hp.SetHumanPose(ref pose);
-                hp.Dispose();
-            }
+            // (where the person stands and how the model was bound left out: Neutral)
+            Neutral(_animator, _head, _chest, out _faceOff, out _chestOff);
         }
 
+        /// <summary>
+        /// The face's and the chest's front in their bones' own frames (<paramref name="head"/>'s rotation times
+        /// <paramref name="faceOff"/> looks along the body's front): read in the avatar's neutral pose, every muscle at nought,
+        /// the body as the model was bound but turned about the vertical to face the person's own front. Read with the person
+        /// stood at the world's origin, square to its axes, and every bone put back as it was after: Unity's GetHumanPose gives
+        /// the body in the world and SetHumanPose places it from the person's own root, so the round trip on someone standing
+        /// away from the origin put their hips that far off again (a townsperson in Shale, 16 km from the origin, had their
+        /// pelvis 16 km away and 40 m up; the body's mesh hangs from the pelvis, so it was never in view and, culled, never
+        /// animated: ArmsStayOutOfTheBody read their arms "moving" past the skin's range), and on someone turned from the
+        /// world's axes it read the face's front off by that turn (137° and 180° read 110° and 154° off). The bound body's own
+        /// turn about the vertical is taken out: the player's MakeHuman models are bound facing away from their root (the body
+        /// 180° round), so the face's front was the back of the head, read with its pitch the wrong way round and its yaw half a
+        /// turn off, and the walking player's head was held twisted 20-33° to alternate sides; the cast's bodies are bound
+        /// square in yaw (their bound pitch, 5.4° on the men and 7.6° on the women, is kept: the gate measures the face by it,
+        /// MotionProbe). 2026-11-27, docs/MOTION_ROOT_CAUSE.md §17.
+        /// </summary>
+        public static void Neutral(Animator animator, Transform head, Transform chest, out Quaternion faceOff, out Quaternion chestOff)
+        {
+            var root = animator.transform;
+            var bones = root.GetComponentsInChildren<Transform>(true);
+            var at = new Vector3[bones.Length]; var turn = new Quaternion[bones.Length];
+            for (var i = 0; i < bones.Length; i++) { at[i] = bones[i].localPosition; turn[i] = bones[i].localRotation; }
+            // (a navigation agent on the person is told nothing of it: its own place is kept, and the body put back on it)
+            var agent = root.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            var syncAt = agent != null && agent.enabled && agent.updatePosition; var syncTurn = agent != null && agent.enabled && agent.updateRotation;
+            if (syncAt) agent.updatePosition = false;
+            if (syncTurn) agent.updateRotation = false;
+            root.GetPositionAndRotation(out var where, out var facing);
+            root.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+            var hp = new HumanPoseHandler(animator.avatar, root);
+            var pose = new HumanPose();
+            hp.GetHumanPose(ref pose);
+            for (var i = 0; i < pose.muscles.Length; i++) pose.muscles[i] = 0f;
+            var front = pose.bodyRotation * Vector3.forward;
+            if (new Vector2(front.x, front.z).sqrMagnitude > 1e-8f)
+                pose.bodyRotation = Quaternion.AngleAxis(-Mathf.Atan2(front.x, front.z) * Mathf.Rad2Deg, Vector3.up) * pose.bodyRotation;
+            hp.SetHumanPose(ref pose);
+            faceOff = Quaternion.Inverse(head.rotation);
+            chestOff = chest != null ? Quaternion.Inverse(chest.rotation) : Quaternion.identity;
+            hp.Dispose();
+            root.SetPositionAndRotation(where, facing);
+            for (var i = 0; i < bones.Length; i++) if (bones[i] != root) { bones[i].localPosition = at[i]; bones[i].localRotation = turn[i]; }
+            if (syncAt) agent.updatePosition = true;
+            if (syncTurn) agent.updateRotation = true;
+        }
+
+        /// <summary>The face's front in the head bone's own frame (the head's rotation times this is the face looking along
+        /// the body's front in the avatar's neutral pose): read once in Awake (tests compare it).</summary>
         public Quaternion FaceReference => _faceOff;
 
         /// <summary>After the animation: a head turned on the chest beyond <see cref="MaxNeckYaw"/> is brought back to it
