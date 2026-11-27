@@ -102,7 +102,10 @@ namespace SecondFace.Tests
             var animator = Stand(Vector3.zero);
             var person = animator.gameObject;
             Assert.That(animator.GetLayerIndex(Ambient.GestureLayer), Is.EqualTo(1), "the gesture layer");
-            Assert.That(animator.layerCount, Is.EqualTo(2));
+            // (the people's controller carries the fight's layers over these two since the fight's motion went on it: a count
+            // of 2 failed here before anything was measured, 2026-11-27)
+            Assert.That(animator.GetLayerIndex(SecondFace.Core.Combat.CombatMotion.FullLayer), Is.GreaterThan(1), "the fight's whole-body layer, over the gestures");
+            Assert.That(animator.GetLayerIndex(SecondFace.Core.Combat.CombatMotion.ArmsLayer), Is.GreaterThan(1), "the fight's arms layer, over the gestures");
             var plant = person.AddComponent<FootPlant>();
             flat.Play(0, 0, 0f); bare.Play(0, 0, 0f); animator.Play(0, 0, 0f);
             yield return Seconds(1.5f);

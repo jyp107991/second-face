@@ -925,6 +925,7 @@ namespace SecondFace.Tests
                 // the conversation view, as the game frames it
                 {
                     var a0 = people[0];
+                    foreach (var s in people) if (s.Partner != null) s.Partner.SetActive(true);
                     var shots = ConversationCamera.Begin(cam, a0.Go.transform, a0.Partner.transform, 0f);
                     yield return Wait(0.3f);
                     yield return ScreenshotTests.Capture("motion_conversation", 1600, 720);
@@ -1050,7 +1051,9 @@ namespace SecondFace.Tests
                 foreach (var name in ContentDb.Registries) db.Load(name, File.ReadAllText(Path.Combine(Application.streamingAssetsPath, "content", name + ".json")));
                 Registry.Load(db);
             }
-            foreach (var s in people) { if (s.Partner != null) Object.Destroy(s.Partner); if (s.Gaze != null) s.Gaze.Target = null; }
+            // (the partners out of the fight's way, kept for the conversation capture after it: destroyed here, the capture
+            // framed a destroyed partner and the quick gate threw before its verdict, CI 2026-11-27)
+            foreach (var s in people) { if (s.Partner != null) s.Partner.SetActive(false); if (s.Gaze != null) s.Gaze.Target = null; }
             place(Vector3.zero, 0f);
             yield return Wait(1f);
             var fx = new CombatFx(root.transform);
