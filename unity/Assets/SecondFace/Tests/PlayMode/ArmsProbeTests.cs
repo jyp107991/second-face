@@ -82,6 +82,12 @@ namespace SecondFace.Tests
             var ac = a.GetComponent<ArmClearance>();
             var rw = typeof(ArmClearance).GetField("_restW", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             var st = a.GetCurrentAnimatorStateInfo(0); var nx = a.IsInTransition(0) ? a.GetNextAnimatorStateInfo(0) : default;
+            var nearM = typeof(ArmClearance).GetMethod("Near", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var cam = Camera.main; var hips = a.GetBoneTransform(HumanBodyBones.Hips);
+            var camS = cam == null ? "cam null" : $"cam {cam.name} en {cam.enabled} at {cam.transform.position} dist {(hips != null ? (cam.transform.position - hips.position).magnitude : -1f):0.0} m";
+            var chain = new StringBuilder(); for (var t = hips; t != null; t = t.parent) chain.Append($"{t.name}@{t.position}<"); 
+            sb.Append($"root {a.transform.root.name}@{a.transform.root.position} anim@{a.transform.position} init {a.isInitialized} hier {a.hasTransformHierarchy} chain {chain}; ");
+            sb.Append($"near {(ac != null && nearM != null ? nearM.Invoke(ac, null) : "?")}; skin {(ac != null && ac.SkinReady)}; reach {(ac != null && ac.RestReach)}; {camS}; cull {a.cullingMode}; vis {a.GetComponentsInChildren<Renderer>().Any(r => r.isVisible)}; ");
             return sb + $"speed {sp:0.00}; state {Name(a, st.shortNameHash)} t {st.normalizedTime:0.00} tag {(st.IsTag("sit") ? "sit" : "")}{(a.IsInTransition(0) ? " -> " + Name(a, nx.shortNameHash) : "")}; resting {(ac != null && ac.DiagResting)}; holding {(ac != null && ac.Holding)}; restW {(ac != null && rw != null ? ((float)rw.GetValue(ac)).ToString("0.00") : "")}";
         }
 
@@ -135,6 +141,7 @@ namespace SecondFace.Tests
                 log.AppendLine("arms_probe:   " + string.Join(", ", Enumerable.Range(0, seen.Count).OrderByDescending(i => each[i]).Take(8).Select(i => $"{seen[i].Who} {each[i] * 100f:0.0} @dt {eachDt[i] * 1000f:0} ({where[i]})")));
             }
             Time.captureDeltaTime = 0f;
+            log.AppendLine("arms_probe: cameras: " + string.Join(", ", Camera.allCameras.Select(k => $"{k.name} tag {k.tag} en {k.enabled} at {k.transform.position}")) + $"; main {(Camera.main != null ? Camera.main.name : "null")}; walker at {walk.Walker.transform.position}");
             File.WriteAllText(Path.Combine(Application.dataPath, "../test-results/arms_probe.txt"), log.ToString());
             Debug.Log(log.ToString());
         }

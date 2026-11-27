@@ -593,17 +593,17 @@ ModelImporter:
     - name: Spine
       parentName: Hips
       position: {x: -0.000000022933818, y: 0.070291966, z: 3.330669e-15}
-      rotation: {x: -0.0000013966695, y: 0.0000008273486, z: 0.7201779, w: 0.69379}
+      rotation: {x: -0.00000423193, y: -0.0000011362135, z: 0.7686918, w: 0.63961947}
       scale: {x: 0.99999887, y: 0.9999996, z: 1.0000002}
     - name: Chest
       parentName: Spine
       position: {x: 0.033252805, y: 0.15562913, z: 0.00000008158527}
-      rotation: {x: 0.00000040223208, y: 0.00000075379256, z: -0.11004628, w: 0.9939276}
+      rotation: {x: -0.000005076851, y: 0.0000013549088, z: -0.10723011, w: 0.9942342}
       scale: {x: 1.0000011, y: 1.0000006, z: 1.0000002}
     - name: UpperChest
       parentName: Chest
       position: {x: -0.0020364486, y: 0.20287934, z: -0.0000000051033466}
-      rotation: {x: -0.000000020362389, y: 0.0000009693689, z: 0.0050194184, w: 0.99999064}
+      rotation: {x: 0.0000138477735, y: 0.0000010130673, z: -0.21020323, w: 0.9776577}
       scale: {x: 0.9999968, y: 0.99999994, z: 0.99999905}
     - name: LeftShoulder
       parentName: UpperChest
@@ -798,12 +798,12 @@ ModelImporter:
     - name: Neck
       parentName: UpperChest
       position: {x: 0.000000010244548, y: 0.2211634, z: 6.9721776e-14}
-      rotation: {x: -0.0000011560462, y: 0.000002668786, z: 0.11914732, w: 0.9928864}
+      rotation: {x: 0.0000079777255, y: 0.0000015988031, z: 0.0913911, w: 0.9958151}
       scale: {x: 1.0000021, y: 1, z: 1.0000014}
     - name: Head
       parentName: Neck
       position: {x: 0.024602067, y: 0.10103127, z: 0.00000006530877}
-      rotation: {x: -0.000045817305, y: 0.0000016751185, z: -0.1057145, w: 0.99441147}
+      rotation: {x: -0.00005996939, y: -0.000002145366, z: 0.06319259, w: 0.99800134}
       scale: {x: 1.0000024, y: 1.0000004, z: 1.0000038}
     - name: LeftEye
       parentName: Head
@@ -876,6 +876,6 @@ ModelImporter:
   importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0
   additionalBone: 0
-  userData: ground upright b0e2caca9294037a6d10075171c1405cc955c80d515c3e724c902d06cd7dd877
+  userData: ground b0e2caca9294037a6d10075171c1405cc955c80d515c3e724c902d06cd7dd877
   assetBundleName: 
   assetBundleVariant: 
