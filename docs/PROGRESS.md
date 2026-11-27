@@ -736,8 +736,16 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   - Tried and reverted: arm satellites (the drawn vertices each skin point stands for: no push happened there at all); a held
     foot's toes laid down (passed one flat forefoot's jog, broke another's). Refuted: the arm's third by the elbow filed live.
   - Cost (the editor, all 79): the drawn reading 0.9 ms a person a frame at the median (max 2.8), the arm clearance 4.6 ms.
-  - Next: the fight's largest groups by count from this verdict (`docs/COMBAT_ROOT_CAUSE.md` 17's remainder, then 18), the waived
-    keys first (each must be back within two batches); then the two everyday cells.
+  - Next: the fight's cells clip by clip (`docs/COMBAT_ROOT_CAUSE.md` 18): every failing key grouped by (state, sex), most of them
+    79, 54 or 25 cells (the whole cast, every man, every woman alike: a cause per clip, retarget or pipeline, not per body); each
+    group's clip measured on its own actor against the same limit before the runtime is touched (clip, then retarget, runtime,
+    prop, state machine), biggest first (the aim's A2/H1/FY2/FY1/A1, the strike's A2/F1/A1, the dodge's F1 then F2/Kb/C1, the
+    second strike, then the keys on all 79: crouch, throw, ready); Kb in the strikes (154, this round's one key made worse) back to
+    129 or under within two batches, settled first by an A/B of item 17's hips rule; the fixes batched, the fight screened on the
+    79 at the fixed step, then the whole cast under the same waiver rules (never a commit on picks). Then the two everyday cells.
+  - Perf item (not a gate item): the arm clearance costs about 4.6 ms a person a frame in the editor (median over the 79), too much
+    for crowds on Android. To add: a clearance level of detail (in full only near the camera or in conversation, at a reduced
+    rate or skipped for people far off), measured in a later batch, and never changing the gate's own measurements.
 - **2026-11-26 (later), the gate batch: the striding push, the give's share, the robust reading's reach, the arms' seams (editor
   owner; not committed, the batch on `wip/gate-batch`).**
   Gate: red, 6460 (dfc732a4).
