@@ -699,7 +699,7 @@ namespace SecondFace.Game.Fighting
             if (_a.IsInTransition(_full))
             {
                 TurnOf(_a.GetNextAnimatorStateInfo(_full), out var hn, out var ln, out var rn, out var sn);
-                var k = 1f;   // TEMP pop proof: no blend across the crossfade
+                var k = Mathf.Clamp01(_a.GetAnimatorTransitionInfo(_full).normalizedTime);
                 hips = Quaternion.Slerp(hips, hn, k); tl = Quaternion.Slerp(tl, ln, k); tr = Quaternion.Slerp(tr, rn, k); shift = Vector3.Lerp(shift, sn, k);
             }
             hips = Quaternion.Slerp(Quaternion.identity, hips, w); tl = Quaternion.Slerp(Quaternion.identity, tl, w); tr = Quaternion.Slerp(Quaternion.identity, tr, w); shift *= w;

@@ -32,6 +32,7 @@
     "unity/Assets/SecondFace/Combat/Motion/*.fbx",
     "unity/Assets/SecondFace/Combat/Motion/*.json",
     "unity/Assets/SecondFace/Combat/CombatArms.mask",
+    "unity/Assets/SecondFace/Combat/CombatSet.asset",
     "unity/Assets/SecondFace/Editor/Build/TakeStance.cs",
     "unity/Assets/SecondFace/Editor/Build/PeopleImportPostprocessor.cs",
     "unity/Assets/SecondFace/People/Rocketbox/*/*.fbx.meta",
