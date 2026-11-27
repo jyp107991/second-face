@@ -194,5 +194,49 @@ namespace SecondFace.Tests
             var fwd = Vector3.Cross(across, Vector3.up);
             return Mathf.Atan2(fwd.x, fwd.z) * Mathf.Rad2Deg;
         }
+
+        [UnityTest, Timeout(600000)]
+        public IEnumerator BindBodyRotation()
+        {
+#if UNITY_EDITOR
+            var paths = new[] { "Assets/SecondFace/Prefabs/people/player_m.prefab", "Assets/SecondFace/Prefabs/people/player_f.prefab",
+                "Assets/SecondFace/People/Rocketbox/Female_Adult_01/Female_Adult_01.prefab", "Assets/SecondFace/People/Rocketbox/Male_Adult_08/Male_Adult_08.prefab",
+                "Assets/SecondFace/People/Rocketbox/Male_Adult_03/Male_Adult_03.prefab", "Assets/SecondFace/People/Rocketbox/Business_Female_01/Business_Female_01.prefab" };
+#else
+            var paths = new string[0];
+#endif
+            var log = new StringBuilder();
+            foreach (var path in paths)
+            {
+#if UNITY_EDITOR
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+#else
+                GameObject prefab = null;
+#endif
+                if (prefab == null) continue;
+                var go = Object.Instantiate(prefab, Vector3.zero, Quaternion.identity); _made.Add(go);
+                var a = go.GetComponentInChildren<Animator>();
+                var head = a.GetBoneTransform(HumanBodyBones.Head);
+                var hp = new HumanPoseHandler(a.avatar, a.transform);
+                var pose = new HumanPose();
+                hp.GetHumanPose(ref pose);
+                var bind = pose.bodyRotation; var e = bind.eulerAngles;
+                for (var i = 0; i < pose.muscles.Length; i++) pose.muscles[i] = 0f;
+                hp.SetHumanPose(ref pose);
+                var offGet = Quaternion.Inverse(head.rotation);
+                var fGet = head.rotation * offGet * Vector3.forward;
+                pose.bodyRotation = Quaternion.identity;
+                hp.SetHumanPose(ref pose);
+                var offId = Quaternion.Inverse(head.rotation);
+                // the neutral head with the body square to the root: where its offGet-defined face points
+                var fGetOnSquare = head.rotation * offGet * Vector3.forward;
+                hp.Dispose();
+                var ahead = Vector3.Dot(a.GetBoneTransform(HumanBodyBones.LeftFoot).position + a.GetBoneTransform(HumanBodyBones.RightFoot).position, Vector3.forward);
+                log.AppendLine($"bind_body: {prefab.name}: the bind's body rotation {Quaternion.Angle(Quaternion.identity, bind):0.00}° from square (euler {e.x:0.0}, {e.y:0.0}, {e.z:0.0}); face references (body as bound vs square) {Quaternion.Angle(offGet, offId):0.00}° apart; the as-bound face, on the square body, points ({fGetOnSquare.x:+0.00;-0.00}, {fGetOnSquare.y:+0.00;-0.00}, {fGetOnSquare.z:+0.00;-0.00})");
+                yield return null;
+            }
+            File.WriteAllText(Path.Combine(Application.dataPath, "../test-results/bind_body.txt"), log.ToString());
+            Debug.Log(log.ToString());
+        }
     }
 }

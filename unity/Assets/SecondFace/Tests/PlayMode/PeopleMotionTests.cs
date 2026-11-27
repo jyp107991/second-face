@@ -275,6 +275,83 @@ namespace SecondFace.Tests
             Assert.That(problems, Is.Empty, string.Join("\n", problems));
         }
 
+        /// <summary>
+        /// A person is made where the world puts them, far from its origin and turned (Shale stands 16 km out; the game turns
+        /// each townsperson its own way): Gaze's read of the face's neutral front in Awake (the avatar's neutral pose, every
+        /// muscle at nought) leaves the skeleton as it found it (the hips on the root's own offset as at the origin, within 1 cm;
+        /// the body's mesh bounds round the body: culled, a townsperson whose pelvis was put 16 km off by that read was never
+        /// drawn and never animated, 2026-11-27), and the face reference is the one it has at the origin square to the world
+        /// (on 71ba0e5b's Gaze a 137° turn read the face's front 110° off). A walker made on the navigation mesh, turned, keeps
+        /// its agent where it was placed. docs/MOTION_ROOT_CAUSE.md §17.
+        /// </summary>
+        [UnityTest, Timeout(300000)]
+        public IEnumerator APersonMadeAnywhereKeepsTheirBodyAndFace()
+        {
+#if UNITY_EDITOR
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/People/Rocketbox/Male_Adult_03/Male_Adult_03.prefab");
+            var controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/SecondFace/People/Locomotion.controller");
+#else
+            GameObject prefab = null; RuntimeAnimatorController controller = null;
+#endif
+            if (prefab == null || controller == null) { Assert.Ignore("the cast's prefabs or the locomotion controller are not built"); yield break; }
+            var far = new Vector3(15000f, 40f, 4000f);
+            // (as the game makes a townsperson: PeopleService.Make's instance, then its animation)
+            Animator Townsperson(Vector3 at, float yaw)
+            {
+                var go = Made(Object.Instantiate(prefab, at, Quaternion.Euler(0f, yaw, 0f)));
+                var a = go.GetComponentInChildren<Animator>();
+                SecondFace.Game.Play.PeopleService.Animate(a, controller, "npc_gaze_test", true);
+                return a;
+            }
+            var home = Townsperson(Vector3.zero, 0f);
+            var there = Townsperson(far, 137f);
+            for (var i = 0; i < 4; i++) yield return null;
+            var problems = new List<string>();
+            Vector3 Hips(Animator a) => a.transform.InverseTransformPoint(a.GetBoneTransform(HumanBodyBones.Hips).position);
+            var off = Vector3.Distance(Hips(home), Hips(there));
+            if (off > 0.01f) problems.Add($"the hips stand {off:0.000} m from their place on the root (at the origin {Hips(home)}, there {Hips(there)})");
+            foreach (var (who, a) in new[] { ("at the origin", home), ("far and turned", there) })
+            {
+                SkinnedMeshRenderer body = null;
+                foreach (var r in a.GetComponentsInChildren<SkinnedMeshRenderer>())
+                    if (r.sharedMesh != null && (body == null || r.sharedMesh.vertexCount > body.sharedMesh.vertexCount)) body = r;
+                Assert.That(body, Is.Not.Null, "the body's mesh");
+                foreach (var b in new[] { HumanBodyBones.Hips, HumanBodyBones.Head, HumanBodyBones.LeftFoot, HumanBodyBones.RightFoot, HumanBodyBones.LeftHand, HumanBodyBones.RightHand })
+                    if (!body.bounds.Contains(a.GetBoneTransform(b).position))
+                        problems.Add($"{who}: the body's bounds (centre {body.bounds.center}, size {body.bounds.size}) leave out the {b} at {a.GetBoneTransform(b).position}");
+            }
+            var face = Quaternion.Angle(home.GetComponent<Gaze>().FaceReference, there.GetComponent<Gaze>().FaceReference);
+            if (face > 0.1f) problems.Add($"Gaze's face reference stands {face:0.0}° from the one it has at the origin square to the world");
+            // a walker on the navigation mesh there, turned: its agent where it was placed, on the mesh
+            var source = new UnityEngine.AI.NavMeshBuildSource
+            {
+                shape = UnityEngine.AI.NavMeshBuildSourceShape.Box, size = new Vector3(24f, 0.2f, 24f),
+                transform = Matrix4x4.TRS(far + Vector3.down * 0.1f, Quaternion.identity, Vector3.one), area = 0,
+            };
+            var data = UnityEngine.AI.NavMeshBuilder.BuildNavMeshData(UnityEngine.AI.NavMesh.GetSettingsByID(0), new List<UnityEngine.AI.NavMeshBuildSource> { source },
+                new Bounds(far, new Vector3(30f, 8f, 30f)), Vector3.zero, Quaternion.identity);
+            var mesh = UnityEngine.AI.NavMesh.AddNavMeshData(data);
+            try
+            {
+                // (where the agent stands on the mesh: its surface, as baked, stands a few centimetres over the box's top)
+                Assert.That(UnityEngine.AI.NavMesh.SamplePosition(far + new Vector3(2f, 0f, 1f), out var hit, 1f, UnityEngine.AI.NavMesh.AllAreas), Is.True, "the navigation mesh there");
+                var place = hit.position;
+                var walker = SecondFace.Game.Play.Walker.Create(prefab, controller, place, 137f, true);
+                Made(walker.gameObject);
+                var agent = walker.Agent;
+                if (!agent.isOnNavMesh) problems.Add("the walker's agent is off the navigation mesh");
+                if (Vector3.Distance(agent.nextPosition, place) > 0.01f) problems.Add($"the walker's agent stands at {agent.nextPosition}, placed at {place}");
+                if (Vector3.Distance(walker.transform.position, place) > 0.01f || Quaternion.Angle(walker.transform.rotation, Quaternion.Euler(0f, 137f, 0f)) > 0.1f)
+                    problems.Add($"the walker stands at {walker.transform.position}, turned {walker.transform.eulerAngles.y:0.0}°, placed at {place}, 137°");
+                for (var i = 0; i < 4; i++) yield return null;
+                if (!agent.isOnNavMesh || Vector3.Distance(walker.transform.position, place) > 0.01f) problems.Add($"four frames on, the walker stands at {walker.transform.position} (on the mesh: {agent.isOnNavMesh})");
+                var hw = Vector3.Distance(Hips(walker.Animator), Hips(home));
+                Debug.Log($"people_gaze_placed: hips {off * 100f:0.00} cm apart on the root; the face reference {face:0.00}° apart; the walker at {walker.transform.position}, its agent {agent.nextPosition}, hips {hw * 100f:0.0} cm from the townsperson's on the root");
+            }
+            finally { mesh.Remove(); }
+            Assert.That(problems, Is.Empty, string.Join("\n", problems));
+        }
+
         [System.Serializable]
         private sealed class ClipSidecar { public float speed; }
 
