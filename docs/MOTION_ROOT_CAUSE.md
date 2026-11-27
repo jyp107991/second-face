@@ -1027,6 +1027,34 @@ Found under three CI regressions of 71ba0e5b (`CapturedMotionHoldsHumanPosesWhen
   the foot to its 3 cm swing clearance: no hull change. What it shows instead: at push-off (the gate's heel over 3 cm, the foot's
   lowest under 1.2 cm) the drawn contact is the toes' tip, 2.6-12.8 cm ahead of the ball the plant holds (the men 11.1-12.8, the
   women 2.6-10.5; the contact at 16.3-23.2 cm along the foot at the median, the tip at 18.5-23.0).
+- **The touchdown: why a landing foot meets the ground early and fast** (relaunch 15, the same probe on the eleven, with each
+  recorded clip played bare, a manual graph and no runtime system, on its own actor and on the eleven bodies, foot IK off and on).
+  The plant's pose reads a landing heel at -0.9 to +0.2 cm while the foot still moves 2.4-2.7 m/s, ahead of the take's recorded
+  touchdown. At that touchdown (each sidecar's `plant.stances`, by the dominant clip's phase as played), per person, clip and foot:
+  (i) the clip as retargeted, without the hips' sink, stands the foot's lowest skinned point -2.6 to +2.1 cm over the ground,
+  moving 0.3-2.7 m/s; (ii) the sink is -1.3 (left) and -0.4 (right) cm in the jog, -2.3 and -1.9 in `jog_b`, -0.1 and -0.4 in
+  `walk_f_b`, -0.6 and -0.8 in `walk`, -0.6 and +0.8 in `walk_slow`, -0.7 and +0.8 in the sneak; (iii) the take itself has the
+  actor's heel 0.3-3.3 cm over its own floor a key before its recorded touchdown, moving 2.3-3.9 m/s (scaled by the hips' ratio
+  and the stride), since `plant.py` records a touchdown at the first key within 2.5 cm whose slower sole point moves under 2 m/s:
+  the takes land fast by their own definition. Against its own stance floor, the bare retargeted body (foot IK on) stands within
+  about 0.8 cm of the actor at those keys, mostly higher, at like speeds. The early contact comes from where the floors stand: the
+  bodies' stance soles stand 0.2-4.1 cm under the root's ground, per foot (the jog's left -1.9, right -0.2 to -0.6; `walk_slow`
+  -2.5 to -3.0; the sneak's left -2.9 to -4.1). In the jog the clip alone is 1.3-2.0 cm up at the first contact and only the sink
+  brings it down: the left foot within 0.5 cm two frames (60 a second) before the record at 2.2-3.0 m/s, the right 1-3 frames
+  after it. The sink is negative there because it follows the ankles' lower envelope, and the right stance ankle stands 1.3-4.3 cm
+  over its flat height while its sole is down. In the walks the late swing is within 0.5 cm 2-12 frames before the record at
+  3.7-5.1 m/s, the sink -0.3 to -0.8.
+  The stance floors' left-right difference (the ankles'), the bodies' against the actor's scaled, is the same on every body of a
+  skeleton to 0.01 cm (039738d2, the 54 men; 67aa8293, the 25 women), foot IK on (off): `jog` -0.74 (-0.70; the take's own
+  left-right is -1.94), `jog_b` -1.10 (+0.18), `jog_f` -1.54 (+1.72), `run` -3.65 (+0.67), `run_c` -3.72 (+0.02), the sneak
+  -2.69 men, -2.63 women (-1.90, -2.22), `walk` +0.37 (-1.51), `walk_b` -2.27 (-2.20), `walk_brisk_b` -0.21 (+0.36), `walk_d`
+  +0.41 (+0.20), `walk_f_b` +0.08 (-0.57), `walk_slow` +0.10 (+0.22), `walk_slow_b` +1.72 (+1.04). Three sources, none of them
+  fixed in this batch (`docs/PROGRESS.md`): the takes' unequal stance floors (the converter keeps each sole point on its own
+  floor, `plant.py`'s `sole_floors`; levelling them needs Blender, an open question for the owner); cause B in locomotion (the
+  base layer has no `ClipTurn`; the rig's re-parent at import, (a) of §16); and the sink keyed on the ankles' lower envelope.
+  Rejected: the sink keyed on the soles' own lowest point instead (simulated offline on the eleven; the simulator reproduces the
+  logged sink to 0.00 cm at the median, 0.45 at the p98): it removes the early contact but floats the lower stance contact, p98
+  +2.2 to +4.0 cm, by person. The batch does not need it: without its push-off samples Female_Adult_01's jog W1 is 9 of 413 (2.2 %).
 - **W6, Medical_Female_01's jog stop, and the walk's starts and stops.** One frame: the landing right foot 4.4 cm up, 0.47 m/s
   across the ground, rising 0.18 m/s, both feet up, the body at 2.3 m/s (its p98 1.3 passes): the catch (the hips set down onto a
   slow lower foot, both feet up) is gated by the plant's smoothed pace, which lags the stop's deceleration, and did not fire. The

@@ -753,6 +753,13 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
     3. Sitting into the gate (the sits measured like the everyday states).
     4. The rig's re-parent at import (§16 (a)): the bake must then read about nought on every clip, and goes.
     5. FourChunks: the streaming test's in-flight preparations are not cancelled when it ends (an owner question is open).
+    6. The landings' early contact (`docs/MOTION_ROOT_CAUSE.md` §17: the foot within 0.5 cm of the ground up to 12 frames before
+       the take's recorded touchdown, at 2-5 m/s), from three sources: (a) the takes' unequal stance floors, which the converter
+       keeps (`plant.py` plants each sole point on its own floor; levelling them needs Blender, an open question for the owner);
+       (b) cause B in locomotion (the base layer has no `ClipTurn`: the stance floors' left-right moved by -3.7 to +1.7 cm against
+       the actors', the same on every body of a skeleton; item 4 removes it at its source); (c) the hips' sink, keyed on the
+       ankles' lower envelope, not the soles (a sink keyed on the soles was simulated and floats the stance contact, p98 +2.2 to
+       +4.0 cm: not an answer on its own).
   - The arm clearance's level of detail stays as it is (the perf item below).
 - **2026-11-27, the gate batch committed under the waiver policy: the runtime reads the drawn body (editor owner).**
   Gate: red, 3,351 (the whole cast, 2026-11-27 04:34; dfc732a4's 6,460; the fight's new FY1/FY2, 667, exempt as introduced).

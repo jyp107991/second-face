@@ -92,7 +92,7 @@ namespace SecondFace.Game.People
         /// when its sole rises past <see cref="LockLift"/> or the clip's foot has gone <see cref="LockReach"/> from it, over
         /// <see cref="LockRelease"/> s.</summary>
         /// <summary>How far above the toe's tip the ball may be and still be what a held foot stands on (m).</summary>
-        public float BallOverTip = 0.08f;   // (3 cm: a jogging forefoot pointed 60° came down on its tip and the ball slid as it turned about it, W2)
+        public float BallOverTip = 0.08f;   // (8 cm since 8790a317, 2026-11-06; 3 cm before, 791a42b6: a jogging forefoot pointed 60° came down on its tip, and held there its ball slid as the foot turned about it, W2; measured on the bones' sole points)
         /// <summary>Standing, the weight-bearing leg's hip-to-ankle reach as a share of its length (0.998: the knee bent about
         /// 7°; ideal standing has the knees straight, docs/PEOPLE_MOTION.md K1).</summary>
         public float StanceStraight = 0.9995f;   // (0.998 left the knee 7°, the gate's K1 is 8 at the p98)
@@ -217,35 +217,8 @@ namespace SecondFace.Game.People
         private readonly Vector3[] _pts = new Vector3[4], _solePtsL = new Vector3[4], _solePtsR = new Vector3[4];
         private bool _haveSoleL, _haveSoleR;
 
-        /// <summary>The most a moving foot is pointed toes-down while its ankle is low (degrees), fading from full at
-        /// <see cref="PitchLow"/>.x of the ankle's height over a flat sole to none at .y (m); its toes straightened
-        /// toward flat over the same.</summary>
-        public float LandPitch = 90f;   // (off: a 25° limit turned the foot up about its ankle and stood the jog's stance foot 3-8 cm up, W6, landing or held; the clip's own goals keep the men's jog from sliding on its pointed foot instead, W2 0.15 → passing, 2026-11-06)
         private float _lastEL, _lastER;
         public Vector2 PitchLow = new Vector2(0.04f, 0.10f);
-
-        private void Toes(Transform toe, Quaternion toeRest, float e)
-        {
-            var w = Mathf.Clamp01((PitchLow.y - e) / (PitchLow.y - PitchLow.x));
-            if (w > 0f && toe != null) toe.localRotation = Quaternion.Slerp(toe.localRotation, toeRest, w);
-        }
-
-        private void Pitch(Transform foot, Transform toe, Quaternion toeRest, Vector3 heel, Vector3 ball, float e)
-        {
-            var w = Mathf.Clamp01((PitchLow.y - e) / (PitchLow.y - PitchLow.x));
-            if (w <= 0f) return;
-            // and the toes straightened toward flat (the jog's toes curled down at landing put their tips 6-7 cm under the
-            // ground: the foot was held on them and its ball slid as it turned about them, W1/W2, 2026-11-06)
-            if (toe != null) toe.localRotation = Quaternion.Slerp(toe.localRotation, toeRest, w);
-            var d = foot.TransformPoint(ball) - foot.TransformPoint(heel);
-            var flat = new Vector3(d.x, 0f, d.z);
-            if (flat.sqrMagnitude < 1e-6f) return;
-            var pitch = Mathf.Atan2(-d.y, flat.magnitude) * Mathf.Rad2Deg;
-            if (pitch <= LandPitch) return;
-            var to = (pitch - w * (pitch - LandPitch)) * Mathf.Deg2Rad;
-            var want = (flat.normalized * Mathf.Cos(to) + Vector3.down * Mathf.Sin(to)) * d.magnitude;
-            foot.rotation = Quaternion.FromToRotation(d, want) * foot.rotation;
-        }
 
         private float SoleOver(Transform foot, Transform toe, Vector3 heel, Vector3 back, Vector3 ball, Vector3 tip, float ground)
         {
@@ -532,12 +505,11 @@ namespace SecondFace.Game.People
             else
             {
                 // a foot the clip (or the hips' height) puts into the ground is lifted out of it, by its own lowest point
-                // a foot near the ground with its ankle low is pointed no more than LandPitch toes-down (the jog retargeted
-                // onto broad men came down with the foot pointed 60° down, its toe tip 14 cm under the ground: lifted onto
-                // it and held, the heel 25 cm up, W2, 2026-11-06); at push-off the ankle is high and the foot is left be
-                // the foot's pitch only as it comes down to land (not once held: at push-off it lifted the toe off the ground)
-                if (eL < _lastEL) Pitch(_footL, _toeL, _toeRestL, _heelL, _ballL, eL); else Toes(_toeL, _toeRestL, eL);
-                if (eR < _lastER) Pitch(_footR, _toeR, _toeRestR, _heelR, _ballR, eR); else Toes(_toeR, _toeRestR, eR);
+                // (the clip's own pitch and toes are kept: a landing pitch limit, 25°, stood the jog's stance foot 3-8 cm up and was
+                // turned off, 2026-11-06; the toes straightened toward the bind while the ankle was low took the clip's 15-26° bend
+                // at push-off to 0-7°, and the rigid forefoot rolled onto its tip, 6-12 cm ahead of the held ball, its contact
+                // sliding 6.5 cm/s at the median and 91 at the p98; the jog landing they were for, 2026-11-06, was read on the bones'
+                // sole points, and the foot is now lifted out by the mesh's own lowest point, docs/MOTION_ROOT_CAUSE.md §17)
                 _lastEL = eL; _lastER = eR;
                 var dipL = SoleOver(_footL, _toeL, _heelL, _backL, _ballL, _tipL, gL) + (wantL.y - _footL.position.y);
                 var dipR = SoleOver(_footR, _toeR, _heelR, _backR, _ballR, _tipR, gR) + (wantR.y - _footR.position.y);
