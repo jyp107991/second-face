@@ -147,6 +147,9 @@ namespace SecondFace.Game.Fighting
             /// <summary>Each beat's name, beside <see cref="Times"/> (normalized).</summary>
             public string[] Events = new string[0];
             public float[] Times = new float[0];
+            /// <summary>Each foot's planted spans by the clip's own record of its actor's contacts (the sidecar's
+            /// plant_record.stances), as pairs of normalized times [start, end, start, end ...]; empty: no record.</summary>
+            public float[] DownL = new float[0], DownR = new float[0];
         }
 
         private Dictionary<string, Weapon> _weapons;

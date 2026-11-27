@@ -357,41 +357,89 @@ MonoBehaviour:
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: guard_m_built
     Length: 1.2666668
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: guard_f2_built
     Length: 0.9333334
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: pistol_ready_built
     Length: 2.6000001
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: pistol_ready_f_built
     Length: 2.1000001
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: rifle_ready_u_built
     Length: 3.0666668
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: club_ready_u_built
     Length: 1.3666668
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: club_ready_f_built
     Length: 2.1000001
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: fist_jab_m_cmu
     Length: 1.2666668
     Loop: 0
@@ -399,6 +447,12 @@ MonoBehaviour:
     - impact
     Times:
     - 0.4473684
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: fist_cross_m_cmu
     Length: 1.1333334
     Loop: 0
@@ -406,6 +460,12 @@ MonoBehaviour:
     - impact
     Times:
     - 0.47058824
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: fist_cross_b_m_cmu
     Length: 1.3333334
     Loop: 0
@@ -413,6 +473,12 @@ MonoBehaviour:
     - impact
     Times:
     - 0.4
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: fist_hook_l_m_cmu
     Length: 1.4666667
     Loop: 0
@@ -420,6 +486,12 @@ MonoBehaviour:
     - impact
     Times:
     - 0.5
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: fist_hook_r_accad
     Length: 1.6666667
     Loop: 0
@@ -427,6 +499,18 @@ MonoBehaviour:
     - impact
     Times:
     - 0.42
+    DownL:
+    - 0
+    - 0.34
+    - 0.54
+    - 0.66
+    - 0.78
+    - 1
+    DownR:
+    - 0
+    - 0.24
+    - 0.36
+    - 0.88
   - Name: fist_cross_c_f_built
     Length: 0.6
     Loop: 0
@@ -434,6 +518,14 @@ MonoBehaviour:
     - impact
     Times:
     - 0.3888889
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.44444445
+    - 0.5555556
+    - 1
   - Name: fist_combo_f_cmu
     Length: 2.8666668
     Loop: 0
@@ -441,6 +533,18 @@ MonoBehaviour:
     - impact
     Times:
     - 0.7906977
+    DownL:
+    - 0
+    - 0.15116279
+    - 0.20930232
+    - 1
+    DownR:
+    - 0
+    - 0.29069766
+    - 0.3488372
+    - 0.76744187
+    - 0.8372093
+    - 0.9302326
   - Name: melee_forehand_f2_built
     Length: 0.6
     Loop: 0
@@ -448,6 +552,14 @@ MonoBehaviour:
     - impact
     Times:
     - 0.3888889
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.44444445
+    - 0.5555556
+    - 1
   - Name: melee_thrust_f2_built
     Length: 0.6
     Loop: 0
@@ -455,6 +567,14 @@ MonoBehaviour:
     - impact
     Times:
     - 0.3888889
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.44444445
+    - 0.5555556
+    - 1
   - Name: fist_uppercut_l_b_cmu
     Length: 1.5666667
     Loop: 0
@@ -462,6 +582,12 @@ MonoBehaviour:
     - impact
     Times:
     - 0.4680851
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: fist_uppercut_r_b_cmu
     Length: 1.5333334
     Loop: 0
@@ -469,26 +595,64 @@ MonoBehaviour:
     - impact
     Times:
     - 0.47826087
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: crouch_hold_built
     Length: 0.73333335
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: crouch_hold_f_built
     Length: 0.73333335
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: fist_ready_accad
     Length: 2.6333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.11392405
+    - 0.25316456
+    - 1
+    DownR:
+    - 0
+    - 0.30379745
+    - 0.34177214
+    - 1
   - Name: fist_relax_accad
     Length: 2.4666667
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.4054054
+    - 0.5135135
+    - 1
+    DownR:
+    - 0.21621622
+    - 0.7837838
+    - 0.9054054
+    - 1
   - Name: block_mid_r_accad
     Length: 1.4333334
     Loop: 0
@@ -496,6 +660,18 @@ MonoBehaviour:
     - contact
     Times:
     - 0.37209302
+    DownL:
+    - 0
+    - 0.53488374
+    - 0.60465115
+    - 1
+    DownR:
+    - 0
+    - 0.23255815
+    - 0.27906978
+    - 0.6976744
+    - 0.76744187
+    - 1
   - Name: melee_thrust_built
     Length: 1.6000001
     Loop: 0
@@ -503,6 +679,22 @@ MonoBehaviour:
     - impact
     Times:
     - 0.39583334
+    DownL:
+    - 0
+    - 0.1875
+    - 0.375
+    - 0.41666666
+    - 0.45833334
+    - 0.8541667
+    - 0.9375
+    - 1
+    DownR:
+    - 0
+    - 0.29166666
+    - 0.39583334
+    - 0.45833334
+    - 0.5416667
+    - 1
   - Name: melee_forehand_built
     Length: 1.6666667
     Loop: 0
@@ -510,6 +702,18 @@ MonoBehaviour:
     - impact
     Times:
     - 0.42
+    DownL:
+    - 0
+    - 0.34
+    - 0.54
+    - 0.66
+    - 0.78
+    - 1
+    DownR:
+    - 0
+    - 0.24
+    - 0.36
+    - 0.88
   - Name: club_overhead_cmu
     Length: 2.1666667
     Loop: 0
@@ -517,6 +721,12 @@ MonoBehaviour:
     - impact
     Times:
     - 0.61538464
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: club_thrust_f_built
     Length: 0.86666673
     Loop: 0
@@ -524,36 +734,80 @@ MonoBehaviour:
     - impact
     Times:
     - 0.61538464
+    DownL:
+    - 0.1923077
+    - 1
+    DownR:
+    - 0
+    - 0.46153846
+    - 0.6923077
+    - 1
   - Name: rifle_raise_cmu
     Length: 2.6666667
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: rifle_aim_cmu
     Length: 1.7
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: rifle_lower_cmu
     Length: 2.0666668
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: rifle_aim_c_100s
     Length: 4
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: pistol_aim_m_built
     Length: 2.6000001
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: pistol_aim_c_built
     Length: 2.1000001
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: reload_rifle_u_built
     Length: 3.0000002
     Loop: 0
@@ -565,6 +819,12 @@ MonoBehaviour:
     - 0.17777778
     - 0.67777777
     - 0.8111111
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: reload_pistol_built
     Length: 2.4
     Loop: 0
@@ -576,6 +836,12 @@ MonoBehaviour:
     - 0.125
     - 0.6666667
     - 0.8055556
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: reload_pistol_f_built
     Length: 2.4
     Loop: 0
@@ -587,36 +853,98 @@ MonoBehaviour:
     - 0.125
     - 0.6666667
     - 0.8055556
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: crouch_down_accad
     Length: 2.5666668
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.20779221
+    - 0.44155845
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: crouch_down_f_accad
     Length: 3.5666668
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: crouch_rifle_built
     Length: 0.73333335
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: crouch_rifle_f_built
     Length: 0.73333335
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: stagger_cmu
     Length: 2.5666668
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.14285715
+    - 0.16883117
+    - 0.2987013
+    - 0.4935065
+    - 0.54545456
+    - 0.6233766
+    - 0.6753247
+    - 0.7012987
+    - 1
+    DownR:
+    - 0
+    - 0.2857143
+    - 0.5064935
+    - 0.54545456
+    - 0.71428573
+    - 1
   - Name: stagger_fwd_cmu
     Length: 2.5000002
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0.18666667
+    - 0.4
+    - 0.6
+    - 0.8
+    DownR:
+    - 0
+    - 0.18666667
+    - 0.37333333
+    - 0.62666667
+    - 0.8666667
+    - 0.9066667
   - Name: hit_front_torso_built
     Length: 0.90000004
     Loop: 0
@@ -626,6 +954,12 @@ MonoBehaviour:
     Times:
     - 0
     - 0.7777778
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: hit_front_torso_f_built
     Length: 0.90000004
     Loop: 0
@@ -635,6 +969,12 @@ MonoBehaviour:
     Times:
     - 0
     - 0.7777778
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: hit_front_head_built
     Length: 0.90000004
     Loop: 0
@@ -644,6 +984,12 @@ MonoBehaviour:
     Times:
     - 0
     - 0.7037037
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: hit_front_head_f_built
     Length: 0.90000004
     Loop: 0
@@ -653,6 +999,12 @@ MonoBehaviour:
     Times:
     - 0
     - 0.7037037
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: dodge_l_accad
     Length: 2.5333335
     Loop: 0
@@ -660,6 +1012,12 @@ MonoBehaviour:
     - clear
     Times:
     - 0.4473684
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: dodge_r_accad
     Length: 2.766667
     Loop: 0
@@ -667,6 +1025,14 @@ MonoBehaviour:
     - clear
     Times:
     - 0.42168674
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.30120483
+    - 0.3253012
+    - 1
   - Name: duck_cmu
     Length: 5.166667
     Loop: 0
@@ -674,6 +1040,16 @@ MonoBehaviour:
     - clear
     Times:
     - 0.17419355
+    DownL:
+    - 0
+    - 0.12258065
+    - 0.14193548
+    - 0.91612905
+    - 0.9483871
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: getup_back_cmu
     Length: 7.466667
     Loop: 0
@@ -681,6 +1057,8 @@ MonoBehaviour:
     - stand
     Times:
     - 0.67410713
+    DownL: []
+    DownR: []
   - Name: getup_front_cmu
     Length: 6.9000006
     Loop: 0
@@ -688,6 +1066,8 @@ MonoBehaviour:
     - stand
     Times:
     - 0.57004833
+    DownL: []
+    DownR: []
   - Name: getup_side_cmu
     Length: 8.5
     Loop: 0
@@ -695,6 +1075,8 @@ MonoBehaviour:
     - stand
     Times:
     - 0.6745098
+    DownL: []
+    DownR: []
   - Name: getup_f_cmu
     Length: 4.566667
     Loop: 0
@@ -702,6 +1084,8 @@ MonoBehaviour:
     - stand
     Times:
     - 0.82481754
+    DownL: []
+    DownR: []
   - Name: getup_to_crouch_accad
     Length: 4.533334
     Loop: 0
@@ -709,6 +1093,8 @@ MonoBehaviour:
     - stand
     Times:
     - 0.3529412
+    DownL: []
+    DownR: []
   - Name: getup_to_crouch_f_accad
     Length: 4.3333335
     Loop: 0
@@ -716,76 +1102,166 @@ MonoBehaviour:
     - stand
     Times:
     - 0.3846154
+    DownL: []
+    DownR: []
   - Name: prone_hold_accad
     Length: 2
     Loop: 1
     Events: []
     Times: []
+    DownL: []
+    DownR: []
   - Name: prone_hold_f_accad
     Length: 2.4
     Loop: 1
     Events: []
     Times: []
+    DownL: []
+    DownR: []
   - Name: surrender_enter_built
     Length: 2
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: surrender_enter_f_built
     Length: 2
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: surrender_hold_built
     Length: 2.6000001
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: surrender_hold_f_built
     Length: 2.1000001
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: surrender_enter_u_built
     Length: 2
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: surrender_hold_u_built
     Length: 3.0666668
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: surrender_enter_club_u_built
     Length: 2
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: surrender_hold_club_u_built
     Length: 1.3666668
     Loop: 1
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: rise_m_built
     Length: 2.7
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0.14814815
+    - 0.33333334
+    - 0.49382716
+    - 0.79012346
+    - 0.83950615
+    - 1
+    DownR:
+    - 0
+    - 0.5802469
+    - 0.67901236
+    - 1
   - Name: rise_f_built
     Length: 1.5333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: rise_long_m_built
     Length: 2.7
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0.14814815
+    - 0.33333334
+    - 0.49382716
+    - 0.79012346
+    - 0.83950615
+    - 1
+    DownR:
+    - 0
+    - 0.5802469
+    - 0.67901236
+    - 1
   - Name: rise_long_f_built
     Length: 1.5333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: duck_f_built
     Length: 3.3333335
     Loop: 0
@@ -793,6 +1269,16 @@ MonoBehaviour:
     - clear
     Times:
     - 0.65
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.1
+    - 0.6
+    - 0.89
+    - 0.91
+    - 1
   - Name: throw_full_m_cmu
     Length: 4.366667
     Loop: 0
@@ -800,6 +1286,26 @@ MonoBehaviour:
     - release
     Times:
     - 0.55725193
+    DownL:
+    - 0
+    - 0.099236645
+    - 0.16793893
+    - 0.26717559
+    - 0.33587787
+    - 0.38931298
+    - 0.48091602
+    - 0.77862597
+    - 0.86259544
+    - 1
+    DownR:
+    - 0
+    - 0.15267175
+    - 0.259542
+    - 0.54198474
+    - 0.7099237
+    - 0.90839696
+    - 0.9694657
+    - 1
   - Name: throw_full_f_cmu
     Length: 3.6333334
     Loop: 0
@@ -807,16 +1313,56 @@ MonoBehaviour:
     - release
     Times:
     - 0.51376146
+    DownL:
+    - 0
+    - 0.28440368
+    - 0.35779816
+    - 0.57798165
+    - 0.5963303
+    - 1
+    DownR:
+    - 0
+    - 0.055045873
+    - 0.23853211
+    - 0.44036698
+    - 0.6146789
+    - 0.8348624
+    - 0.9357798
+    - 1
   - Name: cover_leave_m_built
     Length: 1.9333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.36206895
+    - 0.41379312
+    - 0.44827586
+    - 0.6896552
+    - 0.7241379
+    DownR:
+    - 0
+    - 0.6034483
   - Name: cover_leave_f_built
     Length: 2.8666668
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.3488372
+    - 0.47674417
+    - 0.55813956
+    - 0.76744187
+    - 0.8023256
+    DownR:
+    - 0
+    - 0.44186047
+    - 0.627907
+    - 0.6744186
+    - 0.88372093
+    - 0.9186047
   - Name: step_back_f_7604
     Length: 0.8333334
     Loop: 0
@@ -826,6 +1372,14 @@ MonoBehaviour:
     Times:
     - 0.48
     - 0.6
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.32
+    - 0.64
+    - 1
   - Name: step_back_f_76042
     Length: 1.1333334
     Loop: 0
@@ -835,6 +1389,14 @@ MonoBehaviour:
     Times:
     - 0.5
     - 0.64705884
+    DownL:
+    - 0
+    - 0.44117647
+    - 0.7058824
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_back_f_76042_mir
     Length: 1.1333334
     Loop: 0
@@ -844,6 +1406,14 @@ MonoBehaviour:
     Times:
     - 0.5
     - 0.64705884
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.44117647
+    - 0.7058824
+    - 1
   - Name: step_back_f_7604_mir
     Length: 0.8333334
     Loop: 0
@@ -853,16 +1423,40 @@ MonoBehaviour:
     Times:
     - 0.48
     - 0.6
+    DownL:
+    - 0
+    - 0.32
+    - 0.64
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_back_m_14320
     Length: 0.7666667
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.3043478
+    - 0.65217394
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_back_m_14320_mir
     Length: 0.7666667
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.3043478
+    - 0.65217394
+    - 1
   - Name: step_back_m_m2e2turnar
     Length: 0.73333335
     Loop: 0
@@ -872,6 +1466,14 @@ MonoBehaviour:
     Times:
     - 0.36363637
     - 0.5
+    DownL:
+    - 0
+    - 0.22727273
+    - 0.59090906
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_back_u_3301
     Length: 1.1
     Loop: 0
@@ -881,6 +1483,14 @@ MonoBehaviour:
     Times:
     - 0.24242425
     - 0.42424244
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.27272728
+    - 0.6363636
+    - 1
   - Name: step_back_u_3301_mir
     Length: 1.1
     Loop: 0
@@ -890,6 +1500,14 @@ MonoBehaviour:
     Times:
     - 0.24242425
     - 0.42424244
+    DownL:
+    - 0
+    - 0.27272728
+    - 0.6363636
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_back_u_3401
     Length: 1.4000001
     Loop: 0
@@ -899,6 +1517,16 @@ MonoBehaviour:
     Times:
     - 0.2857143
     - 0.47619048
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.16666667
+    - 0.47619048
+    - 0.54761904
+    - 0.8095238
+    - 1
   - Name: step_back_u_3401_mir
     Length: 1.4000001
     Loop: 0
@@ -908,46 +1536,120 @@ MonoBehaviour:
     Times:
     - 0.2857143
     - 0.47619048
+    DownL:
+    - 0
+    - 0.16666667
+    - 0.45238096
+    - 0.54761904
+    - 0.8095238
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_fwd_m_m2e2turnar
     Length: 0.70000005
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.42857143
+    - 0.8095238
+    - 1
   - Name: step_fwd_m_m2e2turnar2
     Length: 0.70000005
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.47619048
+    - 0.85714287
+    - 1
   - Name: step_fwd_m_m2e2turnar2_mir
     Length: 0.70000005
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.47619048
+    - 0.85714287
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_fwd_m_m2e2turnar_mir
     Length: 0.70000005
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.42857143
+    - 0.8095238
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_fwd_u_7703
     Length: 0.73333335
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.45454547
+    - 0.72727275
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_fwd_u_7703_mir
     Length: 0.73333335
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.45454547
+    - 0.72727275
+    - 1
   - Name: step_fwd_u_7717
     Length: 0.8333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.4
+    - 0.72
+    - 1
   - Name: step_fwd_u_7717_mir
     Length: 0.8333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.4
+    - 0.72
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_left_f_11411
     Length: 0.7666667
     Loop: 0
@@ -957,6 +1659,14 @@ MonoBehaviour:
     Times:
     - 0.47826087
     - 0.6086956
+    DownL:
+    - 0
+    - 0.4347826
+    - 0.73913044
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_left_f_11411_mir
     Length: 0.7666667
     Loop: 0
@@ -966,16 +1676,44 @@ MonoBehaviour:
     Times:
     - 0.47826087
     - 0.6086956
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.4347826
+    - 0.73913044
+    - 1
   - Name: step_left_m_m2e2jabrig
     Length: 1.0333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.2580645
+    - 0.41935483
+    - 1
+    DownR:
+    - 0
+    - 0.58064514
+    - 0.7741935
+    - 1
   - Name: step_left_m_m2e2jabrig_mir
     Length: 1.0333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.58064514
+    - 0.7741935
+    - 1
+    DownR:
+    - 0
+    - 0.2580645
+    - 0.41935483
+    - 1
   - Name: step_left_u_7709
     Length: 0.9333334
     Loop: 0
@@ -985,46 +1723,118 @@ MonoBehaviour:
     Times:
     - 0.25
     - 0.78571427
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.21428572
+    - 0.64285713
+    - 1
   - Name: step_narrow_m_14320
     Length: 0.6333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.42105263
+    - 0.68421054
+    - 1
   - Name: step_narrow_m_14320_mir
     Length: 0.6333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.42105263
+    - 0.68421054
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_narrow_u_7718
     Length: 0.8333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.32
+    - 0.6
+    - 1
   - Name: step_narrow_u_7718_mir
     Length: 0.8333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.32
+    - 0.6
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_narrow_u_crouchedid
     Length: 0.8333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.4
+    - 0.64
+    - 1
   - Name: step_narrow_u_crouchedid_mir
     Length: 0.8333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.4
+    - 0.64
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_right_m_14320
     Length: 0.8333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.32
+    - 0.72
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_right_m_14320_mir
     Length: 0.8333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.32
+    - 0.72
+    - 1
   - Name: step_turnL45_f_11411
     Length: 1.3000001
     Loop: 0
@@ -1034,6 +1844,14 @@ MonoBehaviour:
     Times:
     - 0.46153846
     - 0.6666667
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.41025642
+    - 0.8717949
+    - 1
   - Name: step_turnL45_f_11411_mir
     Length: 1.3000001
     Loop: 0
@@ -1043,11 +1861,27 @@ MonoBehaviour:
     Times:
     - 0.46153846
     - 0.6666667
+    DownL:
+    - 0
+    - 0.41025642
+    - 0.8717949
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_turnL45_m_m2e2turnar
     Length: 0.6333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.47368422
+    - 0.8947368
+    - 1
   - Name: step_turnL45_m_m2e2turnar2
     Length: 0.70000005
     Loop: 0
@@ -1057,6 +1891,14 @@ MonoBehaviour:
     Times:
     - 0.33333334
     - 0.47619048
+    DownL:
+    - 0
+    - 0.23809524
+    - 0.5714286
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_turnL45_m_m2e2turnar2_mir
     Length: 0.70000005
     Loop: 0
@@ -1066,31 +1908,87 @@ MonoBehaviour:
     Times:
     - 0.33333334
     - 0.47619048
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.23809524
+    - 0.5714286
+    - 1
   - Name: step_turnL45_m_m2e2turnar_mir
     Length: 0.6333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.47368422
+    - 0.8947368
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_turnL90_m_m2e2turnar
     Length: 1.1333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.64705884
+    - 0.8235294
+    - 1
+    DownR:
+    - 0
+    - 0.23529412
+    - 0.5588235
+    - 1
   - Name: step_turnL90_m_m2e2turnar2
     Length: 1.3333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.6
+    - 0.825
+    - 1
+    DownR:
+    - 0
+    - 0.225
+    - 0.5
+    - 1
   - Name: step_turnL90_m_m2e2turnar2_mir
     Length: 1.3333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.225
+    - 0.5
+    - 1
+    DownR:
+    - 0
+    - 0.6
+    - 0.825
+    - 1
   - Name: step_turnL90_m_m2e2turnar_mir
     Length: 1.1333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.23529412
+    - 0.5588235
+    - 1
+    DownR:
+    - 0
+    - 0.64705884
+    - 0.8235294
+    - 1
   - Name: step_turnR45_f_11133
     Length: 0.96666664
     Loop: 0
@@ -1100,6 +1998,14 @@ MonoBehaviour:
     Times:
     - 0.44827586
     - 0.5862069
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.27586207
+    - 0.6551724
+    - 1
   - Name: step_turnR45_f_11133_mir
     Length: 0.96666664
     Loop: 0
@@ -1109,6 +2015,14 @@ MonoBehaviour:
     Times:
     - 0.44827586
     - 0.5862069
+    DownL:
+    - 0
+    - 0.27586207
+    - 0.6551724
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_turnR45_f_11313
     Length: 0.90000004
     Loop: 0
@@ -1118,6 +2032,14 @@ MonoBehaviour:
     Times:
     - 0.44444445
     - 0.5555556
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.2962963
+    - 0.6666667
+    - 1
   - Name: step_turnR45_f_11313_mir
     Length: 0.90000004
     Loop: 0
@@ -1127,26 +2049,66 @@ MonoBehaviour:
     Times:
     - 0.44444445
     - 0.5555556
+    DownL:
+    - 0
+    - 0.2962963
+    - 0.7037037
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_turnR45_m_m2e1turnar
     Length: 0.5666667
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.4117647
+    - 0.7647059
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_turnR45_m_m2e1turnar2
     Length: 0.53333336
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.375
+    - 0.625
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_turnR45_m_m2e1turnar2_mir
     Length: 0.53333336
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.375
+    - 0.625
+    - 1
   - Name: step_turnR45_m_m2e1turnar_mir
     Length: 0.5666667
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.4117647
+    - 0.7647059
+    - 1
   - Name: step_widen_f_14426
     Length: 1.6333334
     Loop: 0
@@ -1156,6 +2118,16 @@ MonoBehaviour:
     Times:
     - 0.2857143
     - 0.3469388
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.2857143
+    - 0.46938777
+    - 0.53061223
+    - 0.75510204
+    - 1
   - Name: step_widen_f_14426_mir
     Length: 1.6333334
     Loop: 0
@@ -1165,16 +2137,42 @@ MonoBehaviour:
     Times:
     - 0.2857143
     - 0.3469388
+    DownL:
+    - 0
+    - 0.2857143
+    - 0.46938777
+    - 0.53061223
+    - 0.75510204
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_widen_m_m2e6quickr
     Length: 0.99999994
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.6333333
+    - 0.76666665
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_widen_m_m2e6quickr_mir
     Length: 0.99999994
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.6333333
+    - 0.76666665
+    - 1
   - Name: step_guardin_f_14413
     Length: 1.1333334
     Loop: 0
@@ -1184,6 +2182,16 @@ MonoBehaviour:
     Times:
     - 0.32352942
     - 0.5588235
+    DownL:
+    - 0
+    - 0.6764706
+    - 0.8235294
+    - 1
+    DownR:
+    - 0
+    - 0.2647059
+    - 0.5294118
+    - 1
   - Name: step_guardin_f_14413_mir
     Length: 1.1333334
     Loop: 0
@@ -1193,16 +2201,42 @@ MonoBehaviour:
     Times:
     - 0.32352942
     - 0.5588235
+    DownL:
+    - 0
+    - 0.2647059
+    - 0.5294118
+    - 1
+    DownR:
+    - 0
+    - 0.6764706
+    - 0.8235294
+    - 1
   - Name: step_guardin_f_14427
     Length: 0.8333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.36
+    - 0.76
+    - 1
   - Name: step_guardin_f_14427_mir
     Length: 0.8333334
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.36
+    - 0.76
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_guardout_f_14413
     Length: 1.6333334
     Loop: 0
@@ -1212,6 +2246,16 @@ MonoBehaviour:
     Times:
     - 0
     - 0.18367347
+    DownL:
+    - 0.20408164
+    - 0.26530612
+    - 0.48979592
+    - 1
+    DownR:
+    - 0
+    - 0.59183675
+    - 0.8367347
+    - 1
   - Name: step_guardout_f_14413_mir
     Length: 1.6333334
     Loop: 0
@@ -1221,6 +2265,14 @@ MonoBehaviour:
     Times:
     - 0
     - 0.18367347
+    DownL:
+    - 0
+    - 0.59183675
+    - 0.8367347
+    - 1
+    DownR:
+    - 0.48979592
+    - 1
   - Name: step_guardout_f_14421
     Length: 1.1
     Loop: 0
@@ -1230,6 +2282,14 @@ MonoBehaviour:
     Times:
     - 0.27272728
     - 0.7878788
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.24242425
+    - 0.8181818
+    - 1
   - Name: step_guardout_f_14421_mir
     Length: 1.1
     Loop: 0
@@ -1239,6 +2299,14 @@ MonoBehaviour:
     Times:
     - 0.27272728
     - 0.7878788
+    DownL:
+    - 0
+    - 0.24242425
+    - 0.8181818
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_pivot_f_11107
     Length: 0.6333334
     Loop: 0
@@ -1247,6 +2315,12 @@ MonoBehaviour:
     - set
     Times:
     - 0.47368422
+    - 1
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
     - 1
   - Name: step_pivot_f_11107_mir
     Length: 0.6333334
@@ -1257,6 +2331,12 @@ MonoBehaviour:
     Times:
     - 0.47368422
     - 1
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_pivot_u_1323
     Length: 0.86666673
     Loop: 0
@@ -1266,6 +2346,14 @@ MonoBehaviour:
     Times:
     - 0.3846154
     - 0.53846157
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.26923078
+    - 0.5769231
+    - 1
   - Name: step_pivot_u_1323_mir
     Length: 0.86666673
     Loop: 0
@@ -1275,16 +2363,40 @@ MonoBehaviour:
     Times:
     - 0.3846154
     - 0.53846157
+    DownL:
+    - 0
+    - 0.26923078
+    - 0.5769231
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_pivot_u_swatfw
     Length: 0.7666667
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.3478261
+    - 0.5652174
+    - 1
   - Name: step_pivot_u_swatfw_mir
     Length: 0.7666667
     Loop: 0
     Events: []
     Times: []
+    DownL:
+    - 0
+    - 0.3478261
+    - 0.5652174
+    - 1
+    DownR:
+    - 0
+    - 1
   - Name: step_right_f_11128b
     Length: 0.90000004
     Loop: 0
@@ -1294,6 +2406,14 @@ MonoBehaviour:
     Times:
     - 0.44444445
     - 0.6296296
+    DownL:
+    - 0
+    - 1
+    DownR:
+    - 0
+    - 0.33333334
+    - 0.6666667
+    - 1
   - Name: step_right_f_11128b_mir
     Length: 0.90000004
     Loop: 0
@@ -1303,3 +2423,11 @@ MonoBehaviour:
     Times:
     - 0.44444445
     - 0.6296296
+    DownL:
+    - 0
+    - 0.33333334
+    - 0.6666667
+    - 1
+    DownR:
+    - 0
+    - 1

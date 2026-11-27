@@ -41,6 +41,18 @@ namespace SecondFace.EditorTools
         /// <summary>For the command line (tools/unity/editor.sh run): built again whatever its version.</summary>
         public static void Rebuild() => Build(true);
 
+        /// <summary>For the command line: the set's clip facts only (beats, plant records) from the sidecars; the controller
+        /// is not touched (a forced rebuild of the layers is what lost the base layer's motion once, docs/COMBAT_ROOT_CAUSE.md 10).</summary>
+        public static void RefreshFacts()
+        {
+            var set = AssetDatabase.LoadAssetAtPath<CombatSet>(SetPath);
+            if (set == null) { Debug.LogError("CombatAnimatorBuild: no CombatSet to refresh"); return; }
+            set.Clips = Facts();
+            EditorUtility.SetDirty(set);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"CombatAnimatorBuild: facts refreshed: {set.Clips.Length} clips, {set.Clips.Count(c => c.DownL.Length > 0 || c.DownR.Length > 0)} with a plant record");
+        }
+
         public static CombatSet Build(bool force)
         {
             var ctl = AssetDatabase.LoadAssetAtPath<AnimatorController>(LocomotionBuild.ControllerPath);
@@ -253,6 +265,14 @@ namespace SecondFace.EditorTools
                             times.Add(Mathf.Clamp01(fr / (float)Mathf.Max(1, frames - 1)));
                         }
                 f.Events = names.ToArray(); f.Times = times.ToArray();
+                // the clip's own record of which foot its actor has down (frames of the staged clip, normalized as the beats)
+                if (side["plant_record"]?["stances"] is JObject st)
+                {
+                    float[] Spans(string foot) => st[foot] is JArray a
+                        ? a.OfType<JArray>().Where(p => p.Count >= 2).SelectMany(p => new[] { Mathf.Clamp01((int)p[0] / (float)Mathf.Max(1, frames - 1)), Mathf.Clamp01((int)p[1] / (float)Mathf.Max(1, frames - 1)) }).ToArray()
+                        : new float[0];
+                    f.DownL = Spans("Left"); f.DownR = Spans("Right");
+                }
                 l.Add(f);
             }
             return l.ToArray();

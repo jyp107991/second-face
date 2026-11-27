@@ -646,6 +646,9 @@ namespace SecondFace.Game.Fighting
             var dt = Time.deltaTime;
             var info = _a.IsInTransition(_full) ? _a.GetNextAnimatorStateInfo(_full) : _a.GetCurrentAnimatorStateInfo(_full);
             if (_fullWant > 0.5f && Names.TryGetValue(info.shortNameHash, out var now)) Current = now;
+            // (the full layer's state now and its clip's normalized time: the clip's own plant record is read there)
+            _fullState = Names.TryGetValue(info.shortNameHash, out var playing) ? playing : null;
+            _fullT = info.loop ? info.normalizedTime - Mathf.Floor(info.normalizedTime) : Mathf.Clamp01(info.normalizedTime);
             if (_armsWant > 0.5f)
             {
                 var ai = _a.IsInTransition(_armsLayer) ? _a.GetNextAnimatorStateInfo(_armsLayer) : _a.GetCurrentAnimatorStateInfo(_armsLayer);
@@ -742,26 +745,29 @@ namespace SecondFace.Game.Fighting
             // the floor, the standing leg was drawn up through it and folded (a duck's 112° knee to 150°, a club blow's 47° to 76°,
             // the way into cover's 146° to 155°: Kb in the dodge, the strikes and the crouch, docs/COMBAT_ROOT_CAUSE.md 18) and the
             // lifted foot was set down
-            if (FeetRuleTemp == 0 || FeetRuleTemp == 3)
+            var liftL = false; var liftR = false;
+            if (FeetRuleTemp == 0 || FeetRuleTemp == 4) { liftL = RecordDown(true) == false; liftR = RecordDown(false) == false; }
+            else if (FeetRuleTemp == 3)
             {
                 var cL = SoleLow(_footL, _heelL, _ballL) - root; var cR = SoleLow(_footR, _heelR, _ballR) - root;
                 var cLow = Mathf.Min(cL, cR);
-                var liftL = cL - cLow > LiftedOver; var liftR = cR - cLow > LiftedOver;
-                if (liftL != liftR) lo = hi = liftL ? eR : eL;
+                liftL = cL - cLow > LiftedOver; liftR = cR - cLow > LiftedOver;
             }
+            if (liftL != liftR) lo = hi = liftL ? eR : eL;
+            var byRecord = FeetRuleTemp == 0 || FeetRuleTemp == 4;
             var want = -Mathf.Clamp(hi - 0.015f, lo, hi);
             if (FeetRuleTemp <= 1)
             {
-                want = Mathf.Min(want, -LegNeed(_upL, _loL, _footL, eL, _fl, want));
-                want = Mathf.Min(want, -LegNeed(_upR, _loR, _footR, eR, _fr, want));
+                if (!(byRecord && liftL)) want = Mathf.Min(want, -LegNeed(_upL, _loL, _footL, eL, _fl, want));
+                if (!(byRecord && liftR)) want = Mathf.Min(want, -LegNeed(_upR, _loR, _footR, eR, _fr, want));
             }
             want = Mathf.Clamp(want, -0.2f, 0.2f);
             _sink = _fl.HaveWas || _fr.HaveWas ? Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-25f * dt)) : want;
             _hips.position += Vector3.up * (_sink * w);
             eL += _sink * w; eR += _sink * w;
             var k = _hipHeight / 0.935f;
-            var wantL = Place(ref _fl, _footL.position, eL, dt, pin, _fr.Stepping, k);
-            var wantR = Place(ref _fr, _footR.position, eR, dt, pin, _fl.Stepping, k);
+            var wantL = Place(ref _fl, _footL.position, eL, dt, pin, _fr.Stepping, k, byRecord && liftL);
+            var wantR = Place(ref _fr, _footR.position, eR, dt, pin, _fl.Stepping, k, byRecord && liftR);
             var rotL = _footL.rotation; var rotR = _footR.rotation;
             TwoBone.Solve(_upL, _loL, _footL, wantL, w, _loL.position + Front * 0.3f);
             TwoBone.Solve(_upR, _loR, _footR, wantR, w, _loR.position + Front * 0.3f);
@@ -777,9 +783,26 @@ namespace SecondFace.Game.Fighting
         /// <see cref="LegNeed"/> and the stance's doc take for a foot the clip has down).</summary>
         public const float LiftedOver = 0.03f;
 
-        /// <summary>TEMP (A/B only; remove before any verdict or commit): 0 the lifted foot left out, with LegNeed; 1 as main;
-        /// 2 as before patch5 (no LegNeed); 3 the lifted foot left out, no LegNeed.</summary>
+        /// <summary>TEMP (A/B only; remove before any verdict or commit): 0 the record's lifted foot left out, with LegNeed; 1 as main;
+        /// 2 as before patch5 (no LegNeed); 3 the height test, no LegNeed; 4 the record's lifted foot left out, no LegNeed.</summary>
         public static int FeetRuleTemp = 0;
+
+        // the full layer's state and its clip's normalized time, this frame
+        private string _fullState;
+        private float _fullT;
+
+        /// <summary>Whether the clip the full layer plays has this foot down now by its own record of its actor's contacts
+        /// (<see cref="CombatSet.ClipFacts.DownL"/>); null: no record (both taken as down).</summary>
+        private bool? RecordDown(bool left)
+        {
+            if (Set == null || _fullState == null) return null;
+            var s = CombatMotion.State(_fullState);
+            var facts = s != null ? Set.ClipOf(s.ClipFor(Female)) : null;
+            var spans = facts == null ? null : left ? facts.DownL : facts.DownR;
+            if (spans == null || spans.Length < 2) return null;
+            for (var i = 0; i + 1 < spans.Length; i += 2) if (_fullT >= spans[i] && _fullT <= spans[i + 1]) return true;
+            return false;
+        }
 
         /// <summary>How far the hips must come down (m, from where they are) for this leg to reach the ground under its foot
         /// (held where it is planted) nearly straight (<see cref="StandStraight"/>); -infinity for a foot the clip lifts
@@ -805,9 +828,10 @@ namespace SecondFace.Game.Fighting
 
         /// <summary>Where a foot goes (its ankle): down on its ground where the clip has it down (<paramref name="e"/>: its lowest
         /// sole point over its ground now), held, stepped or following as <see cref="Feet"/> says.</summary>
-        private Vector3 Place(ref Foot f, Vector3 a, float e, float dt, bool pin, bool otherStepping, float k)
+        private Vector3 Place(ref Foot f, Vector3 a, float e, float dt, bool pin, bool otherStepping, float k, bool lifted = false)
         {
-            var down = Mathf.Clamp01((0.04f - e) / 0.02f);
+            // (a foot the clip's own record lifts is left as the clip has it, wherever its sole stands)
+            var down = lifted ? 0f : Mathf.Clamp01((0.04f - e) / 0.02f);
             var want = new Vector3(a.x, a.y - e * down, a.z);
             var speed = f.HaveWas ? Flat(a - f.Was).magnitude / dt : 0f;
             f.Was = a; f.HaveWas = true;
