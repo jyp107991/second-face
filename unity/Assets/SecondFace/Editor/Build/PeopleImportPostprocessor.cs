@@ -64,7 +64,10 @@ namespace SecondFace.EditorTools
 
         /// <summary>The bodies clips are played on: the cast's (Rocketbox) and the player's base models.</summary>
         public static bool Groundable(string path) =>
-            path.StartsWith("Assets/SecondFace/People/Rocketbox/") || path == "Assets/SecondFace/People/Player/player_m.fbx" || path == "Assets/SecondFace/People/Player/player_f.fbx";
+            path.StartsWith("Assets/SecondFace/People/Rocketbox/") || (!SkipPlayersTemp && (path == "Assets/SecondFace/People/Player/player_m.fbx" || path == "Assets/SecondFace/People/Player/player_f.fbx"));
+
+        /// <summary>TEMP (1127d probe; remove before commit).</summary>
+        public static bool SkipPlayersTemp;
 
         private static string Stamp(string path)
         {
