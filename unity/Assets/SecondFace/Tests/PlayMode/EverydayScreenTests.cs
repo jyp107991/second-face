@@ -9,6 +9,8 @@ using SecondFace.Game.People;
 using SecondFace.Game.World;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -146,6 +148,150 @@ namespace SecondFace.Tests
 #endif
         }
 
+        // TEMP (1127f): each recorded locomotion clip BARE (a manual PlayableGraph, no runtime system) on its own actor and on each
+        // listed person's body of its set, Unity's foot IK off and on (the Locomotion state has it on), at the clip's own keys:
+        // the hips' height, the ankles and toes in the root's frame, each foot's turn, and on the bodies the body mesh's lowest
+        // foot-skinned vertex per foot (root frame). Writes test-results/loco_touch.csv and loco_touch.txt. LOCO_PEOPLE narrows it.
+        [UnityTest, Timeout(3600000)]
+        public IEnumerator LocoTouch() => Fixed(LocoBare());
+
+        /// <summary>The toes' bend at their joint from a rest local rotation, degrees, + up (the tip raised against the foot).</summary>
+        private static float ToeBend(Transform foot, Transform toe, Quaternion rest, Vector3 tip)
+        {
+            if (toe == null) return 0f;
+            var sc = toe.localScale; var p = new Vector3(tip.x * sc.x, tip.y * sc.y, tip.z * sc.z);
+            if (p.sqrMagnitude < 1e-10f) p = Vector3.forward * 0.05f;
+            var now = toe.localRotation * p; var was = rest * p;
+            var a = Vector3.Angle(now, was);
+            var parent = toe.parent != null ? toe.parent.rotation : foot.rotation;
+            return (parent * now).y >= (parent * was).y ? a : -a;
+        }
+
+        private static int[][] FootVerts(SkinnedMeshRenderer r, Transform[] foot, Transform[] toe)
+        {
+            var m = r.sharedMesh; var bones = r.bones;
+            var bpv = m.GetBonesPerVertex(); var bw = m.GetAllBoneWeights();
+            var lists = new[] { new List<int>(), new List<int>() };
+            var o = 0;
+            for (var v = 0; v < bpv.Length; v++)
+            {
+                var sh = new float[2];
+                for (var j = o; j < o + bpv[v]; j++)
+                {
+                    var b = bw[j].boneIndex < bones.Length ? bones[bw[j].boneIndex] : null;
+                    for (var s = 0; s < 2; s++) if (b != null && (b == foot[s] || (toe[s] != null && b == toe[s]))) sh[s] += bw[j].weight;
+                }
+                o += bpv[v];
+                for (var s = 0; s < 2; s++) if (sh[s] > 0.5f) lists[s].Add(v);
+            }
+            return new[] { lists[0].ToArray(), lists[1].ToArray() };
+        }
+
+        private static IEnumerator LocoBare()
+        {
+#if UNITY_EDITOR
+            var cat = AssetDatabase.LoadAssetAtPath<RocketboxCatalog>("Assets/SecondFace/People/Rocketbox/RocketboxCatalog.asset");
+            var rec = AssetDatabase.LoadAssetAtPath<StepRecord>("Assets/SecondFace/Game/Resources/StepRecord.asset");
+            Assert.That(cat, Is.Not.Null); Assert.That(rec, Is.Not.Null);
+            var who = (System.Environment.GetEnvironmentVariable("LOCO_PEOPLE") ?? "Female_Adult_01,Female_Adult_09,Business_Female_02,Construction_Female_01,Male_Adult_08,Male_Adult_03,Construction_Male_03,Male_Adult_12,Police_Male_07,Female_Adult_04,Medical_Female_01")
+                .Split(',').Select(w => w.Trim()).Where(w => w.Length > 0).ToArray();
+            var dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results"));
+            Directory.CreateDirectory(dir);
+            var csv = new System.Text.StringBuilder("rig,person,clip,ik,k,t,hipsY");
+            foreach (var s in new[] { "L", "R" }) csv.Append($",a{s}x,a{s}y,a{s}z,t{s}x,t{s}y,t{s}z,q{s}x,q{s}y,q{s}z,q{s}w,low{s}x,low{s}y,low{s}z,b{s}");
+            csv.AppendLine();
+            var txt = new System.Text.StringBuilder($"loco touch {System.DateTime.UtcNow:u}\n");
+            var root = new GameObject("loco touch");
+            var x = 0f;
+            var iv = System.Globalization.CultureInfo.InvariantCulture;
+            foreach (var c in rec.Clips)
+            {
+                if (c == null || c.Motion == null) continue;
+                var path = AssetDatabase.GetAssetPath(c.Motion);
+                var jp = Path.ChangeExtension(path, ".json");
+                var j = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(jp));
+                var set = (string)j["set"] ?? "both"; var fps = j["fps"] != null ? (float)j["fps"] : 30f;
+                var frames = j["frames"] != null ? (int)j["frames"] : Mathf.RoundToInt(c.Motion.length * fps) + 1;
+                var own = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Avatar>().FirstOrDefault();
+                var rigs = new List<(string Label, string Person, GameObject Go, Animator A, SkinnedMeshRenderer Body, int[][] Feet)>();
+                var model = (GameObject)Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(path), new Vector3(x, 0f, 40f), Quaternion.identity, root.transform);
+                var ma = model.GetComponent<Animator>(); if (ma == null) ma = model.AddComponent<Animator>();
+                ma.avatar = own; ma.runtimeAnimatorController = null; ma.applyRootMotion = false; ma.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                rigs.Add(("actor", "actor", model, ma, null, null));
+                var k0 = 0;
+                foreach (var id in who)
+                {
+                    var male = !id.Contains("Female");
+                    if ((set == "m" && !male) || (set == "f" && male)) continue;
+                    var go = Object.Instantiate(cat.Get(id), new Vector3(x + (++k0) * 3f, 0f, 0f), Quaternion.identity, root.transform);
+                    foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true)) mb.enabled = false;
+                    var a = go.GetComponentInChildren<Animator>();
+                    a.runtimeAnimatorController = null; a.applyRootMotion = false; a.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                    var body = go.GetComponentsInChildren<SkinnedMeshRenderer>(true).Where(r => r.sharedMesh != null).OrderByDescending(r => r.sharedMesh.vertexCount).First();
+                    var foot = new[] { a.GetBoneTransform(HumanBodyBones.LeftFoot), a.GetBoneTransform(HumanBodyBones.RightFoot) };
+                    var toe = new[] { a.GetBoneTransform(HumanBodyBones.LeftToes), a.GetBoneTransform(HumanBodyBones.RightToes) };
+                    rigs.Add(("body", id, go, a, body, FootVerts(body, foot, toe)));
+                    txt.AppendLine($"{c.Name}: {id} skeleton {SecondFace.Game.Fighting.CombatSet.SkeletonKey(a)} hipsY at the bind {(a.GetBoneTransform(HumanBodyBones.Hips).position.y - a.transform.position.y):0.0000}");
+                }
+                txt.AppendLine($"{c.Name}: set {set} fps {fps} frames {frames} length {c.Motion.length:0.0000} actor avatar {(own != null ? own.name : "-")} human {(own != null && own.isHuman)} hipsY at the bind {(ma.GetBoneTransform(HumanBodyBones.Hips) != null ? ma.GetBoneTransform(HumanBodyBones.Hips).position.y - model.transform.position.y : float.NaN):0.0000}");
+                x += 40f;
+                // each rig's toes at its bind, before any evaluation
+                var rests = new Dictionary<string, Quaternion[]>();
+                foreach (var r in rigs)
+                {
+                    var tl = r.A.GetBoneTransform(HumanBodyBones.LeftToes); var tr = r.A.GetBoneTransform(HumanBodyBones.RightToes);
+                    rests[r.Label + r.Person] = new[] { tl != null ? tl.localRotation : Quaternion.identity, tr != null ? tr.localRotation : Quaternion.identity };
+                }
+                var baked = new Mesh();
+                foreach (var ik in new[] { false, true })
+                {
+                    foreach (var r in rigs)
+                    {
+                        var g = PlayableGraph.Create("lt_" + r.Label); g.SetTimeUpdateMode(DirectorUpdateMode.Manual);
+                        var o = AnimationPlayableOutput.Create(g, "o", r.A);
+                        var cp = AnimationClipPlayable.Create(g, c.Motion); cp.SetApplyFootIK(ik); cp.SetSpeed(1f);
+                        o.SetSourcePlayable(cp); g.Play();
+                        var rt = r.A.transform; var irot = Quaternion.Inverse(rt.rotation);
+                        Transform B(HumanBodyBones b) => r.A.GetBoneTransform(b);
+                        var toeRest = rests[r.Label + r.Person];
+                        for (var k = 0; k < frames; k++)
+                        {
+                            var t = Mathf.Min(k / fps, c.Motion.length);
+                            cp.SetTime(t); cp.SetDone(false); g.Evaluate(0f);
+                            var row = new System.Text.StringBuilder();
+                            row.Append(string.Format(iv, "{0},{1},{2},{3},{4},{5:0.0000},{6:0.0000}", r.Label, r.Person, c.Name, ik ? 1 : 0, k, t, rt.InverseTransformPoint(B(HumanBodyBones.Hips).position).y));
+                            Vector3[] v = null;
+                            if (r.Body != null) { r.Body.BakeMesh(baked, true); v = baked.vertices; var tr = r.Body.transform; var mw = Matrix4x4.TRS(tr.position, tr.rotation, Vector3.one); for (var i = 0; i < v.Length; i++) v[i] = mw.MultiplyPoint3x4(v[i]); }
+                            for (var s = 0; s < 2; s++)
+                            {
+                                var ft = B(s == 0 ? HumanBodyBones.LeftFoot : HumanBodyBones.RightFoot); var tt = B(s == 0 ? HumanBodyBones.LeftToes : HumanBodyBones.RightToes);
+                                var an = rt.InverseTransformPoint(ft.position); var to = tt != null ? rt.InverseTransformPoint(tt.position) : an;
+                                var q = irot * ft.rotation;
+                                var low = new Vector3(float.NaN, float.NaN, float.NaN);
+                                if (v != null) { var best = float.MaxValue; foreach (var i in r.Feet[s]) if (v[i].y < best) { best = v[i].y; low = rt.InverseTransformPoint(v[i]); } }
+                                var bend = tt != null && tt.childCount > 0 ? ToeBend(ft, tt, toeRest[s], tt.GetChild(0).localPosition) : tt != null ? ToeBend(ft, tt, toeRest[s], Vector3.zero) : 0f;
+                                row.Append(string.Format(iv, ",{0:0.00000},{1:0.00000},{2:0.00000},{3:0.00000},{4:0.00000},{5:0.00000},{6:0.000000},{7:0.000000},{8:0.000000},{9:0.000000},{10:0.00000},{11:0.00000},{12:0.00000},{13:0.0}", an.x, an.y, an.z, to.x, to.y, to.z, q.x, q.y, q.z, q.w, low.x, low.y, low.z, bend));
+                            }
+                            csv.AppendLine(row.ToString());
+                        }
+                        g.Destroy();
+                    }
+                    yield return null;
+                }
+                Object.Destroy(baked);
+                foreach (var r in rigs) Object.DestroyImmediate(r.Go);
+                yield return null;
+            }
+            File.WriteAllText(Path.Combine(dir, "loco_touch.csv"), csv.ToString());
+            File.WriteAllText(Path.Combine(dir, "loco_touch.txt"), txt.ToString());
+            Object.Destroy(root);
+            Debug.Log("LocoTouch done");
+#else
+            Assert.Ignore("editor only");
+            yield break;
+#endif
+        }
+
         // TEMP (1127e): each traced person's base layer, frame by frame: the state's phase and the clips playing, by file
         public sealed class PhaseWatcher : MonoBehaviour
         {
@@ -226,6 +372,8 @@ namespace SecondFace.Tests
             private SkinnedMeshRenderer[] _rs; private Mesh _baked; private int _body = -1;
             private int[][] _off; private BoneWeight1[][] _bw;
             private int[][][] _footVerts;                  // [renderer][side]: vertices with more than half their weight on that foot and its toes
+            private int[][][] _toeVerts;                   // [renderer][side]: vertices with more than half their weight on that foot's toes
+            private bool _straighten; private Vector2 _pitchLow;
             private readonly (int r, int v, float d)[][] _src = new (int r, int v, float d)[2][];      // [side][hull index: the foot frame's points, then the toes']: the source vertex
             private Transform[] _all; private Vector3[] _p1, _p2, _s1, _s2; private Quaternion[] _q1, _q2;
             private bool _init, _snap, _bad;
@@ -233,6 +381,16 @@ namespace SecondFace.Tests
             private readonly Matrix4x4[] _footRestM = new Matrix4x4[2];
             private readonly Vector3[] _ankleRest = new Vector3[2], _fwdRest = new Vector3[2];
             private string _midRow = "";
+            private string _midExtra = ",,,,,,,,,,,,,,,,,,,,";
+            private string _midToe = ",,";
+            private string ToeLow(Vector3[][] verts, int s, float g)
+            {
+                var best = float.MaxValue;
+                for (var ri = 0; ri < verts.Length; ri++) foreach (var v in _toeVerts[ri][s]) if (verts[ri][v].y < best) best = verts[ri][v].y;
+                return best < float.MaxValue ? (best - g).ToString("0.0000") : "";
+            }
+            private readonly float[] _toeClip = new float[2], _toeW = new float[2];
+            private Vector3[][] _prevM, _prevD; private int _prevMFrame = -10, _prevDFrame = -10;
             private byte[] _seg; private int[] _solePoint; private SkinnedMeshRenderer _gateSmr;
             private static readonly string[] Sides = { "L", "R" };
 
@@ -275,6 +433,11 @@ namespace SecondFace.Tests
                     _toeRest[0] = (Quaternion)F("_toeRestL"); _toeRest[1] = (Quaternion)F("_toeRestR");
                     _hips = (Transform)F("_hips");
                     _soleOver = typeof(FootPlant).GetMethod("SoleOver", NP); _groundAt = typeof(FootPlant).GetMethod("GroundAt", NP);
+                    // (the toes straightened on the moving branch only where the plant still has its Toes(): main's ankle test)
+                    _straighten = typeof(FootPlant).GetMethod("Toes", NP) != null;
+                    var plf = typeof(FootPlant).GetField("PitchLow", BindingFlags.Public | BindingFlags.Instance);
+                    _pitchLow = plf != null ? (Vector2)plf.GetValue(_fp) : Vector2.zero;
+                    info.AppendLine($"plant straightens the toes on the moving branch: {_straighten}");
                     _plantF = typeof(FootPlant).GetField("_plant", NP); _clockF = typeof(MotionProbe).GetField("_clock", NP);
                     _seg = (byte[])typeof(MotionProbe).GetField("_seg", NP).GetValue(Probe);
                     _solePoint = (int[])typeof(MotionProbe).GetField("_solePoint", NP).GetValue(Probe);
@@ -286,33 +449,36 @@ namespace SecondFace.Tests
                     var n = _all.Length;
                     _p1 = new Vector3[n]; _p2 = new Vector3[n]; _s1 = new Vector3[n]; _s2 = new Vector3[n]; _q1 = new Quaternion[n]; _q2 = new Quaternion[n];
                     // each renderer's skin weights, and its vertices skinned mostly to each foot
-                    _off = new int[_rs.Length][]; _bw = new BoneWeight1[_rs.Length][]; _footVerts = new int[_rs.Length][][];
+                    _off = new int[_rs.Length][]; _bw = new BoneWeight1[_rs.Length][]; _footVerts = new int[_rs.Length][][]; _toeVerts = new int[_rs.Length][][];
                     for (var ri = 0; ri < _rs.Length; ri++)
                     {
                         var r = _rs[ri]; var m = r.sharedMesh; var bones = r.bones;
-                        _footVerts[ri] = new[] { new int[0], new int[0] };
+                        _footVerts[ri] = new[] { new int[0], new int[0] }; _toeVerts[ri] = new[] { new int[0], new int[0] };
                         try
                         {
                             var bpv = m.GetBonesPerVertex(); var bw = m.GetAllBoneWeights();
                             var off = new int[bpv.Length + 1];
                             for (var i = 0; i < bpv.Length; i++) off[i + 1] = off[i] + bpv[i];
                             _off[ri] = off; _bw[ri] = bw.ToArray();
-                            var lists = new[] { new List<int>(), new List<int>() };
+                            var lists = new[] { new List<int>(), new List<int>() }; var tlists = new[] { new List<int>(), new List<int>() };
                             for (var v = 0; v < bpv.Length; v++)
                                 for (var s = 0; s < 2; s++)
                                 {
-                                    var share = 0f;
+                                    var share = 0f; var tshare = 0f;
                                     for (var j = off[v]; j < off[v + 1]; j++)
                                     {
                                         var b = _bw[ri][j].boneIndex < bones.Length ? bones[_bw[ri][j].boneIndex] : null;
                                         if (b != null && (b == _foot[s] || (_toe[s] != null && b == _toe[s]))) share += _bw[ri][j].weight;
+                                        if (b != null && _toe[s] != null && b == _toe[s]) tshare += _bw[ri][j].weight;
                                     }
                                     if (share > 0.5f) lists[s].Add(v);
+                                    if (tshare > 0.5f) tlists[s].Add(v);
                                 }
                             _footVerts[ri] = new[] { lists[0].ToArray(), lists[1].ToArray() };
+                            _toeVerts[ri] = new[] { tlists[0].ToArray(), tlists[1].ToArray() };
                         }
                         catch (System.Exception e) { info.AppendLine($"renderer {r.name}: no skin weights read: {e.Message}"); }
-                        info.AppendLine($"renderer {ri} {r.name} active={r.gameObject.activeInHierarchy} enabled={r.enabled} verts={m.vertexCount} lossyScale={r.transform.lossyScale.x:0.0000},{r.transform.lossyScale.y:0.0000},{r.transform.lossyScale.z:0.0000} footVertsL={_footVerts[ri][0].Length} footVertsR={_footVerts[ri][1].Length}{(ri == _body ? " (the gate's body)" : "")}");
+                        info.AppendLine($"renderer {ri} {r.name} active={r.gameObject.activeInHierarchy} enabled={r.enabled} verts={m.vertexCount} lossyScale={r.transform.lossyScale.x:0.0000},{r.transform.lossyScale.y:0.0000},{r.transform.lossyScale.z:0.0000} footVertsL={_footVerts[ri][0].Length} footVertsR={_footVerts[ri][1].Length} toeVertsL={_toeVerts[ri][0].Length} toeVertsR={_toeVerts[ri][1].Length}{(ri == _body ? " (the gate's body)" : "")}");
                     }
                     Provenance(info);
                 }
@@ -328,6 +494,9 @@ namespace SecondFace.Tests
                         if (pre == "M") head.Append($",{pre}{s}_chk,{pre}{s}_dip");
                         else head.Append($",{pre}{s}_seg,{pre}{s}_gheel,{pre}{s}_gball,{pre}{s}_lock");
                     }
+                foreach (var s in Sides) head.Append($",M{s}_cx,M{s}_cz,M{s}_csp,M{s}_bsp,M{s}_ax,M{s}_az,M{s}_e,M{s}_toeclip,M{s}_toew,M{s}_toeplant");
+                foreach (var s in Sides) head.Append($",D{s}_csp,D{s}_cx,D{s}_cz");
+                head.Append(",rootx,rootz,ML_toe,MR_toe,DL_toe,DR_toe");
                 _w.WriteLine(head.ToString());
             }
 
@@ -374,6 +543,20 @@ namespace SecondFace.Tests
                             {
                                 var j = _solePoint[s * 2 + q];
                                 if (j >= 0) info.AppendLine($"  gate {(q == 0 ? "heel" : "ball")} vertex {j}: along {Vector3.Dot(gv[j] - a, _fwdRest[s]) * 100f:0.0} cm, {(gv[j].y - low) * 100f:0.00} cm over the foot-skinned lowest");
+                            }
+                        }
+                        if (_body >= 0)
+                        {
+                            var bv = verts[_body];
+                            foreach (var (tn, tl, tt) in new[] { ("heel", _heel[s], false), ("back", _back[s], false), ("ball", _ball[s], false), ("tip", _tip[s], true) })
+                            {
+                                var tw = tt && _toe[s] != null ? _toe[s].TransformPoint(tl) : _foot[s].TransformPoint(tl);
+                                var bi = -1; var bd = float.MaxValue;
+                                for (var v = 0; v < bv.Length; v++) { var dd = (bv[v] - tw).sqrMagnitude; if (dd < bd) { bd = dd; bi = v; } }
+                                var (tb, tbw, tsh) = Dominant(_body, bi, s);
+                                var tsh2 = 0f;
+                                if (bi >= 0 && _off[_body] != null) for (var jj = _off[_body][bi]; jj < _off[_body][bi + 1]; jj++) { var e2 = _bw[_body][jj]; var bb = e2.boneIndex < _rs[_body].bones.Length ? _rs[_body].bones[e2.boneIndex] : null; if (bb != null && _toe[s] != null && bb == _toe[s]) tsh2 += e2.weight; }
+                                info.AppendLine($"  term {Sides[s]} {tn}: body vertex {bi} at {Mathf.Sqrt(bd) * 1000f:0.000} mm; dominant bone {tb} {tbw:0.000}; foot+toes share {tsh:0.000}; toes share {tsh2:0.000}; stored in the {(tt ? "toes'" : "foot's")} frame");
                             }
                         }
                         var n = _hf[s].Length + _ht[s].Length;
@@ -447,6 +630,25 @@ namespace SecondFace.Tests
 
             // the mesh on the pose now: each side's lowest foot-skinned vertex (any renderer; the body alone), its renderer and
             // how far along the foot it is; and where the hull's lowest point's source vertex is
+            // the lowest foot-skinned vertex of a side (any renderer, or the body alone) on a pose, and the same vertex's own
+            // horizontal speed from the previous frame's pose of the same kind (m/s; blank when that frame is not the one before)
+            private (int r, int v) LowestIdx(int s, Vector3[][] verts, bool bodyOnly)
+            {
+                var best = float.MaxValue; var br = -1; var bv = -1;
+                for (var ri = 0; ri < verts.Length; ri++)
+                {
+                    if (bodyOnly && ri != _body) continue;
+                    foreach (var v in _footVerts[ri][s]) { var y = verts[ri][v].y; if (y < best) { best = y; br = ri; bv = v; } }
+                }
+                return (br, bv);
+            }
+            private static string Own((int r, int v) c, Vector3[][] now, Vector3[][] was, bool consecutive)
+            {
+                if (!consecutive || was == null || c.r < 0 || Time.deltaTime <= 0f) return "";
+                var a = now[c.r][c.v]; var b = was[c.r][c.v];
+                return (new Vector2(a.x - b.x, a.z - b.z).magnitude / Time.deltaTime).ToString("0.000");
+            }
+
             private string MeshLow(int s, float g, Vector3[][] verts, int hi)
             {
                 var best = float.MaxValue; var br = -1; var bv = -1; var body = float.MaxValue; var bodyV = -1;
@@ -465,7 +667,7 @@ namespace SecondFace.Tests
 
             public void Mid()
             {
-                _midRow = "";
+                _midRow = ""; _midExtra = ",,,,,,,,,,,,,,,,,,,,"; _midToe = ",,";
                 if (!_snap || _bad) return;
                 var moving = _fp.enabled && (float)_plantF.GetValue(_fp) <= 0f;
                 if (!moving) return;
@@ -478,7 +680,8 @@ namespace SecondFace.Tests
                     for (var s = 0; s < 2; s++)
                     {
                         var e = _fp.Diag[10 + s];
-                        var w = Mathf.Clamp01((_fp.PitchLow.y - e) / (_fp.PitchLow.y - _fp.PitchLow.x));
+                        var w = _straighten ? Mathf.Clamp01((_pitchLow.y - e) / (_pitchLow.y - _pitchLow.x)) : 0f;
+                        _toeClip[s] = ToeBend(_foot[s], _toe[s], _toeRest[s], _tip[s]); _toeW[s] = w;
                         if (w > 0f && _toe[s] != null) _toe[s].localRotation = Quaternion.Slerp(_toe[s].localRotation, _toeRest[s], w);
                     }
                     var verts = _rs.Select(r => BakeWorld(r, false)).ToArray();
@@ -493,6 +696,17 @@ namespace SecondFace.Tests
                         sb.Append($",{terms},{MeshLow(s, g, verts, hi)},{(sole + off - dip) * 1000f:0.000},{dip:0.0000}");
                     }
                     _midRow = sb.ToString();
+                    var exb = new System.Text.StringBuilder();
+                    var con = _prevMFrame == Time.frameCount - 1;
+                    for (var s = 0; s < 2; s++)
+                    {
+                        var c = LowestIdx(s, verts, false); var cb = LowestIdx(s, verts, true);
+                        var cp = c.r >= 0 ? verts[c.r][c.v] : Vector3.zero;
+                        exb.Append($",{cp.x:0.0000},{cp.z:0.0000},{Own(c, verts, _prevM, con)},{Own(cb, verts, _prevM, con)},{_foot[s].position.x:0.0000},{_foot[s].position.z:0.0000},{_fp.Diag[10 + s]:0.0000},{_toeClip[s]:0.0},{_toeW[s]:0.000},{ToeBend(_foot[s], _toe[s], _toeRest[s], _tip[s]):0.0}");
+                    }
+                    _midExtra = exb.ToString();
+                    _midToe = $",{ToeLow(verts, 0, Ground(_foot[0].position))},{ToeLow(verts, 1, Ground(_foot[1].position))}";
+                    _prevM = verts; _prevMFrame = Time.frameCount;
                 }
                 catch (System.Exception ex) { Debug.LogWarning("SoleProbe.Mid: " + ex.Message); }
                 finally
@@ -520,8 +734,18 @@ namespace SecondFace.Tests
                         sb.Append($",{terms},{MeshLow(s, g, verts, hi)},{(seg < float.MaxValue ? (seg - g).ToString("0.0000") : "")},{GP(0)},{GP(1)},{_fp.Diag[s == 0 ? 3 : 7]:0.0}");
                     }
                     var mid = _midRow.Length > 0 ? _midRow : string.Concat(Enumerable.Repeat(",,,,,,,,,,,,,,,", 2));
+                    var dx = new System.Text.StringBuilder();
+                    var dcon = _prevDFrame == Time.frameCount - 1;
+                    for (var s = 0; s < 2; s++)
+                    {
+                        var c = LowestIdx(s, verts, false);
+                        var cp = c.r >= 0 ? verts[c.r][c.v] : Vector3.zero;
+                        dx.Append($",{Own(c, verts, _prevD, dcon)},{cp.x:0.0000},{cp.z:0.0000}");
+                    }
+                    _prevD = verts; _prevDFrame = Time.frameCount;
+                    var rootP = _fp.transform.position;
                     var clock = _clockF != null ? (float)_clockF.GetValue(Probe) : 0f;
-                    _w.WriteLine($"{Time.frameCount},{Time.time:0.000},{clock:0.000},{Probe.State},{(_midRow.Length > 0 ? 1 : 0)},{_fp.Diag[8]:0.0000}{mid}{sb}");
+                    _w.WriteLine($"{Time.frameCount},{Time.time:0.000},{clock:0.000},{Probe.State},{(_midRow.Length > 0 ? 1 : 0)},{_fp.Diag[8]:0.0000}{mid}{sb}{_midExtra}{dx},{rootP.x:0.0000},{rootP.z:0.0000}{_midToe},{ToeLow(verts, 0, Ground(_foot[0].position))},{ToeLow(verts, 1, Ground(_foot[1].position))}");
                 }
                 catch (System.Exception ex) { Debug.LogWarning("SoleProbe.LateUpdate: " + ex.Message); }
             }

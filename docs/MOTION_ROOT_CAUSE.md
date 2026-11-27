@@ -1008,6 +1008,25 @@ Found under three CI regressions of 71ba0e5b (`CapturedMotionHoldsHumanPosesWhen
   when most has it up; the record says when the foot lifts, so NoRelock and the lift test have no part there. Elsewhere (the idles
   and gestures carry no record; the walk's starts and stops blended from the idle) the ankle test stands as before. No threshold
   was added: one half is a majority. RECORD_RESULT
+- **The foot plant's sole against the drawn mesh: the hull cleared** (relaunch 15; a temporary probe, not hashed, on the ankle
+  test; the eleven-person pick and the other flat forefoots, Female_Adult_12, _14, _17 and Male_Adult_06). The lead was that
+  `FootPlant.Hull()` bakes every skinned renderer, clothes included, and keeps their low vertices rigid in the foot's frame, so a
+  cuff or hem skinned to the shin would swing under the drawn heel at a toes-up strike. Measured: (1) each of the hull's 3,169
+  points is found again as one baked vertex of one renderer on the pose the hull is made on (the prefab's, as at
+  `FootPlant.Awake`), within 0.004 mm; every one is a vertex of the body or of the boots layer, with all its weight on the foot and
+  toe bones (none on the shin: the trousers', coats' and belts' layers lie above the hull's cut, the ankle less 2 cm and the lowest
+  plus 5 cm). (2) The pose `FootPlant.SoleOver` reads (the clip's, with the hips' sink and the toes' straightening put back on) is
+  rebuilt to its own dip within 0.001 mm on all 38,115 moving frames. (3) On that pose the plant's lowest sole point (heel, back,
+  ball, tip or hull) against the mesh's own lowest foot-skinned vertex (more than half its weight on the foot and toes, any
+  renderer): the mesh less the model 0.00 cm at the median, 0.03 at the p99 (0.01 on the four), 0.09 at the p99.9 (0.18), at most
+  0.49 cm in one frame; the model stands higher than the mesh by up to 0.63 cm (the hull's 1.5 cm cells). In no frame did the model
+  read a foot down (under 2.5 cm) while the mesh stood over 2.5 cm, but for 8 frames straddling the line by 0.2 cm. At a toes-up
+  heel strike the hull's lowest point is the true contact, the heel's back edge (Construction_Male_03's right foot at 139.61-139.68
+  s: the model and the mesh -0.9 to +0.2 cm; the bind's heel point 1.8-2.1 cm). So the "dip -0.6 cm against the drawn heel 5.7 cm"
+  read compares the contact with the gate's fixed heel vertex (the lowest behind the ankle at the bind), after the plant had lifted
+  the foot to its 3 cm swing clearance: no hull change. What it shows instead: at push-off (the gate's heel over 3 cm, the foot's
+  lowest under 1.2 cm) the drawn contact is the toes' tip, 2.6-12.8 cm ahead of the ball the plant holds (the men 11.1-12.8, the
+  women 2.6-10.5; the contact at 16.3-23.2 cm along the foot at the median, the tip at 18.5-23.0).
 - **W6, Medical_Female_01's jog stop, and the walk's starts and stops.** One frame: the landing right foot 4.4 cm up, 0.47 m/s
   across the ground, rising 0.18 m/s, both feet up, the body at 2.3 m/s (its p98 1.3 passes): the catch (the hips set down onto a
   slow lower foot, both feet up) is gated by the plant's smoothed pace, which lags the stop's deceleration, and did not fire. The
