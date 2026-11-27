@@ -692,11 +692,9 @@ namespace SecondFace.Game.Fighting
         public void TurnOntoTheActor()
         {
             TurnAngle = 0f; TurnShift = Vector3.zero; TurnRot = TurnThighL = TurnThighR = Quaternion.identity; TurnThighs = 0f;
-            if (TurnOffTemp) return;   // TEMP (A/B)
             if (!Ready || _a == null || !_a.enabled || _hips == null || Set == null || _skel == null || _full < 0) return;
             var w = Smooth(_fullW);
             if (w <= 0.001f) return;
-            var t0 = System.Diagnostics.Stopwatch.GetTimestamp();   // TEMP (cost)
             TurnOf(_a.GetCurrentAnimatorStateInfo(_full), out var hips, out var tl, out var tr, out var shift);
             if (_a.IsInTransition(_full))
             {
@@ -715,13 +713,8 @@ namespace SecondFace.Game.Fighting
             _hips.position += move;
             TurnAngle = Quaternion.Angle(Quaternion.identity, hips); TurnShift = move; TurnRot = hips; TurnThighL = tl; TurnThighR = tr;
             TurnThighs = Mathf.Max(Quaternion.Angle(Quaternion.identity, tl), Quaternion.Angle(Quaternion.identity, tr));
-            TurnTicksTemp += System.Diagnostics.Stopwatch.GetTimestamp() - t0; TurnCallsTemp++;   // TEMP (cost)
         }
 
-        /// <summary>TEMP (the turn's cost, read by the fight screen; remove before any verdict or commit).</summary>
-        public static long TurnTicksTemp, TurnCallsTemp;
-        /// <summary>TEMP (A/B only; remove before any verdict or commit): the turn off.</summary>
-        public static bool TurnOffTemp;
 
         private void TurnOf(AnimatorStateInfo info, out Quaternion hips, out Quaternion thighL, out Quaternion thighR, out Vector3 shift)
         {
@@ -805,41 +798,24 @@ namespace SecondFace.Game.Fighting
             var root = Body.position.y;
             var gL = GroundAt(_footL.position, root); var gR = GroundAt(_footR.position, root);
             var eL = SoleLow(_footL, _heelL, _ballL) - gL; var eR = SoleLow(_footR, _heelR, _ballR) - gR;
-            // the hips: the lower sole onto its ground (on a slope, the higher one's less 1.5 cm, so the downhill leg reaches),
-            // and down at least as far as each foot the clip has down needs for its leg to reach its ground nearly straight
-            // (FootPlant.LegNeed's rule): set by the lower sole alone, the clip's straight standing leg could not reach its
-            // ground, its foot hung 1-3 cm up at the leg's full reach (the knee at the solver's limit, 1.8°) and swung with the
-            // hips' sway (F1 and F4 in the guard, the ready and both aims, docs/COMBAT_ROOT_CAUSE.md 17)
+            // the hips: the lower sole onto its ground (on a slope, the higher one's less 1.5 cm, so the downhill leg reaches)
             var lo = Mathf.Min(eL, eR); var hi = Mathf.Max(eL, eR);
-            // a foot the clip lifts sets nothing: judged on the clip's own flat ground (each sole over the root, before any ground
-            // is read: on a slope the clip has both feet level and only their grounds differ), a sole more than LiftedOver over
-            // the other's is a step, a duck's or a blow's. Taken as the "higher sole" it brought the hips down until it nearly met
-            // the floor, the standing leg was drawn up through it and folded (a duck's 112° knee to 150°, a club blow's 47° to 76°,
-            // the way into cover's 146° to 155°: Kb in the dodge, the strikes and the crouch, docs/COMBAT_ROOT_CAUSE.md 18) and the
-            // lifted foot was set down
-            var liftL = false; var liftR = false;
-            if (FeetRuleTemp == 0 || FeetRuleTemp == 4) { liftL = RecordDown(true) == false; liftR = RecordDown(false) == false; }
-            else if (FeetRuleTemp == 3)
-            {
-                var cL = SoleLow(_footL, _heelL, _ballL) - root; var cR = SoleLow(_footR, _heelR, _ballR) - root;
-                var cLow = Mathf.Min(cL, cR);
-                liftL = cL - cLow > LiftedOver; liftR = cR - cLow > LiftedOver;
-            }
+            // a foot the clip's own record of its actor's contacts lifts (CombatSet.ClipFacts.DownL/DownR: a step, a duck's or a
+            // blow's) sets nothing: taken as the "higher sole" it brought the hips down until it nearly met the floor, the standing
+            // leg was drawn up through it and folded (a duck's 112° knee to 150°: Kb in the dodge, docs/COMBAT_ROOT_CAUSE.md 18), and
+            // the lifted foot was set down. (The planted feet the bodies stood 7-11 cm apart in height where the actors stand them
+            // level are the retarget's, put back before this by the clip's turn onto its actor, item 19; the rule that brought the
+            // hips down for each planted leg's reach, item 17, folded the planted leg instead and is gone.)
+            var liftL = RecordDown(true) == false; var liftR = RecordDown(false) == false;
             if (liftL != liftR) lo = hi = liftL ? eR : eL;
-            var byRecord = FeetRuleTemp == 0 || FeetRuleTemp == 4;
             var want = -Mathf.Clamp(hi - 0.015f, lo, hi);
-            if (FeetRuleTemp <= 1)
-            {
-                if (!(byRecord && liftL)) want = Mathf.Min(want, -LegNeed(_upL, _loL, _footL, eL, _fl, want));
-                if (!(byRecord && liftR)) want = Mathf.Min(want, -LegNeed(_upR, _loR, _footR, eR, _fr, want));
-            }
             want = Mathf.Clamp(want, -0.2f, 0.2f);
             _sink = _fl.HaveWas || _fr.HaveWas ? Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-25f * dt)) : want;
             _hips.position += Vector3.up * (_sink * w);
             eL += _sink * w; eR += _sink * w;
             var k = _hipHeight / 0.935f;
-            var wantL = Place(ref _fl, _footL.position, eL, dt, pin, _fr.Stepping, k, byRecord && liftL);
-            var wantR = Place(ref _fr, _footR.position, eR, dt, pin, _fl.Stepping, k, byRecord && liftR);
+            var wantL = Place(ref _fl, _footL.position, eL, dt, pin, _fr.Stepping, k, liftL);
+            var wantR = Place(ref _fr, _footR.position, eR, dt, pin, _fl.Stepping, k, liftR);
             var rotL = _footL.rotation; var rotR = _footR.rotation;
             TwoBone.Solve(_upL, _loL, _footL, wantL, w, _loL.position + Front * 0.3f);
             TwoBone.Solve(_upR, _loR, _footR, wantR, w, _loR.position + Front * 0.3f);
@@ -847,17 +823,6 @@ namespace SecondFace.Game.Fighting
             SoleOver = new Vector2(SoleLow(_footL, _heelL, _ballL) - gL, SoleLow(_footR, _heelR, _ballR) - gR);
             Planted = new Vector2(_fl.Pinned && !_fl.Stepping ? 1f : 0f, _fr.Pinned && !_fr.Stepping ? 1f : 0f);
         }
-
-        /// <summary>A standing leg's reach as a share of its length (FootPlant.StanceStraight's: the knee bent about 3.6°).</summary>
-        public float StandStraight = 0.9995f;
-
-        /// <summary>A sole this far (m) over the other's on the clip's own flat ground is a foot the clip lifts (the 3 cm
-        /// <see cref="LegNeed"/> and the stance's doc take for a foot the clip has down).</summary>
-        public const float LiftedOver = 0.03f;
-
-        /// <summary>TEMP (A/B only; remove before any verdict or commit): 0 the record's lifted foot left out, with LegNeed; 1 as main;
-        /// 2 as before patch5 (no LegNeed); 3 the height test, no LegNeed; 4 the record's lifted foot left out, no LegNeed.</summary>
-        public static int FeetRuleTemp = 0;
 
         // the full layer's state and its clip's normalized time, this frame
         private string _fullState;
@@ -874,21 +839,6 @@ namespace SecondFace.Game.Fighting
             if (spans == null || spans.Length < 2) return null;
             for (var i = 0; i + 1 < spans.Length; i += 2) if (_fullT >= spans[i] && _fullT <= spans[i + 1]) return true;
             return false;
-        }
-
-        /// <summary>How far the hips must come down (m, from where they are) for this leg to reach the ground under its foot
-        /// (held where it is planted) nearly straight (<see cref="StandStraight"/>); -infinity for a foot the clip lifts
-        /// (over 3 cm up once the hips are at <paramref name="sink"/>), one stepping, or a place out of reach along the
-        /// ground.</summary>
-        private float LegNeed(Transform up, Transform lo, Transform ft, float e, in Foot f, float sink)
-        {
-            if (f.Stepping || e + sink > 0.03f) return float.NegativeInfinity;
-            var a = ft.position;
-            var at = f.Pinned && f.W > 0f ? Vector3.Lerp(Flat(a), f.Pin, f.W) : Flat(a);
-            var target = new Vector3(at.x, a.y - e, at.z);
-            var reach = StandStraight * ((lo.position - up.position).magnitude + (a - lo.position).magnitude);
-            var hv = target - up.position; var flat = new Vector2(hv.x, hv.z).magnitude;
-            return reach > flat ? up.position.y - (target.y + Mathf.Sqrt(reach * reach - flat * flat)) : float.NegativeInfinity;
         }
 
         /// <summary>Each foot's lowest sole point over its ground after the fight's feet (m; left, right), and whether each is
