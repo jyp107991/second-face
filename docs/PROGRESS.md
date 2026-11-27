@@ -717,6 +717,35 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-27, the gate batch committed under the waiver policy: the runtime reads the drawn body (editor owner).**
+  Gate: red, 3,351 (the whole cast, 2026-11-27 04:34; dfc732a4's 6,460; the fight's new FY1/FY2, 667, exempt as introduced).
+  - Whole cast of the batch's tree, 79 people: failing cells 6,460 -> 3,351, the everyday states 4 -> 2 (Female_Adult_01's jog W1,
+    Medical_Female_01's jog W6: both known, carried to the next batch). By measure against dfc732a4: F1 1,511 -> 743, C1 614 -> 416,
+    K1 578 -> 133, F4 499 -> 165, A1 474 -> 322, H1 474 -> 237, WG2 414 -> 54, H2 395 -> 54. Fifteen keys stand worse, every one
+    but Kb in the strikes (129 -> 154) at its count on cast 3's tree before this round: listed with their causes and fix items in
+    `docs/qa/gates/motion_waivers.json` (with `TheFightsFeetStandOnTheGroundAndStepBetweenStances`, still failing).
+  - Causes found and removed at their sources (`docs/MOTION_ROOT_CAUSE.md` §15, `docs/COMBAT_ROOT_CAUSE.md` 17): the runtime's
+    skin reading under-read a concave waist (the least of three points' planes; every reading of a point cloud errs at concave or
+    sharp places): the skin now carries the body's own torso and thigh triangles, posed as the mesh is drawn, and an arm's depth
+    is read against them, within 0.002 cm of the gate's own reading (the push's direction stays the outer skin points', since the
+    nearest drawn triangle can be a pouch's back or a covered layer); the stride's push chosen by the angle it alone left (now by
+    what the stride's ease leaves: the arm less in, then nearer the vertical); a moving push that carried the arm back through
+    the body, and resting passes that slid a forearm along the hip instead of out (each now tried straight out to the side as
+    well, the better kept); the fight's trunk corrections turned the bone the legs hang from, and the fight's hips were set for
+    the lower sole alone (now the bones above the legs, and each planted leg's reach).
+  - Tried and reverted: arm satellites (the drawn vertices each skin point stands for: no push happened there at all); a held
+    foot's toes laid down (passed one flat forefoot's jog, broke another's). Refuted: the arm's third by the elbow filed live.
+  - Cost (the editor, all 79): the drawn reading 0.9 ms a person a frame at the median (max 2.8), the arm clearance 4.6 ms.
+  - Next: the fight's cells clip by clip (`docs/COMBAT_ROOT_CAUSE.md` 18): every failing key grouped by (state, sex), most of them
+    79, 54 or 25 cells (the whole cast, every man, every woman alike: a cause per clip, retarget or pipeline, not per body); each
+    group's clip measured on its own actor against the same limit before the runtime is touched (clip, then retarget, runtime,
+    prop, state machine), biggest first (the aim's A2/H1/FY2/FY1/A1, the strike's A2/F1/A1, the dodge's F1 then F2/Kb/C1, the
+    second strike, then the keys on all 79: crouch, throw, ready); Kb in the strikes (154, this round's one key made worse) back to
+    129 or under within two batches, settled first by an A/B of item 17's hips rule; the fixes batched, the fight screened on the
+    79 at the fixed step, then the whole cast under the same waiver rules (never a commit on picks). Then the two everyday cells.
+  - Perf item (not a gate item): the arm clearance costs about 4.6 ms a person a frame in the editor (median over the 79), too much
+    for crowds on Android. To add: a clearance level of detail (in full only near the camera or in conversation, at a reduced
+    rate or skipped for people far off), measured in a later batch, and never changing the gate's own measurements.
 - **2026-11-26 (later), the gate batch: the striding push, the give's share, the robust reading's reach, the arms' seams (editor
   owner; not committed, the batch on `wip/gate-batch`).**
   Gate: red, 6460 (dfc732a4).

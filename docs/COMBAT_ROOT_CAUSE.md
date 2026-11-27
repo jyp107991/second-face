@@ -238,3 +238,55 @@ steps).**
 
 **16. `ThousandsOfFightsKeepTheHardRules` timed out here (388 s against its 180 s).** A pure Core test; it passes in the Core
 workflow (dotnet) on main (dfc732a4). To be read on CI after the push; never loosened.
+
+## 2026-11-26: the fight's feet (editor owner)
+
+**17. The fight's feet: F4 in every aim and guard, F1 in the standing stances, `TheFightsFeetStandOnTheGroundAndStepBetweenStances`
+(item 15).** On cast 3's whole-cast verdict the feet were half of the fight's failing cells (F1 774, F4 608, F3w 333, F2 111 of
+3,815); F4 in the long gun's aim and the pistol's 395, the guard's 104.
+- Evidence, from the gate's own frame traces (`motion_gate_full_0_trace.csv`, Business_Female_01 and Business_Male_01, the cast's
+  first woman and man, every runtime system on):
+  - In the long gun's aim the straighter knee reads 1.8° on every frame: the two-bone solver's limit (the hip to the target
+    clamped 0.1 mm short of the leg's length), so the foot's target is out of the leg's reach. The clip's leg (CMU 79_96) is
+    straight (0°); its heel hangs 1.8-2.1 cm, its ball 1.0 cm over the ground. The standing foot plant (idle) holds the same
+    leg at 3.6° (`FootPlant.StanceStraight`, 0.9995 of its length), on every frame: reachable by design.
+  - The same clamp in the guard (the woman's right leg: its heel rises 2.4-3.1 cm and the foot moves 17 cm/s once a loop),
+    the ready, both aims, the blows (the woman's at the clamp on 124-273 of 360 leg-frames a state).
+  - At every round of the long gun's aim both ankles jump 1.5-2.2 cm in one frame (88-135 cm/s) with both knees unchanged and
+    the pelvis unmoved against the root, then drift back over about 0.2 s; the same at the aim loop's seam. Both legs swing as
+    one piece about a joint above the hips.
+- Causes:
+  1. **The trunk's corrections turn the bone the legs hang from.** Biped's thighs are children of `Bip01 Spine`, Unity's Spine
+     bone (the bodies' `humanDescription`: `Bip01 L Thigh` parent `Bip01 Spine`; Hips is `Bip01 Pelvis`). `Fighter.AimFix`
+     turns the trunk `{Spine, Chest, UpperChest}` a share each onto the target, after `Fighter.Feet` has set the feet: at a
+     round the recoil pitches the chest 2.6-4° back, the fix takes a third of it back on the Spine, and both legs swing about
+     it (a degree there moves a foot 1.7 cm). The hit's spring turns the Spine too. The foot plant learned the same of these
+     rigs (`FootPlant.Level`: "the chest held, not the spine: on these rigs the thighs hang from the spine").
+  2. **The hips are set for the lower sole, not for the legs' reach.** `Fighter.Feet` brings the hips down until the lower
+     sole meets its ground and leaves the higher up to 1.5 cm over its own for its leg to reach ("on a slope ... so the
+     downhill leg reaches"). Where the higher foot is the clip's straight leg it cannot reach: the solver lays the leg straight
+     toward the target, the foot hangs short of the ground and moves with the hips' sway. The foot plant met this in quiet
+     standing and set the hips by each leg's need (`FootPlant.LegNeed`: "set for the lower foot's leg alone, the other leg, the
+     clip's straight one, could not reach and its heel stood 2-3 cm up, F1"; "drawing the far foot in instead slid it along the
+     ground as the hips swayed, F4 2 -> 130").
+- Fix, each once at its source (`Fighter`):
+  1. The trunk the corrections turn is its bones above the legs (any bone the thighs hang from is left out: on these rigs the
+     chest and the upper chest); the hit's lean starts from the lowest of them.
+  2. The hips come down at least as far as each foot the clip has down needs for its leg to reach its ground nearly straight
+     (`Fighter.LegNeed`, `StandStraight` 0.9995, the foot plant's rule), at the planted place; the old rule stays the least.
+- Result, on the fight states of Business_Female_01 and Business_Male_01 (`FeetProbeTests`, temporary: the gate's fight sequence
+  with the feet's own internals read every frame, before and after; at the editor's variable step, so the speeds are noisy):
+  the long gun's aim's planted feet off their pins p98 4.0-6.2 -> 0.0-0.1 cm; frames with a foot over 10 cm/s in the aim
+  8.9 -> 4.1 %, at the shot 11.5 -> 5.8 %, in the burst 25.8 -> 4.0 % (the man's 13.3 -> 4.9, 35.9 -> 5.4); the straight leg at
+  the solver's limit 50 % -> about 5 % of leg-frames, its sole p98 1.53 -> 0.09 cm over the ground; the pistol's aim at the limit
+  50 -> 6 %, its sole 0.31 -> 0.01 cm, its shots 11.6 -> 4.5 %. F4's limit is 2 % of the frames: the aims are still over it.
+  The whole cast (2026-11-27, the batch's commit): F1 1,511 -> 743, F4 499 -> 165, K1 578 -> 133 against dfc732a4; F4 in the
+  guard (104) and F3w (333, the same value on every body of a sex: clip-level) stand as on cast 3's tree; Kb in the strikes 129 ->
+  154 on cast 3's tree, likely the hips' new rule bending both knees further (to confirm). `TheFightsFeetStandOnTheGroundAndStep
+  BetweenStances` still fails: the aim's straighter knee 23.5-25.1° (its clip 1.7; item 5b), the fists' lower sole 0.0-1.4 cm over
+  its ground against 1 (1.9-4.6 before); the skate is gone. Open: the aims' and the guard's foot speeds at the gate's fixed step
+  (4-5 % of frames over 10 cm/s against 2 %), then item 18.
+
+**18. Next: the fight's largest groups by count from the batch's verdict** (F1 743, A2 582, C1 416, F3w 333, A1 322, H1 237, Kb 208),
+each traced to its cause in order (the clip bare on its own actor against the same measure, then the retarget, the runtime, the
+prop, the state machine) and removed there; the waived fight keys (`docs/qa/gates/motion_waivers.json`) first.
