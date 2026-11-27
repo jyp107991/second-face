@@ -736,9 +736,25 @@ namespace SecondFace.Game.Fighting
             // ground, its foot hung 1-3 cm up at the leg's full reach (the knee at the solver's limit, 1.8°) and swung with the
             // hips' sway (F1 and F4 in the guard, the ready and both aims, docs/COMBAT_ROOT_CAUSE.md 17)
             var lo = Mathf.Min(eL, eR); var hi = Mathf.Max(eL, eR);
+            // a foot the clip lifts sets nothing: judged on the clip's own flat ground (each sole over the root, before any ground
+            // is read: on a slope the clip has both feet level and only their grounds differ), a sole more than LiftedOver over
+            // the other's is a step, a duck's or a blow's. Taken as the "higher sole" it brought the hips down until it nearly met
+            // the floor, the standing leg was drawn up through it and folded (a duck's 112° knee to 150°, a club blow's 47° to 76°,
+            // the way into cover's 146° to 155°: Kb in the dodge, the strikes and the crouch, docs/COMBAT_ROOT_CAUSE.md 18) and the
+            // lifted foot was set down
+            if (FeetRuleTemp == 0 || FeetRuleTemp == 3)
+            {
+                var cL = SoleLow(_footL, _heelL, _ballL) - root; var cR = SoleLow(_footR, _heelR, _ballR) - root;
+                var cLow = Mathf.Min(cL, cR);
+                var liftL = cL - cLow > LiftedOver; var liftR = cR - cLow > LiftedOver;
+                if (liftL != liftR) lo = hi = liftL ? eR : eL;
+            }
             var want = -Mathf.Clamp(hi - 0.015f, lo, hi);
-            want = Mathf.Min(want, -LegNeed(_upL, _loL, _footL, eL, _fl, want));
-            want = Mathf.Min(want, -LegNeed(_upR, _loR, _footR, eR, _fr, want));
+            if (FeetRuleTemp <= 1)
+            {
+                want = Mathf.Min(want, -LegNeed(_upL, _loL, _footL, eL, _fl, want));
+                want = Mathf.Min(want, -LegNeed(_upR, _loR, _footR, eR, _fr, want));
+            }
             want = Mathf.Clamp(want, -0.2f, 0.2f);
             _sink = _fl.HaveWas || _fr.HaveWas ? Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-25f * dt)) : want;
             _hips.position += Vector3.up * (_sink * w);
@@ -756,6 +772,14 @@ namespace SecondFace.Game.Fighting
 
         /// <summary>A standing leg's reach as a share of its length (FootPlant.StanceStraight's: the knee bent about 3.6°).</summary>
         public float StandStraight = 0.9995f;
+
+        /// <summary>A sole this far (m) over the other's on the clip's own flat ground is a foot the clip lifts (the 3 cm
+        /// <see cref="LegNeed"/> and the stance's doc take for a foot the clip has down).</summary>
+        public const float LiftedOver = 0.03f;
+
+        /// <summary>TEMP (A/B only; remove before any verdict or commit): 0 the lifted foot left out, with LegNeed; 1 as main;
+        /// 2 as before patch5 (no LegNeed); 3 the lifted foot left out, no LegNeed.</summary>
+        public static int FeetRuleTemp = 0;
 
         /// <summary>How far the hips must come down (m, from where they are) for this leg to reach the ground under its foot
         /// (held where it is planted) nearly straight (<see cref="StandStraight"/>); -infinity for a foot the clip lifts

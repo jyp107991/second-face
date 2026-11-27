@@ -38,6 +38,55 @@ namespace SecondFace.Tests
             finally { Time.captureDeltaTime = keep; }
         }
 
+
+        // (KNEE_TRACE=1, TEMP: each frame a fight state is measured, the knees, hips and ankles before Fighter.Feet (order 25,
+        // Fighter is 30) and after everything (order 10000), Feet's sink and the soles it left)
+        [DefaultExecutionOrder(-100)]
+        public sealed class KRaw : MonoBehaviour
+        {
+            public Animator A; public float KL, KR, A1L, A1R, A2L, A2R;
+            private void LateUpdate() { if (A == null) return; (KL, KR, _, _, _) = Legs(A); (A1L, A1R, A2L, A2R) = Arms(A); }
+        }
+        [DefaultExecutionOrder(25)]
+        public sealed class KBefore : MonoBehaviour
+        {
+            public Animator A; public float KL, KR, HipsY, AnkL, AnkR, A1L, A1R, A2L, A2R;
+            private void LateUpdate() { if (A == null) return; (KL, KR, HipsY, AnkL, AnkR) = Legs(A); (A1L, A1R, A2L, A2R) = Arms(A); }
+        }
+        private static (float, float, float, float) Arms(Animator a)
+        {
+            (float, float) One(HumanBodyBones up, HumanBodyBones lo, HumanBodyBones h) { var u = a.GetBoneTransform(up).position; var e = a.GetBoneTransform(lo).position; var w = a.GetBoneTransform(h).position; return (Vector3.Angle(e - u, Vector3.down), Vector3.Angle(e - u, w - e)); }
+            var (l1, l2) = One(HumanBodyBones.LeftUpperArm, HumanBodyBones.LeftLowerArm, HumanBodyBones.LeftHand);
+            var (r1, r2) = One(HumanBodyBones.RightUpperArm, HumanBodyBones.RightLowerArm, HumanBodyBones.RightHand);
+            return (l1, r1, l2, r2);
+        }
+        [DefaultExecutionOrder(10000)]
+        public sealed class KAfter : MonoBehaviour
+        {
+            public Animator A; public KBefore B; public KRaw R; public MotionProbe P; public System.Text.StringBuilder Out;
+            private static readonly FieldInfo Sink = typeof(Fighter).GetField("_sink", BindingFlags.NonPublic | BindingFlags.Instance);
+            private void LateUpdate()
+            {
+                if (A == null || P == null || P.Kind == null || P.State == null || !P.State.StartsWith("combat:")) return;
+                var f = A.GetComponent<Fighter>();
+                var (kl, kr, hy, al, ar) = Legs(A);
+                var sink = f != null && Sink != null ? (float)Sink.GetValue(f) : float.NaN;
+                var (a1l, a1r, a2l, a2r) = Arms(A);
+                Out.AppendLine(string.Join(",", P.Person, P.State, Time.frameCount, R.KL.ToString("0.0"), R.KR.ToString("0.0"),
+                    R.A1L.ToString("0.0"), R.A1R.ToString("0.0"), B.A1L.ToString("0.0"), B.A1R.ToString("0.0"), a1l.ToString("0.0"), a1r.ToString("0.0"),
+                    R.A2L.ToString("0.0"), R.A2R.ToString("0.0"), B.A2L.ToString("0.0"), B.A2R.ToString("0.0"), a2l.ToString("0.0"), a2r.ToString("0.0"), B.KL.ToString("0.0"), B.KR.ToString("0.0"), kl.ToString("0.0"), kr.ToString("0.0"),
+                    (B.HipsY * 100f).ToString("0.00"), (hy * 100f).ToString("0.00"), (B.AnkL * 100f).ToString("0.00"), (B.AnkR * 100f).ToString("0.00"), (al * 100f).ToString("0.00"), (ar * 100f).ToString("0.00"),
+                    (sink * 100f).ToString("0.00"), f != null ? (f.SoleOver.x * 100f).ToString("0.00") : "", f != null ? (f.SoleOver.y * 100f).ToString("0.00") : "", f != null ? f.Current : ""));
+            }
+        }
+        private static (float, float, float, float, float) Legs(Animator a)
+        {
+            float K(HumanBodyBones u, HumanBodyBones l, HumanBodyBones ft) { var U = a.GetBoneTransform(u).position; var L = a.GetBoneTransform(l).position; var F = a.GetBoneTransform(ft).position; return Vector3.Angle(L - U, F - L); }
+            var y = a.transform.position.y;
+            return (K(HumanBodyBones.LeftUpperLeg, HumanBodyBones.LeftLowerLeg, HumanBodyBones.LeftFoot), K(HumanBodyBones.RightUpperLeg, HumanBodyBones.RightLowerLeg, HumanBodyBones.RightFoot),
+                a.GetBoneTransform(HumanBodyBones.Hips).position.y - y, a.GetBoneTransform(HumanBodyBones.LeftFoot).position.y - y, a.GetBoneTransform(HumanBodyBones.RightFoot).position.y - y);
+        }
+
         [UnityTest, Timeout(14400000)]
         public IEnumerator FightScreen() => Fixed(Screen());
 
@@ -69,11 +118,22 @@ namespace SecondFace.Tests
             var dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "test-results"));
             Directory.CreateDirectory(dir);
             var total = 0;
+            // (SCREEN_CONFIGS "label:rule|label:rule": TEMP A/B, each chunk run once per config with Fighter.FeetRuleTemp = rule when
+            // the tree has it; outputs fight_screen_<k>_<label>)
+            var configs = (System.Environment.GetEnvironmentVariable("SCREEN_CONFIGS") ?? "").Split('|').Select(x => x.Trim()).Where(x => x.Length > 0)
+                .Select(x => { var c = x.Split(':'); return (Label: c[0], Rule: c.Length > 1 ? int.Parse(c[1]) : -1); }).ToList();
+            if (configs.Count == 0) configs.Add(("", -1));
+            var ruleField = typeof(Fighter).GetField("FeetRuleTemp", BindingFlags.Public | BindingFlags.Static);
+            foreach (var (label, rule) in configs)
+            {
+            if (rule >= 0) { Assert.That(ruleField, Is.Not.Null, "Fighter.FeetRuleTemp (TEMP)"); ruleField.SetValue(null, rule); }
+            Debug.Log($"FIGHT SCREEN config [{label}] rule {(ruleField != null ? ruleField.GetValue(null) : "n/a")}");
+            var knees = new System.Text.StringBuilder("person,state,frame,KLr,KRr,A1Lr,A1Rr,A1Lb,A1Rb,A1La,A1Ra,A2Lr,A2Rr,A2Lb,A2Rb,A2La,A2Ra,KLb,KRb,KLa,KRa,hipsYb,hipsYa,ankLb,ankRb,ankLa,ankRa,sink,soleOverL,soleOverR,current\n");
             foreach (var k in want.OrderBy(x => x))
             {
                 if (k < 0 || k >= batches.Length) continue;
                 var batch = batches[k];
-                var tag = only.Length > 0 ? "fight_screen_p" : $"fight_screen_{k}";
+                var tag = (only.Length > 0 ? "fight_screen_p" : $"fight_screen_{k}") + (label.Length > 0 ? "_" + label : "");
                 var t0 = System.DateTime.UtcNow;
                 yield return BootTests.Clear();
                 foreach (var c in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None)) { c.enabled = false; c.tag = "Untagged"; }
@@ -115,6 +175,12 @@ namespace SecondFace.Tests
                     void F(string n, object v) => subjT.GetField(n, Any).SetValue(s, v);
                     F("Id", batch[i]); F("Go", go); F("A", a); F("Ambient", amb); F("Gaze", a.GetComponent<Gaze>()); F("Probe", probe); F("Mark", mark); F("Home", home);
                     people.Add(s); probes.Add(probe); gos.Add(go); homes.Add(home);
+                    if (System.Environment.GetEnvironmentVariable("KNEE_TRACE") == "1")
+                    {
+                        var kr = a.gameObject.AddComponent<KRaw>(); kr.A = a;
+                        var kb = a.gameObject.AddComponent<KBefore>(); kb.A = a;
+                        var ka = a.gameObject.AddComponent<KAfter>(); ka.A = a; ka.B = kb; ka.R = kr; ka.P = probe; ka.Out = knees;
+                    }
                 }
                 yield return Wait(1f);
                 void Record(string state, MotionProbe.K? kind) { foreach (var pr in probes) { pr.State = state; pr.Kind = kind; } }
@@ -173,7 +239,12 @@ namespace SecondFace.Tests
                 Object.Destroy(root);
                 yield return null;
             }
-            Debug.Log($"FIGHT SCREEN total: {total} fight failures");
+            Debug.Log($"FIGHT SCREEN [{label}] total: {total} fight failures");
+            if (System.Environment.GetEnvironmentVariable("KNEE_TRACE") == "1") File.WriteAllText(Path.Combine(dir, "knee_trace" + (label.Length > 0 ? "_" + label : "") + ".csv"), knees.ToString());
+            knees.Clear(); knees.Append("person,state,frame,KLr,KRr,A1Lr,A1Rr,A1Lb,A1Rb,A1La,A1Ra,A2Lr,A2Rr,A2Lb,A2Rb,A2La,A2Ra,KLb,KRb,KLa,KRa,hipsYb,hipsYa,ankLb,ankRb,ankLa,ankRa,sink,soleOverL,soleOverR,current\n");
+            total = 0;
+            }
+            if (ruleField != null) ruleField.SetValue(null, 0);
 #else
             Assert.Ignore("editor only");
             yield break;
