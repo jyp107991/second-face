@@ -383,6 +383,26 @@ namespace SecondFace.Tests
             private string _midRow = "";
             private string _midExtra = ",,,,,,,,,,,,,,,,,,,,";
             private string _midToe = ",,";
+            // (v4) each sole point's frame as the plant holds it (toes' frame: true); main's plant has none: heel/back/ball on the foot, tip on the toes
+            private bool[][] _frames = { new[] { false, false, false, true }, new[] { false, false, false, true } };
+            private readonly Vector3[] _tipToe = new Vector3[2]; private readonly Quaternion[] _toeRestLocal = new Quaternion[2];
+            private FieldInfo _lockFL, _lockFR;
+            private Transform Tf(int s, int i) => _frames[s][i] && _toe[s] != null ? _toe[s] : _foot[s];
+            private string PushOf(int s)
+            {
+                var lf = s == 0 ? _lockFL : _lockFR;
+                if (lf == null) return "";
+                var k = lf.GetValue(_fp); var t = k.GetType();
+                var on = t.GetField("On"); var push = t.GetField("Push");
+                if (on == null || push == null) return "";
+                return (bool)on.GetValue(k) && (bool)push.GetValue(k) ? "1" : "0";
+            }
+            private (int r, int v) LowestToeIdx(int s, Vector3[][] verts)
+            {
+                var best = float.MaxValue; var br = -1; var bv = -1;
+                for (var ri = 0; ri < verts.Length; ri++) foreach (var v in _toeVerts[ri][s]) { var y = verts[ri][v].y; if (y < best) { best = y; br = ri; bv = v; } }
+                return (br, bv);
+            }
             private string ToeLow(Vector3[][] verts, int s, float g)
             {
                 var best = float.MaxValue;
@@ -431,6 +451,9 @@ namespace SecondFace.Tests
                     _heel[1] = (Vector3)F("_heelR"); _back[1] = (Vector3)F("_backR"); _ball[1] = (Vector3)F("_ballR"); _tip[1] = (Vector3)F("_tipR");
                     _hf[0] = (Vector3[])F("_hullFL"); _ht[0] = (Vector3[])F("_hullTL"); _hf[1] = (Vector3[])F("_hullFR"); _ht[1] = (Vector3[])F("_hullTR");
                     _toeRest[0] = (Quaternion)F("_toeRestL"); _toeRest[1] = (Quaternion)F("_toeRestR");
+                    _toeRestLocal[0] = _toeRest[0]; _toeRestLocal[1] = _toeRest[1];
+                    if (F("_toeFrameL") is bool[] tfl && F("_toeFrameR") is bool[] tfr) _frames = new[] { tfl, tfr };
+                    _lockFL = typeof(FootPlant).GetField("_lockL", NP); _lockFR = typeof(FootPlant).GetField("_lockR", NP);
                     _hips = (Transform)F("_hips");
                     _soleOver = typeof(FootPlant).GetMethod("SoleOver", NP); _groundAt = typeof(FootPlant).GetMethod("GroundAt", NP);
                     // (the toes straightened on the moving branch only where the plant still has its Toes(): main's ankle test)
@@ -497,6 +520,7 @@ namespace SecondFace.Tests
                 foreach (var s in Sides) head.Append($",M{s}_cx,M{s}_cz,M{s}_csp,M{s}_bsp,M{s}_ax,M{s}_az,M{s}_e,M{s}_toeclip,M{s}_toew,M{s}_toeplant");
                 foreach (var s in Sides) head.Append($",D{s}_csp,D{s}_cx,D{s}_cz");
                 head.Append(",rootx,rootz,ML_toe,MR_toe,DL_toe,DR_toe");
+                foreach (var s in Sides) head.Append($",D{s}_toebend,D{s}_tsp,D{s}_jx,D{s}_jz,D{s}_push");
                 _w.WriteLine(head.ToString());
             }
 
@@ -535,7 +559,8 @@ namespace SecondFace.Tests
                             var w = toes && _toe[s] != null ? _toe[s].TransformPoint(local) : _foot[s].TransformPoint(local);
                             return $"along {Vector3.Dot(w - a, _fwdRest[s]) * 100f:0.0} cm, {(w.y - low) * 100f:0.00} cm over the foot-skinned lowest";
                         }
-                        info.AppendLine($"foot {Sides[s]}: toe joint along {toesAlong * 100f:0.0} cm; ankle {(a.y - low) * 100f:0.0} cm over the foot-skinned lowest; plant heel {P(_heel[s], false)}; back {P(_back[s], false)}; ball {P(_ball[s], false)}; tip {P(_tip[s], true)}");
+                        info.AppendLine($"foot {Sides[s]}: toe joint along {toesAlong * 100f:0.0} cm; ankle {(a.y - low) * 100f:0.0} cm over the foot-skinned lowest; plant heel {P(_heel[s], _frames[s][0])}; back {P(_back[s], _frames[s][1])}; ball {P(_ball[s], _frames[s][2])}; tip {P(_tip[s], _frames[s][3])}");
+                        _tipToe[s] = _toe[s] != null ? (_frames[s][3] ? _tip[s] : _toe[s].InverseTransformPoint(_foot[s].TransformPoint(_tip[s]))) : Vector3.zero;
                         if (_gateSmr != null && _solePoint != null)
                         {
                             var gv = BakeWorld(_gateSmr, false);
@@ -548,7 +573,7 @@ namespace SecondFace.Tests
                         if (_body >= 0)
                         {
                             var bv = verts[_body];
-                            foreach (var (tn, tl, tt) in new[] { ("heel", _heel[s], false), ("back", _back[s], false), ("ball", _ball[s], false), ("tip", _tip[s], true) })
+                            foreach (var (tn, tl, tt) in new[] { ("heel", _heel[s], _frames[s][0]), ("back", _back[s], _frames[s][1]), ("ball", _ball[s], _frames[s][2]), ("tip", _tip[s], _frames[s][3]) })
                             {
                                 var tw = tt && _toe[s] != null ? _toe[s].TransformPoint(tl) : _foot[s].TransformPoint(tl);
                                 var bi = -1; var bd = float.MaxValue;
@@ -613,9 +638,9 @@ namespace SecondFace.Tests
             // the sole terms on a pose: over the ground under the ankle; the lowest of them; the hull's lowest point and its index
             private string Terms(int s, float g, out float min, out int hi, out string arg)
             {
-                var foot = _foot[s]; var toe = _toe[s] != null ? _toe[s] : _foot[s];
-                var h = foot.TransformPoint(_heel[s]).y - g; var k = foot.TransformPoint(_back[s]).y - g;
-                var b = foot.TransformPoint(_ball[s]).y - g; var t = toe.TransformPoint(_tip[s]).y - g;
+                var foot = _foot[s];
+                var h = Tf(s, 0).TransformPoint(_heel[s]).y - g; var k = Tf(s, 1).TransformPoint(_back[s]).y - g;
+                var b = Tf(s, 2).TransformPoint(_ball[s]).y - g; var t = Tf(s, 3).TransformPoint(_tip[s]).y - g;
                 var u = float.MaxValue; hi = -1;
                 for (var i = 0; i < _hf[s].Length; i++) { var y = foot.TransformPoint(_hf[s][i]).y; if (y < u) { u = y; hi = i; } }
                 if (_toe[s] != null) for (var i = 0; i < _ht[s].Length; i++) { var y = _toe[s].TransformPoint(_ht[s][i]).y; if (y < u) { u = y; hi = _hf[s].Length + i; } }
@@ -742,10 +767,18 @@ namespace SecondFace.Tests
                         var cp = c.r >= 0 ? verts[c.r][c.v] : Vector3.zero;
                         dx.Append($",{Own(c, verts, _prevD, dcon)},{cp.x:0.0000},{cp.z:0.0000}");
                     }
+                    var tx = new System.Text.StringBuilder();
+                    for (var s = 0; s < 2; s++)
+                    {
+                        if (_toe[s] == null) { tx.Append(",,,,,"); continue; }
+                        var bend = ToeBend(_foot[s], _toe[s], _toeRestLocal[s], _tipToe[s]);
+                        var tc = LowestToeIdx(s, verts);
+                        tx.Append($",{bend:0.0},{Own(tc, verts, _prevD, dcon)},{_toe[s].position.x:0.0000},{_toe[s].position.z:0.0000},{PushOf(s)}");
+                    }
                     _prevD = verts; _prevDFrame = Time.frameCount;
                     var rootP = _fp.transform.position;
                     var clock = _clockF != null ? (float)_clockF.GetValue(Probe) : 0f;
-                    _w.WriteLine($"{Time.frameCount},{Time.time:0.000},{clock:0.000},{Probe.State},{(_midRow.Length > 0 ? 1 : 0)},{_fp.Diag[8]:0.0000}{mid}{sb}{_midExtra}{dx},{rootP.x:0.0000},{rootP.z:0.0000}{_midToe},{ToeLow(verts, 0, Ground(_foot[0].position))},{ToeLow(verts, 1, Ground(_foot[1].position))}");
+                    _w.WriteLine($"{Time.frameCount},{Time.time:0.000},{clock:0.000},{Probe.State},{(_midRow.Length > 0 ? 1 : 0)},{_fp.Diag[8]:0.0000}{mid}{sb}{_midExtra}{dx},{rootP.x:0.0000},{rootP.z:0.0000}{_midToe},{ToeLow(verts, 0, Ground(_foot[0].position))},{ToeLow(verts, 1, Ground(_foot[1].position))}{tx}");
                 }
                 catch (System.Exception ex) { Debug.LogWarning("SoleProbe.LateUpdate: " + ex.Message); }
             }
