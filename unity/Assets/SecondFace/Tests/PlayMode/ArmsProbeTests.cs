@@ -46,6 +46,22 @@ namespace SecondFace.Tests
             done(boot);
         }
 
+        private static string States(Animator a)
+        {
+            if (a == null) return "";
+            var sb = new StringBuilder();
+            for (var l = 0; l < a.layerCount; l++)
+            {
+                var w = l == 0 ? 1f : a.GetLayerWeight(l);
+                if (w < 0.01f) continue;
+                var ci = a.GetCurrentAnimatorClipInfo(l);
+                var top = ci.Length > 0 ? ci.OrderByDescending(c => c.weight).First() : default;
+                sb.Append($"L{l} {w:0.00} {(ci.Length > 0 ? top.clip.name + " " + top.weight.ToString("0.00") : "-")}; ");
+            }
+            var sp = a.parameters.Any(p => p.name == "Speed") ? a.GetFloat("Speed") : -1f;
+            return sb + $"speed {sp:0.00}";
+        }
+
         [UnityTest, Timeout(1800000)]
         public IEnumerator TownsfolksArmsUnderConfigs()
         {
@@ -83,7 +99,7 @@ namespace SecondFace.Tests
                     {
                         if (seen[i].C == null) continue;
                         var d = seen[i].C.Depth();
-                        if (d > each[i]) { each[i] = d; where[i] = seen[i].C.DepthWhere; eachDt[i] = dt; }
+                        if (d > each[i]) { each[i] = d; where[i] = seen[i].C.DepthWhere + " | " + States(seen[i].C.GetComponent<Animator>()); eachDt[i] = dt; }
                         if (d > 0.012f) any = true;
                     }
                     if (any) { deepFrames++; deepDts.Add(dt); }
