@@ -739,6 +739,9 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
     Verified locally with frames slowed by 80 ms: the old checks fail as on CI (the stick's 20 frames turned the view 671.7°, read back as -48.3°), the new pass (turned 35.6°, a quarter turn of 90.00°, walked 0.84 m),
     and pass as they run. The other play tests' frame-count loops swept: none else can fail on frame time within any margin
     seen (the pinch's 60 frames, the reveal's 3 frames at 20 characters a second, the patrol's 5 frames: listed, not changed).
+  - The fight screen's repeatability measured (MOTION_ROOT_CAUSE §18): the noise band per key (C1 rise 3, Kb strike 2, the
+    rest 0); the ragdoll's hand-back phase; the rifle states' two variants follow the capture's start clock (Time.time 0.227-0.271
+    s at frame 15, set by play mode's first real-time frames). For the owner as gate determinism, not built.
 - **2026-11-27/28, the gate batch committed under the waiver policy: the fight's clips turned back onto their actors, a person made
   anywhere keeps their body and face, the sits turned too, the foot plant's catch on the body's present pace (editor owner).**
   Gate: red, 3,351 (the whole cast, 2026-11-28 00:54; 71ba0e5b's 3,351, with FY1/FY2 now counted: 4,018).
