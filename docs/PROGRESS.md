@@ -720,6 +720,8 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
 - **2026-11-27/28, the gate batch committed under the waiver policy: the fight's clips turned back onto their actors, a person made
   anywhere keeps their body and face, the sits turned too, the foot plant's catch on the body's present pace (editor owner).**
   Gate: red, 3,351 (the whole cast, 2026-11-28 00:54; 71ba0e5b's 3,351, with FY1/FY2 now counted: 4,018).
+  - Whole cast 4,018 -> 3,351 failing cells, counted alike (FY1/FY2 now count; the 04:34 verdict's "3,351" left out its 667 FY
+    cells). Without FY: 3,351 -> 2,707. Everyday 2 -> 1 (MF01 W6 fixed at its source; FA01 W1 waived).
   - Whole cast of the batch's tree, 79 people: failing cells 4,018 -> 3,351, the everyday states 2 -> 1 (Female_Adult_01's jog
     W1, later item 7; Medical_Female_01's jog W6 passes, the catch below). By key against 71ba0e5b: F1 strike 422 -> 238, Kb
     strike 154 -> 6, F4 guard 104 -> 0, F1 guard 84 -> 0, F1 ready 54 -> 0, A1 strike 162 -> 110, FY1 aim 189 -> 141, F2 strike
