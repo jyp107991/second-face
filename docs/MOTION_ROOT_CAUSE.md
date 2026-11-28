@@ -1259,3 +1259,136 @@ do not give the same records. What decides it, measured on main's code (4dab5c07
   - PlaceNav and WorldNav build NavMeshes asynchronously, and PlaceNav waits up to 10 s of real time for its pad.
   - CombatTurn works the reachable area out within a millisecond budget a frame; only its drawing waits on it.
   - PeopleService's spawns are counted (2 a frame), not timed.
+
+## 19. The game's people at 16 km: float32 precision, the survey, and the frame decision (editor owner, 2026-11-28)
+
+**The world's coordinates.** The world is 24 × 16 km with its origin at the south-west corner (`WorldGrid`). The 32 places stand
+3.7-24.6 km from it (median 15.5 km); Shale is at (15360, 4480), 16.0 km out, and Cistern 9 at (15840, 3776), 16.3 km. A float32's
+step there is 0.24 mm at hamlet_shore, 0.49 mm in Meridian, 0.98 mm from 8.2 km (Shale, Cistern 9 and 16 more), and 1.95 mm past
+16.4 km in x (drywells, lm_sallow_02, halt_e, lm_ash_01, mine_teeth, skirts, halcyon). People stand anywhere the open world
+reaches, up to 28.8 km (the far corner), where the step is still 1.95 mm. The gate's cast stands at the origin, where the step is
+under 1 µm, so the gate does not measure what the game's towns run on.
+
+**The experiments.** The harness makes each body twice, plays both alike frame for frame (the same controller, states and
+animator time), and compares them root-relative after every frame: each bone's place in the root's frame and its local turn. A
+flip is an index the clearance chose (DiagAt, resting) differing between the twins where it did not the frame before. A pop is how
+far one twin's bone moves in a frame beyond its twin.
+- *e1, the twins 0.1 mm apart (rounding only), both on the managed clearance:*
+  - Town: 4 flips, the first at frame 483, each rejoined the next frame. Largest 0.99° and 8.2 mm; before the first flip 0.0031°
+    and 0.0098 mm. They settle.
+  - Fight: 0.037° and 0.18 mm with no flip.
+- *e1, both on the job:* town 12 one-frame flips (the first at frame 49), 23.9° and 17 mm; they settle.
+- *e3, one twin at (15369, 39, 4493), the managed clearance:*
+  - Town: flips from frame 1, 242 of them, apart in 13 % of pair-frames. Largest 17.9° and 122.7 mm. They stay apart (4 of 5 pairs
+    at the end).
+  - Fight: 16.8° and 95 mm.
+  - The torso sections' path: 4.4° and 37.7 mm.
+- *e5, the same with every clearance off:* the arms' own turns stay within 0.09-0.78°, but every bone above the hips is 12.3 cm
+  out: the foot plant's (below).
+- *The survey (f2): Shale against the origin, each people system alone, the rest off (managed clearance).* Largest root-relative
+  difference (place; local turn), and the largest pop:
+
+| System alone | Town | The fight's layer | Pop |
+|---|---|---|---|
+| none (the Animator alone) | 2.2 mm (the rounding floor; legs 0.27°) | right calf 93 mm, 26.7°; thigh 12.7°; foot 17.2° | 9.3 cm, 17.4° (calf) |
+| FootPlant | the hips and all above 124 mm; calf 266 mm, 173°; foot 575 mm, 174° | 4 mm; calf 14.4° | 58 cm, 162° |
+| Gaze (no target) | as none | as none | - |
+| HandPose | as none (forearm 0.1°) | forearm 0.7° | - |
+| SeatTurn, ClipTurnFirst | as none | as none | - |
+| ArmClearance | hands 35 mm, 17.5°; forearms 19 mm, 8.1° | hands 38 mm; upper arm 7.5° | 6.0 cm, 21.0° (hand) |
+| all on | hips 14 mm; calf 169 mm, 41°; foot 160°; hands 42 mm, 18.4° | hands 45 mm; calf 14.4° | 16.9 cm, 159° |
+
+  The fight's own, each alone (Fighter with ClipTurnFirst, the rest off) and with all on:
+
+| | Fighter alone | All on |
+|---|---|---|
+| rifle aim and fire (TwoBone) | left forearm 63 mm, 47°; hand 31.8°; pop 6.0 cm, 31.7° | left hand 86 mm, 13.5° |
+| rifle reload | legs as the Animator's | left hand 405 mm, 55.5°; pop 38.7 cm, 79.5° |
+| pistol aim and fire (PistolAim) | 7 mm, 1.4° | 10 mm, 2.9° |
+| a heavy hit (the springs) | 9 mm, 1.1° | left hand 40 mm |
+| the fall (the ragdoll) | 398 mm, 105° | 623 mm, 179° |
+| the rise (hand-back, get-up) | 387 mm, 110° | 415 mm, 93° |
+
+  The skin's drawn vertices (BakeMesh, renderer-relative) differ by 1.5 mm with every system off, the skinning's own floor. With
+  the systems on they follow the bones (59 mm with the clearance alone). The ragdoll is chaotic: how much of its difference a
+  0.1 mm change alone gives is not measured.
+- **Read:** float32 at 16 km breaks the people in several places.
+  - Our own systems:
+    - The foot plant: the hips 12.4 cm out, feet turned up to 174°.
+    - The arm clearance: hands 3.5 cm and 17.5°.
+    - Fighter's two-bone hold: 47° at the forearm.
+  - Unity's own: the Animator's evaluation (by elimination: the base layer's foot IK in its Locomotion state is the only IK left
+    with every system off), with the legs 9.3 cm and 26.7° in the fight states. Also the skinning's 1.5 mm floor and the ragdoll's
+    physics.
+  - None of it shows in the gate.
+  - It also accounts for the 12.3 cm with the clearance off (e5): FootPlant writes the hips.
+
+**Item (iv), a defect of the algorithm (recorded, not built).** The clearance's branch choices (the deepest point, a pass's
+choice) are not continuous in their inputs. A rounding-sized change (e1: 0.1 mm) flips them for one frame, and the hand snaps
+out and back:
+- The pops: 0.82 cm and 0.99° (managed, 0.1 mm); 2.17 cm and 16.8° (the job against managed); 5.3 cm and 9.5° (managed at
+  Shale).
+- For scale: a hand's own step is p98 3.4 cm and 5.6° a frame in town, and H3's whole limit is 10° (15° max).
+- Some pass choices are not in DiagAt, so a fix must expose them and make the choices continuous (hysteresis, or a blend between
+  passes), with its own gate evidence.
+
+**The frame decision: design note (for the owner and the coordinator's ruling; nothing built).**
+- *(A) A floating origin.* The world is rebased so that play stays near (0, 0, 0).
+  - *When:* when the leader (the walker, or the fight's camera focus) leaves a box about the current origin (for example 2 km: a
+    float's step within it is at most 0.24 mm). The rebase is by a whole number of 512 m chunks. Every position and the shift are then
+    multiples of the same step, so the rebase is exact and adds no rounding.
+  - *Where in the frame:* in one place at the frame's start, before physics and animation.
+  - *How:* a rebaser holds the world offset O (double) and moves every root by -Δ. The roots are separate today: Terrain, Props,
+    Places, each Townsfolk's `people_<id>`, the walker, the companions, the fight's objects, the cameras. Then it calls one
+    `OnRebase(Δ)` on every system that holds a world position across frames.
+  - *What moves with it:*
+    - **The WorldStreamer's chunks:** `ChunkTerrain.Apply` places a chunk at `WorldGrid.Origin` minus O. The streamer's focus is
+      read in world terms (plus O). In-flight chunk preparations keep logical coordinates.
+    - **NavMesh:** PlaceNav and WorldNav re-add their data with `NavMesh.AddNavMeshData(data, -O, identity)` (cheap; the baked
+      data stays logical). Every agent is warped by -Δ and its destination set again; WorldNav's seen bounds shift.
+    - **Physics and ragdolls:** colliders move with their roots. PhysX re-inserts the static ones, the main cost; Unity does not
+      expose PhysX's origin shift. Rigidbodies take `position -= Δ` with interpolation reset, and a ragdoll mid-fall keeps its
+      velocities.
+    - **Particles and trails:** world-space systems (CombatFx's tracers, flashes and shells, WeatherLayers) offset their
+      particles (Get/SetParticles); trails and lines shift their points. Local space is used where it can be.
+    - **Cameras:** OrbitRig shifts its cached `_lastLeader` and `_focusAt` (Pan is relative). Cinemachine gets
+      `OnTargetObjectWarped(target, -Δ)` so it does not damp a jump. ConversationCamera's Subject shifts.
+    - **AI targets and paths:** Walker.Goal, Townsfolk targets, PartyFollowers' sent points, CombatPresenter/CombatStage moves,
+      PeopleService's spawn points, Gaze's look points (Transforms need nothing).
+    - **CombatTurn and the battle:** Core's Battle places units at world x, z (`u.Place(pos.x, pos.z)`). It keeps logical
+      coordinates in double (plus O on the way in, minus O on the way out); its reach and cursor shift.
+    - **The save format:** `WorldSpot` X/Y/Z, `CompanionSave.WaitingAt` and the battle's positions are world positions. They stay
+      logical, the absolute world they are today: written as position plus O, read minus O. No format change, no migration (the
+      version stays 1).
+    - **Anything else holding a world Vector3 across frames:** FootPlant's planted feet, BodySkin's query cache and cells,
+      ArmClearance's report points, DetailSet and ScatterSpawner's placements, PlaceInteriors, MeasureTour. World-space shader
+      inputs (the terrain layers' tiling, world-space noise, water) stay continuous if Δ is a multiple of each period; otherwise
+      they need a global offset.
+  - *Cost and risks on Android:* one spike per rebase, from the transform recompute of every moved root and the static colliders'
+    re-insertion, estimated 5-30 ms, to be measured. At walking pace a 2 km box rebases every 20-25 minutes. The risks: a missed
+    holder of a world position (a teleport or a jump), async work completing in the old frame (Addressables, NavMesh builds, chunk
+    Tasks), and third-party caches (Cinemachine is handled).
+  - *Tests and the gate:* the gate's cast stands near the origin already, so it then measures what the game runs. Tests that read
+    world positions (BootTests' Spot, places) go through one logical-to-world helper. New tests: a rebase mid-walk, mid-fight and
+    mid-fall changes no bone root-relative (the e3 harness at Δ); a save round-trips across a rebase; agents keep their paths.
+- *(B) Per-system local frames.* Each system computes in the person's frame, composed from the local chain:
+  - The systems: FootPlant, the hips' sink and the ground's contact; ArmClearance, BodySkin and the torso sections; Fighter's
+    TwoBone and PistolAim; HandPose; Gaze.
+  - What it leaves unsolved:
+    - Unity's own Animator evaluation (the legs 9.3 cm and 26.7° above).
+    - Skinning and rendering: vertices in world space at 1-2 mm. That is under a pixel at the game camera (about 4.6 mm a pixel
+      at 10 m) but about 1.5 px at conversation and photo-mode close-ups. URP has no camera-relative rendering.
+    - PhysX contacts and the ragdoll.
+    - NavMesh queries (cm-level, harmless).
+    - Every future system, each its own conversion to get right.
+- **Recommendation: (A), the root-cause fix.**
+  - The precision loss is not one system's. With every people system off, the Animator itself puts the legs 9.3 cm and 26.7° out
+    at Shale, and the skinning has a 1.5 mm floor; (B) cannot reach either.
+  - The foot plant, the clearance and Fighter's hold each break on their own (12.4 cm and 174°, 3.5 cm and 17.5°, 47°).
+  - (A) cures all of them at once and puts the game's people where the gate's cast stands (PROGRESS's later item 2).
+  - Before it is built: the ragdoll's own chaos measured (0.1 mm twins), the rebase's spike measured on the target phone, and
+    the list of world-position holders confirmed by a search of every Vector3 field.
+- **Holds:**
+  - The arm clearance's job (A(b)) waits for this decision: the frame decides the rounding both paths see.
+  - Its equivalence is judged again after it, with the flips counted against the perturbed managed control: under 0.1 mm the
+    job flipped 12 times against managed's 4. The pass choices not in DiagAt are to be exposed first.
