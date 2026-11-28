@@ -40,6 +40,7 @@ namespace SecondFace.Game.World
         public bool IsShown(string id) => _live.TryGetValue(id, out var h) && h.IsDone && h.Status == AsyncOperationStatus.Succeeded;
         public GameObject Instance(string id) => IsShown(id) ? _live[id].Result : null;
         public int LiveCount => _live.Count;
+        private (double X, double Z) _pendingStamp;
 
         private void Update()
         {
@@ -51,19 +52,22 @@ namespace SecondFace.Game.World
                 if (p.Status != AsyncOperationStatus.Succeeded) Debug.LogWarning($"PlaceSpawner: {p.OperationException?.Message}");
                 else
                 {
+                    // (a rebase while it loaded: placed where the world now is)
+                    p.Result.transform.position += WorldOrigin.Since(_pendingStamp);
                     Ready(p.Result);
                     Shown?.Invoke(_pendingId, p.Result);
                 }
             }
-            var focus = World.Focus;
+            var focus = World.FocusWorld;
             foreach (var e in Places.Entries)
             {
                 if (!World.Layout.Places.TryGetValue(e.Id, out var info)) continue;
                 var d = Distance(info, focus);
                 if (d <= ShowWithin && !_live.ContainsKey(e.Id))
                 {
-                    var at = new Vector3(info.Centre[0], World.Gen.Pad(info).level, info.Centre[1]);
+                    var at = WorldOrigin.ToUnity(info.Centre[0], World.Gen.Pad(info).level, info.Centre[1]);
                     if (_root == null) _root = new GameObject("Places").transform;
+                    _pendingStamp = WorldOrigin.Stamp;
                     var h = Addressables.InstantiateAsync(e.Address, at, Quaternion.identity, _root);
                     _live[e.Id] = h;
                     _pending = h;

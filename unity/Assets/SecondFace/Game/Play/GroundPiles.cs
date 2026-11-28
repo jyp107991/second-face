@@ -4,6 +4,7 @@ using System.Linq;
 using SecondFace.Core.State;
 using SecondFace.Core.World;
 using SecondFace.Game.UI;
+using SecondFace.Game.World;
 using UnityEngine;
 
 namespace SecondFace.Game.Play
@@ -59,7 +60,7 @@ namespace SecondFace.Game.Play
         {
             var go = new GameObject("pile_" + p.Key);
             go.transform.SetParent(transform, false);
-            var at = new Vector3(p.X, p.Y, p.Z);
+            var at = WorldOrigin.ToUnity(new Vector3(p.X, p.Y, p.Z));
             // on whatever is under it (the terrain, a floor), not the trigger of a thing near by
             if (Physics.Raycast(at + Vector3.up * 1.2f, Vector3.down, out var hit, 3f, ~0, QueryTriggerInteraction.Ignore)) at = hit.point;
             var h = Hash(p.Key);

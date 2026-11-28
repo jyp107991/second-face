@@ -121,7 +121,8 @@ namespace SecondFace.Game.World
             Mark("details");
             t.name = $"chunk_{p.Cx}_{p.Cz}";
             var (x0, z0) = WorldGrid.Origin(p.Cx, p.Cz);
-            t.transform.position = new Vector3(x0, ControlMap.Floor, z0);
+            // (the world's corner of the chunk, less the floating origin's offset: whole chunks, so exact)
+            t.transform.position = WorldOrigin.ToUnity(x0, ControlMap.Floor, z0);
             t.drawHeightmap = true;   // pooled terrains stay active and only stop drawing: re-activating one cost ~50 ms
             t.drawTreesAndFoliage = true;
             if (!t.gameObject.activeSelf) t.gameObject.SetActive(true);

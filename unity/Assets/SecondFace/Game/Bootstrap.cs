@@ -497,7 +497,7 @@ namespace SecondFace.Game
             if (UI == null || Walkabout == null || Walkabout.Walker == null || layout == null) return null;
             if (UI.Top is MapScreen open) return open;
             var g = Walkabout.Game;
-            var at = Walkabout.Walker.transform.position;
+            var at = WorldOrigin.ToWorld(Walkabout.Walker.transform.position);   // (the map is the world's)
             var here = Nearest().Id;
             var known = new System.Collections.Generic.HashSet<string>(g.World.KnownLocations);
             if (here != null) known.Add(here);

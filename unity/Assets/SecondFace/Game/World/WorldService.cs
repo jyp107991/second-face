@@ -33,8 +33,11 @@ namespace SecondFace.Game.World
         public bool Ready => Control != null && Layout != null;
         public string Error { get; private set; }
 
-        /// <summary>The point the world streams around: the camera's look-at point, in world metres.</summary>
+        /// <summary>The point the world streams around: the camera's look-at point, in Unity's coordinates (the world's less
+        /// <see cref="WorldOrigin"/>'s offset).</summary>
         public Vector3 Focus;
+        /// <summary>The focus in the world's own coordinates (the chunks, the places' footprints, the regions).</summary>
+        public Vector3 FocusWorld => WorldOrigin.ToWorld(Focus);
 
         private IEnumerator Start() => Load();
 
@@ -76,10 +79,12 @@ namespace SecondFace.Game.World
         }
 
         /// <summary>The chunks the focus wants loaded, nearest first.</summary>
-        public List<(int cx, int cz)> WantedChunks() => WorldGrid.Around(Focus.x, Focus.z, LoadRadius);
+        public List<(int cx, int cz)> WantedChunks() { var f = FocusWorld; return WorldGrid.Around(f.x, f.z, LoadRadius); }
 
-        /// <summary>A place's centre at its pad's level, in world space (for cameras, spawns and tests).</summary>
-        public Vector3 PlaceCentre(string id)
+        /// <summary>A place's centre at its pad's level, in Unity's coordinates (for cameras, spawns and tests).</summary>
+        public Vector3 PlaceCentre(string id) => WorldOrigin.ToUnity(PlaceCentreWorld(id));
+        /// <summary>A place's centre at its pad's level, in the world's own coordinates.</summary>
+        public Vector3 PlaceCentreWorld(string id)
         {
             var p = Layout.Places[id];
             return new Vector3(p.Centre[0], Gen.Pad(p).level, p.Centre[1]);

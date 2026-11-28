@@ -63,6 +63,9 @@ namespace SecondFace.Tests
             Time.timeScale = 1f;
             WorldView.SetUnderground(false);
             PlaceNav.Disabled = false;
+            // (the world back at Unity's origin for the next test: nothing of this one is left to move)
+            WorldOrigin.Keeper.Leader = null;
+            WorldOrigin.Reset();
             yield return null;
         }
 

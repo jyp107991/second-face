@@ -129,7 +129,8 @@ namespace SecondFace.Game.World
                     if (task.Exception != null) { UnityEngine.Debug.LogError($"WorldStreamer: chunk {c} failed: {task.Exception.InnerException}"); continue; }
                     _prepared[c] = task.Result;
                 }
-            var step = Policy.Next(World.Focus.x, World.Focus.z, _built.Keys, _prepared.Keys, _preparing.Keys);
+            var fw = World.FocusWorld;
+            var step = Policy.Next(fw.x, fw.z, _built.Keys, _prepared.Keys, _preparing.Keys);
             foreach (var c in step.Unload)
             {
                 var t = _built[c]; _built.Remove(c);
@@ -170,7 +171,8 @@ namespace SecondFace.Game.World
         {
             if (Catalog == null) return;
             if (Spawner == null) { Spawner = gameObject.AddComponent<ScatterSpawner>(); Spawner.Catalog = Catalog; }
-            var focus = WorldGrid.ChunkAt(World.Focus.x, World.Focus.z);
+            var focusW = World.FocusWorld;
+            var focus = WorldGrid.ChunkAt(focusW.x, focusW.z);
             foreach (var c in _built.Keys)
             {
                 var d = StreamingPolicy.Distance(c, focus);

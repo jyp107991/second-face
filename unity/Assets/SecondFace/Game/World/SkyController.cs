@@ -113,7 +113,8 @@ namespace SecondFace.Game.World
         {
             if (Force is WeatherKind f) return Sky.At(hour, f);
             if (World == null || !World.Ready) return Sky.At(hour, WeatherKind.Clear);
-            Regions(World.Focus.x, World.Focus.z);
+            var fw = World.FocusWorld;
+            Regions(fw.x, fw.z);
             SkyLook acc = null; float total = 0;
             foreach (var kv in _regions)
             {

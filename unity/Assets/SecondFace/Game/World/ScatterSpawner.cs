@@ -88,7 +88,7 @@ namespace SecondFace.Game.World
                     GameObject go;
                     if (_pool.TryGetValue(address, out var stack) && stack.Count > 0) go = stack.Pop();
                     else go = Instantiate(prefab, _root);
-                    go.transform.SetPositionAndRotation(new Vector3(x0 + p.X, p.Y - 0.05f, z0 + p.Z), Quaternion.Euler(0, p.Yaw, 0));
+                    go.transform.SetPositionAndRotation(WorldOrigin.ToUnity((double)x0 + p.X, p.Y - 0.05f, (double)z0 + p.Z), Quaternion.Euler(0, p.Yaw, 0));
                     go.transform.localScale = Vector3.one * p.Scale;
                     if (!go.activeSelf) go.SetActive(true);
                     _live[chunk].Add((address, go));

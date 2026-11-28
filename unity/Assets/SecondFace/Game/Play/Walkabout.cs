@@ -177,7 +177,7 @@ namespace SecondFace.Game.Play
             if (Party != null) Party.Keep();   // where the waiting stand
             if (Walker != null)
             {
-                var p = Walker.Footing;
+                var p = WorldOrigin.ToWorld(Walker.Footing);   // (saved in the world's own terms: no format change)
                 Game.Spot = new WorldSpot
                 {
                     X = p.x, Y = p.y, Z = p.z, Yaw = Walker.transform.eulerAngles.y,
@@ -192,6 +192,7 @@ namespace SecondFace.Game.Play
         public void End()
         {
             Begun = false;
+            WorldOrigin.Keeper.Leader = null;
             _arriving = null;
             _placing++;   // a setting down under way is dropped
             if (Walker != null) Destroy(Walker.gameObject);
@@ -226,9 +227,16 @@ namespace SecondFace.Game.Play
             var ticket = ++_placing;
             var assets = Stage.Assets;
             var spot = Game.Spot;
+            // the world rebased about where the walker will stand, the saved spot or the place's centre (in the world's own terms),
+            // before anything of the walk is placed: a journey's rebase comes under its card (docs/MOTION_ROOT_CAUSE.md §19)
+            {
+                var placeId = string.IsNullOrEmpty(Game.LocationId) || !Stage.World.Layout.Places.ContainsKey(Game.LocationId) ? "shale" : Game.LocationId;
+                var target = spot != null ? new Vector3(spot.X, spot.Y, spot.Z) : Stage.World.PlaceCentreWorld(placeId);
+                WorldOrigin.Rebase(WorldOrigin.ShiftFor(WorldOrigin.ToUnity(target)));
+            }
             Vector3 at;
             float yaw;
-            if (spot != null) { at = new Vector3(spot.X, spot.Y, spot.Z); yaw = spot.Yaw; }
+            if (spot != null) { at = WorldOrigin.ToUnity(new Vector3(spot.X, spot.Y, spot.Z)); yaw = spot.Yaw; }
             else
             {
                 var place = string.IsNullOrEmpty(Game.LocationId) || !Stage.World.Layout.Places.ContainsKey(Game.LocationId) ? "shale" : Game.LocationId;
@@ -258,6 +266,8 @@ namespace SecondFace.Game.Play
             var body = PlayerBody.Base(pcLook, assets.PlayerF, assets.PlayerM, assets.Rocketbox);
             var pcMale = body == null || (pcLook?.Rb != null ? RbPeople.Of(pcLook.Rb)?.Male ?? pcLook.Body == "m" : pcLook?.Body == "m");
             Walker = Walker.Create(body != null ? body : assets.Walker, assets.Locomotion, at, yaw, pcMale);
+            WorldOrigin.Keeper.Ensure();
+            WorldOrigin.Keeper.Leader = Walker.transform;   // (the box is kept about the walker)
             _down = ticket;
             if (body != null) PlayerBody.Apply(Walker.gameObject, Game.Pc);
             if (Nav == null) Nav = gameObject.AddComponent<WorldNav>();
@@ -519,7 +529,7 @@ namespace SecondFace.Game.Play
             if (ui == null || Walker == null) return null;
             if (Camping != null && Camping.IsOpen) return Camping;
             if (!force && Indoors() && !NearFire()) { Said?.Invoke(Strings.Get("camp.not_here")); return null; }
-            var at = Walker.transform.position;
+            var at = WorldOrigin.ToWorld(Walker.transform.position);   // (the world's own: the places, the biomes, the snares)
             var place = Here();
             var inPlace = place != null && place.Contains(at.x, at.z);
             var mapId = inPlace ? (string.IsNullOrEmpty(place.Map) ? place.Id : place.Map) : null;
@@ -619,7 +629,7 @@ namespace SecondFace.Game.Play
         {
             var layout = Stage != null && Stage.World != null ? Stage.World.Layout : null;
             if (layout == null || Walker == null) return null;
-            var at = Walker.transform.position;
+            var at = WorldOrigin.ToWorld(Walker.transform.position);
             PlaceInfo best = null;
             var d2 = float.MaxValue;
             foreach (var p in layout.Places.Values)
@@ -910,6 +920,7 @@ namespace SecondFace.Game.Play
             if (Walker == null) return null;
             var at = Walker.transform.position + Walker.transform.forward * 0.45f;   // at the feet, a little ahead
             at.y = Walker.transform.position.y;
+            at = WorldOrigin.ToWorld(at);   // (a pile lies where the world says: saved in its own terms)
             var pile = Ground.Drop(Game, Game.Pc.Inventory, index, count, at.x, at.y, at.z);
             if (pile != null && Piles != null) Piles.Sync(Game);
             return pile;

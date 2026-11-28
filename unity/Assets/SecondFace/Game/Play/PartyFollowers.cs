@@ -6,6 +6,7 @@ using SecondFace.Core.Npc;
 using SecondFace.Core.State;
 using SecondFace.Game.People;
 using SecondFace.Game.UI;
+using SecondFace.Game.World;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -153,7 +154,7 @@ namespace SecondFace.Game.Play
             foreach (var m in _members.Values)
             {
                 if (m.Person == null || Party.StateOf(_game, m.Id) != CompanionState.Waiting) continue;
-                var p = m.Person.transform.position;
+                var p = WorldOrigin.ToWorld(m.Person.transform.position);   // (saved in the world's own terms)
                 var loc = Party.Spot(_game, m.Id)?.Location ?? _game.LocationId;
                 Party.WaitAt(_game, m.Id, loc, p.x, p.y, p.z, m.Person.transform.eulerAngles.y);
             }
@@ -218,11 +219,11 @@ namespace SecondFace.Game.Play
                 if (!spot.HasPoint)
                 {
                     // (dismissed while no body of theirs stood: they wait where the player was then)
-                    var at = Beside(0, lead);
+                    var at = WorldOrigin.ToWorld(Beside(0, lead));
                     Party.WaitAt(g, id, spot.Location ?? g.LocationId, at.x, at.y, at.z, Yaw(_heading));
                     spot = Party.Spot(g, id);
                 }
-                var where = new Vector3(spot.X, spot.Y, spot.Z);
+                var where = WorldOrigin.ToUnity(new Vector3(spot.X, spot.Y, spot.Z));
                 if (Flat(where, lead) > WaitNear) continue;
                 Spawn(id, def, where, Quaternion.Euler(0f, spot.Yaw, 0f), Mode.Waiting);
             }
@@ -544,7 +545,7 @@ namespace SecondFace.Game.Play
             m.Mode = Mode.Waiting;
             var a = m.Person.Agent;
             if (a != null && a.enabled && a.isOnNavMesh) a.ResetPath();
-            var p = m.Person.transform.position;
+            var p = WorldOrigin.ToWorld(m.Person.transform.position);
             var loc = Party.Spot(_game, m.Id)?.Location ?? _game.LocationId;
             Party.WaitAt(_game, m.Id, loc, p.x, p.y, p.z, m.Person.transform.eulerAngles.y);
         }

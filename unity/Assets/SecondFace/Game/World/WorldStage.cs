@@ -66,7 +66,8 @@ namespace SecondFace.Game.World
             var t0 = Time.realtimeSinceStartup;
             while (Time.realtimeSinceStartup - t0 < timeout)
             {
-                var ground = WorldGrid.Around(centre.x, centre.z, 1).All(c => Streamer.IsBuilt(c.cx, c.cz));
+                var cw = WorldOrigin.ToWorld(centre);
+                var ground = WorldGrid.Around(cw.x, cw.z, 1).All(c => Streamer.IsBuilt(c.cx, c.cz));
                 var town = place == null || (Streamer.PlaceSpawner != null && Streamer.PlaceSpawner.IsShown(place));
                 if (ground && town && Streamer.Spawner != null && Streamer.Spawner.Idle) break;
                 Status = $"raising the world… {Streamer.Built.Count} chunks{(town && place != null ? ", " + place : "")}";
@@ -78,7 +79,8 @@ namespace SecondFace.Game.World
         /// <summary>The ground's height at a point (the terrain's; the fallback where no chunk is built).</summary>
         public float Ground(Vector3 p, float fallback)
         {
-            var (cx, cz) = WorldGrid.ChunkAt(p.x, p.z);
+            var pw = WorldOrigin.ToWorld(p);
+            var (cx, cz) = WorldGrid.ChunkAt(pw.x, pw.z);
             var t = Streamer != null ? Streamer.TerrainAt(cx, cz) : null;
             return t != null ? t.SampleHeight(p) + t.transform.position.y : fallback;
         }
