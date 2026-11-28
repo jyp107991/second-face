@@ -1212,3 +1212,50 @@ yawn_b                             Hi-Sp +0.0  Sp-Ch -2.5  Ch-Up +5.2  Up-Ne +6.
   The fight's 282 clips share 24 trunks: the ACCAD-built (`*_accad`, `*_built`, 101 men's and 43 women's) +10.7/+6.3/+11.3/+16.6 and
   +5.7/+7.6/+4.8/+13.3, the CMU men's fists -14.3/-1.6/+4.6/+6.6, the women's -0.8/+3.5/+3.8/-6.7, the 100STYLE takes 0.3/0/0/0.6,
   and so on (the same reading over `Combat/Motion/*.fbx.meta`).
+
+## 18. The fight screen's repeatability: the capture's start clock and the ragdoll's phase (editor owner, 2026-11-28)
+
+The TEMP fight screen runs the gate's own Fighting phase over the cast at a fixed 1/60 s capture step. Two runs of the same tree
+do not give the same records. What decides it, measured on main's code (4dab5c07's people inputs):
+- **The noise band per key (two whole runs of the 79, fsmain against fsmain2): C1 combat:rise 4 -> 7, Kb combat:strike 8 -> 6,
+  every other key 0** (3,342 / 3,343). In the paired chunk runs below, C1 rise keeps its count but changes people. A key that moves
+  by less than its band between two batches is not evidence either way.
+- **The unarmed fall's ragdoll (club2, dodge, ready, strike2, rise: 80-120 records in every pair, every chunk).** The body is
+  handed back while it still moves, and the pose read is the transform. With `RigidbodyInterpolation.Interpolate` that transform
+  is the simulated pose interpolated by the frame's phase against the 0.02 s physics step, and the phase differs from run to run
+  (below). The hand-back fix (approved, after the arm clearance's job) waits until every part sleeps and reads the simulated
+  state.
+- **The rifle states, two variants.** Chunk 0's rifle states come first in the chunk, before any fall. They come out in one of
+  two variants, each repeating within itself: X (plain screen fsmain/fsmain2, pclk1, RAG_TRACE r0A/r0B, LEFT_TRACE l01, STEP3 s3C)
+  and Y (SCREEN_SEED seedA/seedB, STEP3 s3A/s3B, pclk2). They are 325 of 480 aim records apart, with small continuous differences
+  in every measure of every person (rifle aim: A1, A2, H1, H3, FY2 in 30 of 30 records, 1e-4 to 5e-3 of the measure's unit).
+  No key's count differs between them (pclk1 against pclk2: 0 keys; s3A against s3C: 0). In the 8-chunk runs the odd chunks
+  flip between variants from run to run.
+- **What decides the variant: the clock at the chunk's start.** At frame 15, where chunk 0 begins, Time.time is 0.227-0.271 s and
+  fixedTime 0.22, 0.24 or 0.26, where a fixed 1/60 s step from the first frame would give 0.25. The first play-mode frames run at
+  real dt before the screen sets `Time.captureDeltaTime`, so the capture's time base and the physics phase follow how fast the
+  machine entered play mode. Every Y run starts at fixedTime 0.24 (Time.time 0.2414-0.2425). The X runs start at 0.2274
+  (fixedTime 0.22) and 0.2713 (0.26).
+- **Ruled out:**
+  - *A log line before the fight.* It correlated at first; s3C has one and is X.
+  - *The fixed-step pattern alone.* pclk1 and s3C step in different patterns (300 × phase 3.4 and 2.2) and give the same records.
+  - *UnityEngine.Random.* Its state differs in every run, and the records repeat within a variant.
+  - *What the feet's rays strike.* FootPlant's and Fighter's rays were traced against every collider in s3A, s3B and s3C: the
+    ground only in every rifle state. The only own strikes are the calves in combat:yield:unarmed while the ragdoll lies (10,291
+    strikes), when FootPlant is off and Fighter discards them.
+  - *The timeline.* pclk1 and pclk2 start all 50 records and stops on the same frames.
+  - *Real time in the fight's code path* (read, nothing changed). Wait counts frames under the capture. Fighter.Until and the
+    views sum deltaTime. The only Time.time reader is Ambient's schedule, and Fighter pauses Ambient in the fight. FixedUpdate
+    and AnimatePhysics are used nowhere. Stopwatches only feed the cost reports (CostMs, StageMs, PoseMs).
+  The data fits the parity of the fixed steps run before frame 15 (Y 12; X 11 and 13): five points, no mechanism, a lead only.
+- **For the owner (gate determinism, not built):** a capture whose start clock follows real time. Two candidate cures:
+  (1) set the capture step before play mode's first frame, so frame 15 is 0.25 s in every run; (2) a physics step that is a whole
+  multiple of the capture step (1/60 or 1/30 s instead of 0.02 s), a project setting the game uses too.
+- **Real-time gates in the world and the turn: when, not what.** They change when things arrive, not what the world ends up as,
+  and they affect the town tests' timing:
+  - WorldStreamer builds a chunk only on a frame under `SlowFrameMs` of unscaledDeltaTime (or past a realtimeSinceStartup starve
+    bound), and its chunk preparations are Tasks that complete on whatever frame they finish.
+  - ScatterSpawner places scatter within a millisecond budget a frame.
+  - PlaceNav and WorldNav build NavMeshes asynchronously, and PlaceNav waits up to 10 s of real time for its pad.
+  - CombatTurn works the reachable area out within a millisecond budget a frame; only its drawing waits on it.
+  - PeopleService's spawns are counted (2 a frame), not timed.
