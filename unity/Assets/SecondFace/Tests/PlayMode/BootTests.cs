@@ -421,22 +421,46 @@ namespace SecondFace.Tests
             walk.Rig.View(walk.Rig.Yaw, 50f, 20f);
             var at = walk.Walker.transform.position;
             var camFwd = Camera.main.transform.forward; camFwd.y = 0; camFwd.Normalize();
-            for (var i = 0; i < 40; i++) { pad.Next = new PadFrame { Move = new Vector2(0f, 1f) }; yield return null; }
-            var moved = walk.Walker.transform.position - at; moved.y = 0;
+            // (each check holds the pad until its condition, within a time bound, never for a count of frames: what a frame
+            // moves is the pad's rate × its time, so 20 frames of the stick turned the view 232° on CI's slow frames and the
+            // turn read back as -127.5° across the wrap, run 46117850298, 2026-11-28; a fast machine's frames moved too little)
+            var t1 = Time.realtimeSinceStartup;
+            var moved = Vector3.zero;
+            while (Time.realtimeSinceStartup - t1 < 10f && moved.magnitude <= 0.5f)
+            {
+                pad.Next = new PadFrame { Move = new Vector2(0f, 1f) };
+                yield return null;
+                moved = walk.Walker.transform.position - at; moved.y = 0;
+            }
             Assert.That(moved.magnitude, Is.GreaterThan(0.5f), "walked");
             Assert.That(Vector3.Dot(moved.normalized, camFwd), Is.GreaterThan(0.7f), "the way the camera looks");
             for (var i = 0; i < 10; i++) { pad.Next = new PadFrame(); yield return null; }
             Assert.That(walk.Walker.Steering, Is.False, "and stopped when let go");
-            // the right stick turns the camera; a bumper turns the view a quarter
+            // the right stick turns the camera; a bumper turns the view a quarter (each turn summed frame by frame, unwrapped)
             var yaw = walk.Rig.Yaw;
-            for (var i = 0; i < 20; i++) { pad.Next = new PadFrame { Look = new Vector2(1f, 0f) }; yield return null; }
-            Assert.That(Mathf.DeltaAngle(yaw, walk.Rig.Yaw), Is.GreaterThan(5f), "turned");
-            // (the stick's turn eases out after it is let go: the quarter turn is measured from where it settles)
-            for (var i = 0; i < 60; i++) { pad.Next = new PadFrame(); yield return null; }
+            var turned = 0f;
+            var t2 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t2 < 10f && turned <= 5f)
+            {
+                pad.Next = new PadFrame { Look = new Vector2(1f, 0f) };
+                yield return null;
+                turned += Mathf.DeltaAngle(yaw, walk.Rig.Yaw); yaw = walk.Rig.Yaw;
+            }
+            Assert.That(turned, Is.GreaterThan(5f).And.LessThan(360f), "turned, the way the stick pushed, less than a revolution");
+            // (the stick's turn eases out after it is let go: the quarter turn is measured from where it settles, a second of the
+            // rig's own clock, twelve of its 0.08 s eases)
+            var t3 = Time.unscaledTime;
+            while (Time.unscaledTime - t3 < 1f) { pad.Next = new PadFrame(); yield return null; }
             yaw = walk.Rig.Yaw;
+            var quarter = 0f;
             pad.Next = new PadFrame { TurnRight = true };
-            for (var i = 0; i < 60; i++) yield return null;
-            Assert.That(Mathf.DeltaAngle(yaw, walk.Rig.Yaw), Is.EqualTo(90f).Within(3f), "a quarter turn");
+            var t4 = Time.unscaledTime;
+            while (Time.unscaledTime - t4 < 1f)
+            {
+                yield return null;
+                quarter += Mathf.DeltaAngle(yaw, walk.Rig.Yaw); yaw = walk.Rig.Yaw;
+            }
+            Assert.That(quarter, Is.EqualTo(90f).Within(3f), "a quarter turn");
             // act: the radial over someone near
             var near = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None).OrderBy(i => Vector3.Distance(i.transform.position, walk.Walker.transform.position)).First();
             Assert.That(UnityEngine.AI.NavMesh.SamplePosition(near.transform.position + near.transform.forward * 1.5f, out var by, 3f, UnityEngine.AI.NavMesh.AllAreas), Is.True, "ground by them");
