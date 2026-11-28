@@ -232,6 +232,9 @@ namespace SecondFace.Game.Play
             {
                 var placeId = string.IsNullOrEmpty(Game.LocationId) || !Stage.World.Layout.Places.ContainsKey(Game.LocationId) ? "shale" : Game.LocationId;
                 var target = spot != null ? new Vector3(spot.X, spot.Y, spot.Z) : Stage.World.PlaceCentreWorld(placeId);
+                // (no leader while placing: the old walker, a chunk off after this rebase, made the keeper rebase straight back, and the
+                // Unity points kept across the waits below set the new walker down that far off, MRC §19.3; the new walker leads once it stands)
+                WorldOrigin.Keeper.Leader = null;
                 WorldOrigin.Rebase(WorldOrigin.ShiftFor(WorldOrigin.ToUnity(target)));
             }
             Vector3 at;
