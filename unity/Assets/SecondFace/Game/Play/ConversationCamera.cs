@@ -13,10 +13,6 @@ namespace SecondFace.Game.Play
     /// A wall or roof in the way turns it a little further round, then raises it. It never drops to eye level and never
     /// cuts between shots: every line keeps the one view. The world keeps running behind; <see cref="End"/> blends back.
     /// </summary>
-    // (the cameras last, after every people system and in a set order: the fight's camera tick at 40 (CombatCameraTick) sets the rig's
-    // focus, the rig at 41 eases to it, the conversation's camera at 42; Cinemachine's brain moves the camera at 100. A correction,
-    // 2026-11-28: all three ran at 0, in no set order with each other and with the people's own LateUpdates at 0)
-    [DefaultExecutionOrder(42)]
     public sealed class ConversationCamera : MonoBehaviour, WorldOrigin.IRebase
     {
         /// <summary>The floating origin's rebase (§19.1): the conversation's framing moves with the world.</summary>
