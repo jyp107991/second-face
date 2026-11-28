@@ -27,6 +27,8 @@ namespace SecondFace.Tests
     {
         public const float Deg = 0.01f, M = 1e-5f;
         private static readonly string[] Bodies = { "Female_Adult_01", "Business_Female_02", "Male_Adult_08", "Construction_Male_03" };
+        /// <summary>A body without its skin (as the players and the base bodies are): the torso's sections' step (SectionsJob).</summary>
+        private const string NoSkin = "Female_Adult_09";
         private readonly List<GameObject> _made = new();
 
         [UnityTearDown]
@@ -38,13 +40,26 @@ namespace SecondFace.Tests
             yield return null;
         }
 
-        private sealed class Pair { public string Id; public Animator A, B; public ArmClearance CA, CB; }
+        private sealed class Pair
+        {
+            public string Id; public Animator A, B; public ArmClearance CA, CB;
+            // (the branch state the twins were in last frame, and each twin's hands a frame ago, root-relative)
+            public bool Apart, HasPrev; public readonly Vector3[] PA = new Vector3[2], PB = new Vector3[2]; public readonly Quaternion[] QA = new Quaternion[2], QB = new Quaternion[2];
+        }
 
         /// <summary>The largest differences seen and where.</summary>
         private sealed class Worst
         {
             public float Deg, M, Diag, Trace; public string WhereDeg = "", WhereM = "", WhereDiag = "", WhereTrace = ""; public int IdxDiff, Frames, Fallbacks;
-            public string Note(string what) => $"{what}: bones {Deg:0.00000}° ({WhereDeg}), {M * 1000f:0.0000} mm ({WhereM}); reports {Diag:0.000000} ({WhereDiag}); traces {Trace:0.000000} ({WhereTrace}); index differences {IdxDiff}; frames {Frames}; the job's clone fell back {Fallbacks}";
+            // the branch flips: an index the step chose (DiagAt, resting) differing between the twins where it did not the frame before
+            public int FirstFlip = -1, Flips, Rejoins, PairFramesApart, EndApart; public string FirstFlipWho = "";
+            public float DegBefore, MBefore, EndDeg, EndM;
+            // at a flip or a rejoin: how far one twin's hand moved that frame beyond the other's (cm, degrees), and each hand's own step
+            public float PopCm, PopDeg; public string PopWhere = ""; public readonly List<float> StepCm = new(), StepDeg = new();
+            private static float P98(List<float> x) { if (x.Count == 0) return 0f; var a = x.ToArray(); System.Array.Sort(a); return a[(int)(0.98f * (a.Length - 1))]; }
+            public string Note(string what) => $"{what}: bones {Deg:0.00000}° ({WhereDeg}), {M * 1000f:0.0000} mm ({WhereM}); reports {Diag:0.000000} ({WhereDiag}); traces {Trace:0.000000} ({WhereTrace}); index differences {IdxDiff}; frames {Frames}; the job's clone fell back {Fallbacks}"
+                + $"; flips {Flips} (first at the sequence's frame {FirstFlip} {FirstFlipWho}), rejoins {Rejoins}, pair-frames apart {PairFramesApart}; before the first flip {DegBefore:0.00000}° {MBefore * 1000f:0.0000} mm; at the end {EndApart} pairs apart, {EndDeg:0.00000}° {EndM * 1000f:0.0000} mm"
+                + $"; at a flip a hand moved {PopCm:0.000} cm {PopDeg:0.000}° beyond its twin ({PopWhere}); a hand's own step a frame p98 {P98(StepCm):0.000} cm {P98(StepDeg):0.000}°, max {(StepCm.Count > 0 ? StepCm.Max() : 0f):0.000} cm {(StepDeg.Count > 0 ? StepDeg.Max() : 0f):0.000}°";
         }
 
         /// <summary>The angle between two turns (degrees), in double from their relative turn: Quaternion.Angle reads any angle
@@ -64,7 +79,7 @@ namespace SecondFace.Tests
 
         // (where the twins first part: the frame and every field of the clearance's own state that differs then, for the report)
         private static readonly System.Reflection.FieldInfo[] StateFields = typeof(ArmClearance).GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-            .Where(f => f.FieldType == typeof(float) || f.FieldType == typeof(int) || f.FieldType == typeof(bool) || f.FieldType == typeof(Vector3)).ToArray();
+            .Where(f => (f.FieldType == typeof(float) || f.FieldType == typeof(int) || f.FieldType == typeof(bool) || f.FieldType == typeof(Vector3)) && f.Name != "_takenFrame").ToArray();
         private static string Parted(Pair p)
         {
             var d = new List<string>();
@@ -96,6 +111,7 @@ namespace SecondFace.Tests
                 if (why.Length > 0) { FirstParted[p] = why; PartedLog.Add($"{p.Id} first parts at frame {Time.frameCount} (Speed {p.A.GetFloat("Speed"):0.0}, resting {p.CA.DiagResting}, restW {typeof(ArmClearance).GetField("_restW", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(p.CA)}): {why}"); }
             }
             if (p.CB.FallbackWhy != null) w.Fallbacks++;
+            float fDeg = 0f, fM = 0f;
             foreach (var hb in Turned)
             {
                 var a = p.A.GetBoneTransform(hb); var b = p.B.GetBoneTransform(hb);
@@ -105,7 +121,40 @@ namespace SecondFace.Tests
                 var ra = a.position - p.A.transform.position; var rb = b.position - p.B.transform.position;
                 var m = (ra - rb).magnitude;
                 if (m > w.M) { w.M = m; w.WhereM = $"{p.Id} {hb}"; }
+                fDeg = Mathf.Max(fDeg, d); fM = Mathf.Max(fM, m);
             }
+            // the branch state: apart when an index the step chose differs
+            var apart = p.CA.DiagResting != p.CB.DiagResting;
+            for (var i = 0; i < p.CA.DiagAt.Length && !apart; i++) apart = p.CA.DiagAt[i] != p.CB.DiagAt[i];
+            var changed = apart != p.Apart;
+            if (apart && !p.Apart) { w.Flips++; if (w.FirstFlip < 0) { w.FirstFlip = w.Frames; w.FirstFlipWho = p.Id; } }
+            if (!apart && p.Apart) w.Rejoins++;
+            if (apart) w.PairFramesApart++;
+            if (w.FirstFlip < 0) { w.DegBefore = Mathf.Max(w.DegBefore, fDeg); w.MBefore = Mathf.Max(w.MBefore, fM); }
+            p.Apart = apart;
+            // each twin's hands this frame, root-relative; their step against the frame before, and one twin's beyond the other's
+            for (var h = 0; h < 2; h++)
+            {
+                var hb = h == 0 ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand;
+                var ta = p.A.GetBoneTransform(hb); var tb = p.B.GetBoneTransform(hb);
+                if (ta == null || tb == null) continue;
+                var pa = Quaternion.Inverse(p.A.transform.rotation) * (ta.position - p.A.transform.position);
+                var pb = Quaternion.Inverse(p.B.transform.rotation) * (tb.position - p.B.transform.position);
+                var qa = Quaternion.Inverse(p.A.transform.rotation) * ta.rotation; var qb = Quaternion.Inverse(p.B.transform.rotation) * tb.rotation;
+                if (p.HasPrev)
+                {
+                    w.StepCm.Add((pa - p.PA[h]).magnitude * 100f); w.StepDeg.Add((float)Ang(p.QA[h], qa));
+                    if (changed)
+                    {
+                        var cm = ((pa - p.PA[h]) - (pb - p.PB[h])).magnitude * 100f;
+                        var dg = (float)Ang(Quaternion.Inverse(p.QA[h]) * qa, Quaternion.Inverse(p.QB[h]) * qb);
+                        if (cm > w.PopCm) { w.PopCm = cm; w.PopWhere = $"{p.Id} {hb} at the sequence's frame {w.Frames}{(apart ? " (flip)" : " (rejoin)")}"; }
+                        w.PopDeg = Mathf.Max(w.PopDeg, dg);
+                    }
+                }
+                p.PA[h] = pa; p.PB[h] = pb; p.QA[h] = qa; p.QB[h] = qb;
+            }
+            p.HasPrev = true;
             // the reports: the gaps in m (Diag 0-3), every other Diag in degrees; the indices exactly
             for (var i = 0; i < p.CA.Diag.Length; i++)
             {
@@ -147,6 +196,17 @@ namespace SecondFace.Tests
             private void LateUpdate() { if (On) foreach (var p in Pairs) Compare(p, W, Trace); }
         }
 
+        /// <summary>TEMP (relaunch 16): CLEAR_PERTURB "dx" or "x,y,z" (m): twin B made that far from twin A.</summary>
+        private static Vector3 Perturb
+        {
+            get
+            {
+                var v = (System.Environment.GetEnvironmentVariable("CLEAR_PERTURB") ?? "").Split(',');
+                float F(int i) => i < v.Length && float.TryParse(v[i], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var f) ? f : 0f;
+                return v.Length >= 3 ? new Vector3(F(0), F(1), F(2)) : new Vector3(F(0), 0f, 0f);
+            }
+        }
+
         private IEnumerator Make(List<Pair> pairs)
         {
 #if UNITY_EDITOR
@@ -158,8 +218,14 @@ namespace SecondFace.Tests
             if (cat == null || controller == null) { Assert.Ignore("the cast's catalogue or the locomotion controller are not built"); yield break; }
             var ground = GameObject.CreatePrimitive(PrimitiveType.Cube); _made.Add(ground);
             ground.transform.localScale = new Vector3(20f, 1f, 20f); ground.transform.position = new Vector3(0f, -0.5f, 0f);
+            if (Perturb.magnitude > 1f)
+            {
+                // (the moved twins' own ground, as the origin's under the others)
+                var far = GameObject.CreatePrimitive(PrimitiveType.Cube); _made.Add(far);
+                far.transform.localScale = new Vector3(20f, 1f, 20f); far.transform.position = Perturb + new Vector3(0f, -0.5f, 0f);
+            }
             var x = 0f;
-            foreach (var id in Bodies)
+            foreach (var id in Bodies.Append(NoSkin))
             {
                 var prefab = cat.Get(id);
                 Assert.That(prefab, Is.Not.Null, id + " in the catalogue");
@@ -168,7 +234,9 @@ namespace SecondFace.Tests
                 var at = new Vector3(x, 0f, 0f); x += 1.6f;
                 for (var k = 0; k < 2; k++)
                 {
-                    var walker = SecondFace.Game.Play.Walker.Create(prefab, controller, at, 0f, p?.Male ?? id.Contains("Male"));
+                    // (TEMP, relaunch 16: CLEAR_PERTURB moves twin B by that much, a change of rounding only)
+                    var shift = k == 1 ? Perturb : Vector3.zero;
+                    var walker = SecondFace.Game.Play.Walker.Create(prefab, controller, at + shift, 0f, p?.Male ?? id.Contains("Male"));
                     walker.gameObject.name = "clearance twin " + id;   // (alike: the same name, the same seeds)
                     _made.Add(walker.gameObject);
                     RbDress.Apply(walker.gameObject, SecondFace.Core.Npc.RbPeople.DyesFor(p, "walker_" + id, p?.Roles?.FirstOrDefault() ?? "settler", null));
@@ -176,8 +244,17 @@ namespace SecondFace.Tests
                     if (walker.Agent != null) walker.Agent.enabled = false;
                     walker.enabled = false;
                     var a = walker.Animator;
+                    if (id == NoSkin && Bodies.Contains(id) == false)
+                    {
+                        // (the skin taken off: the clearance on the torso's sections, as for a body made without one)
+                        var skin = a.GetComponent<BodySkin>();
+                        if (skin != null) Object.DestroyImmediate(skin);
+                        a.GetComponent<ArmClearance>().Bind();
+                        walker.gameObject.name = "clearance twin no skin " + id;
+                    }
                     if (k == 0) { pair.A = a; pair.CA = a.GetComponent<ArmClearance>(); } else { pair.B = a; pair.CB = a.GetComponent<ArmClearance>(); }
                 }
+                if (id == NoSkin) { pair.Id = id + " (no skin)"; Assert.That(pair.CA.Ready && !pair.CA.SkinReady && pair.CB.Ready && !pair.CB.SkinReady, Is.True, "the no-skin twins on the torso's sections"); }
                 pairs.Add(pair);
             }
             yield return null;
@@ -203,6 +280,23 @@ namespace SecondFace.Tests
             yield return Frames(90);
             Set(pairs, (a, c) => { a.SetBool("Sneak", false); a.SetFloat("Speed", 0f); });
             yield return Frames(60);
+        }
+
+        /// <summary>The town's states past the skin's range of the camera (ArmClearance.Step's far branch; the job's SectionsJob).</summary>
+        private static IEnumerator Far(List<Pair> pairs)
+        {
+            var made = Camera.main == null;
+            var cam = made ? new GameObject("clearance twins' far camera") { tag = "MainCamera" }.AddComponent<Camera>() : Camera.main;
+            var was = cam.transform.position;
+            cam.transform.position = new Vector3(2.4f, 3f, -8f);
+            var keep = pairs.Select(p => p.CA.SkinRange).ToList();
+            Set(pairs, (a, c) => c.SkinRange = 0.5f);
+            try { yield return Town(pairs); }
+            finally
+            {
+                for (var i = 0; i < pairs.Count; i++) { pairs[i].CA.SkinRange = keep[i]; pairs[i].CB.SkinRange = keep[i]; }
+                if (made) Object.Destroy(cam.gameObject); else cam.transform.position = was;
+            }
         }
 
         private static IEnumerator Fight(List<Pair> pairs)
@@ -295,17 +389,39 @@ namespace SecondFace.Tests
                 watch.Pairs = pairs;
                 yield return Frames(30);
                 var report = new List<string>(); var wrong = new List<string>();
-                foreach (var (control, trace) in new[] { (true, false), (false, false), (false, true) })
+                // (TEMP, relaunch 16: CLEAR_PASSES=perturbed runs the twins both managed, then both on the job, with CLEAR_PERTURB's shift)
+                var perturbed = System.Environment.GetEnvironmentVariable("CLEAR_PASSES") == "perturbed";
+                var passes = perturbed ? new[] { (true, false), (true, true) } : new[] { (true, false), (false, false), (false, true) };
+                foreach (var (control, trace) in passes)
                 {
-                    foreach (var p in pairs) { p.CA.ForceManaged = true; p.CB.ForceManaged = control; p.CA.TraceStages = trace; p.CB.TraceStages = trace; }
-                    foreach (var (what, seq) in new (string, System.Func<List<Pair>, IEnumerator>)[] { ("town", Town), ("fight", Fight) })
+                    // (perturbed: the first pass both managed, the second both on the job; the second's trace flag reused as "both on the job")
+                    var bothJob = perturbed && trace;
+                    foreach (var p in pairs) { p.Apart = false; p.HasPrev = false; }   // (a pass's twins counted from level)
+                    foreach (var p in pairs) { p.CA.ForceManaged = !bothJob; p.CB.ForceManaged = control && !bothJob; p.CA.TraceStages = !perturbed && trace; p.CB.TraceStages = !perturbed && trace; }
+                    foreach (var (what, seq) in new (string, System.Func<List<Pair>, IEnumerator>)[] { ("town", Town), ("fight", Fight), ("town past the skin's range", Far) })
                     {
                         var w = new Worst();
-                        watch.W = w; watch.Trace = trace; watch.On = true;
+                        watch.W = w; watch.Trace = !perturbed && trace; watch.On = true;
+                        long skin0 = ArmClearance.JobSkinSteps, sec0 = ArmClearance.JobSectionSteps;
                         yield return seq(pairs);
                         watch.On = false;
-                        var label = $"{(control ? "control (both managed)" : "managed against the job")}, traces {(trace ? "on" : "off")}, {what}";
-                        report.Add(w.Note(label));
+                        foreach (var p in pairs)
+                        {
+                            if (p.Apart) w.EndApart++;
+                            foreach (var hb in Turned)
+                            {
+                                var a = p.A.GetBoneTransform(hb); var b = p.B.GetBoneTransform(hb);
+                                if (a == null || b == null) continue;
+                                w.EndDeg = Mathf.Max(w.EndDeg, (float)Ang(a.localRotation, b.localRotation));
+                                w.EndM = Mathf.Max(w.EndM, ((a.position - p.A.transform.position) - (b.position - p.B.transform.position)).magnitude);
+                            }
+                        }
+                        var label = perturbed ? $"perturbed twins, {(bothJob ? "both on the job" : "both managed")}, {what}" : $"{(control ? "control (both managed)" : "managed against the job")}, traces {(trace ? "on" : "off")}, {what}";
+                        long skinN = ArmClearance.JobSkinSteps - skin0, secN = ArmClearance.JobSectionSteps - sec0;
+                        report.Add(w.Note(label) + $"; the job's steps: {skinN} on the skin, {secN} on the sections");
+                        // (each way taken where it should be: the no-skin twin on the sections throughout, everyone far off)
+                        if (!control && (secN < w.Frames || (what != "town past the skin's range" && skinN == 0) || (what == "town past the skin's range" && skinN > 0)))
+                            wrong.Add($"{label}: the job's ways not as Step forks: {skinN} skin steps, {secN} sections steps over {w.Frames} frames");
                         foreach (var line in PartedLog) report.Add("  " + line);
                         PartedLog.Clear(); FirstParted.Clear();
                         if ((!control && w.Fallbacks > 0) || w.Deg > Deg || w.M > M || w.Diag > 1f || w.Trace > 1f || w.IdxDiff > 0) wrong.Add(w.Note(label));

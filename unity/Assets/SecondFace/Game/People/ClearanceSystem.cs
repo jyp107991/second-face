@@ -10,8 +10,9 @@ namespace SecondFace.Game.People
     /// Every person's arm clearance in one go (ArmClearance.Job.cs): after the animation, the foot plant, the gaze and the hands
     /// (order 9: before ArmClearance's own slot, 10, and the fight's hands, 30), each person the job can take is gathered on the
     /// main thread, all their jobs are scheduled together across the worker threads and completed, and their bones and reports
-    /// set; anyone the job does not take (ArmClearance.JobWhyNot, counted by reason in ArmClearance.Fallbacks) runs the managed
-    /// step in ArmClearance's own LateUpdate, as before.
+    /// set: the skin's step (ArmClearance.StepJob) for the near with a body skin, the torso sections' step (SectionsJob) for the
+    /// rest, as ArmClearance.Step forks; anyone the job does not take (ArmClearance.JobWhyNot, counted by reason in
+    /// ArmClearance.Fallbacks) runs the managed step in ArmClearance's own LateUpdate, as before.
     /// </summary>
     /// <summary>The job's profiler marker, on its own (a static Burst reads must not share a type with managed statics).</summary>
     internal static class ClearanceMarker
@@ -61,8 +62,8 @@ namespace SecondFace.Game.People
                 if (!a.isActiveAndEnabled) continue;
                 var why = a.JobWhyNot();
                 if (why != null) { a.NoteFallback(why); continue; }
-                if (!a.Prepare(out var job)) { a.NoteFallback("the skin's arrays not made"); continue; }
-                handles[n++] = job.Schedule();
+                if (!a.Prepare(out var job)) { a.NoteFallback("the job's arrays not made (no skin's or no profile's)"); continue; }
+                handles[n++] = job;
                 _taken.Add(a);
             }
             if (n > 0)

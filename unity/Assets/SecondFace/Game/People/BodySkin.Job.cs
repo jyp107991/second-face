@@ -133,6 +133,7 @@ namespace SecondFace.Game.People
             NativeArray<Vector3Int>.Copy(k.Cell.Reinterpret<Vector3Int>(), 0, _cell, 0, k.Body);
             k.Head.CopyTo(_head);
             if (k.Clock[2] == 1 && (_spacing == null || _spacing.Length != k.Body)) { _spacing = new float[k.Body]; k.Spacing.CopyTo(_spacing); }
+            Poses += k.Clock[0] - _pose;   // (the report's count of posings: the job's own)
             _pose = k.Clock[0];
             DepthCalls += k.Count[0]; DepthKept += k.Count[1]; RobustRuns += k.Count[2]; DrawnAsks += k.Count[3]; DrawnFound += k.Count[4];
             DrawnRefused += k.Count[5]; DrawnInside += k.Count[6]; DrawnPoses += (int)k.Count[7];

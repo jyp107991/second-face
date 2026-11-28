@@ -211,7 +211,8 @@ namespace SecondFace.Game.People
             private void Flank()
             {
                 int lu = Bone(NLU), ll = Bone(NLL), ru = Bone(NRU), rl = Bone(NRL);
-                if (I.HasNeck == 0 || lu < 0 || ll < 0 || ru < 0 || rl < 0) { OutF[OFlank] = Sk.FlankL; OutF[OFlank + 1] = Sk.FlankR; return; }
+                // (none set: Flank returns before it sets the skin's or the renderers' weights)
+                if (I.HasNeck == 0 || lu < 0 || ll < 0 || ru < 0 || rl < 0) { OutF[OFlank] = -1f; OutF[OFlank + 1] = -1f; return; }
                 var down = CM.Norm(CM.Sub(I.Hips, I.Neck));
                 var ahead = CM.ProjectOnPlane(I.Forward, down);
                 ahead = CM.SqrMag(ahead) > 1e-6f ? CM.Norm(ahead) : I.Forward;
