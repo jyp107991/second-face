@@ -105,7 +105,7 @@ namespace SecondFace.Tests
 
         /// <summary>Loads the Boot scene, goes from the title through a new game (an origin, a name, begin: P5.3j) and
         /// waits until the walker stands on the NavMesh.</summary>
-        private static IEnumerator Boot(System.Action<Bootstrap> done)
+        internal static IEnumerator Boot(System.Action<Bootstrap> done)
         {
             if (Directory.Exists(SavesDir)) Directory.Delete(SavesDir, true);
             Bootstrap.MakeSession = () => new Session(new DirectoryBackend(SavesDir));

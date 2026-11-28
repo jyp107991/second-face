@@ -44,6 +44,8 @@ namespace SecondFace.Game.World
         /// <summary>Reads the three world files; on Android they live inside the APK, where only UnityWebRequest reads.</summary>
         public IEnumerator Load()
         {
+            // (a new world: nothing of it placed yet, so the floating origin starts again at Unity's)
+            if (!Ready) { WorldOrigin.Keeper.Leader = null; WorldOrigin.Reset(); }
             byte[] control = null, style = null; string places = null, roads = null;
             yield return Read("control.bin", b => control = b);
             yield return Read("style.bin", b => style = b);
