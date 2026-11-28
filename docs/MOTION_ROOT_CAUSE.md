@@ -898,6 +898,40 @@ the clips' actors stand them level.
   import. (a)'s item carries its own check: after the re-parent, the same bake must read about nought on every clip (the hips' and
   the thighs' turns within a degree or so, the shift within a few millimetres); then the bake, `ClipTurnFirst`, `SeatTurn` and
   their data are deleted, not kept as a no-op.
+- **(a) built and measured (relaunch 16, 2026-11-28): the bake cannot go; two shares, one removed.** The re-parent at import
+  (`RocketboxImportPostprocessor`: `OnPostprocessMeshHierarchy`, which Unity runs before the avatar and the clips are made, moves
+  `Bip01 L/R Thigh` to `Bip01 Pelvis` and `Bip01 L/R Clavicle` to `Bip01 Spine2`, the bind kept in the world; each body's configured
+  T-pose rewritten for the four bones in their new parents' frames) left every body's bind as it was (403,549 vertices of the 79
+  within 0.7 µm, float rounding) and every avatar valid. Measured against the expectation above:
+  - *The thighs' share: the hierarchy, removed.* The bake's thigh turns fall from 63.9° at most (6.7° median) to 0.0° on every
+    clip, and the bake from 8,191 keys to 3,668 (480 to 215 KB).
+  - *The pelvis's share: not the hierarchy.* The hips' turn stays (25.4 to 15.9° at most, 8.0 to 2.2° median; up to 8.9° in a standing
+    clip, `dodge_l_accad`, and 14-16° in the crouches) and so does the shift (2.8 cm median, up to 7.4). With the hip joints on the
+    pelvis and the shoulders on the upper chest, Unity still reads a different body orientation from the trunk's own geometry:
+    that share belongs to the trunk-convention item (`docs/PROGRESS.md`), not to the import hierarchy. Bare, without a bake, the
+    re-parented bodies stand 27 of 86 standing clip-body pairs further from the clips' actors than 3° in the thighs or 1.5 cm in
+    the planted feet (the men's CMU blows 4.1-4.8°); with the new bake, 1 fight clip and 6 locomotion clips (unbaked).
+  - So "the same bake must read about nought on every clip" does not hold: the bake stays, re-baked on the new skeletons, for every
+    whole-body clip, not only for the crouches. The re-parent is measured as a fix of its own (the fight screen, the everyday screen
+    and each clip's closeness to its actor, against main), not as the bake's retirement.
+  - *Measured as a fix, and not kept.* Each clip's closeness to its own actor (bare, BM01 and BF01): in the base layer's locomotion,
+    which has no bake, the re-parent alone brings the thighs from 7.2° to 1.8° (p98, the median clip; the sneak 25° to 0.4-1.6°) and the
+    planted feet from 3.4 to 0.4 cm; in the fight, with the new bake, the thighs 0.11 -> 0.10° and the planted feet 0.78 -> 0.40 cm at
+    the median, 26 of 98 clip-body rows a little further in one column (the long gun chain's planted feet 0.73 -> 1.12 cm at the
+    median). On the fight screen of all 79 against main's own: K1 strike 54 -> 6 (the club blow's planted feet, as traced), C1 strike
+    125 -> 89, C1 crouch 79 -> 68; but H3 aim 1 -> 237, H1 aim_pistol 0 -> 108, FY1 aim 141 -> 237, C1 carry 42 -> 52, Kb crouch
+    19 -> 25 (3,342 -> 3,666 cells): with the clavicles on the upper chest, the aim's head and chest no longer stand as the
+    compensations built on the Biped hierarchy expect (the gaze's own-joint turn, the aim's trunk share, `Fighter`'s bones above the
+    legs, which now include the spine). Reverted, 2026-11-28; the compensations are to be traced before the re-parent comes back.
+    The clavicles' move is the likely source of the aim regressions (the aims' head, chest and arms are what got worse; the thighs'
+    move is what brought K1 and the feet back); a re-parent of the thighs alone is an untested hypothesis for later, not to be tried
+    now.
+  - A correction to the plan: the eight states traced bare before it was built (relaunch 16's `leg1`: guards, readies, the long gun's
+    aim, the club blow, the throw, the crouch, the duck) put the standing clips within 0.5-2.8° of their actors; over every clip the
+    CMU punches and the dodges are not (4.1-4.8°, the dodge's pelvis 8.9°): eight states overstated the standing clips.
+  - The flank correctives (`BodyCorrectives`, measured at muscle zero) change with it: at muscle zero the neck no longer carries the
+    clavicles, so the hung arm meets the chest elsewhere (deltas moved by 0.50 cm at the median, at most 7.3 cm, Police_Male_06), and
+    every person's skin points and layers, made from them, change too.
 - **The sits (this batch).** The same retarget at a sit's hip bend of about 90°: the base layer's sits (the controller's states
   tagged "sit": a chair, a stool, the ground) on the Rocketbox bodies stood the pelvis turned and the thighs rolled from the
   sits' CMU actors (the walker on a chair: hips 0.47 m, a foot 0.32 m off the floor, where the take keeps it at 0.05 m; dfc's
