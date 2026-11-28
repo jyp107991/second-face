@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using NUnit.Framework;
 using SecondFace.Game;
 using SecondFace.Game.People;
@@ -19,10 +20,11 @@ namespace SecondFace.Tests
     {
         // (the test assembly does not reference Unity.Burst: its options by reflection)
         private static readonly System.Type BC = System.AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("Unity.Burst.BurstCompiler")).FirstOrDefault(t => t != null);
-        private static object Opt => BC.GetProperty("Options").GetValue(null);
-        private static bool Get(string p) => (bool)Opt.GetType().GetProperty(p).GetValue(Opt);
-        private static void Set(string p, bool v) => Opt.GetType().GetProperty(p).SetValue(Opt, v);
-        private static bool IsEnabled => (bool)BC.GetProperty("IsEnabled").GetValue(null);
+        private const BindingFlags All = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance;
+        private static object Opt => BC.GetProperty("Options", All)?.GetValue(null) ?? BC.GetField("Options", All)?.GetValue(null);
+        private static bool Get(string p) { var o = Opt; var pr = o.GetType().GetProperty(p, All); return pr != null ? (bool)pr.GetValue(o) : (bool)o.GetType().GetField(p, All).GetValue(o); }
+        private static void Set(string p, bool v) { var o = Opt; var pr = o.GetType().GetProperty(p, All); if (pr != null) pr.SetValue(o, v); else o.GetType().GetField(p, All).SetValue(o, v); }
+        private static bool IsEnabled => (bool)(BC.GetProperty("IsEnabled", All)?.GetValue(null) ?? BC.GetField("IsEnabled", All)?.GetValue(null) ?? false);
 
         [UnityTearDown]
         public IEnumerator CleanUp() { if (BC != null) Set("EnableBurstCompilation", true); yield return BootTests.Clear(); }
