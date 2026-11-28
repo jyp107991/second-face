@@ -196,7 +196,7 @@ namespace SecondFace.Game.Play
         private IEnumerator Moving(Vector3 to, Quaternion facing)
         {
             // (a sequence in flight that keeps Unity points across frames: the floating origin waits for it, §19.1)
-            var hold = WorldOrigin.Hold(30f);
+            var hold = WorldOrigin.Hold("the walker sitting or standing", 30f);
             try { yield return MovingBody(to, facing); }
             finally { WorldOrigin.Release(hold); }
         }

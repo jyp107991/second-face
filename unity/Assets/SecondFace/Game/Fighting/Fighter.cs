@@ -35,8 +35,13 @@ namespace SecondFace.Game.Fighting
     [DefaultExecutionOrder(30)]   // after the foot plant (-20), the gaze (0), the hands (5) and the arms' clearance (10)
     public sealed class Fighter : MonoBehaviour, WorldOrigin.IRebase
     {
-        /// <summary>The floating origin's rebase (§19.1): the aim's target moves with the world.</summary>
-        public void OnRebase(Vector3 d) { if (_haveAim) _aimAt += d; }
+        /// <summary>The floating origin's rebase (§19.1): the aim's target and the feet's pins move with the world (the feet's: missed by
+        /// stage 1's scan, which read no struct's members, MRC §19.3).</summary>
+        public void OnRebase(Vector3 d)
+        {
+            if (_haveAim) _aimAt += d;
+            _fl.Pin += d; _fl.From += d; _fl.Was += d; _fr.Pin += d; _fr.From += d; _fr.Was += d;
+        }
 
         public CombatSet Set;
         public bool Female;

@@ -13,6 +13,7 @@ using SecondFace.Game;
 using SecondFace.Game.People;
 using SecondFace.Game.Play;
 using SecondFace.Game.UI;
+using SecondFace.Game.World;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.SceneManagement;
@@ -317,15 +318,16 @@ namespace SecondFace.Tests
                     $"waiting where they stood (held {body?.Held}, fallen {rag?.Fallen}, blending {rag?.Blending}, content places them {Party.PlacedByContent(g, Companion)}, in party {g.World.Party.Contains(Companion)})");
             }
             var left = follower.transform.position;
+            var leftW = WorldOrigin.ToWorld(left);   // (the world's own place: a rebase or a load may move Unity's)
             var spot = Party.Spot(g, Companion);
             Assert.That(spot != null && spot.HasPoint, Is.True, "their spot is in the game");
-            Assert.That(Flat(new Vector3(spot.X, spot.Y, spot.Z), left), Is.LessThan(0.5f));
+            Assert.That(Flat(new Vector3(spot.X, spot.Y, spot.Z), leftW), Is.LessThan(0.5f), "the spot is where they were left (the world's own place)");
             dest = Away(walk.Walker.transform.position, walk.Walker.transform.position - left, 16f);
             Assert.That(dest.HasValue, Is.True, "somewhere 16 m off");
             yield return WalkTo(walk, dest.Value, null, new Watch());
             yield return Wait(4f);
             Assert.That(walk.Party.Of(Companion), Is.SameAs(follower), "still standing");
-            Assert.That(Flat(follower.transform.position, left), Is.LessThan(0.6f), "where they were left");
+            Assert.That(Flat(WorldOrigin.ToWorld(follower.transform.position), leftW), Is.LessThan(0.6f), "where they were left");
             Assert.That(Flat(follower.transform.position, walk.Walker.transform.position), Is.GreaterThan(10f), "not following");
             Assert.That(HudShown(boot), Is.EqualTo(1), "the strip is the player's alone");
 
@@ -344,7 +346,7 @@ namespace SecondFace.Tests
             Assert.That(waiting, Is.Not.Null, "the waiting companion stands again");
             Assert.That(walk.Party.ModeOf(Companion), Is.EqualTo(PartyFollowers.Mode.Waiting));
             yield return Wait(1f);
-            Assert.That(Flat(waiting.transform.position, left), Is.LessThan(1f), "at the spot they were left");
+            Assert.That(Flat(WorldOrigin.ToWorld(waiting.transform.position), leftW), Is.LessThan(1f), "at the spot they were left");
 
             // ---- asked back: they come ----
             Logic.Apply(Logic.Fx($"[{{ 'join': '{Companion}' }}]"), g, walk.Quests);

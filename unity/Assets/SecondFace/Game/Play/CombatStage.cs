@@ -106,7 +106,7 @@ namespace SecondFace.Game.Play
         private IEnumerator AiTurn(BattleUnit u)
         {
             // (a sequence in flight that keeps Unity points across frames: the floating origin waits for it, §19.1)
-            var hold = WorldOrigin.Hold(60f);
+            var hold = WorldOrigin.Hold("a fighter's turn", 60f);
             try { yield return AiTurnBody(u); }
             finally { WorldOrigin.Release(hold); }
         }

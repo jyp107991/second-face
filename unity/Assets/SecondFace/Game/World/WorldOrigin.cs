@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.SceneManagement;
@@ -112,8 +113,13 @@ namespace SecondFace.Game.World
         private static readonly Dictionary<int, float> Holds = new();
         private static int _nextHold;
         /// <summary>Holds the rebase off while a sequence keeps Unity points across frames (at most <paramref name="maxSeconds"/>).</summary>
-        public static int Hold(float maxSeconds = 30f) { var id = ++_nextHold; Holds[id] = Time.unscaledTime + maxSeconds; return id; }
-        public static void Release(int hold) => Holds.Remove(hold);
+        public static int Hold(float maxSeconds = 30f) => Hold("a sequence", maxSeconds);
+        /// <summary>As <see cref="Hold(float)"/>, named (<see cref="Holding"/> says who holds the world still).</summary>
+        public static int Hold(string who, float maxSeconds = 30f) { var id = ++_nextHold; Holds[id] = Time.unscaledTime + maxSeconds; HoldNames[id] = who; return id; }
+        public static void Release(int hold) { Holds.Remove(hold); HoldNames.Remove(hold); }
+        private static readonly Dictionary<int, string> HoldNames = new();
+        /// <summary>Who holds the world still now (the holds in force, by name).</summary>
+        public static string Holding => Held ? string.Join(", ", Holds.Keys.Select(k => HoldNames.TryGetValue(k, out var n) ? n : "?")) : "";
         /// <summary>A sequence in flight holds the rebase off now.</summary>
         public static bool Held
         {
@@ -123,7 +129,7 @@ namespace SecondFace.Game.World
                 var now = Time.unscaledTime;
                 List<int> gone = null;
                 foreach (var kv in Holds) if (kv.Value < now) (gone ??= new List<int>()).Add(kv.Key);
-                if (gone != null) foreach (var k in gone) Holds.Remove(k);
+                if (gone != null) foreach (var k in gone) { Holds.Remove(k); HoldNames.Remove(k); }
                 return Holds.Count > 0;
             }
         }

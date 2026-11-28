@@ -478,7 +478,7 @@ namespace SecondFace.Game.Play
         public IEnumerator Use(Interactable thing, string verb, string placeId, MapDef map)
         {
             // (a sequence in flight that keeps Unity points across frames: the floating origin waits for it, §19.1)
-            var hold = WorldOrigin.Hold(30f);
+            var hold = WorldOrigin.Hold("a use (" + verb + ")", 30f);
             try { yield return UseBody(thing, verb, placeId, map); }
             finally { WorldOrigin.Release(hold); }
         }
@@ -1042,7 +1042,7 @@ namespace SecondFace.Game.Play
         private IEnumerator Responding(Interactable who, string verb)
         {
             // (a sequence in flight that keeps Unity points across frames: the floating origin waits for it, §19.1)
-            var hold = WorldOrigin.Hold(30f);
+            var hold = WorldOrigin.Hold("a word (" + verb + ")", 30f);
             try { yield return RespondingBody(who, verb); }
             finally { WorldOrigin.Release(hold); }
         }
@@ -1102,7 +1102,7 @@ namespace SecondFace.Game.Play
         public static IEnumerator Face(Transform person, Vector3 point, float seconds = -1f)
         {
             // (a sequence in flight that keeps Unity points across frames: the floating origin waits for it, §19.1)
-            var hold = WorldOrigin.Hold(30f);
+            var hold = WorldOrigin.Hold("a turn to face", 30f);
             try { yield return FaceBody(person, point, seconds); }
             finally { WorldOrigin.Release(hold); }
         }

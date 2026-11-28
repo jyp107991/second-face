@@ -259,7 +259,7 @@ namespace SecondFace.Game.Play
             if (x0 > x1) return;
             LastSpan = Mathf.Max(x1 - x0, z1 - z0);
             if (LastSpan > WorldOrigin.FightStep) Debug.Log($"Combat: the fighters span {LastSpan:0} m, more than a re-centring step ({WorldOrigin.FightStep:0} m): the farthest stand about {LastSpan * 0.5f:0} m from the origin");
-            if (WorldOrigin.Held) { Debug.Log("Combat: the fight not re-centred: a sequence still holds the world"); return; }
+            if (WorldOrigin.Held) { Debug.Log($"Combat: the fight not re-centred: the world held still by {WorldOrigin.Holding}"); return; }
             LastRecentre = WorldOrigin.Recentre(new Vector3((x0 + x1) * 0.5f, 0f, (z0 + z1) * 0.5f));
         }
 

@@ -510,7 +510,7 @@ namespace SecondFace.Game.Play
         private IEnumerator Run(IEnumerator step, bool keepUndo = false)
         {
             // (a sequence in flight that keeps Unity points across frames: the floating origin waits for it, §19.1)
-            var hold = WorldOrigin.Hold(30f);
+            var hold = WorldOrigin.Hold("the player's action in a fight", 30f);
             try { yield return RunBody(step, keepUndo); }
             finally { WorldOrigin.Release(hold); }
         }

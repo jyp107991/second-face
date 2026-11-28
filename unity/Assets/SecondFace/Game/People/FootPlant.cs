@@ -31,6 +31,9 @@ namespace SecondFace.Game.People
             _endPosL += d; _endPosR += d; _fromL += d; _fromR += d; _was += d; _lastL += d; _lastR += d;
             _shownL += d; _shownR += d; _shownLastL += d; _shownLastR += d;
             _l.Pin += d; _l.From += d; _l.To += d; _r.Pin += d; _r.From += d; _r.To += d;
+            // (the locks' held and let-go places: missed by stage 1's scan, which read no struct's members; a locked foot jumped 1 m
+            // toward its old place in a rebase's frame, FloatingOriginTests (b), MRC §19.3)
+            _lockL.At += d; _lockL.From += d; _lockR.At += d; _lockR.From += d;
         }
 
         public LayerMask Ground = Physics.DefaultRaycastLayers;

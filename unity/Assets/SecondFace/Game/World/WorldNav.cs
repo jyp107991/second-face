@@ -98,7 +98,10 @@ namespace SecondFace.Game.World
             }
             _pending = new Bounds(new Vector3(centre.x, centre.y, centre.z), new Vector3(Size, Height, Size));
             _seen = Seen(); _lastBuild = Time.unscaledTime;
-            _build = NavMeshBuilder.UpdateNavMeshDataAsync(_data, settings, PlaceNav.Collect(_pending), _pending);
+            // (the bounds in the data's own space, as NavMeshSurface gives them; the sources stay in the world's: once a rebase has moved
+            // the data, world bounds built the walker's surroundings that far off, MRC §19.3)
+            var local = new Bounds(_pending.center - _data.position, _pending.size);
+            _build = NavMeshBuilder.UpdateNavMeshDataAsync(_data, settings, PlaceNav.Collect(_pending), local);
         }
     }
 }
