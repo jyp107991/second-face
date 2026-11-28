@@ -477,6 +477,14 @@ namespace SecondFace.Game.Play
         /// talking prop's conversation begins.</summary>
         public IEnumerator Use(Interactable thing, string verb, string placeId, MapDef map)
         {
+            // (a sequence in flight that keeps Unity points across frames: the floating origin waits for it, §19.1)
+            var hold = WorldOrigin.Hold(30f);
+            try { yield return UseBody(thing, verb, placeId, map); }
+            finally { WorldOrigin.Release(hold); }
+        }
+
+                public IEnumerator UseBody(Interactable thing, string verb, string placeId, MapDef map)
+        {
             if (Walker == null || thing == null) yield break;
             var at = thing.transform.position;
             var away = Walker.transform.position - at;
@@ -1033,6 +1041,14 @@ namespace SecondFace.Game.Play
 
         private IEnumerator Responding(Interactable who, string verb)
         {
+            // (a sequence in flight that keeps Unity points across frames: the floating origin waits for it, §19.1)
+            var hold = WorldOrigin.Hold(30f);
+            try { yield return RespondingBody(who, verb); }
+            finally { WorldOrigin.Release(hold); }
+        }
+
+                private IEnumerator RespondingBody(Interactable who, string verb)
+        {
             if (Walker == null || who == null) yield break;
             var person = who.transform;
             var anim = who.GetComponentInChildren<Animator>();
@@ -1084,6 +1100,14 @@ namespace SecondFace.Game.Play
         /// second for a glance round, 1.3 s for about-face) so their feet step round (FootPlant). The motion and posture gate
         /// plays this (docs/PEOPLE_MOTION.md §2.3).</summary>
         public static IEnumerator Face(Transform person, Vector3 point, float seconds = -1f)
+        {
+            // (a sequence in flight that keeps Unity points across frames: the floating origin waits for it, §19.1)
+            var hold = WorldOrigin.Hold(30f);
+            try { yield return FaceBody(person, point, seconds); }
+            finally { WorldOrigin.Release(hold); }
+        }
+
+                public static IEnumerator FaceBody(Transform person, Vector3 point, float seconds = -1f)
         {
             var to = point - person.position;
             to.y = 0;

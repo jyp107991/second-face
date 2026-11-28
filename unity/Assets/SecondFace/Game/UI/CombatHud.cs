@@ -56,6 +56,12 @@ namespace SecondFace.Game.UI
         private readonly Dictionary<string, Button> _actions = new();
         private readonly Dictionary<string, Label> _notes = new();
         private Vector3? _pointAt;
+        /// <summary>The floating origin's rebase (§19.1): the point's and the shields' anchors move with the world.</summary>
+        public void Shift(Vector3 d)
+        {
+            if (_pointAt is { } p) _pointAt = p + d;
+            for (var i = 0; i < _shieldAt.Count; i++) _shieldAt[i] = (_shieldAt[i].At + d, _shieldAt[i].Level);
+        }
         private float _bannerUntil;
 
         /// <summary>A cluster button pressed (its id: stance, throw, swap, heal, undo, reload, overwatch, end_turn).</summary>

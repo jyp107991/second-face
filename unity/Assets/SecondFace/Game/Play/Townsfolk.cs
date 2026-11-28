@@ -11,8 +11,11 @@ namespace SecondFace.Game.Play
 {
     /// <summary>One of a place's people keeping their routine (P6.2): who they are, the entry in force, where they are going,
     /// whether they are out of sight (asleep at home or away), held still while someone talks to them.</summary>
-    public sealed class Townsperson : MonoBehaviour
+    public sealed class Townsperson : MonoBehaviour, WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): the post, the goal and where the agent was sent move with the world.</summary>
+        public void OnRebase(Vector3 d) { Post += d; Target += d; Asked += d; }
+
         public string Id;
         /// <summary>The cast body they wear.</summary>
         public string Body;

@@ -1,5 +1,6 @@
 using Unity.Cinemachine;
 using Unity.Cinemachine.TargetTracking;
+using SecondFace.Game.World;
 using UnityEngine;
 
 namespace SecondFace.Game.Play
@@ -12,8 +13,18 @@ namespace SecondFace.Game.Play
     /// the camera eases to them over <see cref="Smoothing"/> s and a released orbit flings on, slowing over
     /// <see cref="FlingSeconds"/> s. Yaw is in the world's frame, not the leader's: turning to walk does not swing the view.
     /// </summary>
-    public sealed class OrbitRig : MonoBehaviour
+    public sealed class OrbitRig : MonoBehaviour, WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): the camera's caches move with the world, and the virtual camera is told its
+        /// target jumped (no damping across the shift).</summary>
+        public void OnRebase(Vector3 d)
+        {
+            _lastLeader += d;
+            if (_focus is { } f) _focus = f + d;
+            _focusAt += d;
+            if (Virtual != null && Target != null) Virtual.OnTargetObjectWarped(Target, d);
+        }
+
         public const float MinPitch = 35f, MaxPitch = 62f, MinDistance = 8f, MaxDistance = 26f, PanLimit = 30f;
         public const float YawPerPixel = 0.22f, PitchPerPixel = 0.12f, Smoothing = 0.08f, FlingSeconds = 0.5f, Lead = 0.4f;
 

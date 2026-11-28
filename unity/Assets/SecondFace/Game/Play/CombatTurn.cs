@@ -4,6 +4,7 @@ using System.Linq;
 using SecondFace.Core.Combat;
 using SecondFace.Core.Inventory;
 using SecondFace.Game.UI;
+using SecondFace.Game.World;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -17,8 +18,22 @@ namespace SecondFace.Game.Play
     /// and thrown with a second tap, undo of a walk nobody saw, end turn asked again while AP are left; the pad and the
     /// keys do the same with a cursor on the ground.
     /// </summary>
-    public sealed partial class Combat
+    public sealed partial class Combat : WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): the turn's previews and the HUD's anchors move with the world.</summary>
+        public void OnRebase(Vector3 d)
+        {
+            for (var i = 0; i < _corners.Count; i++) _corners[i] += d;
+            for (var i = 0; i < _shots.Count; i++) _shots[i] += d;
+            for (var i = 0; i < _arc.Count; i++) _arc[i] += d;
+            for (var i = 0; i < _shieldPts.Count; i++) _shieldPts[i] = (_shieldPts[i].At + d, _shieldPts[i].Level);
+            if (_throwAt is { } t) _throwAt = t + d;
+            _cursor += d;
+            if (_preview != null) _preview.End += d;
+            if (_undo != null) _undo.At += d;
+            _hud?.Shift(d);
+        }
+
         /// <summary>The reachable grid's spacing (metres) and how long a frame may spend on it (milliseconds).</summary>
         public const float ReachStep = 1.0f, ReachBudgetMs = 4f, CommitWithin = 1.2f, EndArmSeconds = 4f, CursorSpeed = 7f;
 
@@ -222,19 +237,20 @@ namespace SecondFace.Game.Play
         public bool PreviewWalk(Vector3 p)
         {
             if (!PlayersTurn) return false;
-            var plan = _battle.PlanMove(_acting, p.x, p.z);
+            double px = WorldOrigin.WorldX(p.x), pz = WorldOrigin.WorldZ(p.z);   // (the battle's own terms)
+            var plan = _battle.PlanMove(_acting, px, pz);
             if (plan.Ap == int.MaxValue || plan.Path == null) { ClearPreview(); Say(Strings.Get("combat.why.no_way")); return false; }
-            var threats = _battle.ThreatsAt(_acting, p.x, p.z);
+            var threats = _battle.ThreatsAt(_acting, px, pz);
             var card = MoveCard.From(plan, threats, Strings.Get);
-            _preview = new WalkPreview { X = p.x, Z = p.z, End = p, Plan = plan, Threats = threats, Card = card };
+            _preview = new WalkPreview { X = px, Z = pz, End = p, Plan = plan, Threats = threats, Card = card };
             _corners.Clear();
-            foreach (var (x, z) in plan.Path) _corners.Add(new Vector3((float)x, p.y, (float)z));
+            foreach (var (x, z) in plan.Path) _corners.Add(WorldOrigin.ToUnity(x, p.y, z));
             _shots.Clear();
-            foreach (var (_, x, z, _) in plan.Reactions) _shots.Add(new Vector3((float)x, p.y, (float)z));
+            foreach (var (_, x, z, _) in plan.Reactions) _shots.Add(WorldOrigin.ToUnity(x, p.y, z));
             Vector3? hazard = null;
             if (plan.Hazard != null)
                 foreach (var (cx, cz) in SurfaceGrid.Cells(plan.Path))
-                    if (_battle.Surfaces.Peek(cx, cz) == plan.Hazard) { var (hx, hz) = SurfaceGrid.Centre(cx, cz); hazard = new Vector3((float)hx, p.y, (float)hz); break; }
+                    if (_battle.Surfaces.Peek(cx, cz) == plan.Hazard) { var (hx, hz) = SurfaceGrid.Centre(cx, cz); hazard = WorldOrigin.ToUnity(hx, p.y, hz); break; }
             var mul = Stances.MoveMul(_acting.C.Stance);
             var act = System.Math.Max(0, _acting.C.Ap - CombatRules.AttackAp(_acting.C)) * Battle.MetresPerAp / mul;
             var dash = _acting.C.Ap * Battle.MetresPerAp / mul;
@@ -246,7 +262,7 @@ namespace SecondFace.Game.Play
             _hud?.ShowPoint(p, card.Headline, _cardLines, card.Ok);
             _shieldPts.Clear();
             if (card.Ok && _battle.Geometry != null)
-                foreach (var piece in _battle.Geometry.CoverAround(p.x, p.z))
+                foreach (var piece in _battle.Geometry.CoverAround(px, pz))
                     _shieldPts.Add((p + new Vector3((float)piece.DX, 0f, (float)piece.DZ) * 0.6f + Vector3.up * (piece.Level == "full" ? 1.3f : 0.85f), piece.Level));
             _hud?.Shields(_shieldPts);
             _spend = plan.Ap;
@@ -298,7 +314,7 @@ namespace SecondFace.Game.Play
         public bool AimThrow(Vector3 p)
         {
             if (!PlayersTurn || _throwItem == null) return false;
-            var plan = _battle.PlanThrow(_acting, _throwItem, p.x, p.z);
+            var plan = _battle.PlanThrow(_acting, _throwItem, WorldOrigin.WorldX(p.x), WorldOrigin.WorldZ(p.z));
             if (_throwAt != null && Flat(_throwAt.Value, p) < 1.0f && plan.Ok)
             {
                 var item = _throwItem;
@@ -492,6 +508,14 @@ namespace SecondFace.Game.Play
         /// marks, held shots and intents are worked out afresh; the turn ends by itself when nothing is left to spend (unless
         /// the walk that spent it can still be taken back). <paramref name="keepUndo"/>: the step is a walk (it makes the undo).</summary>
         private IEnumerator Run(IEnumerator step, bool keepUndo = false)
+        {
+            // (a sequence in flight that keeps Unity points across frames: the floating origin waits for it, §19.1)
+            var hold = WorldOrigin.Hold(30f);
+            try { yield return RunBody(step, keepUndo); }
+            finally { WorldOrigin.Release(hold); }
+        }
+
+                private IEnumerator RunBody(IEnumerator step, bool keepUndo = false)
         {
             _busy = true;
             ClearPreview();

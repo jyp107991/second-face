@@ -5,6 +5,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
+using SecondFace.Game.World;
 using UnityEngine;
 
 namespace SecondFace.Game.People
@@ -20,8 +21,12 @@ namespace SecondFace.Game.People
     /// same surface the gate measures (MotionProbe), not a model of it (on the phone the meshes are not readable).
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed partial class BodySkin : MonoBehaviour
+    public sealed partial class BodySkin : MonoBehaviour, WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): the query cache is of the old places, so it is dropped (a new pose: each
+        /// point asked again); the points themselves are posed again from the bones.</summary>
+        public void OnRebase(Vector3 d) => _pose++;
+
         public const int Version = 1;
 
         /// <summary>Where a point is: the body an arm may meet (torso, thighs), then each arm's parts.</summary>

@@ -1,3 +1,4 @@
+using SecondFace.Game.World;
 using UnityEngine;
 
 namespace SecondFace.Game.People
@@ -21,8 +22,17 @@ namespace SecondFace.Game.People
     /// </summary>
     [RequireComponent(typeof(Animator))]
     [DefaultExecutionOrder(-20)]
-    public sealed class FootPlant : MonoBehaviour
+    public sealed class FootPlant : MonoBehaviour, WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): the feet's held and stepping places move with the world.</summary>
+        public void OnRebase(Vector3 d)
+        {
+            for (var i = 0; i < _endL.Length; i++) { _endL[i] += d; _endR[i] += d; }
+            _endPosL += d; _endPosR += d; _fromL += d; _fromR += d; _was += d; _lastL += d; _lastR += d;
+            _shownL += d; _shownR += d; _shownLastL += d; _shownLastR += d;
+            _l.Pin += d; _l.From += d; _l.To += d; _r.Pin += d; _r.From += d; _r.To += d;
+        }
+
         public LayerMask Ground = Physics.DefaultRaycastLayers;
         /// <summary>How far above and below a foot looks for ground, m.</summary>
         public float Reach = 0.45f;

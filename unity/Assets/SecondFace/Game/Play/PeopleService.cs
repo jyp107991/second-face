@@ -47,8 +47,11 @@ namespace SecondFace.Game.Play
     /// animator runs only while seen and they walk without the rest. Beyond <see cref="Leave"/> m (and when their place is
     /// taken away) the body goes and the data stays. Nobody held (talked to) goes.
     /// </summary>
-    public sealed class PeopleService : MonoBehaviour
+    public sealed class PeopleService : MonoBehaviour, WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): every resident's post moves with the world.</summary>
+        public void OnRebase(Vector3 d) { foreach (var r in Residents) r.Post += d; }
+
         public float Near = 120f, Full = 60f, Leave = 140f;
         /// <summary>Bodies brought into the world a frame, at most (an instantiation is a few milliseconds on a phone).</summary>
         public int SpawnsPerFrame = 2;

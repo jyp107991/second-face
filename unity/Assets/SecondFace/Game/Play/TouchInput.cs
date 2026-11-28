@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using SecondFace.Core.Input;
 using SecondFace.Game.UI;
+using SecondFace.Game.World;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -16,8 +17,11 @@ namespace SecondFace.Game.Play
     /// overlay is theirs. With a mouse (the editor,
     /// a desktop): the left button is a finger, the wheel zooms, the right button pans.
     /// </summary>
-    public sealed class TouchInput : MonoBehaviour
+    public sealed class TouchInput : MonoBehaviour, WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): the last tap's ground point moves with the world.</summary>
+        public void OnRebase(Vector3 d) { if (LastTap is { } t) LastTap = t + d; }
+
         public OrbitRig Rig;
         public Walker Walker;
         public Camera Camera;

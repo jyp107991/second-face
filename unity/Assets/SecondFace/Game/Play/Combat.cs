@@ -211,7 +211,7 @@ namespace SecondFace.Game.Play
                 Morale = CombatRules.InitialMorale(def?.Courage ?? 60), Courage = def?.Courage, Natural = def?.Natural,
             };
             var u = new BattleUnit { C = c, Hostile = false };
-            u.Place(body.transform.position.x, body.transform.position.z);
+            u.Place(WorldOrigin.WorldX(body.transform.position.x), WorldOrigin.WorldZ(body.transform.position.z));   // (the battle keeps the world's own terms)
             _bodies[u] = body.transform;
             _people[u] = body;
             body.Held = true;
@@ -232,7 +232,7 @@ namespace SecondFace.Game.Play
                 Morale = CombatRules.InitialMorale(p.Def.Courage ?? 50), Courage = p.Def.Courage, Natural = p.Def.Natural,
             };
             var u = new BattleUnit { C = c, Hostile = hostile, Leader = p.Def.Leader == true };
-            u.Place(p.transform.position.x, p.transform.position.z);
+            u.Place(WorldOrigin.WorldX(p.transform.position.x), WorldOrigin.WorldZ(p.transform.position.z));
             _bodies[u] = p.transform;
             _people[u] = p;
             p.Held = true;
@@ -256,7 +256,7 @@ namespace SecondFace.Game.Play
             };
             _player = new BattleUnit { C = pc };
             var wp = Walkabout.Walker.transform.position;
-            _player.Place(wp.x, wp.z);
+            _player.Place(WorldOrigin.WorldX(wp.x), WorldOrigin.WorldZ(wp.z));
             _bodies[_player] = Walkabout.Walker.transform;
             _controlled.Add(_player);
             units.Add(_player);
@@ -602,7 +602,7 @@ namespace SecondFace.Game.Play
 
             public double Height(double x, double z)
             {
-                var p = new Vector3((float)x, HintY, (float)z);
+                var p = WorldOrigin.ToUnity(x, HintY, z);
                 return NavMesh.SamplePosition(p, out var hit, 6f, NavMesh.AllAreas) ? hit.position.y : HintY;
             }
 
@@ -632,7 +632,7 @@ namespace SecondFace.Game.Play
                 var path = new NavMeshPath();
                 if (!NavMesh.CalculatePath(from, to, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete) return System.Array.Empty<(double, double)>();
                 var l = new List<(double X, double Z)>(path.corners.Length + 1) { (u.PX, u.PZ) };
-                for (var i = 1; i < path.corners.Length; i++) l.Add((path.corners[i].x, path.corners[i].z));
+                for (var i = 1; i < path.corners.Length; i++) l.Add((WorldOrigin.WorldX(path.corners[i].x), WorldOrigin.WorldZ(path.corners[i].z)));
                 return l;
             }
 
@@ -648,7 +648,7 @@ namespace SecondFace.Game.Play
 
             private Vector3 Ground(double x, double z, float y)
             {
-                var p = new Vector3((float)x, y, (float)z);
+                var p = WorldOrigin.ToUnity(x, y, z);
                 return NavMesh.SamplePosition(p, out var hit, 3f, NavMesh.AllAreas) ? hit.position : p;
             }
 
@@ -674,15 +674,15 @@ namespace SecondFace.Game.Play
             public bool LineOfSightFrom(double x, double z, BattleUnit b) => LineOfSightFrom(x, z, b, YOf(b));
             private bool LineOfSightFrom(double x, double z, BattleUnit b, float y)
             {
-                var eye = new Vector3((float)x, y + 1.5f, (float)z);
-                var at = new Vector3((float)b.PX, YOf(b) + 1.1f, (float)b.PZ);
+                var eye = WorldOrigin.ToUnity(x, y + 1.5f, z);
+                var at = WorldOrigin.ToUnity(b.PX, YOf(b) + 1.1f, b.PZ);
                 return Clear(eye, at);
             }
 
             public string Cover(BattleUnit att, BattleUnit def)
             {
-                var d = new Vector3((float)def.PX, YOf(def), (float)def.PZ);
-                var a = new Vector3((float)att.PX, YOf(att), (float)att.PZ);
+                var d = WorldOrigin.ToUnity(def.PX, YOf(def), def.PZ);
+                var a = WorldOrigin.ToUnity(att.PX, YOf(att), att.PZ);
                 var dir = a - d; dir.y = 0f;
                 if (dir.magnitude < 2f) return "none";
                 dir.Normalize();
@@ -707,8 +707,8 @@ namespace SecondFace.Game.Play
                     for (var k = 0; k < 12; k++)
                     {
                         var ang = k * Mathf.PI / 6 + r * 0.37;
-                        var p = new Vector3((float)(u.PX + System.Math.Cos(ang) * r), y, (float)(u.PZ + System.Math.Sin(ang) * r));
-                        if (NavMesh.SamplePosition(p, out var hit, 1f, NavMesh.AllAreas)) yield return (hit.position.x, hit.position.z);
+                        var p = WorldOrigin.ToUnity(u.PX + System.Math.Cos(ang) * r, y, u.PZ + System.Math.Sin(ang) * r);
+                        if (NavMesh.SamplePosition(p, out var hit, 1f, NavMesh.AllAreas)) yield return (WorldOrigin.WorldX(hit.position.x), WorldOrigin.WorldZ(hit.position.z));
                     }
             }
         }

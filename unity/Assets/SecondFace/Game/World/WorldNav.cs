@@ -11,8 +11,24 @@ namespace SecondFace.Game.World
     /// same ground do not join (a path from one ends short at the other's edge). Voxels of
     /// <see cref="Voxel"/> m (three to a person's width: a 1.1 m door stays open) keep a phone's build short.
     /// </summary>
-    public sealed class WorldNav : MonoBehaviour
+    public sealed class WorldNav : MonoBehaviour, WorldOrigin.IRebase, WorldOrigin.INavRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): the built and pending areas move with the world at once.</summary>
+        public void OnRebase(Vector3 d) { Area = new Bounds(Area.center + d, Area.size); _pending.center += d; }
+        /// <summary>The rebase's second frame: the data re-added at its new place (a build in flight is moved when it is done).</summary>
+        public void OnNavRebase(Vector3 d)
+        {
+            if (_build != null && !_build.isDone) { _navShift += d; return; }
+            Move(d);
+        }
+        private Vector3 _navShift;
+        private void Move(Vector3 d)
+        {
+            if (_data == null || d == Vector3.zero) return;
+            if (_instance.valid) _instance.Remove();
+            _data.position += d;
+            _instance = NavMesh.AddNavMeshData(_data);
+        }
         public Transform Target;
         /// <summary>The streamer whose ground and places the mesh is built on: when ground comes in or a place is set down
         /// (its pad flattened into the terrain) after a build, the mesh is built again round the same middle, or the walker
@@ -51,6 +67,7 @@ namespace SecondFace.Game.World
             {
                 if (!_build.isDone) return;
                 _build = null; Area = _pending; Ready = true; Builds++;
+                if (_navShift != Vector3.zero) { Move(_navShift); _navShift = Vector3.zero; }
             }
             var p = Target.position;
             var inner = Size / 2 - Margin;

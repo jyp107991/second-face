@@ -1,5 +1,6 @@
 using System.Collections;
 using SecondFace.Core.World;
+using SecondFace.Game.World;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -12,8 +13,11 @@ namespace SecondFace.Game.Play
     /// clips' own speeds are the blend's thresholds). Turns are the agent's, quick. The P4 player replaces it.
     /// </summary>
     [RequireComponent(typeof(NavMeshAgent))]
-    public sealed class Walker : MonoBehaviour
+    public sealed class Walker : MonoBehaviour, WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): the walk's goal and the seat's stand point move with the world.</summary>
+        public void OnRebase(Vector3 d) { if (Goal is { } g) Goal = g + d; _standAt += d; }
+
         public const float WalkSpeed = 1.4f, JogSpeed = 3.2f, JogBeyond = 22f, SampleRadius = 4f;
         /// <summary>How fast the player's body gets up to pace and slows to a stop (m/s²), as the townsfolk's: at 10 it went
         /// from standing to a jog in 0.32 s, one step, and stopped as short; the clips' strides lagged the body by up to
@@ -190,6 +194,14 @@ namespace SecondFace.Game.Play
         }
 
         private IEnumerator Moving(Vector3 to, Quaternion facing)
+        {
+            // (a sequence in flight that keeps Unity points across frames: the floating origin waits for it, §19.1)
+            var hold = WorldOrigin.Hold(30f);
+            try { yield return MovingBody(to, facing); }
+            finally { WorldOrigin.Release(hold); }
+        }
+
+                private IEnumerator MovingBody(Vector3 to, Quaternion facing)
         {
             var from = transform.position;
             var turn = transform.rotation;

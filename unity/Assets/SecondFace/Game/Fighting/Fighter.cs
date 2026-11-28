@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using SecondFace.Core.Combat;
 using SecondFace.Game.People;
+using SecondFace.Game.World;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -32,8 +33,11 @@ namespace SecondFace.Game.Fighting
     /// </summary>
     [RequireComponent(typeof(Animator))]
     [DefaultExecutionOrder(30)]   // after the foot plant (-20), the gaze (0), the hands (5) and the arms' clearance (10)
-    public sealed class Fighter : MonoBehaviour
+    public sealed class Fighter : MonoBehaviour, WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): the aim's target moves with the world.</summary>
+        public void OnRebase(Vector3 d) { if (_haveAim) _aimAt += d; }
+
         public CombatSet Set;
         public bool Female;
         /// <summary>The body that moves (the agent's transform; the animator may sit under it).</summary>

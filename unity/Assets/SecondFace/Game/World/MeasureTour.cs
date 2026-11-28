@@ -15,8 +15,11 @@ namespace SecondFace.Game.World
     /// percentile, worst; mean draw calls) and the last lap is shown on the <see cref="DebugOverlay"/>, so a screenshot of
     /// the overlay is the measurement. Run from the overlay's button while walking (step 25), or on its own.
     /// </summary>
-    public sealed class MeasureTour : MonoBehaviour
+    public sealed class MeasureTour : MonoBehaviour, WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): the tour's views move with the world.</summary>
+        public void OnRebase(Vector3 d) { foreach (var v in _views) v.At += d; }
+
         public WorldStage Stage;
         public float ViewSeconds = 20f, SettleSeconds = 3f;
         /// <summary>How long the world may take to come in round Shale before the tour starts anyway.</summary>

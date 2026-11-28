@@ -12,8 +12,19 @@ namespace SecondFace.Game.World
     /// away: <see cref="WorldView.Underground"/>, and this place's surface renderers stop drawing. Leaving puts
     /// everything back. Checked ten times a second.
     /// </summary>
-    public sealed class PlaceInteriors : MonoBehaviour
+    public sealed class PlaceInteriors : MonoBehaviour, WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): the open building's cut-away box (the shaders' globals) moves with the world.</summary>
+        public void OnRebase(Vector3 d)
+        {
+            if (_owner != this) return;
+            var mx = Shader.GetGlobalVector(CutMax);
+            if (mx.w <= 0f) return;
+            var mn = Shader.GetGlobalVector(CutMin);
+            Shader.SetGlobalVector(CutMin, new Vector4(mn.x + d.x, mn.y + d.y, mn.z + d.z, mn.w));
+            Shader.SetGlobalVector(CutMax, new Vector4(mx.x + d.x, mx.y + d.y, mx.z + d.z, mx.w));
+        }
+
         public WorldService World;
         /// <summary>How much wall stays standing round the room, metres over its floor.</summary>
         public float CutHeight = 1.2f;

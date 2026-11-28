@@ -1,3 +1,4 @@
+using SecondFace.Game.World;
 using UnityEngine;
 
 namespace SecondFace.Game.People
@@ -13,8 +14,11 @@ namespace SecondFace.Game.People
     /// </summary>
     [RequireComponent(typeof(Animator))]
     [DefaultExecutionOrder(10)]   // after the clip, the foot plant, the gaze and the hands (HandPose: 5)
-    public sealed partial class ArmClearance : MonoBehaviour
+    public sealed partial class ArmClearance : MonoBehaviour, WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): the gate's report points move with the world.</summary>
+        public void OnRebase(Vector3 d) { for (var i = 0; i < PushAt.Length; i++) PushAt[i] += d; }
+
         /// <summary>With the body's own skin (<see cref="BodySkin"/>, within <see cref="SkinRange"/> m of the camera): an
         /// arm is held this far off the body's surface, or its clothes'.</summary>
         public float SkinMargin = 0.003f;

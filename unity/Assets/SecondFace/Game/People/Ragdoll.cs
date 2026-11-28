@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SecondFace.Game.World;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,8 +14,12 @@ namespace SecondFace.Game.People
     /// is the bridge.
     /// </summary>
     [RequireComponent(typeof(Animator))]
-    public sealed class Ragdoll : MonoBehaviour
+    public sealed class Ragdoll : MonoBehaviour, WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): the lying pose the get-up blends from moves with the world (the bodies
+        /// themselves moved with their root and were synced).</summary>
+        public void OnRebase(Vector3 d) { for (var i = 0; i < _snapshot.Count; i++) { var (t, p, r) = _snapshot[i]; _snapshot[i] = (t, p + d, r); } }
+
         public float Mass = 70f;
         public float BlendSeconds = 0.7f;
 

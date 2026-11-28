@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using SecondFace.Core.Combat;
+using SecondFace.Game.World;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Rendering;
@@ -17,8 +18,11 @@ namespace SecondFace.Game.Play
     /// kept between builds (no allocation per frame). Heights are the ground's own (a ray down through people and
     /// triggers), the NavMesh's where there is none.
     /// </summary>
-    public sealed class CombatOverlay : MonoBehaviour
+    public sealed class CombatOverlay : MonoBehaviour, WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): the drawn path's points move with the world.</summary>
+        public void OnRebase(Vector3 d) { for (var i = 0; i < _pts.Count; i++) _pts[i] += d; }
+
         public const float Lift = 0.05f, Line = 0.08f, Soft = 0.06f, Feather = 0.9f;
 
         public static readonly Color32 ActFill = new(120, 196, 255, 46), ActLine = new(178, 228, 255, 235);
@@ -131,7 +135,8 @@ namespace SecondFace.Game.Play
             return NavMesh.SamplePosition(new Vector3(x, hint, z), out var hit, 3f, NavMesh.AllAreas) ? hit.position.y + Lift : hint + Lift;
         }
 
-        private Vector3 On(double x, double z, float hint) => new((float)x, GroundY((float)x, (float)z, hint), (float)z);
+        // (from the battle's own terms to Unity's)
+        private Vector3 On(double x, double z, float hint) { var u = WorldOrigin.ToUnity(x, 0, z); return new Vector3(u.x, GroundY(u.x, u.z, hint), u.z); }
 
         // ---- B1: the reachable area ---------------------------------------------------------------------------------
 
@@ -321,7 +326,7 @@ namespace SecondFace.Game.Play
                         : c.Cloud == "smoke" || c.Cloud == "steam" ? new Color32(210, 210, 206, 80) : c.Ground == "oil" ? new Color32(40, 30, 20, 120) : c.Ground == "water" ? new Color32(90, 150, 220, 60) : (Color32?)null;
                     if (col == null) continue;
                     var (x, z) = SurfaceGrid.Centre(cx, cz);
-                    Disc(l, new Vector3((float)x, hint, (float)z), (float)(SurfaceGrid.Cell * 0.72), col.Value, 10, hint);
+                    Disc(l, WorldOrigin.ToUnity(x, hint, z), (float)(SurfaceGrid.Cell * 0.72), col.Value, 10, hint);
                 }
             l.Apply();
         }

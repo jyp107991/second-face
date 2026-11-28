@@ -30,8 +30,11 @@ namespace SecondFace.Game.Play
     /// content's own placements stand them anywhere after (<see cref="Party.PlacedByContent"/>). A placement of a companion
     /// that still holds while they are with the player is kept out of sight (<see cref="Townsfolk.Elsewhere"/>).
     /// </summary>
-    public sealed class PartyFollowers : MonoBehaviour
+    public sealed class PartyFollowers : MonoBehaviour, WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): where each companion was sent moves with the world.</summary>
+        public void OnRebase(Vector3 d) { foreach (var m in _members.Values) m.Asked += d; }
+
         /// <summary>How often the followers are looked at (s) and the party reconciled with the story (s).</summary>
         public const float Step = 0.2f, SyncEvery = 0.5f;
         /// <summary>The band a follower stands in when the player stops (m from the player): nearer, they step away.</summary>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SecondFace.Core.Combat;
 using SecondFace.Game.UI;
+using SecondFace.Game.World;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -104,6 +105,14 @@ namespace SecondFace.Game.Play
 
         private IEnumerator AiTurn(BattleUnit u)
         {
+            // (a sequence in flight that keeps Unity points across frames: the floating origin waits for it, §19.1)
+            var hold = WorldOrigin.Hold(60f);
+            try { yield return AiTurnBody(u); }
+            finally { WorldOrigin.Release(hold); }
+        }
+
+                private IEnumerator AiTurnBody(BattleUnit u)
+        {
             var theirs = Theirs(u);
             var visible = !u.Hostile || SeenByUs(u.PX, u.PZ);
             _camera?.Follow(BodyOf(u), theirs, visible);
@@ -118,7 +127,7 @@ namespace SecondFace.Game.Play
                 {
                     case "wait": step = 99; break;
                     case "attack": case "burst": yield return AttackUnit(u, a.Target, a.Aimed, a.Kind == "burst"); break;
-                    case "move": yield return MoveUnit(u, new Vector3((float)a.X, 0f, (float)a.Z)); break;
+                    case "move": yield return MoveUnit(u, WorldOrigin.ToUnity(a.X, 0f, a.Z)); break;
                     case "surrender":
                     {
                         var pic = Floats.Picture(_battle);
@@ -133,7 +142,7 @@ namespace SecondFace.Game.Play
                         var pic = Floats.Picture(_battle);
                         _battle.Flee(u);
                         ShowChanges(pic, null);
-                        yield return MoveUnit(u, new Vector3((float)a.X, 0f, (float)a.Z));
+                        yield return MoveUnit(u, WorldOrigin.ToUnity(a.X, 0f, a.Z));
                         // (no exits known to the field: out of the fight at the move, as before)
                         if (!u.Fled && !_battle.HasExits(u)) u.Fled = true;
                         if (u.Fled) { Say(Strings.Get("combat.fled", u.C.Name)); step = 99; }
@@ -163,7 +172,7 @@ namespace SecondFace.Game.Play
             _stepDone = r.Done;
             if (r.Throw != null && v?.Body != null)
             {
-                var land = new Vector3((float)r.Throw.X, from.y, (float)r.Throw.Z);
+                var land = WorldOrigin.ToUnity(r.Throw.X, from.y, r.Throw.Z);
                 if (_overlay != null) land.y = _overlay.GroundY(land.x, land.z, from.y);
                 PlaceholderUnitView.ArcPoints(from + Vector3.up * 1.5f, land, _arc);
                 _camera?.Frame(from, land, theirs);
@@ -219,9 +228,10 @@ namespace SecondFace.Game.Play
             var theirs = Theirs(u);
             var record = theirs ? null : _battle.BeginMove(u);
             var startAt = body.position; var startFacing = body.rotation;
-            var corePath = _battle.PathFor(u, goal.x, goal.z);
+            double goalX = WorldOrigin.WorldX(goal.x), goalZ = WorldOrigin.WorldZ(goal.z);   // (the battle's own terms, kept across the walk's yields)
+            var corePath = _battle.PathFor(u, goalX, goalZ);
             var seenStart = !theirs || SeenByUs(u.PX, u.PZ);
-            var seenEnd = !theirs || SeenByUs(goal.x, goal.z);
+            var seenEnd = !theirs || SeenByUs(goalX, goalZ);
             var pic = Floats.Picture(_battle);
             MoveOutcome moved;
             if (_pace.WaitsForWalk(theirs, seenStart, seenEnd))
@@ -229,13 +239,13 @@ namespace SecondFace.Game.Play
                 _camera?.Follow(body, theirs, seenStart || seenEnd);
                 yield return v.OnMove(goal, _corners, true);
                 var end = body.position;
-                moved = _battle.Moved(u, end.x, end.z, Mathf.Max(0.5f, metres));
+                moved = _battle.Moved(u, WorldOrigin.WorldX(end.x), WorldOrigin.WorldZ(end.z), Mathf.Max(0.5f, metres));
             }
             else
             {
                 // (out of the player's sight at both ends: made at once, the body catching up while the others act)
                 yield return v.OnMove(goal, _corners, false);
-                moved = _battle.Moved(u, goal.x, goal.z, Mathf.Max(0.5f, metres));
+                moved = _battle.Moved(u, goalX, goalZ, Mathf.Max(0.5f, metres));
                 if (moved.Reactions.Count > 0) yield return Arrive(u);
             }
             // the shots held for the walk (overwatch, cover fire, a suppressor): a tracer each, a flinch, the number
@@ -290,7 +300,7 @@ namespace SecondFace.Game.Play
             var melee = CombatRules.IsMelee(hit.Weapon);
             if (hit.Kind == "throw")
             {
-                var land = new Vector3((float)hit.BlastX, d.position.y, (float)hit.BlastZ);
+                var land = WorldOrigin.ToUnity(hit.BlastX, d.position.y, hit.BlastZ);
                 PlaceholderUnitView.ArcPoints(a.position + Vector3.up * 1.5f, land, _arc);
                 yield return av.OnThrow(_arc);
                 _events.Clear(); Floats.FromHit(hit, _events, Strings.Get); Floats_(_events, shown);
@@ -363,9 +373,9 @@ namespace SecondFace.Game.Play
             var from = v.Body.position;
             _camera?.Frame(from, at, false);
             var pic = Floats.Picture(_battle);
-            var t = _battle.Throw(u, item, at.x, at.z);
+            var t = _battle.Throw(u, item, WorldOrigin.WorldX(at.x), WorldOrigin.WorldZ(at.z));
             if (t == null) { _camera?.Release(); yield break; }
-            var land = new Vector3((float)t.X, at.y, (float)t.Z);
+            var land = WorldOrigin.ToUnity(t.X, at.y, t.Z);
             if (_overlay != null) land.y = _overlay.GroundY(land.x, land.z, at.y);
             PlaceholderUnitView.ArcPoints(from + Vector3.up * 1.5f, land, _arc);
             yield return v.OnThrow(_arc, item);

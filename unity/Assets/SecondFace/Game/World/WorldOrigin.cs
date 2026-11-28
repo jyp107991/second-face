@@ -59,13 +59,37 @@ namespace SecondFace.Game.World
         public static void Hold(INavRebase h) { if (h != null && !NavHolders.Contains(h)) NavHolders.Add(h); }
         public static void Release(INavRebase h) => NavHolders.Remove(h);
 
+        /// <summary>How far past the box the walker may go while a sequence holds the rebase off (m): the people still stand within
+        /// 1024 m (884 + 140), where a float's step is 0.061 mm.</summary>
+        public const float HardBox = 884f;
+        // (sequences in flight that keep Unity points across frames: an action of the fight, a throw, the walk's use of a thing; a
+        // hold ends when released or after its own bound, so a coroutine stopped before its finally cannot hold the world forever)
+        private static readonly Dictionary<int, float> Holds = new();
+        private static int _nextHold;
+        /// <summary>Holds the rebase off while a sequence keeps Unity points across frames (at most <paramref name="maxSeconds"/>).</summary>
+        public static int Hold(float maxSeconds = 30f) { var id = ++_nextHold; Holds[id] = Time.unscaledTime + maxSeconds; return id; }
+        public static void Release(int hold) => Holds.Remove(hold);
+        /// <summary>A sequence in flight holds the rebase off now.</summary>
+        public static bool Held
+        {
+            get
+            {
+                if (Holds.Count == 0) return false;
+                var now = Time.unscaledTime;
+                List<int> gone = null;
+                foreach (var kv in Holds) if (kv.Value < now) (gone ??= new List<int>()).Add(kv.Key);
+                if (gone != null) foreach (var k in gone) Holds.Remove(k);
+                return Holds.Count > 0;
+            }
+        }
+
         /// <summary>For tests: rebases since the start, the last one's shift, and whether the second frame is pending.</summary>
         public static int Rebases { get; private set; }
         public static Vector3 LastDelta { get; private set; }
         public static bool Pending => _pending != Vector3.zero;
 
         private static Vector3 _pending;
-        private static readonly List<(NavMeshAgent A, bool UpdatePosition, bool Stopped, bool HasPath, Vector3 Goal)> Held = new();
+        private static readonly List<(NavMeshAgent A, bool UpdatePosition, bool Stopped, bool HasPath, Vector3 Goal)> HeldAgents = new();
         private static readonly List<GameObject> Roots = new();
 
         /// <summary>The whole-step shift that brings a Unity point back within the box (zero if it is inside).</summary>
@@ -82,7 +106,7 @@ namespace SecondFace.Game.World
         }
 
         /// <summary>The world back at Unity's origin with nothing placed (tests, a new session).</summary>
-        public static void Reset() { OX = 0; OZ = 0; _pending = Vector3.zero; Held.Clear(); }
+        public static void Reset() { OX = 0; OZ = 0; _pending = Vector3.zero; HeldAgents.Clear(); Holds.Clear(); }
 
         /// <summary>Moves the world by <paramref name="delta"/> (Unity m, whole steps in x and z): the rebase's first frame (the roots and
         /// the physics' poses, every holder told, the agents held); the second follows in the next frame (<see cref="Keeper"/>).</summary>
@@ -92,12 +116,12 @@ namespace SecondFace.Game.World
             if (_pending != Vector3.zero) Settle();   // (a second rebase before the first's second frame: that one finished first)
             Keeper.Ensure();
             // the agents held: their bodies move with the roots; their agents would put them back where they stood
-            Held.Clear();
+            HeldAgents.Clear();
             foreach (var a in Object.FindObjectsByType<NavMeshAgent>(FindObjectsSortMode.None))
             {
                 if (!a.isActiveAndEnabled) continue;
                 var on = a.isOnNavMesh;
-                Held.Add((a, a.updatePosition, on && a.isStopped, on && a.hasPath, on ? a.destination : Vector3.zero));
+                HeldAgents.Add((a, a.updatePosition, on && a.isStopped, on && a.hasPath, on ? a.destination : Vector3.zero));
                 a.updatePosition = false;
                 if (on) a.isStopped = true;
             }
@@ -110,8 +134,34 @@ namespace SecondFace.Game.World
             }
             Keeper.MoveKept(delta);
             Physics.SyncTransforms();
+            // what holds world points of its own and does not move with its transform: world-space lines, trails and particles
+            foreach (var lr in Object.FindObjectsByType<LineRenderer>(FindObjectsSortMode.None))
+            {
+                if (!lr.useWorldSpace || lr.positionCount == 0) continue;
+                var pts = new Vector3[lr.positionCount]; lr.GetPositions(pts);
+                for (var i = 0; i < pts.Length; i++) pts[i] += delta;
+                lr.SetPositions(pts);
+            }
+            foreach (var tr in Object.FindObjectsByType<TrailRenderer>(FindObjectsSortMode.None))
+            {
+                if (tr.positionCount == 0) continue;
+                var pts = new Vector3[tr.positionCount]; tr.GetPositions(pts);
+                for (var i = 0; i < pts.Length; i++) pts[i] += delta;
+                tr.SetPositions(pts);
+            }
+            foreach (var ps in Object.FindObjectsByType<ParticleSystem>(FindObjectsSortMode.None))
+            {
+                if (ps.main.simulationSpace != ParticleSystemSimulationSpace.World || ps.particleCount == 0) continue;
+                var buf = new ParticleSystem.Particle[ps.particleCount];
+                var n = ps.GetParticles(buf);
+                for (var i = 0; i < n; i++) buf[i].position += delta;
+                ps.SetParticles(buf, n);
+            }
             OX -= delta.x; OZ -= delta.z;
             foreach (var h in Holders.ToArray()) h.OnRebase(delta);
+            // (every MonoBehaviour that holds a place, enabled or not, found here: none can be left off by a missed registration)
+            foreach (var mb in Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (mb is IRebase r && !Holders.Contains(r)) r.OnRebase(delta);
             Rebases++; LastDelta = delta;
             _pending += delta;
         }
@@ -124,7 +174,9 @@ namespace SecondFace.Game.World
             _pending = Vector3.zero;
             if (d == Vector3.zero) return;
             foreach (var h in NavHolders.ToArray()) h.OnNavRebase(d);
-            foreach (var (a, upd, stopped, has, goal) in Held)
+            foreach (var mb in Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (mb is INavRebase r && !NavHolders.Contains(r)) r.OnNavRebase(d);
+            foreach (var (a, upd, stopped, has, goal) in HeldAgents)
             {
                 if (a == null) continue;
                 a.updatePosition = upd;
@@ -134,7 +186,7 @@ namespace SecondFace.Game.World
                 a.isStopped = stopped;
                 if (has) a.SetDestination(goal + d);
             }
-            Held.Clear();
+            HeldAgents.Clear();
         }
 
         /// <summary>The frame's first act (before physics' own step, animation and every system): the second frame of a pending rebase,
@@ -170,7 +222,11 @@ namespace SecondFace.Game.World
                 if (_pending != Vector3.zero) Settle();
                 if (Leader == null) return;
                 var d = ShiftFor(Leader.position);
-                if (d != Vector3.zero) Rebase(d);
+                if (d == Vector3.zero) return;
+                // (a sequence in flight holds it off, unless the walker is past the hard box)
+                var p = Leader.position;
+                if (Held && Mathf.Abs(p.x) <= HardBox && Mathf.Abs(p.z) <= HardBox) return;
+                Rebase(d);
             }
         }
     }

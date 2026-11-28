@@ -14,8 +14,24 @@ namespace SecondFace.Game.World
     /// stay open. Built for a walker of <see cref="AgentRadius"/> and <see cref="AgentHeight"/> on the default agent type
     /// (P6's NavMeshAgents use the same).
     /// </summary>
-    public sealed class PlaceNav : MonoBehaviour
+    public sealed class PlaceNav : MonoBehaviour, WorldOrigin.INavRebase
     {
+        /// <summary>The floating origin's rebase, its second frame (§19.1): the data re-added at its new place (a build in flight is
+        /// moved when it is done).</summary>
+        public void OnNavRebase(Vector3 d)
+        {
+            if (_build != null && !_build.isDone) { _navShift += d; return; }
+            Move(d);
+        }
+        private Vector3 _navShift;
+        private NavMeshData _data;
+        private void Move(Vector3 d)
+        {
+            if (_data == null || d == Vector3.zero || !_instance.valid) return;
+            _instance.Remove();
+            _data.position += d;
+            _instance = NavMesh.AddNavMeshData(_data);
+        }
         /// <summary>The volume to build over, in the place's space (its footprint with a margin, and any shelter under it).</summary>
         public Vector3 Centre, Size;
         /// <summary>The walker: a person's radius and height, metres (the default agent's 0.5 m radius erodes a 1.1 m
@@ -47,6 +63,7 @@ namespace SecondFace.Game.World
             Sources = sources.Count;
             var settings = Settings();
             var data = new NavMeshData(settings.agentTypeID);
+            _data = data;
             _instance = NavMesh.AddNavMeshData(data);
             _build = NavMeshBuilder.UpdateNavMeshDataAsync(data, settings, sources, world);
         }
@@ -112,6 +129,7 @@ namespace SecondFace.Game.World
         private void Update()
         {
             if (!Ready && _build != null && _build.isDone) Ready = true;
+            if (_navShift != Vector3.zero && _build != null && _build.isDone) { Move(_navShift); _navShift = Vector3.zero; }
         }
 
         /// <summary>Takes away every place's own mesh (the world's has come: a place loaded before it built one, and a

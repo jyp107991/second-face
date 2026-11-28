@@ -1,4 +1,5 @@
 using Unity.Cinemachine;
+using SecondFace.Game.World;
 using UnityEngine;
 
 namespace SecondFace.Game.Play
@@ -12,8 +13,11 @@ namespace SecondFace.Game.Play
     /// A wall or roof in the way turns it a little further round, then raises it. It never drops to eye level and never
     /// cuts between shots: every line keeps the one view. The world keeps running behind; <see cref="End"/> blends back.
     /// </summary>
-    public sealed class ConversationCamera : MonoBehaviour
+    public sealed class ConversationCamera : MonoBehaviour, WorldOrigin.IRebase
     {
+        /// <summary>The floating origin's rebase (§19.1): the conversation's framing moves with the world.</summary>
+        public void OnRebase(Vector3 d) { Subject += d; _ph += d; _oh += d; _goalPos += d; }
+
         /// <summary>Kept for callers: every shot is the one overhead view.</summary>
         public enum Shot { TwoShot, Other, Player }
 
