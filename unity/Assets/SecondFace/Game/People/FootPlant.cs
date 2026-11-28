@@ -44,6 +44,8 @@ namespace SecondFace.Game.People
         private int _haltFrames;
         /// <summary>Was moving and has halted (it stands, though its stride's pace may still be easing down).</summary>
         public bool Halted => _halted;
+        /// <summary>How many times the body has arrived: its first frame, and each time it was set down elsewhere (the tests).</summary>
+        public int Arrivals { get; private set; }
         /// <summary>The widest a standing person's heels stand apart, m (the preferred quiet stance is 0.17 m; McIlroy &amp; Maki).</summary>
         public float MaxStance = 0.27f;
         /// <summary>The farthest one standing foot is ahead of the other, m.</summary>
@@ -88,7 +90,7 @@ namespace SecondFace.Game.People
         private bool _stopL, _stopR;
         private float _endDipL = 1f, _endDipR = 1f;
         private bool _wasStanding = true, _haveEnd;
-        private Vector3 _was;
+        private Vector3 _was; private bool _haveWas;
         // each foot's sole at rest, in its bones' frames: the heel's and the ball's contact under the foot bone, the toe's tip
         // under the toes (a foot rolling heel to toe touches the ground with one of them; the ankle alone does not say how
         // low a tilted foot reaches: heels sank 2-3 cm through the floor at every heel strike, 11 cm in the jog, 2026-11-06)
@@ -375,9 +377,11 @@ namespace SecondFace.Game.People
             var speed = _hasSpeed ? _animator.GetFloat(SpeedId) : 0f;
             // a body set down somewhere else lifts its feet from where they were
             var moved = new Vector2(transform.position.x - _was.x, transform.position.z - _was.z).magnitude / dt;
-            var teleported = (transform.position - _was).sqrMagnitude > 0.25f;
-            if (teleported) { _l = default; _r = default; _sink = 0f; _haveEnd = false; _lockL = default; _lockR = default; moved = 0f; _shownFrames = 0; _haveSoleL = _haveSoleR = false; }
-            _was = transform.position;
+            // (the first frame is an arrival wherever the body was made: the last place started at the world's origin, and a body made
+            // within half a metre of it was taken as already standing there, MRC §19.3)
+            var teleported = !_haveWas || (transform.position - _was).sqrMagnitude > 0.25f;
+            if (teleported) { Arrivals++; _l = default; _r = default; _sink = 0f; _haveEnd = false; _lockL = default; _lockR = default; moved = 0f; _shownFrames = 0; _haveSoleL = _haveSoleR = false; }
+            _was = transform.position; _haveWas = true;
             // a body that was moving and has come to a halt stands, its stride's pace still easing down (an agent stops on its
             // spot in a frame: a companion halted at their slot strode on in place for 0.25 s, the held feet dragged and slid,
             // W1 in the follow state, 2026-11-17); it moves again once it does

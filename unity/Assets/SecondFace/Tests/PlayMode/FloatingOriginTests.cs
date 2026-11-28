@@ -200,6 +200,39 @@ namespace SecondFace.Tests
         }
         private static void Reset(Watcher w) { w.Deg = 0f; w.M = 0f; w.Where = ""; w.Steps.Clear(); foreach (var p in w.Pairs) p.Has = false; }
 
+        /// <summary>A person made at the world's origin arrives as anyone made elsewhere does: FootPlant's first frame is an arrival
+        /// wherever the body stands (its last place started at (0, 0, 0), and a body made within half a metre of it was taken as already
+        /// standing there, MRC §19.3).</summary>
+        [UnityTest, Timeout(300000)]
+        public IEnumerator APersonMadeAtTheOriginArrivesAsAnyoneElse()
+        {
+#if UNITY_EDITOR
+            var cat = AssetDatabase.LoadAssetAtPath<RocketboxCatalog>("Assets/SecondFace/People/Rocketbox/RocketboxCatalog.asset");
+            var controller = AssetDatabase.LoadAssetAtPath<UnityEditor.Animations.AnimatorController>("Assets/SecondFace/People/Locomotion.controller");
+#else
+            RocketboxCatalog cat = null; RuntimeAnimatorController controller = null;
+#endif
+            if (cat == null || controller == null) { Assert.Ignore("the cast's catalogue or the locomotion controller are not built"); yield break; }
+            var g = GameObject.CreatePrimitive(PrimitiveType.Cube); _made.Add(g);
+            g.transform.localScale = new Vector3(20f, 1f, 20f); g.transform.position = new Vector3(0f, -0.5f, 0f);
+            Physics.SyncTransforms();
+            var made = new List<(Vector3 At, FootPlant Plant)>();
+            foreach (var at in new[] { Vector3.zero, new Vector3(0.3f, 0f, 0.2f), new Vector3(4f, 0f, 0f) })
+            {
+                var w = Walker.Create(cat.Get("Female_Adult_01"), controller, at, 0f, false);
+                w.gameObject.name = "arriving " + at; _made.Add(w.gameObject);
+                if (w.Agent != null) w.Agent.enabled = false;
+                w.enabled = false;
+                made.Add((at, w.Animator.GetComponent<FootPlant>()));
+            }
+            yield return Frames(10);
+            foreach (var (at, plant) in made)
+            {
+                Assert.That(plant, Is.Not.Null, $"made at {at}: a foot plant");
+                Assert.That(plant.Arrivals, Is.EqualTo(1), $"made at {at}: arrived once, on its first frame");
+            }
+        }
+
         /// <summary>(a) The same people at the farthest place the box lets anyone stand and at Unity's origin: alike within what a 0.1 mm
         /// move of a twin gives near the origin, in town and in the fight's states.</summary>
         [UnityTest, Timeout(1800000)]
