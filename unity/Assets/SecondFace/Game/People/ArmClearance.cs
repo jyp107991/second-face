@@ -13,7 +13,7 @@ namespace SecondFace.Game.People
     /// </summary>
     [RequireComponent(typeof(Animator))]
     [DefaultExecutionOrder(10)]   // after the clip, the foot plant, the gaze and the hands (HandPose: 5)
-    public sealed partial class ArmClearance : MonoBehaviour
+    public sealed class ArmClearance : MonoBehaviour
     {
         /// <summary>With the body's own skin (<see cref="BodySkin"/>, within <see cref="SkinRange"/> m of the camera): an
         /// arm is held this far off the body's surface, or its clothes'.</summary>
@@ -299,13 +299,8 @@ namespace SecondFace.Game.People
         private void Mark(int s) { var t = System.Diagnostics.Stopwatch.GetTimestamp(); StageMs[s] += (t - _t0) * 1000.0 / System.Diagnostics.Stopwatch.Frequency; _t0 = t; }
         private readonly System.Diagnostics.Stopwatch _cost = new();
 
-        private void OnEnable() => ClearanceSystem.Join(this);
-        private void OnDisable() => ClearanceSystem.Leave(this);
-
         private void LateUpdate()
         {
-            // (the job took this frame's step: ClearanceSystem, ArmClearance.Job.cs)
-            if (Taken) return;
             _cost.Restart();
             Step();
             CostMs += _cost.Elapsed.TotalMilliseconds; CostFrames++;
@@ -426,12 +421,6 @@ namespace SecondFace.Game.People
             }
             var wl = Weight(_lu, _ll); var wr = Weight(_ru, _rl);
             if (_skin != null) { _skin.FlankL = wl; _skin.FlankR = wr; }
-            FlankShapes(wl, wr);
-        }
-
-        /// <summary>The flank correctives' weights on the body's renderers (and every shell cut from it).</summary>
-        private void FlankShapes(float wl, float wr)
-        {
             // (the shells are put on and off as the person dresses: found again when the renderers under the body change)
             var host = _skin != null && _skin.Body != null ? _skin.Body.transform.parent : transform;
             var kids = host != null ? host.childCount : 0;

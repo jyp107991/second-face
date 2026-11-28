@@ -43,10 +43,6 @@ namespace SecondFace.Tests
 
         /// <summary>The clearance's cost a person a frame over <see cref="Frames"/> frames (ms), and how many it ran on, on
         /// average; each component counted only for the frames between two readings it was there for.</summary>
-        /// <summary>The falls back to the managed step since <paramref name="from"/>, by reason ("" none).</summary>
-        private static string FellBack(Dictionary<string, int> from) => string.Join("; ", ArmClearance.Fallbacks
-            .Select(kv => (kv.Key, n: kv.Value - (from.TryGetValue(kv.Key, out var w) ? w : 0))).Where(x => x.n > 0).Select(x => $"{x.n} person-frames: {x.Key}"));
-
         private static IEnumerator Read(System.Func<bool> on, System.Action<double, double, int> done, System.Action eachFrame = null)
         {
             var was = new Dictionary<ArmClearance, (double Ms, int Frames)>();
@@ -85,11 +81,8 @@ namespace SecondFace.Tests
             boot.Stage.Clock.SetHour(12);
             yield return BootTests.TownSettled(() => town.People.Count, "Shale at noon");
             double townMs = 0, townOn = 0; var townFrames = 0;
-            var fb0 = new Dictionary<string, int>(ArmClearance.Fallbacks); var jobs0 = ClearanceSystem.JobsMs; var pf0 = ClearanceSystem.PersonFrames;
             yield return Read(() => true, (ms, on, f) => { townMs = ms; townOn = on; townFrames = f; }, () => PartyTests.Quiet(walk));
-            var townFell = FellBack(fb0);
-            var townJobs = (ClearanceSystem.JobsMs - jobs0) / System.Math.Max(1, ClearanceSystem.PersonFrames - pf0);
-            Debug.Log($"PeopleCostTests: the town: {townMs:0.000} ms a person a frame (main thread), {townJobs:0.000} on the workers, {townOn:0.0} people on, {townFrames} frames, {town.People.Count} standing; fell back: {(townFell.Length > 0 ? townFell : "none")}");
+            Debug.Log($"PeopleCostTests: the town: {townMs:0.000} ms a person a frame, {townOn:0.0} people on, {townFrames} frames, {town.People.Count} standing");
 
             // ---- the fight the raiders bring to it ----
             g.SetFlag("tribute_day", true);
@@ -118,15 +111,10 @@ namespace SecondFace.Tests
             var driving = false;
             IEnumerator Drive() { driving = true; yield return walk.Combat.PlayerTurnByAi(); driving = false; }
             double fightMs = 0, fightOn = 0; var fightFrames = 0;
-            var fb1 = new Dictionary<string, int>(ArmClearance.Fallbacks); var jobs1 = ClearanceSystem.JobsMs; var pf1 = ClearanceSystem.PersonFrames;
             yield return Read(() => walk.Combat.Active, (ms, on, f) => { fightMs = ms; fightOn = on; fightFrames = f; },
                 () => { if (walk.Combat.PlayersTurn && !driving) boot.StartCoroutine(Drive()); });
-            var fightFell = FellBack(fb1);
-            var fightJobs = (ClearanceSystem.JobsMs - jobs1) / System.Math.Max(1, ClearanceSystem.PersonFrames - pf1);
-            Debug.Log($"PeopleCostTests: the fight: {fightMs:0.000} ms a person a frame (main thread), {fightJobs:0.000} on the workers, {fightOn:0.0} people on, {fightFrames} frames; fell back: {(fightFell.Length > 0 ? fightFell : "none")}");
+            Debug.Log($"PeopleCostTests: the fight: {fightMs:0.000} ms a person a frame, {fightOn:0.0} people on, {fightFrames} frames");
 
-            Assert.That(townFell, Is.Empty, "no one's clearance fell back to the managed step in the town");
-            Assert.That(fightFell, Is.Empty, "nor in the fight");
             Assert.That(townFrames, Is.EqualTo(Frames), "the town read over its frames");
             Assert.That(fightFrames, Is.GreaterThanOrEqualTo(Frames / 2), "the fight read over most of its frames (it lasted)");
             Assert.That(System.Math.Max(townMs, fightMs), Is.LessThanOrEqualTo(Budget),

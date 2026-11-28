@@ -20,7 +20,7 @@ namespace SecondFace.Game.People
     /// same surface the gate measures (MotionProbe), not a model of it (on the phone the meshes are not readable).
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed partial class BodySkin : MonoBehaviour
+    public sealed class BodySkin : MonoBehaviour
     {
         public const int Version = 1;
 
@@ -129,7 +129,6 @@ namespace SecondFace.Game.People
         /// <summary>Reads the points and finds the body's bones (again after a body is rebuilt).</summary>
         public void Bind()
         {
-            ReleaseNative();
             _set = Read(Data);
             // this person's own body renderer, never one outside them (a reference that resolved to the prefab asset posed
             // every point at the scene's origin, 2026-11-06: the gate's fit check found them metres from the body)
@@ -449,7 +448,7 @@ namespace SecondFace.Game.People
             _nBody = -1;
         }
 
-        private void OnDestroy() { Release(); ReleaseDrawn(); ReleaseNative(); }
+        private void OnDestroy() { Release(); ReleaseDrawn(); }
 
         /// <summary>Asks <see cref="Depth"/> of points <paramref name="from"/>..<paramref name="to"/> (every
         /// <paramref name="stride"/>th) at once; the answers in <see cref="QD"/>, <see cref="QN"/>, <see cref="QNear"/>.</summary>
