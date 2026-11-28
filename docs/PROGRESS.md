@@ -717,6 +717,85 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-27/28, the gate batch committed under the waiver policy: the fight's clips turned back onto their actors, a person made
+  anywhere keeps their body and face, the sits turned too, the foot plant's catch on the body's present pace (editor owner).**
+  Gate: red, 3,351 (the whole cast, 2026-11-28 00:54; 71ba0e5b's 3,351, with FY1/FY2 now counted: 4,018).
+  - Whole cast 4,018 -> 3,351 failing cells, counted alike (FY1/FY2 now count; the 04:34 verdict's "3,351" left out its 667 FY
+    cells). Without FY: 3,351 -> 2,707. Everyday 2 -> 1 (MF01 W6 fixed at its source; FA01 W1 waived).
+  - Whole cast of the batch's tree, 79 people: failing cells 4,018 -> 3,351, the everyday states 2 -> 1 (Female_Adult_01's jog
+    W1, later item 7; Medical_Female_01's jog W6 passes, the catch below). By key against 71ba0e5b: F1 strike 422 -> 238, Kb
+    strike 154 -> 6, F4 guard 104 -> 0, F1 guard 84 -> 0, F1 ready 54 -> 0, A1 strike 162 -> 110, FY1 aim 189 -> 141, F2 strike
+    75 -> 43, Kb crouch 54 -> 25, C1 ready 80 -> 75, F2 crouch 2 -> 0, W6 1 -> 0. Ten keys stand worse, listed with their causes
+    and fix items in `docs/qa/gates/motion_waivers.json`: C1 crouch 68 -> 79 (waived at 04:34, its "after" raised) and nine new
+    (since 2026-11-28 00:54): FY2 aim 212 -> 237, F4 yield 61 -> 79, C1 yield 0 -> 8, C1 strike 120 -> 125, C1 throw 48 -> 53,
+    C1 rise 2 -> 4, C1 guard, F1 hit and H3 aim 0 -> 1, all with the fight's clips turned back onto their actors (the first four
+    measured so on the fight screen before the gate, `docs/COMBAT_ROOT_CAUSE.md` 19).
+  - **Hard deadline: the next batch.** Every key waived on the 04:34 verdict must be back at or under its pre-waiver value on
+    the next batch's whole-cast verdict (the second since 04:34), or that batch is blocked (`tools/qa/gate_ratchet.mjs`, rule 3).
+    Key: pre-waiver value, at 04:34 -> on this cast:
+    W1 0: 1 -> 1; W6 0: 1 -> 0 (back); A2 aim 76: 237 -> 237; C1 crouch 1: 68 -> 79; F2 crouch 0: 2 -> 0 (back); F2 strike 3:
+    75 -> 43; F2 yield 0: 25 -> 25; F3w aim_pistol 0: 75 -> 75; F3w crouch 0: 79 -> 79; F3w ready 0: 50 -> 50; F3w throw 25:
+    79 -> 79; F4 guard 0: 104 -> 0 (back); K1 strike 25: 54 -> 54; Kb crouch 25: 54 -> 25 (back); Kb strike 104: 154 -> 6 (back).
+    Ten still over: W1, A2 aim, C1 crouch, F2 strike, F2 yield, the four F3w keys and K1 strike; the next batch must bring each
+    of them back. The nine keys waived on this verdict are due by the batch after next.
+  - Causes found and removed at their sources: the fight's whole skeleton stood 2-19° turned from the clips' actors and the thighs
+    2-64° more on the CMU actors (Unity's humanoid on the Biped hierarchy, `docs/MOTION_ROOT_CAUSE.md` §16): the turn baked per
+    clip and skeleton and put back first in the frame (`docs/COMBAT_ROOT_CAUSE.md` 19; a compensating bake, not a cure: §16 (a)
+    removes it); the same for the base layer's sits (the walker's foot on a chair 0.32 -> 0.05 m); the record's lifted foot left
+    to the clip (fix A); LegNeed taken out (it folded the planted leg). Gaze's neutral face was read by a pose round trip on the
+    live body, which put a person made away from the world's origin 15 km off their own feet (Shale's townsfolk invisible and
+    frozen) and read a turned person's face off by the turn; and the players' MakeHuman models, bound facing away from their root,
+    had the back of the head for a face (the walking player's head twisted 20-33°): `Gaze.Neutral` (§17). The sits were never
+    tagged (since b2a82298): tagged "sit". The quick gate test destroyed the partners its conversation capture frames (it threw
+    on CI before its verdict): deactivated for the fight instead. FeetMeetASlope's stale layer count (it failed before measuring
+    since the fight's layers went on the controller): checked by name. The foot plant's catch (the hips set down onto a slow
+    lower foot, both feet up) read the body's pace smoothed over a tenth of a second, 0.43 m/s behind a jog's stop: it now reads
+    the slower of this frame's and the smoothed (Medical_Female_01's jog W6 max 4.4 -> 1.3 cm on the fifteen; §17).
+  - Tests, new: `APersonMadeAnywhereKeepsTheirBodyAndFace` (fails on 71ba0e5b's Gaze, passes now), `SeatedArmsStayOutOfTheBody`
+    (fails: below), `TheSeatsTurnsAreBakedFromTheSitsAndSkeletonsThereAre`; `CapturedMotionHoldsHumanPosesWhenBuilt` reads after the
+    frame's LateUpdate and the hands from the hip joints, and asserts Gaze's face and the eyes' agree; the crossfade test covers the
+    sits. `CombatSet.asset` is a gate input now; FY1/FY2 are compared as any measure (out of "introduced").
+  - **Next batch, first: the trunk convention.** Every clip's configured T-pose trunk (MotionImportPostprocessor) and the players'
+    on Unity's humanoid convention (the spine's, chest's and neck's segments vertical), both ends of the retarget at once; with it
+    Unity's full human reference for the face (the body square to the root: moves the cast's face reference by its bound pitch,
+    5.4° on the men, 7.6° on the women; a gate definition change, MotionProbe and Gaze together, `Gaze.Neutral`). The configured
+    trunks now are tabled in `docs/MOTION_ROOT_CAUSE.md` §17 (the cast's Biped segments vertical; the players' curved, player_m
+    -8.3 / -8.7 / +16.2 / +19.4°, player_f -9.7 / +2.9 / -5.1 / +21.1°; the clips' between -14 and +29°, 26 distinct trunks over
+    the everyday clips and 24 over the fight's). Then CapturedMotion's player_f walk 0 hand (below).
+  - **Later items, in order:**
+    1. A seated arm clearance that holds the hands on the lap's surface: seated, the walker's arm clearance is off
+       (`Walker.Planting(false)`), and the sits' own hands sink into the drawn thighs (`SeatedArmsStayOutOfTheBody`: the ground sit
+       7.0-7.1 cm, the chair 0.7-2.2 cm, the stool 0.0-0.1; visible in play).
+    2. The gate's people stand where and as the game places them (far from the origin, turned): the cast stands at the origin
+       square to the world, which is why Gaze's round trip went unseen; MotionProbe's own round trip has the same yaw hole (not
+       exercised on the cast). Not changed in this batch; `APersonMadeAnywhereKeepsTheirBodyAndFace` covers the class meanwhile.
+    3. Sitting into the gate (the sits measured like the everyday states).
+    4. The rig's re-parent at import (§16 (a)): the bake must then read about nought on every clip, and goes.
+    5. FourChunks: the streaming test's in-flight preparations are not cancelled when it ends (an owner question is open).
+    6. The landings' early contact (`docs/MOTION_ROOT_CAUSE.md` §17: the foot within 0.5 cm of the ground up to 12 frames before
+       the take's recorded touchdown, at 2-5 m/s), from three sources: (a) the takes' unequal stance floors, which the converter
+       keeps (`plant.py` plants each sole point on its own floor; levelling them needs Blender, an open question for the owner);
+       (b) cause B in locomotion (the base layer has no `ClipTurn`: the stance floors' left-right moved by -3.7 to +1.7 cm against
+       the actors', the same on every body of a skeleton; item 4 removes it at its source); (c) the hips' sink, keyed on the
+       ankles' lower envelope, not the soles (a sink keyed on the soles was simulated and floats the stance contact, p98 +2.2 to
+       +4.0 cm: not an answer on its own).
+    7. The push-off (`docs/MOTION_ROOT_CAUSE.md` §17): the forefoot rocker (`FootPlant`, kept aside: it cures the push-off scrape,
+       the held contact's own speed p90 43 -> 6.0 cm/s and its share over 15 cm/s 28.7 -> 1.6 %, Female_Adult_01's jog W1 5.8 ->
+       2.7 %) needs three decisions first: (i) a skinned sole: the plant reads its sole and hull points by linear blend skinning
+       with their full bone weights (the GPU's own sum over the few hundred baked points), not rigid in one frame (mixed foot and
+       toe weights under a bent toe: mesh less model p99.9 0.11 -> 0.73 cm); (ii) toe-off from the joint's own range: the hold
+       lets go at a published MTP extension, the source named with its numbers (walking: a mean first-MTP dorsiflexion of 42° in
+       gait, Nawoczenski, Baumhauer and Umberger 1999, J Bone Joint Surg Am 81(3):370-376; running: a peak MTP extension of
+       24.8 ± 4.1° to 27.0 ± 4.6° in shod running, Cigoja, Fletcher and Nigg 2022, J Sport Health Sci 11(3); the two differ: held
+       to the clip's lift, the joint reached 64-77° at the p98); (iii) an open question for the owner: with the hold on the toe
+       joint, the gate's metatarsal-row ball stands 3.3 cm behind the joint and 2.0-2.4 cm up as the foot pitches, moving 16-18
+       cm/s, and the gate counts it as bearing weight (Male_Adult_03's jog W1 1.9 -> 5.4 %). The gate is unchanged.
+    8. The walk's and the jog's starts and stops: the stop's blend from the jog lands the foot slow and 4 cm up (the catch now
+       sets the hips down onto it, §17), the same kind of event as the walk's start and stop blends, where no clip's record
+       applies: the blend's own landing, at its source.
+    9. W1 and W6 on navigation agents in the game's own conditions: no test measures them (`PartyTests` jogs the company 30 m and
+       stops it, and its catch fires on the same 138 frames under the old and the new pace; neither W1 nor W6 is measured there).
+  - The arm clearance's level of detail stays as it is (the perf item below).
 - **2026-11-27, the gate batch committed under the waiver policy: the runtime reads the drawn body (editor owner).**
   Gate: red, 3,351 (the whole cast, 2026-11-27 04:34; dfc732a4's 6,460; the fight's new FY1/FY2, 667, exempt as introduced).
   - Whole cast of the batch's tree, 79 people: failing cells 6,460 -> 3,351, the everyday states 4 -> 2 (Female_Adult_01's jog W1,

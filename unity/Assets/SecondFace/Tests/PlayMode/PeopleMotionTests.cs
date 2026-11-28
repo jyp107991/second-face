@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using SecondFace.Game.People;
 using UnityEngine;
@@ -101,7 +102,10 @@ namespace SecondFace.Tests
             var animator = Stand(Vector3.zero);
             var person = animator.gameObject;
             Assert.That(animator.GetLayerIndex(Ambient.GestureLayer), Is.EqualTo(1), "the gesture layer");
-            Assert.That(animator.layerCount, Is.EqualTo(2));
+            // (the people's controller carries the fight's layers over these two since the fight's motion went on it: a count
+            // of 2 failed here before anything was measured, 2026-11-27)
+            Assert.That(animator.GetLayerIndex(SecondFace.Core.Combat.CombatMotion.FullLayer), Is.GreaterThan(1), "the fight's whole-body layer, over the gestures");
+            Assert.That(animator.GetLayerIndex(SecondFace.Core.Combat.CombatMotion.ArmsLayer), Is.GreaterThan(1), "the fight's arms layer, over the gestures");
             var plant = person.AddComponent<FootPlant>();
             flat.Play(0, 0, 0f); bare.Play(0, 0, 0f); animator.Play(0, 0, 0f);
             yield return Seconds(1.5f);
@@ -206,16 +210,21 @@ namespace SecondFace.Tests
                 foreach (var a in people)
                 {
                     var hips = a.GetBoneTransform(HumanBodyBones.Hips).position;
+                    // (ahead of the hip joints' middle, the anatomy a real person's hand is measured from: MakeHuman's rig, the
+                    // player's, puts its Hips bone toward the sacrum, 5.8-8.2 cm behind the hip joints, where the cast's Biped
+                    // stands it on their line within 0.5 cm; docs/MOTION_ROOT_CAUSE.md §17, 2026-11-27)
+                    var joints = (a.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position + a.GetBoneTransform(HumanBodyBones.RightUpperLeg).position) * 0.5f;
                     var chest = (a.GetBoneTransform(HumanBodyBones.Chest) ?? a.GetBoneTransform(HumanBodyBones.Spine)).position;
                     var fwd = a.transform.forward;
                     foreach (var hb in new[] { HumanBodyBones.LeftHand, HumanBodyBones.RightHand })
                     {
                         var hand = a.GetBoneTransform(hb).position;
-                        var ahead = Vector3.Dot(hand - hips, fwd);
+                        var ahead = Vector3.Dot(hand - joints, fwd);
+                        var aheadOfBone = Vector3.Dot(hand - hips, fwd);
                         var lower = a.GetBoneTransform(hb == HumanBodyBones.LeftHand ? HumanBodyBones.LeftLowerArm : HumanBodyBones.RightLowerArm).position;
                         var upper = a.GetBoneTransform(hb == HumanBodyBones.LeftHand ? HumanBodyBones.LeftUpperArm : HumanBodyBones.RightUpperArm).position;
                         var elbow = Vector3.Angle(upper - lower, hand - lower);
-                        Debug.Log($"people_motion_frames: {label} {a.name} {hb} {hand.y - hips.y:+0.00;-0.00} m over the hips, {ahead:+0.00;-0.00} m ahead, elbow {elbow:0}°");
+                        Debug.Log($"people_motion_frames: {label} {a.name} {hb} {hand.y - hips.y:+0.00;-0.00} m over the hips, {ahead:+0.000;-0.000} m ahead of the hip joints ({aheadOfBone:+0.000;-0.000} of the Hips bone), elbow {elbow:0}°");
                         if (speed == 0f)
                         {
                             // standing in the common idle (the others fold the arms, put hands on hips): the hand hangs at
@@ -236,23 +245,47 @@ namespace SecondFace.Tests
                 sheet.ReadPixels(new Rect(0, 0, w, h), 0, (poses.Length - 1 - p) * h);
                 RenderTexture.active = active;
             }
-            // the walk round its cycle on the first person: each hand ahead of the hips (they must alternate) and the face's
-            // pitch against the model's own neutral head (up positive)
+            // the walk round its cycle on the first person: each hand ahead of the hip joints (they must alternate) and the
+            // face's pitch against the model's own neutral head (up positive). Each phase is read as the game shows it, after the
+            // frame's LateUpdate, the clip held at its phase (the animator's speed 0): Gaze turns the head at its own joint there
+            // (2026-11-26), not in the animator's IK pass, so a pose read straight after Animator.Update(0) is the bare clip with
+            // no Gaze in it (docs/MOTION_ROOT_CAUSE.md §17)
             var w0 = people[0];
             var still = Made(Object.Instantiate(prefabs[0], new Vector3(-5f, 0, 0), Quaternion.identity)).GetComponent<Animator>();
             var neutral = FacePitch(still);
             float Face(Animator a) => FacePitch(a) - neutral;
+            // and Gaze's own face (its front in the head's frame, Gaze.Neutral) against the eyes': on a rig with eye bones the two
+            // agree within 3° in pitch and in yaw (the eye line is the anatomical measure; on the player's models Gaze's front
+            // was the back of the head, its pitch read the wrong way round, 2026-11-27, docs/MOTION_ROOT_CAUSE.md §17)
             var phaseLog = new System.Text.StringBuilder($"people_motion_frames: neutral face {neutral:0}°, walk cycle");
+            var gaze = w0.GetComponent<Gaze>();
+            void Agree(string at)
+            {
+                var yaw = EyeYaw(w0);
+                if (float.IsNaN(yaw) || gaze == null) return;
+                var f = Quaternion.Inverse(w0.transform.rotation) * (w0.GetBoneTransform(HumanBodyBones.Head).rotation * gaze.FaceReference * Vector3.forward);
+                var gp = Mathf.Asin(Mathf.Clamp(f.y, -1f, 1f)) * Mathf.Rad2Deg; var gy = Mathf.Atan2(f.x, f.z) * Mathf.Rad2Deg;
+                phaseLog.Append($" (eyes' yaw {yaw:+0.0;-0.0}°, Gaze's face {gp:+0.0;-0.0}° / {gy:+0.0;-0.0}°)");
+                if (Mathf.Abs(Face(w0) - gp) > 3f || Mathf.Abs(Mathf.DeltaAngle(yaw, gy)) > 3f)
+                    problems.Add($"{at}: Gaze's face (pitch {gp:0.0}°, yaw {gy:0.0}°) and the eyes' (pitch {Face(w0):0.0}°, yaw {yaw:0.0}°) disagree");
+            }
             for (var k = 0; k < 8; k++)
             {
-                w0.SetFloat("Speed", walk); w0.Play("Locomotion", 0, k / 8f); w0.Update(0f);
-                var hips = w0.GetBoneTransform(HumanBodyBones.Hips).position;
+                w0.speed = 1f; w0.SetFloat("Speed", walk); w0.Play("Locomotion", 0, k / 8f); w0.Update(0f);
+                w0.speed = 0f;
+                yield return null;
+                var hips = (w0.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position + w0.GetBoneTransform(HumanBodyBones.RightUpperLeg).position) * 0.5f;
                 float Ahead(HumanBodyBones b) => Vector3.Dot(w0.GetBoneTransform(b).position - hips, w0.transform.forward);
-                phaseLog.Append($" | {k / 8f:0.000}: L {Ahead(HumanBodyBones.LeftHand):+0.00;-0.00} R {Ahead(HumanBodyBones.RightHand):+0.00;-0.00} face {Face(w0):+0;-0}°");
+                phaseLog.Append($" | {k / 8f:0.000}: L {Ahead(HumanBodyBones.LeftHand):+0.00;-0.00} R {Ahead(HumanBodyBones.RightHand):+0.00;-0.00} face {Face(w0):+0.0;-0.0}°");
                 if (Mathf.Abs(Face(w0)) > 10f) problems.Add($"walk {k / 8f:0.000}: the face is {Face(w0):0}° off level");
+                Agree($"walk {k / 8f:0.000}");
             }
-            w0.SetFloat("Speed", 0f); w0.SetFloat("Idle", 0f); w0.Play("Locomotion", 0, 0.3f); w0.Update(0f);
-            phaseLog.Append($" | idle face {Face(w0):+0;-0}°");
+            w0.speed = 1f; w0.SetFloat("Speed", 0f); w0.SetFloat("Idle", 0f); w0.Play("Locomotion", 0, 0.3f); w0.Update(0f);
+            w0.speed = 0f;
+            yield return null;
+            phaseLog.Append($" | idle face {Face(w0):+0.0;-0.0}°");
+            Agree("idle");
+            w0.speed = 1f;
             if (Mathf.Abs(Face(w0)) > 10f) problems.Add($"idle: the face is {Face(w0):0}° off level");
             Debug.Log(phaseLog.ToString());
             sheet.Apply();
@@ -262,8 +295,166 @@ namespace SecondFace.Tests
             Assert.That(problems, Is.Empty, string.Join("\n", problems));
         }
 
+        /// <summary>
+        /// A person is made where the world puts them, far from its origin and turned (Shale stands 16 km out; the game turns
+        /// each townsperson its own way): Gaze's read of the face's neutral front in Awake (the avatar's neutral pose, every
+        /// muscle at nought) leaves the skeleton as it found it (the hips on the root's own offset as at the origin, within 1 cm;
+        /// the body's mesh bounds round the body: culled, a townsperson whose pelvis was put 16 km off by that read was never
+        /// drawn and never animated, 2026-11-27), and the face reference is the one it has at the origin square to the world
+        /// (on 71ba0e5b's Gaze a 137° turn read the face's front 110° off). A walker made on the navigation mesh, turned, keeps
+        /// its agent where it was placed. docs/MOTION_ROOT_CAUSE.md §17.
+        /// </summary>
+        [UnityTest, Timeout(300000)]
+        public IEnumerator APersonMadeAnywhereKeepsTheirBodyAndFace()
+        {
+#if UNITY_EDITOR
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/SecondFace/People/Rocketbox/Male_Adult_03/Male_Adult_03.prefab");
+            var controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/SecondFace/People/Locomotion.controller");
+#else
+            GameObject prefab = null; RuntimeAnimatorController controller = null;
+#endif
+            if (prefab == null || controller == null) { Assert.Ignore("the cast's prefabs or the locomotion controller are not built"); yield break; }
+            var far = new Vector3(15000f, 40f, 4000f);
+            // (as the game makes a townsperson: PeopleService.Make's instance, then its animation)
+            Animator Townsperson(Vector3 at, float yaw)
+            {
+                var go = Made(Object.Instantiate(prefab, at, Quaternion.Euler(0f, yaw, 0f)));
+                var a = go.GetComponentInChildren<Animator>();
+                SecondFace.Game.Play.PeopleService.Animate(a, controller, "npc_gaze_test", true);
+                return a;
+            }
+            var home = Townsperson(Vector3.zero, 0f);
+            var there = Townsperson(far, 137f);
+            for (var i = 0; i < 4; i++) yield return null;
+            var problems = new List<string>();
+            Vector3 Hips(Animator a) => a.transform.InverseTransformPoint(a.GetBoneTransform(HumanBodyBones.Hips).position);
+            var off = Vector3.Distance(Hips(home), Hips(there));
+            if (off > 0.01f) problems.Add($"the hips stand {off:0.000} m from their place on the root (at the origin {Hips(home)}, there {Hips(there)})");
+            foreach (var (who, a) in new[] { ("at the origin", home), ("far and turned", there) })
+            {
+                SkinnedMeshRenderer body = null;
+                foreach (var r in a.GetComponentsInChildren<SkinnedMeshRenderer>())
+                    if (r.sharedMesh != null && (body == null || r.sharedMesh.vertexCount > body.sharedMesh.vertexCount)) body = r;
+                Assert.That(body, Is.Not.Null, "the body's mesh");
+                // (round the body where the game placed the person: the bounds hang from the pelvis, and went with it)
+                var middle = a.transform.position + a.transform.up * 0.9f;
+                if (!body.bounds.Contains(middle)) problems.Add($"{who}: the body's bounds (centre {body.bounds.center}, size {body.bounds.size}) leave out where the person stands ({middle})");
+                foreach (var b in new[] { HumanBodyBones.Hips, HumanBodyBones.Head, HumanBodyBones.LeftFoot, HumanBodyBones.RightFoot, HumanBodyBones.LeftHand, HumanBodyBones.RightHand })
+                    if (!body.bounds.Contains(a.GetBoneTransform(b).position))
+                        problems.Add($"{who}: the body's bounds (centre {body.bounds.center}, size {body.bounds.size}) leave out the {b} at {a.GetBoneTransform(b).position}");
+            }
+            var face = Quaternion.Angle(home.GetComponent<Gaze>().FaceReference, there.GetComponent<Gaze>().FaceReference);
+            if (face > 0.1f) problems.Add($"Gaze's face reference stands {face:0.0}° from the one it has at the origin square to the world");
+            // a walker on the navigation mesh there, turned: its agent where it was placed, on the mesh
+            var source = new UnityEngine.AI.NavMeshBuildSource
+            {
+                shape = UnityEngine.AI.NavMeshBuildSourceShape.Box, size = new Vector3(24f, 0.2f, 24f),
+                transform = Matrix4x4.TRS(far + Vector3.down * 0.1f, Quaternion.identity, Vector3.one), area = 0,
+            };
+            var data = UnityEngine.AI.NavMeshBuilder.BuildNavMeshData(UnityEngine.AI.NavMesh.GetSettingsByID(0), new List<UnityEngine.AI.NavMeshBuildSource> { source },
+                new Bounds(far, new Vector3(30f, 8f, 30f)), Vector3.zero, Quaternion.identity);
+            var mesh = UnityEngine.AI.NavMesh.AddNavMeshData(data);
+            try
+            {
+                // (where the agent stands on the mesh: its surface, as baked, stands a few centimetres over the box's top)
+                Assert.That(UnityEngine.AI.NavMesh.SamplePosition(far + new Vector3(2f, 0f, 1f), out var hit, 1f, UnityEngine.AI.NavMesh.AllAreas), Is.True, "the navigation mesh there");
+                var place = hit.position;
+                var walker = SecondFace.Game.Play.Walker.Create(prefab, controller, place, 137f, true);
+                Made(walker.gameObject);
+                var agent = walker.Agent;
+                if (!agent.isOnNavMesh) problems.Add("the walker's agent is off the navigation mesh");
+                if (Vector3.Distance(agent.nextPosition, place) > 0.01f) problems.Add($"the walker's agent stands at {agent.nextPosition}, placed at {place}");
+                if (Vector3.Distance(walker.transform.position, place) > 0.01f || Quaternion.Angle(walker.transform.rotation, Quaternion.Euler(0f, 137f, 0f)) > 0.1f)
+                    problems.Add($"the walker stands at {walker.transform.position}, turned {walker.transform.eulerAngles.y:0.0}°, placed at {place}, 137°");
+                for (var i = 0; i < 4; i++) yield return null;
+                if (!agent.isOnNavMesh || Vector3.Distance(walker.transform.position, place) > 0.01f) problems.Add($"four frames on, the walker stands at {walker.transform.position} (on the mesh: {agent.isOnNavMesh})");
+                var hw = Vector3.Distance(Hips(walker.Animator), Hips(home));
+                Debug.Log($"people_gaze_placed: hips {off * 100f:0.00} cm apart on the root; the face reference {face:0.00}° apart; the walker at {walker.transform.position}, its agent {agent.nextPosition}, hips {hw * 100f:0.0} cm from the townsperson's on the root");
+            }
+            finally { mesh.Remove(); }
+            Assert.That(problems, Is.Empty, string.Join("\n", problems));
+        }
+
+        /// <summary>
+        /// Seated, a person's arms stay out of their body as a standing person's do (BootTests.ArmsStayOutOfTheBody: at most
+        /// 1.2 cm in, by the arm clearance's own reading of the drawn body): the walker as the game makes them (Walker.Create,
+        /// on the navigation mesh) on two of the cast's bodies, sat down by Walker.Sit in each of the base layer's sits (the
+        /// controller's states tagged "sit": a chair, a stool, the ground) and held there; seated, the walker's foot plant and arm
+        /// clearance are off (the hands rest on the lap), so this reads the sits as they play.
+        /// </summary>
+        [UnityTest, Timeout(600000)]
+        public IEnumerator SeatedArmsStayOutOfTheBody()
+        {
+#if UNITY_EDITOR
+            var cat = AssetDatabase.LoadAssetAtPath<RocketboxCatalog>("Assets/SecondFace/People/Rocketbox/RocketboxCatalog.asset");
+            var controller = AssetDatabase.LoadAssetAtPath<UnityEditor.Animations.AnimatorController>("Assets/SecondFace/People/Locomotion.controller");
+#else
+            RocketboxCatalog cat = null; RuntimeAnimatorController controller = null;
+#endif
+            if (cat == null || controller == null) { Assert.Ignore("the cast's catalogue or the locomotion controller are not built"); yield break; }
+            var sits = new List<string>();
+#if UNITY_EDITOR
+            foreach (var c in controller.layers[0].stateMachine.states) if (c.state.tag == "sit") sits.Add(c.state.name);
+#endif
+            sits.Sort(System.StringComparer.Ordinal);
+            var ground = Made(GameObject.CreatePrimitive(PrimitiveType.Cube));
+            ground.transform.localScale = new Vector3(20f, 1f, 20f); ground.transform.position = new Vector3(0f, -0.5f, 0f);
+            var source = new UnityEngine.AI.NavMeshBuildSource
+            {
+                shape = UnityEngine.AI.NavMeshBuildSourceShape.Box, size = new Vector3(20f, 1f, 20f),
+                transform = Matrix4x4.TRS(new Vector3(0f, -0.5f, 0f), Quaternion.identity, Vector3.one), area = 0,
+            };
+            var data = UnityEngine.AI.NavMeshBuilder.BuildNavMeshData(UnityEngine.AI.NavMesh.GetSettingsByID(0), new List<UnityEngine.AI.NavMeshBuildSource> { source },
+                new Bounds(Vector3.zero, new Vector3(24f, 6f, 24f)), Vector3.zero, Quaternion.identity);
+            var mesh = UnityEngine.AI.NavMesh.AddNavMeshData(data);
+            var problems = new List<string>(); var report = new List<string>();
+            try
+            {
+                Assert.That(sits.Count, Is.EqualTo(3), "the base layer's sits, tagged \"sit\" (" + string.Join(", ", sits) + ")");
+                foreach (var id in new[] { "Female_Adult_01", "Male_Adult_08" })
+                {
+                    var prefab = cat.Get(id);
+                    if (prefab == null) { problems.Add($"{id}: not in the catalogue"); continue; }
+                    var p = SecondFace.Core.Npc.RbPeople.Of(id);
+                    UnityEngine.AI.NavMesh.SamplePosition(Vector3.zero, out var hit, 2f, UnityEngine.AI.NavMesh.AllAreas);
+                    var walker = SecondFace.Game.Play.Walker.Create(prefab, controller, hit.position, 0f, p?.Male ?? id.Contains("Male"));
+                    Made(walker.gameObject);
+                    RbDress.Apply(walker.gameObject, SecondFace.Core.Npc.RbPeople.DyesFor(p, "walker_" + id, p?.Roles?.FirstOrDefault() ?? "settler", null));
+                    var clear = walker.Animator.GetComponent<ArmClearance>();
+                    yield return Seconds(0.5f);
+                    Assert.That(clear != null && clear.Ready, Is.True, $"{id}: the arm clearance reads the body");
+                    foreach (var sit in sits)
+                    {
+                        walker.Sit(sit, walker.transform.position, 0f);
+                        yield return Seconds(1.2f);
+                        var deepest = 0f; var where = "";
+                        var t = Time.time;
+                        while (Time.time - t < 2f) { yield return null; var d = clear.Depth(); if (d > deepest) { deepest = d; where = clear.DepthWhere; } }
+                        report.Add($"{id} {sit}: {deepest * 100f:0.0} cm" + (deepest >= 0.008f ? $" ({where})" : ""));
+                        if (deepest >= 0.012f) problems.Add($"{id} seated ({sit}): the arms {deepest * 100f:0.0} cm in the body ({where})");
+                        walker.Stand();
+                        yield return Seconds(1f);
+                    }
+                }
+            }
+            finally { mesh.Remove(); }
+            Debug.Log("people_seated_arms: " + string.Join("; ", report));
+            Assert.That(problems, Is.Empty, string.Join("\n", problems) + "\n" + string.Join("; ", report));
+        }
+
         [System.Serializable]
         private sealed class ClipSidecar { public float speed; }
+
+        /// <summary>Where the eyes look round the vertical, degrees from the body's front (the line square to the one between
+        /// them, in the root's frame); NaN on a rig without eye bones.</summary>
+        private static float EyeYaw(Animator a)
+        {
+            var l = a.GetBoneTransform(HumanBodyBones.LeftEye); var r = a.GetBoneTransform(HumanBodyBones.RightEye);
+            if (l == null || r == null) return float.NaN;
+            var across = Quaternion.Inverse(a.transform.rotation) * (r.position - l.position);
+            var ahead = Vector3.Cross(across, Vector3.up);
+            return Mathf.Atan2(ahead.x, ahead.z) * Mathf.Rad2Deg;
+        }
 
         /// <summary>The face's pitch in degrees: from the head bone to between the eyes, against the horizontal (up +).</summary>
         private static float FacePitch(Animator a)

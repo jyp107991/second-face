@@ -421,7 +421,12 @@ namespace SecondFace.Game.People
             // (by the soles as last shown, their lowest points and their pace: by the ankles and the lower of them, the foot in
             // its swing was taken for the one down and the still one left 5-7 cm up, W6, 2026-11-08)
             var catchBy = float.MaxValue;
-            if (_haveDipWas && !standing && _bodySpeed < CatchPace && _dipWasL > CatchLift && _dipWasR > CatchLift)
+            // (the body's pace as the slower of this frame's and the smoothed: smoothed over a tenth of a second, it ran 0.43 m/s
+            // behind a jog's stop slowing at 6.7 m/s², 2.73 against 2.30 m/s on the frame Medical_Female_01's landing foot bore the
+            // weight 4.4 cm up, every other gate of the catch open (both feet up, that foot under 0.6 m/s), W6, 2026-11-27; the
+            // slower reading, not this frame's alone, so that the set-off's catches, where the smoothed pace is the slower, stay
+            // as they were, docs/MOTION_ROOT_CAUSE.md §17)
+            if (_haveDipWas && !standing && Mathf.Min(moved, _bodySpeed) < CatchPace && _dipWasL > CatchLift && _dipWasR > CatchLift)
             {
                 if (_soleVWasL < CatchSlow) catchBy = _dipWasL;
                 if (_soleVWasR < CatchSlow) catchBy = Mathf.Min(catchBy, _dipWasR);

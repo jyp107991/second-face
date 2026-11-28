@@ -857,3 +857,324 @@ three), Female_Adult_14's jog (W1) to the toes laid down (§14), and Constructio
   keys stand worse than dfc732a4's, every one but one at its count on cast 3's tree before this round (the fight's clips on every
   body of a sex, and the two known everyday cells); the one, Kb in the strikes, 129 -> 154: listed with their causes and fix items
   in `docs/qa/gates/motion_waivers.json` (the waiver policy).
+
+## 16. The Biped hierarchy and Unity's body orientation: the same human pose, the whole skeleton turned (editor owner, 2026-11-27)
+Found tracing the fight's cause B (`docs/COMBAT_ROOT_CAUSE.md` 19): planted feet 7-11 cm apart in height on the bodies where
+the clips' actors stand them level.
+- **Measured** (`LegTraceProbeTests`, temporary): each clip played bare (a manual graph, no Foot IK, no runtime system) on its
+  own actor, on two bodies of its sex, on a body whose legs and hip width are scaled to the actor's, and on the body with its
+  avatar built again (AvatarBuilder, its own description) with parts of its hierarchy changed; every frame the leg and trunk
+  bones in the root's frame and the human pose read back.
+  - The avatars agree where the definitions are: upper-leg and leg twist 0.5, leg stretch 0.05, feet spacing 0, default
+    limits; at muscle 0 the thighs and shanks 0.00° apart, the pelvis's lateral axis 0.4-0.9°. Translation DoF (on for the
+    bodies, off for the actors): the body's avatar built without it plays bit-identically.
+  - Not proportions: on the body with the actor's leg lengths and hip width the planted feet stand as far apart or further
+    (the fist guard 7.2 -> 7.9 cm, the men's crouch hold 17.5 -> 19.3, the club blow p98 8.8 -> 9.8); the actor's own leg
+    directions on the body's leg lengths stand them 1.1 / 7.7 / 0.5 cm apart (the actor's 1.2 / 8.6 / 1.6).
+  - With the human pose read back identical (the muscles within 0.00-0.14, the body rotation within 0.1-0.5°) the body's whole
+    skeleton (pelvis, spine, chest and both legs as one piece; the trunk's bend equal to 0.2°) stands turned from the actor's:
+    the rifle's ready 1.7°, the guards and the aim 4.3-4.6°, the club blow 4.8° (p98 9.1), the club's ready 7.6°, the women's
+    crouch hold 5.9°, the men's 16.6°, the fist guard 18.7°.
+  - Bisected by the avatar built again: the clavicles re-parented from `Bip01 Neck` to `Bip01 Spine2`: the fist guard 18.7 ->
+    2.0°, the men's guard 4.4 -> 0.7°, the women's 4.4 -> 1.2°, the women's thrust 4.5 -> 1.8°; the thighs from `Bip01 Spine` to
+    the pelvis: the club's ready 7.6 -> 3.6°, the club blow 4.8 -> 3.2°; both: 0.7-2.5° in every standing clip, the crouch hold
+    16.6 -> 13.8° (men), 5.9 -> 10.2° (women). Two standard (non-Biped) actors' skeletons differ between themselves by 0-3.4°
+    standing and 11.4° in the men's crouch hold.
+- **Cause.** Unity's humanoid places the pelvis from the clip's body orientation, which it reads from the joints' positions. On
+  the Rocketbox bodies (3ds Max Biped) the clavicles hang from the neck and the thighs from the spine: a bend of the neck or the
+  spine moves the shoulder and hip joints, changes the body orientation Unity reads, and Unity turns the whole skeleton to
+  match the clip's. The rest is the trunk's own geometry, large only in a deep bend (the crouch). The same hierarchy was behind
+  the gaze's fault (the head turned at its own joint, §11: the clavicles hang from the neck) and the fight's trunk corrections
+  swinging the legs (`docs/COMBAT_ROOT_CAUSE.md` 17: the thighs hang from the spine).
+- **Done for the fight** (this batch): the measured turn baked per clip and skeleton and put back on the hips and thighs first in
+  the frame (`docs/COMBAT_ROOT_CAUSE.md` 19). The everyday states are left as they are, but for the sits (below).
+- **Later batch item (not done):** at import, re-parent the bodies' clavicles to `Bip01 Spine2` and their thighs to the pelvis,
+  the bind pose kept in the world (the skinning unchanged), the avatars built again; then the everyday screen and the whole cast
+  again. It may retire the compensations built around the hierarchy (the gaze's own-joint turn, `FootPlant.Level`'s chest, the
+  fight's trunk bones above the legs) and the fight's baked turn's hierarchy share (the trunk's geometry share would stay). It
+  changes no look, so it is not an owner question.
+- **(b) is a compensating bake, not a cure.** The fight's turn (`docs/COMBAT_ROOT_CAUSE.md` 19) and the sits' (`SeatTurn`, below)
+  put back what the retarget leaves on these skeletons; they do not remove why it is left. The cure is (a), the rig's re-parent at
+  import. (a)'s item carries its own check: after the re-parent, the same bake must read about nought on every clip (the hips' and
+  the thighs' turns within a degree or so, the shift within a few millimetres); then the bake, `ClipTurnFirst`, `SeatTurn` and
+  their data are deleted, not kept as a no-op.
+- **The sits (this batch).** The same retarget at a sit's hip bend of about 90°: the base layer's sits (the controller's states
+  tagged "sit": a chair, a stool, the ground) on the Rocketbox bodies stood the pelvis turned and the thighs rolled from the
+  sits' CMU actors (the walker on a chair: hips 0.47 m, a foot 0.32 m off the floor, where the take keeps it at 0.05 m; dfc's
+  walker passed only because its configured T-pose was the take's first, seated key, MotionImportPostprocessor v13 §9). Baked as
+  the fight's (`CombatAnimatorBuild.Seats`: 3 sits x 2 skeletons, the hips up to 18-19°, the thighs up to 44-67°, the shift up to
+  6.3 cm), applied by `SeatTurn` at order -30 while a seated state plays, eased by the crossfade into and out of it.
+- **A further symptom (2026-11-27):** the hands' "ahead" read from the hip joints' middle instead of the Hips bone (§17) moves the
+  cast's reading 0.3-0.5 cm standing but 3.7-3.9 cm in the jog: the Biped's thighs hang from the spine, so the hip joints ride the
+  spine's bend away from the pelvis bone.
+
+## 17. The captured motion test's reads, Gaze's neutral face, and a person made away from the world's origin (editor owner, 2026-11-27)
+Found under three CI regressions of 71ba0e5b (`CapturedMotionHoldsHumanPosesWhenBuilt`, `ArmsStayOutOfTheBody`,
+`TheWalkerSitsOnAChair`); probes temporary (`CapturedProbeTests`, `ArmsProbeTests`, `PlayerAvatarProbe`), not hashed.
+- **The read point.** Gaze turns the head at its own joint in LateUpdate (since 2026-11-26), not in the animator's IK pass. The test
+  read its walk cycle and its idle face straight after `Animator.Update(0)`: the bare clip, no Gaze in it (the walk's face -17 to
+  -24°). It now reads each phase as the game shows it, after the frame's LateUpdate, the clip held at its phase; limits unchanged.
+- **The hands' reference.** The idle's hands are read ahead of the hip joints' middle (the anatomy a real person's hand is measured
+  from), not of the Hips bone: the players' MakeHuman rig stands its Hips bone toward the sacrum, 5.8 cm (player_m) and 8.2 cm
+  (player_f) behind the hip joints, where the cast's Biped stands it on their line. On the cast the reading moves 0.26 cm
+  (Female_Adult_01) and 0.54 cm (Male_Adult_08) in the idle: Male_Adult_08's +0.54 cm equals its T-pose bone offset (-0.5 cm),
+  exactly the rig offset the change is meant to remove (the jog's 3.7-3.9 cm is §16's, and the 0.2 m limit applies to the idle
+  only). Finding, not fixed: from the shoulder the players' hands hang 4-5 cm further forward than the cast's on the same idle
+  (player_m 0.128 m against Female_Adult_01 0.076, Male_Adult_08 0.090).
+- **The players' trunk, tried and taken out.** The players' configured T-pose stands its trunk curved (segments -8.3, -8.7,
+  +16.2, +19.4° from the vertical on player_m; -9.7, +2.9, -5.1, +21.1° on player_f) where Unity's humanoid takes muscle zero with
+  the spine upright and every clip's is configured so. Standing only the players' trunk upright changed one end of the retarget
+  alone and made the walk's face worse (-12.9° at phase 0.625, against -10 with the original trunk; measured with Gaze's face
+  reference still wrong, below). The trunk goes into the next batch with every clip's configured trunk on the same convention,
+  so that both ends of the retarget change at once.
+- **Gaze's neutral face, read away from the world's origin.** Gaze read the face's front in Awake by a HumanPoseHandler round trip
+  on the live body. GetHumanPose gives the body in the world and SetHumanPose places it from the person's own root, so on a person
+  standing away from the origin the round trip put the hips that far off again: a townsperson in Shale, 16 km out, had the pelvis
+  15.5 km away and 40 m up (the body's mesh hangs from the pelvis, so the person was never in view and, culled, never animated:
+  invisible and frozen in the game; `ArmsStayOutOfTheBody` read their arms "moving" because the camera stood 16 km from their
+  hips, past the skin's range). On a person turned from the world's axes it read the face's front off by that turn (137° and 180°
+  read 110° and 154° off). Fixed in `Gaze.Neutral`: read with the root at the origin and square to the world, every bone's local
+  transform put back after, a navigation agent's sync held off meanwhile. Test: `APersonMadeAnywhereKeepsTheirBodyAndFace` (a
+  townsperson at (15000, 40, 4000) turned 137°: the hips 0.00 cm from their place at the origin, the bounds round where the person
+  stands, the face reference 0.00° apart; on 71ba0e5b's Gaze: 15,524 m, the bounds 15 km off, 137°). The class: every other
+  HumanPoseHandler round trip runs on a bare rig at the origin (the turn bake, the flank probe, the body correctives' and the
+  layers' copies of an FBX at the origin), or on the gate's people, who stand square to the world and offset in x only
+  (MotionProbe: its references are heights or taken before its own round trip). The gate's people stand where the game never
+  puts anyone: a later item (`docs/PROGRESS.md`).
+- **The players' bound body faces away.** The players' MakeHuman models are bound facing away from their own root (the bound body
+  180° round: the eyes 8.2 cm behind the head joint along the root's front in the bind, in front of it in every animated pose).
+  Gaze took the neutral pose with the bound body's own rotation, so on the players the face's front was the back of the head: its
+  pitch read the wrong way round and its yaw half a turn off, and the walking player's head was held twisted 20-33° to alternate
+  sides (the eye line's yaw). `Gaze.Neutral` turns the bound body about the vertical to the root's front and keeps its pitch: the
+  cast's bodies are bound square in yaw, so their reference is unchanged (their bound pitch, 5.4° on the men and 7.6° on the
+  women, is what the gate's MotionProbe measures the face by). The players' walk face after: -1.8 to -2.5° at every phase (before
+  -3.9 to -10.6), the head's yaw within 0.4°. The test keeps its own, anatomical measure (the eye line) and asserts that Gaze's
+  face and the eyes' agree within 3° in pitch and yaw on a rig with eye bones (0.2° and 0.4° now): a measure of Gaze by Gaze's own
+  definition is circular, and on the cast Gaze and MotionProbe shared one definition, which is why this stayed hidden. Unity's
+  full human reference (the body square to the root, which moves the cast's reference by its 5.4-7.6° of bound pitch) is a gate
+  definition change, for the next batch's trunk convention item.
+- **The sits' tag.** The base layer's sits were built untagged (`LocomotionBuild`, since b2a82298), so `ArmClearance.Resting()`'s
+  test for a seated state never held. They are tagged "sit" now (the builder sets it; `LocomotionBuild.TagSits` set it on the
+  committed controller: three `m_Tag` lines), and `SeatTurn` and its bake find the sits by it. It changes nothing for the seated
+  walker today: `Walker.Planting(false)` turns the arm clearance off while seated. `SeatedArmsStayOutOfTheBody` (new) found the
+  sits' own hands 1.3-8.5 cm into the drawn body (the chair and the ground; the stool 0.0): a pre-existing defect, the fix a seated
+  clearance that holds the hands on the lap's surface (`docs/PROGRESS.md`).
+- **W1, Female_Adult_01's jog, and how the foot plant decides a foot has landed.** Her jog's W1 is 24 of 413 weight-bearing
+  samples over 15 cm/s (5.8 %; the limit 5 %). 15 are at the right foot's push-off: the gate's ball (vertex 2868) lies on her
+  flat forefoot's toes' row and sweeps 16-34 cm/s at 1.2-2.4 cm about the metatarsal row the plant holds. That is the open cause
+  of §13-§15, unchanged. 8 are at the right foot's touchdown: the heel 43-47 cm/s at 0.5-0.6 cm and the ball 28-29 at 1.2 cm, one
+  frame a landing. 1 is at the stop. At the touchdown the plant held the foot only in the frame it touched: it judged a landing by
+  the ankle's pace, and at a heel strike the ankle swings on over the heel (the heel 1.3 cm up at 1.05 m/s, the ankle 1.62 m/s,
+  past the jog's 1.12 m/s and SwingFast's 1.5).
+- **Three proxies, measured on the same eleven people** (the quick ten and Medical_Female_01, one batch, every frame traced):
+  the ankle's pace (as before), the lowest sole point's, and the slower of the heel's and the ball's. The lowest point cures the
+  jog's touchdown slide across the pick (walk:jog W1 maxima 43-116 -> 3-26 cm/s; Female_Adult_01 5.8 -> 3.6 %, every other 0.0 %),
+  but holds a walk's first set-down a frame late where the sole pitches about the ankle (the heel 0.51 m/s, the ball 0.47, the
+  ankle slower: 45 cm/s the frame after, in Female_Adult_01's, _09's and Medical_Female_01's walk) and the stop's last set-down
+  (the sole points 0.65 m/s about a still ankle: 18-24 cm/s), with knock-on cells after both (Male_Adult_03's bend:jog W1 0.0 ->
+  0.8 %, max 52; Male_Adult_08's and _03's bend:walk W6 max 1.07 -> 3.04): every one passing. The slower of heel and ball holds the
+  first set-down in time, but takes a walking foot again at its first toe-off (Construction_Male_03, Male_Adult_03, _08 at the
+  start of the player's walk: let go by its reach two frames before while still under 2.5 cm, the heel rising 3 -> 5 cm, the heel
+  the slow point at 0.44 m/s: held five frames, the ball 74 cm/s): a latent fault of the hold, not of the proxy (a walking foot
+  let go by its reach while still low may lock again once LockRelease has run out; NoRelock covers only a foot let go in a jog),
+  a next-batch item.
+- **Against the clips' own record** (independent of the gate, which shares a proxy's definition of contact): every lock onset
+  against the recorded touchdown of the clip the base layer plays (each sidecar's `plant.stances`, by the dominant clip's phase
+  as played, frame by frame), the share within ±1 frame:
+
+  | state | the ankle | the lowest point | the slower of heel and ball |
+  |---|---|---|---|
+  | walk:jog | 219/226 (96.9 %) | 206/225 (91.6 %) | 206/225 (91.6 %) |
+  | bend:jog | 195/195 (100 %) | 191/197 (97.0 %) | 191/197 (97.0 %) |
+  | walk:sneak | 132/143 (92.3 %) | 132/143 (92.3 %) | 132/143 (92.3 %) |
+  | walk:walk | 106/138 (76.8 %) | 93/138 (67.4 %) | 109/138 (79.0 %) |
+  | walk:walk_player | 122/148 (82.4 %) | 116/148 (78.4 %) | 116/148 (78.4 %) |
+  | bend:walk | 83/124 (66.9 %) | 80/124 (64.5 %) | 80/124 (64.5 %) |
+  | all | 857/974 (88 %) | 818/975 (84 %) | 834/975 (86 %) |
+
+  The medians are 0. The two sole proxies cure the jog's skate by holding the foot up to two frames before the actor's recorded
+  touchdown (Female_Adult_09's right foot -1/-2 frames; the ankle 0/+1): the gate's cure is partly self-confirming. About 70 onsets
+  match no record: the walk's starts and stops, blended from the idle, where cases 1 and 2 and the relock fall.
+- **Rejected: the lowest point's speed.** It cures the jog's W1 on the gate by holding the foot up to two frames before the
+  actor's recorded touchdown, not by matching the contact: a gate passed by locking early. Neither speed proxy is right.
+- **The record-driven lock: built, measured, not taken.** The plant inferred contact from one point's speed in a single frame, and
+  every proxy (the ankle, the lowest sole point, the slowest) runs ahead in some kind of landing. So the clips' own record was made
+  to hold the foot: each locomotion clip's recorded stances (its sidecar's `plant.stances`: the take's touchdown to toe-off) are built with
+  the people's controller into `StepRecord` (`LocomotionBuild.Steps`, stamped, `TheStepsAreBuiltFromTheClipsOwnRecords`) as spans
+  of the clip's normalized time, the form of the fight's `ClipFacts.DownL/DownR`. Each frame a foot's down weight is the sum, over
+  the base layer's clips (the next state's too, across a crossfade), of each clip's weight where its actor had that foot down at
+  its phase. Where the recorded clips hold most of the base layer's weight, a moving foot is held when most of the weight has it
+  down (and it stands within LockDown of the ground: a foot recorded down but drawn high is never pinned in the air) and let go
+  when most has it up; the record says when the foot lifts, so NoRelock and the lift test have no part there. Elsewhere (the idles
+  and gestures carry no record; the walk's starts and stops blended from the idle) the ankle test stands as before. No threshold
+  was added: one half is a majority. On the eleven it cured Female_Adult_01's jog (5.8 -> 2.9 %) but failed her bend:jog W1 (5 %,
+  4.3 before) and took feet in their flight (10-18 lock onsets a person, 3-6 under the ankle test, the record down while the drawn
+  heel stood 5.7 cm up at 2.7 m/s: Construction_Male_03's walk at 139.739 s); its 98 % of onsets on the record are its own
+  definition. The touchdown below explains why: the clip lands the foot early and fast, so a lock by the record's phase holds a
+  foot still in its swing. Main's ankle test stays; the record's bake (`StepRecord`, `LocomotionBuild.Steps`, its build test and
+  gate input) stays in the tree unused, for the touchdown's next batch.
+- **The foot plant's sole against the drawn mesh: the hull cleared** (relaunch 15; a temporary probe, not hashed, on the ankle
+  test; the eleven-person pick and the other flat forefoots, Female_Adult_12, _14, _17 and Male_Adult_06). The lead was that
+  `FootPlant.Hull()` bakes every skinned renderer, clothes included, and keeps their low vertices rigid in the foot's frame, so a
+  cuff or hem skinned to the shin would swing under the drawn heel at a toes-up strike. Measured: (1) each of the hull's 3,169
+  points is found again as one baked vertex of one renderer on the pose the hull is made on (the prefab's, as at
+  `FootPlant.Awake`), within 0.004 mm; every one is a vertex of the body or of the boots layer, with all its weight on the foot and
+  toe bones (none on the shin: the trousers', coats' and belts' layers lie above the hull's cut, the ankle less 2 cm and the lowest
+  plus 5 cm). (2) The pose `FootPlant.SoleOver` reads (the clip's, with the hips' sink and the toes' straightening put back on) is
+  rebuilt to its own dip within 0.001 mm on all 38,115 moving frames. (3) On that pose the plant's lowest sole point (heel, back,
+  ball, tip or hull) against the mesh's own lowest foot-skinned vertex (more than half its weight on the foot and toes, any
+  renderer): the mesh less the model 0.00 cm at the median, 0.03 at the p99 (0.01 on the four), 0.09 at the p99.9 (0.18), at most
+  0.49 cm in one frame; the model stands higher than the mesh by up to 0.63 cm (the hull's 1.5 cm cells). In no frame did the model
+  read a foot down (under 2.5 cm) while the mesh stood over 2.5 cm, but for 8 frames straddling the line by 0.2 cm. At a toes-up
+  heel strike the hull's lowest point is the true contact, the heel's back edge (Construction_Male_03's right foot at 139.61-139.68
+  s: the model and the mesh -0.9 to +0.2 cm; the bind's heel point 1.8-2.1 cm). So the "dip -0.6 cm against the drawn heel 5.7 cm"
+  read compares the contact with the gate's fixed heel vertex (the lowest behind the ankle at the bind), after the plant had lifted
+  the foot to its 3 cm swing clearance: no hull change. What it shows instead: at push-off (the gate's heel over 3 cm, the foot's
+  lowest under 1.2 cm) the drawn contact is the toes' tip, 2.6-12.8 cm ahead of the ball the plant holds (the men 11.1-12.8, the
+  women 2.6-10.5; the contact at 16.3-23.2 cm along the foot at the median, the tip at 18.5-23.0).
+- **The touchdown: why a landing foot meets the ground early and fast** (relaunch 15, the same probe on the eleven, with each
+  recorded clip played bare, a manual graph and no runtime system, on its own actor and on the eleven bodies, foot IK off and on).
+  The plant's pose reads a landing heel at -0.9 to +0.2 cm while the foot still moves 2.4-2.7 m/s, ahead of the take's recorded
+  touchdown. At that touchdown (each sidecar's `plant.stances`, by the dominant clip's phase as played), per person, clip and foot:
+  (i) the clip as retargeted, without the hips' sink, stands the foot's lowest skinned point -2.6 to +2.1 cm over the ground,
+  moving 0.3-2.7 m/s; (ii) the sink is -1.3 (left) and -0.4 (right) cm in the jog, -2.3 and -1.9 in `jog_b`, -0.1 and -0.4 in
+  `walk_f_b`, -0.6 and -0.8 in `walk`, -0.6 and +0.8 in `walk_slow`, -0.7 and +0.8 in the sneak; (iii) the take itself has the
+  actor's heel 0.3-3.3 cm over its own floor a key before its recorded touchdown, moving 2.3-3.9 m/s (scaled by the hips' ratio
+  and the stride), since `plant.py` records a touchdown at the first key within 2.5 cm whose slower sole point moves under 2 m/s:
+  the takes land fast by their own definition. Against its own stance floor, the bare retargeted body (foot IK on) stands within
+  about 0.8 cm of the actor at those keys, mostly higher, at like speeds. The early contact comes from where the floors stand: the
+  bodies' stance soles stand 0.2-4.1 cm under the root's ground, per foot (the jog's left -1.9, right -0.2 to -0.6; `walk_slow`
+  -2.5 to -3.0; the sneak's left -2.9 to -4.1). In the jog the clip alone is 1.3-2.0 cm up at the first contact and only the sink
+  brings it down: the left foot within 0.5 cm two frames (60 a second) before the record at 2.2-3.0 m/s, the right 1-3 frames
+  after it. The sink is negative there because it follows the ankles' lower envelope, and the right stance ankle stands 1.3-4.3 cm
+  over its flat height while its sole is down. In the walks the late swing is within 0.5 cm 2-12 frames before the record at
+  3.7-5.1 m/s, the sink -0.3 to -0.8.
+  The stance floors' left-right difference (the ankles'), the bodies' against the actor's scaled, is the same on every body of a
+  skeleton to 0.01 cm (039738d2, the 54 men; 67aa8293, the 25 women), foot IK on (off): `jog` -0.74 (-0.70; the take's own
+  left-right is -1.94), `jog_b` -1.10 (+0.18), `jog_f` -1.54 (+1.72), `run` -3.65 (+0.67), `run_c` -3.72 (+0.02), the sneak
+  -2.69 men, -2.63 women (-1.90, -2.22), `walk` +0.37 (-1.51), `walk_b` -2.27 (-2.20), `walk_brisk_b` -0.21 (+0.36), `walk_d`
+  +0.41 (+0.20), `walk_f_b` +0.08 (-0.57), `walk_slow` +0.10 (+0.22), `walk_slow_b` +1.72 (+1.04). Three sources, none of them
+  fixed in this batch (`docs/PROGRESS.md`): the takes' unequal stance floors (the converter keeps each sole point on its own
+  floor, `plant.py`'s `sole_floors`; levelling them needs Blender, an open question for the owner); cause B in locomotion (the
+  base layer has no `ClipTurn`; the rig's re-parent at import, (a) of §16); and the sink keyed on the ankles' lower envelope.
+  Rejected: the sink keyed on the soles' own lowest point instead (simulated offline on the eleven; the simulator reproduces the
+  logged sink to 0.00 cm at the median, 0.45 at the p98): it removes the early contact but floats the lower stance contact, p98
+  +2.2 to +4.0 cm, by person. The batch does not need it: without its push-off samples Female_Adult_01's jog W1 is 9 of 413 (2.2 %).
+- **The push-off: the plant held a one-piece foot over a two-piece one** (relaunch 15; the same probe on the fifteen, the eleven
+  and the four other flat forefoots, each against main's ankle test, K). At push-off (the gate's heel over 3 cm, the foot's lowest
+  under 1.2 cm, held) the drawn contact is the toes' tip, 2.6-12.8 cm ahead of the ball the plant holds, and it slides: its own
+  horizontal speed (the same vertex frame to frame) 5.8 cm/s at the median, 43 at the p90 and 87 at the p98, 28.7 % of 13,367
+  frames over 15 cm/s, in every one of the fifteen (6-47 % a foot). The clip bends the toes 15-26° up at push-off (5-22° more than
+  in its own stance); the plant straightened them toward the bind while the ankle was low (`Toes()` on the rising and held branch,
+  859ccf69, 2026-11-06, kept from the landing rule: "the jog's toes curled down at landing put their tips 6-7 cm under the
+  ground"), so the forefoot was rigid and rolled onto its tip. `BallOverTip` is 8 cm since 8790a317 (2026-11-06; 3 cm before,
+  791a42b6): a jogging forefoot pointed 60° came down on its tip and, held there, its ball slid, measured on the bones' sole points.
+  Two changes were measured, each against nine conditions (K -> the change), and both failed; main's ankle test stands:
+
+  | condition | the clip's own toes (notoes) | the forefoot rocker |
+  |---|---|---|
+  | 1 everyday failures besides MF01's stop | FA01 walk:jog W1 6 %, new FA01 bend:jog W1 5 % | FA01 passes; new MA03 walk:jog W1 5.4 %, bend:jog 5.2 % |
+  | 2 FA01 walk:jog W1 (5.8 %) | 5.6 % | 2.7 % |
+  | 3 locks not at a landing / while rising (106 / 52) | 121 / 61 | 122 / 62 |
+  | 4 onsets within ±1 frame of the record (88 %, 92 %) | 88 %, 92 % | 88 %, 92 % |
+  | 5 walking cells worse / better | 151 / 54 | 236 / 63 |
+  | 6 feet with the toes deeper in the ground (p99, max) | 21 of 30 (0.44, 0.75 cm) | 23 of 30 (0.69, 0.83 cm) |
+  | 7 the drawn heel's largest rise | 0.28 cm | 0.17 cm |
+  | 8 mesh less model, p99.9 (0.11 cm) | 0.49 cm | 0.73 cm |
+  | 9 the held contact at push-off: p50 / p90 / p98, share over 15 cm/s (5.8 / 43 / 87, 28.7 %) | 4.8 / 52 / 90, 30.4 %, up on 23 of 30 feet | 1.3 / 6.0 / 11.8, 1.6 %, no foot's share up |
+
+  The clip's own toes (both straightening calls taken out) moved the contact back toward the ball on most walks (Female_Adult_01
+  6.4 -> 3.4-3.6 cm ahead of it), but the hold still pivoted behind the bending forefoot and the bent toes scraped; and sole and
+  hull points kept rigid in one frame across the toe joint parted from the mesh (hull points mostly skinned to the foot but held
+  in the toes' frame, p99 +0.22 to +0.31 cm; the flat forefoots' balls, mostly on the toes but held in the foot's frame, p99
+  +0.54). The forefoot rocker (Perry's third rocker; `patch15/FootPlant.cs.rocker`, kept for the next batch) put each sole point and
+  hull vertex in the frame of the bone it is mostly skinned to (read at the bind from the skin itself: the toes turned a quarter
+  turn and the meshes baked again, linear skinning moving each vertex by its toe weight) and, once the heel had been down and
+  rose past LockDown while held, held the foot on its toe joint, the toes laid flat on the ground, until the existing release rules
+  let go. It cures the scrape (the held toe segment's own speed 1.2 cm/s at the median, 13.9 at the p98, 1.7 % over 15; the held
+  joint 0.6 at the p98) and Female_Adult_01's jog, and shows three needs of its own, each a design decision for the next batch
+  (`docs/PROGRESS.md`): (i) the sole read by linear blend skinning with its full bone weights, not rigid in one frame (mixed
+  foot and toe weights under a toe bent 30-80°: mesh less model p99 0.48 cm, p99.9 0.77 on the hull points mostly on the foot);
+  (ii) toe-off from the joint's own range: held flat until the clip lifts the toes, the toe joint reached 27-32° at the median,
+  64-77° at the p98 and 72-82° at most, against a mean first-MTP dorsiflexion of 42° in walking (Nawoczenski, Baumhauer and
+  Umberger 1999; §14 quotes 40-65° at toe-off) and a peak MTP extension of 24.8 ± 4.1° to 27.0 ± 4.6° in shod running (Cigoja,
+  Fletcher and Nigg 2022): the walking and running figures differ; (iii) the gate's metatarsal-row ball: with the hold on the toe
+  joint it stands 3.3 cm behind the joint and 2.0-2.4 cm up as the foot pitches, moving 16-18 cm/s (Male_Adult_03's jog W1 1.9 ->
+  5.4 %), and the gate counts it as bearing weight (a question for the owner; the gate is unchanged).
+- **W6, Medical_Female_01's jog stop: the catch read a lagging pace; taken.** One frame: the landing right foot 4.4 cm up, 0.47
+  m/s across the ground, rising 0.18 m/s, both feet up, the body at 2.30 m/s this frame (its p98 1.3 passes). The catch (the
+  hips set down onto a slow lower foot, both feet up) is gated by the body's pace under `CatchPace` (2.4 m/s), and read it
+  smoothed over a tenth of a second (`1 - exp(-10 dt)`): slowing at 6.7 m/s², the smoothed pace ran 0.43 m/s behind, 2.73
+  against 2.30, and every other gate of the catch was open (both feet more than `CatchLift` up, that foot under `CatchSlow`), so
+  the gate's one frame over the cap was a catch that did not fire. §14's try keyed the catch on the foot's own motion instead,
+  fired a frame late and in the jog's flight, and was reverted; this keeps every gate and reads the pace as the slower of this
+  frame's and the smoothed (`Mathf.Min(moved, _bodySpeed)`), so a slowing body is read at its pace now and the set-off's catches,
+  where the smoothed pace is the slower, stay as they were. No new number. Pre-checked on the fifteen against main's ankle test
+  (K): the only everyday failure is Female_Adult_01's walk:jog W1 (6 %, as under K); Medical_Female_01's W6 max 4.416 -> 1.320
+  (p98 1.307 -> 1.291); the 44 measures that changed are all in walk:jog, each judged quantity unchanged or better (statistics
+  within 0.01: Female_Adult_01's W1 mean 2.614 -> 2.623 with its share over 15 cm/s unchanged at 5.8 %); 15 new catch frames,
+  all at the jog's stop (t 172.126-172.146: this frame's pace 2.20-2.30 against the smoothed 2.65-2.73 m/s, slowing, both last
+  dips over 1.5 cm, the landing foot 0.46-0.56 m/s), none in a steady jog or in flight; their sink steps 0.95-1.44 cm a frame
+  and the hips' vertical speed at most 0.54 m/s, against K's own catches (0.8-3.5 cm) and K's largest in the state (5.50 cm,
+  5.66 m/s); the lock onsets within a frame of the record 88 % and 92 % as under K; no foot deeper in the ground (W6 p2); and
+  the party test's navigation agents (a 30 m jog and a stop, PartyTests) catch on the same 138 frames under both. The run
+  differed from K's in 321 other measures of the eleven, all in states before the jog, none of them a pass changed (the largest
+  Female_Adult_04's idle0 A6 median 134.8 -> 131.5°, then 0.55° in a few A2 and K5 cells): the sink and the hips differ by
+  under 0.1 mm (the record's resolution) from the first idle's first recorded frames, before either rule has fired a catch;
+  K's code reproduces itself exactly over two runs (0 changes), the toes' trial and the catch, two different codes, agree with
+  each other in every one of those states (0 changes; the rocker within 6), and the four's runs show none: a numerical
+  difference that comes with the rebuilt plant, not with what the catch does (recorded; a semantically null edit would test it).
+  The whole cast (the gate, 2026-11-28 00:54): Medical_Female_01's walk:jog W6 passes, W6 1 -> 0 over the 79, and the everyday
+  cells 2 -> 1 (Female_Adult_01's jog W1 stays, the push-off above). Open for the next batch (`docs/PROGRESS.md`): the stop's blend still lands the foot slow and 4 cm up, the same kind of event as the walk's
+  start and stop blends where no clip's record applies; and no test measures W1 or W6 on navigation agents in the game's own
+  conditions.
+- **The configured trunks, for the next batch's trunk convention item** (each model's configured T-pose, in its importer: each trunk
+  segment's angle from the vertical, + forward; Hips-Spine is the rig's own offset between its hips and spine bones, near ±80-90°
+  where the two stand level, one behind or ahead of the other, not a bend). The everyday clips and the bodies:
+```
+player_m                           Hi-Sp +80.1  Sp-Ch -8.3  Ch-Up -8.7  Up-Ne +16.2  Ne-He +19.4
+player_f                           Hi-Sp +91.4  Sp-Ch -9.7  Ch-Up +2.9  Up-Ne -5.1  Ne-He +21.1
+Female_Adult_01                    Hi-Sp -0.8  Sp-Ch -0.0  Ch-Up -0.0  Up-Ne -9.0  Ne-He +0.0
+Male_Adult_08                      Hi-Sp -0.8  Sp-Ch -0.0  Ch-Up -0.0  Up-Ne +4.5  Ne-He +0.0
+argue                              Hi-Sp +0.0  Sp-Ch -4.8  Ch-Up -0.9  Up-Ne +1.4  Ne-He +1.4
+carry                              Hi-Sp +0.0  Sp-Ch -6.5  Ch-Up -1.2  Up-Ne +1.8  Ne-He +1.3
+drink                              Hi-Sp +0.0  Sp-Ch -5.7  Ch-Up -1.2  Up-Ne +1.4  Ne-He -0.2
+fall                               Hi-Sp +0.0  Sp-Ch +1.0  Ch-Up -1.0  Up-Ne -1.5  Ne-He -3.0
+guard                              Hi-Sp +0.0  Sp-Ch -5.7  Ch-Up -1.2  Up-Ne +1.4  Ne-He -0.2
+idle_f                             Hi-Sp -79.0  Sp-Ch +5.7  Ch-Up +7.6  Up-Ne +4.8  Ne-He +13.3
+idle_f_c                           Hi-Sp -79.0  Sp-Ch +5.7  Ch-Up +7.6  Up-Ne +4.8  Ne-He +13.3
+idle_m                             Hi-Sp -89.8  Sp-Ch +10.7  Ch-Up +6.3  Up-Ne +11.3  Ne-He +16.6
+idle_m_b                           Hi-Sp -91.3  Sp-Ch +9.2  Ch-Up +4.2  Up-Ne +13.4  Ne-He +29.3
+jog                                Hi-Sp +0.0  Sp-Ch -6.3  Ch-Up +0.2  Up-Ne +3.2  Ne-He -0.2
+jog_b                              Hi-Sp +0.0  Sp-Ch -6.8  Ch-Up -0.9  Up-Ne +2.3  Ne-He +0.3
+jog_f                              Hi-Sp +0.0  Sp-Ch -4.8  Ch-Up +5.9  Up-Ne +8.5  Ne-He -6.4
+jog_f_b                            Hi-Sp +0.0  Sp-Ch -4.8  Ch-Up +5.9  Up-Ne +8.5  Ne-He -6.4
+pickup                             Hi-Sp +0.0  Sp-Ch -3.6  Ch-Up -0.3  Up-Ne +1.3  Ne-He +1.0
+run                                Hi-Sp +0.0  Sp-Ch -8.7  Ch-Up -0.9  Up-Ne +3.2  Ne-He +2.0
+run_c                              Hi-Sp -89.8  Sp-Ch +10.7  Ch-Up +6.3  Up-Ne +11.3  Ne-He +16.6
+sit                                Hi-Sp +0.0  Sp-Ch +10.6  Ch-Up +7.1  Up-Ne +2.5  Ne-He -7.2
+sit_ground                         Hi-Sp +0.0  Sp-Ch -3.9  Ch-Up -0.8  Up-Ne +1.0  Ne-He +3.2
+sit_stool                          Hi-Sp +0.0  Sp-Ch -5.7  Ch-Up -1.2  Up-Ne +1.4  Ne-He -0.2
+sneak                              Hi-Sp +0.0  Sp-Ch -8.3  Ch-Up +0.4  Up-Ne +4.3  Ne-He -0.7
+stretch                            Hi-Sp +0.0  Sp-Ch -4.8  Ch-Up +5.9  Up-Ne +8.5  Ne-He -6.4
+stretch_m                          Hi-Sp +0.0  Sp-Ch -14.3  Ch-Up -1.6  Up-Ne +4.6  Ne-He +6.6
+sweep                              Hi-Sp +0.0  Sp-Ch -5.7  Ch-Up -1.2  Up-Ne +1.4  Ne-He -0.2
+talk                               Hi-Sp +0.0  Sp-Ch -4.8  Ch-Up -0.9  Up-Ne +1.4  Ne-He +1.4
+talk_b                             Hi-Sp +0.0  Sp-Ch -4.5  Ch-Up -1.5  Up-Ne +0.7  Ne-He -2.8
+walk                               Hi-Sp +0.0  Sp-Ch -1.0  Ch-Up -4.9  Up-Ne -4.4  Ne-He -1.0
+walk_b                             Hi-Sp +0.0  Sp-Ch -4.1  Ch-Up +0.5  Up-Ne +2.4  Ne-He +2.0
+walk_brisk_b                       Hi-Sp -89.8  Sp-Ch +10.7  Ch-Up +6.3  Up-Ne +11.3  Ne-He +16.6
+walk_d                             Hi-Sp -91.3  Sp-Ch +9.2  Ch-Up +4.2  Up-Ne +13.4  Ne-He +29.3
+walk_f                             Hi-Sp -79.0  Sp-Ch +5.7  Ch-Up +7.6  Up-Ne +4.8  Ne-He +13.3
+walk_f_b                           Hi-Sp -79.0  Sp-Ch +5.7  Ch-Up +7.6  Up-Ne +4.8  Ne-He +13.3
+walk_f_c                           Hi-Sp +0.0  Sp-Ch -2.5  Ch-Up +5.2  Up-Ne +6.4  Ne-He -5.0
+walk_f_long                        Hi-Sp -79.0  Sp-Ch +5.7  Ch-Up +7.6  Up-Ne +4.8  Ne-He +13.3
+walk_slow                          Hi-Sp +0.0  Sp-Ch -1.0  Ch-Up -4.9  Up-Ne -4.4  Ne-He -1.0
+walk_slow_b                        Hi-Sp +0.0  Sp-Ch -7.6  Ch-Up -2.2  Up-Ne +1.3  Ne-He -4.1
+wave                               Hi-Sp +0.0  Sp-Ch -5.7  Ch-Up -1.2  Up-Ne +1.4  Ne-He -0.2
+yawn                               Hi-Sp +0.0  Sp-Ch +2.2  Ch-Up +5.0  Up-Ne +3.9  Ne-He +2.2
+yawn_b                             Hi-Sp +0.0  Sp-Ch -2.5  Ch-Up +5.2  Up-Ne +6.4  Ne-He -5.0
+```
+  The fight's 282 clips share 24 trunks: the ACCAD-built (`*_accad`, `*_built`, 101 men's and 43 women's) +10.7/+6.3/+11.3/+16.6 and
+  +5.7/+7.6/+4.8/+13.3, the CMU men's fists -14.3/-1.6/+4.6/+6.6, the women's -0.8/+3.5/+3.8/-6.7, the 100STYLE takes 0.3/0/0/0.6,
+  and so on (the same reading over `Combat/Motion/*.fbx.meta`).

@@ -185,6 +185,12 @@ namespace SecondFace.Game.Fighting
             _loco = _a.HasState(0, LocomotionId) ? LocomotionId : 0;
             _right = new Hand(_a, false); _left = new Hand(_a, true);
             _hips = _a.GetBoneTransform(HumanBodyBones.Hips);
+            // the body's skeleton (the fight clips' turns back onto their actors are baked per skeleton) and the component that
+            // turns it first in the frame
+            _skel = CombatSet.SkeletonKey(_a);
+            var first = GetComponent<ClipTurnFirst>();
+            if (first == null) first = gameObject.AddComponent<ClipTurnFirst>();
+            first.Fighter = this;
             _spine = _a.GetBoneTransform(HumanBodyBones.Spine);
             _chest = _a.GetBoneTransform(HumanBodyBones.UpperChest) ?? _a.GetBoneTransform(HumanBodyBones.Chest) ?? _spine;
             _head = _a.GetBoneTransform(HumanBodyBones.Head);
@@ -646,6 +652,9 @@ namespace SecondFace.Game.Fighting
             var dt = Time.deltaTime;
             var info = _a.IsInTransition(_full) ? _a.GetNextAnimatorStateInfo(_full) : _a.GetCurrentAnimatorStateInfo(_full);
             if (_fullWant > 0.5f && Names.TryGetValue(info.shortNameHash, out var now)) Current = now;
+            // (the full layer's state now and its clip's normalized time: the clip's own plant record is read there)
+            _fullState = Names.TryGetValue(info.shortNameHash, out var playing) ? playing : null;
+            _fullT = info.loop ? info.normalizedTime - Mathf.Floor(info.normalizedTime) : Mathf.Clamp01(info.normalizedTime);
             if (_armsWant > 0.5f)
             {
                 var ai = _a.IsInTransition(_armsLayer) ? _a.GetNextAnimatorStateInfo(_armsLayer) : _a.GetCurrentAnimatorStateInfo(_armsLayer);
@@ -656,6 +665,65 @@ namespace SecondFace.Game.Fighting
             LearnFacing();
             Springs(dt);
             Hands(dt);
+        }
+
+        // ------------------------------------------------------------------------------------------- the clip's actor
+
+        private string _skel;
+
+        /// <summary>The turn and shift put on the hips this frame (degrees, m in the world): tests read them.</summary>
+        public float TurnAngle { get; private set; }
+        public Vector3 TurnShift { get; private set; }
+        /// <summary>The turn put on the hips this frame, in the body's root frame (identity: none), and the larger of the two
+        /// thighs' (degrees).</summary>
+        public Quaternion TurnRot { get; private set; } = Quaternion.identity;
+        public Quaternion TurnThighL { get; private set; } = Quaternion.identity;
+        public Quaternion TurnThighR { get; private set; } = Quaternion.identity;
+        public float TurnThighs { get; private set; }
+
+        /// <summary>
+        /// The fight's whole-body clip on this body's skeleton, turned back onto its actor's pose (<see cref="CombatSet.ClipTurn"/>:
+        /// on these Biped bodies the same human pose stands the whole skeleton turned 2-19° from the actor's, the planted feet 7-11
+        /// cm apart in height where the actor's are level, docs/COMBAT_ROOT_CAUSE.md 19). The hips are turned and shifted by the
+        /// clip's baked turn at its time, by the next state's across a crossfade (as the transition weighs them) and by the
+        /// layer's weight, so it comes in and goes out with the clip. Run by <see cref="ClipTurnFirst"/> before every other
+        /// system that reads the pose; nothing while the layer weighs nothing (the everyday states are left as they are).
+        /// </summary>
+        public void TurnOntoTheActor()
+        {
+            TurnAngle = 0f; TurnShift = Vector3.zero; TurnRot = TurnThighL = TurnThighR = Quaternion.identity; TurnThighs = 0f;
+            if (!Ready || _a == null || !_a.enabled || _hips == null || Set == null || _skel == null || _full < 0) return;
+            var w = Smooth(_fullW);
+            if (w <= 0.001f) return;
+            TurnOf(_a.GetCurrentAnimatorStateInfo(_full), out var hips, out var tl, out var tr, out var shift);
+            if (_a.IsInTransition(_full))
+            {
+                TurnOf(_a.GetNextAnimatorStateInfo(_full), out var hn, out var ln, out var rn, out var sn);
+                var k = Mathf.Clamp01(_a.GetAnimatorTransitionInfo(_full).normalizedTime);
+                hips = Quaternion.Slerp(hips, hn, k); tl = Quaternion.Slerp(tl, ln, k); tr = Quaternion.Slerp(tr, rn, k); shift = Vector3.Lerp(shift, sn, k);
+            }
+            hips = Quaternion.Slerp(Quaternion.identity, hips, w); tl = Quaternion.Slerp(Quaternion.identity, tl, w); tr = Quaternion.Slerp(Quaternion.identity, tr, w); shift *= w;
+            var root = _a.transform;
+            var rr = root.rotation; var ir = Quaternion.Inverse(rr);
+            // (the hips first, every bone under them with it; then each thigh about its own joint)
+            _hips.rotation = rr * hips * ir * _hips.rotation;
+            if (_upL != null) _upL.rotation = rr * tl * ir * _upL.rotation;
+            if (_upR != null) _upR.rotation = rr * tr * ir * _upR.rotation;
+            var move = root.TransformVector(shift);
+            _hips.position += move;
+            TurnAngle = Quaternion.Angle(Quaternion.identity, hips); TurnShift = move; TurnRot = hips; TurnThighL = tl; TurnThighR = tr;
+            TurnThighs = Mathf.Max(Quaternion.Angle(Quaternion.identity, tl), Quaternion.Angle(Quaternion.identity, tr));
+        }
+
+
+        private void TurnOf(AnimatorStateInfo info, out Quaternion hips, out Quaternion thighL, out Quaternion thighR, out Vector3 shift)
+        {
+            hips = thighL = thighR = Quaternion.identity; shift = Vector3.zero;
+            if (!Names.TryGetValue(info.shortNameHash, out var name)) return;
+            var s = CombatMotion.State(name);
+            if (s == null) return;
+            var t = info.loop ? info.normalizedTime - Mathf.Floor(info.normalizedTime) : Mathf.Clamp01(info.normalizedTime);
+            Set.TurnOf(s.ClipFor(Female), _skel, t, out hips, out thighL, out thighR, out shift);
         }
 
         /// <summary>
@@ -730,22 +798,24 @@ namespace SecondFace.Game.Fighting
             var root = Body.position.y;
             var gL = GroundAt(_footL.position, root); var gR = GroundAt(_footR.position, root);
             var eL = SoleLow(_footL, _heelL, _ballL) - gL; var eR = SoleLow(_footR, _heelR, _ballR) - gR;
-            // the hips: the lower sole onto its ground (on a slope, the higher one's less 1.5 cm, so the downhill leg reaches),
-            // and down at least as far as each foot the clip has down needs for its leg to reach its ground nearly straight
-            // (FootPlant.LegNeed's rule): set by the lower sole alone, the clip's straight standing leg could not reach its
-            // ground, its foot hung 1-3 cm up at the leg's full reach (the knee at the solver's limit, 1.8°) and swung with the
-            // hips' sway (F1 and F4 in the guard, the ready and both aims, docs/COMBAT_ROOT_CAUSE.md 17)
+            // the hips: the lower sole onto its ground (on a slope, the higher one's less 1.5 cm, so the downhill leg reaches)
             var lo = Mathf.Min(eL, eR); var hi = Mathf.Max(eL, eR);
+            // a foot the clip's own record of its actor's contacts lifts (CombatSet.ClipFacts.DownL/DownR: a step, a duck's or a
+            // blow's) sets nothing: taken as the "higher sole" it brought the hips down until it nearly met the floor, the standing
+            // leg was drawn up through it and folded (a duck's 112° knee to 150°: Kb in the dodge, docs/COMBAT_ROOT_CAUSE.md 18), and
+            // the lifted foot was set down. (The planted feet the bodies stood 7-11 cm apart in height where the actors stand them
+            // level are the retarget's, put back before this by the clip's turn onto its actor, item 19; the rule that brought the
+            // hips down for each planted leg's reach, item 17, folded the planted leg instead and is gone.)
+            var liftL = RecordDown(true) == false; var liftR = RecordDown(false) == false;
+            if (liftL != liftR) lo = hi = liftL ? eR : eL;
             var want = -Mathf.Clamp(hi - 0.015f, lo, hi);
-            want = Mathf.Min(want, -LegNeed(_upL, _loL, _footL, eL, _fl, want));
-            want = Mathf.Min(want, -LegNeed(_upR, _loR, _footR, eR, _fr, want));
             want = Mathf.Clamp(want, -0.2f, 0.2f);
             _sink = _fl.HaveWas || _fr.HaveWas ? Mathf.Lerp(_sink, want, 1f - Mathf.Exp(-25f * dt)) : want;
             _hips.position += Vector3.up * (_sink * w);
             eL += _sink * w; eR += _sink * w;
             var k = _hipHeight / 0.935f;
-            var wantL = Place(ref _fl, _footL.position, eL, dt, pin, _fr.Stepping, k);
-            var wantR = Place(ref _fr, _footR.position, eR, dt, pin, _fl.Stepping, k);
+            var wantL = Place(ref _fl, _footL.position, eL, dt, pin, _fr.Stepping, k, liftL);
+            var wantR = Place(ref _fr, _footR.position, eR, dt, pin, _fl.Stepping, k, liftR);
             var rotL = _footL.rotation; var rotR = _footR.rotation;
             TwoBone.Solve(_upL, _loL, _footL, wantL, w, _loL.position + Front * 0.3f);
             TwoBone.Solve(_upR, _loR, _footR, wantR, w, _loR.position + Front * 0.3f);
@@ -754,22 +824,21 @@ namespace SecondFace.Game.Fighting
             Planted = new Vector2(_fl.Pinned && !_fl.Stepping ? 1f : 0f, _fr.Pinned && !_fr.Stepping ? 1f : 0f);
         }
 
-        /// <summary>A standing leg's reach as a share of its length (FootPlant.StanceStraight's: the knee bent about 3.6°).</summary>
-        public float StandStraight = 0.9995f;
+        // the full layer's state and its clip's normalized time, this frame
+        private string _fullState;
+        private float _fullT;
 
-        /// <summary>How far the hips must come down (m, from where they are) for this leg to reach the ground under its foot
-        /// (held where it is planted) nearly straight (<see cref="StandStraight"/>); -infinity for a foot the clip lifts
-        /// (over 3 cm up once the hips are at <paramref name="sink"/>), one stepping, or a place out of reach along the
-        /// ground.</summary>
-        private float LegNeed(Transform up, Transform lo, Transform ft, float e, in Foot f, float sink)
+        /// <summary>Whether the clip the full layer plays has this foot down now by its own record of its actor's contacts
+        /// (<see cref="CombatSet.ClipFacts.DownL"/>); null: no record (both taken as down).</summary>
+        private bool? RecordDown(bool left)
         {
-            if (f.Stepping || e + sink > 0.03f) return float.NegativeInfinity;
-            var a = ft.position;
-            var at = f.Pinned && f.W > 0f ? Vector3.Lerp(Flat(a), f.Pin, f.W) : Flat(a);
-            var target = new Vector3(at.x, a.y - e, at.z);
-            var reach = StandStraight * ((lo.position - up.position).magnitude + (a - lo.position).magnitude);
-            var hv = target - up.position; var flat = new Vector2(hv.x, hv.z).magnitude;
-            return reach > flat ? up.position.y - (target.y + Mathf.Sqrt(reach * reach - flat * flat)) : float.NegativeInfinity;
+            if (Set == null || _fullState == null) return null;
+            var s = CombatMotion.State(_fullState);
+            var facts = s != null ? Set.ClipOf(s.ClipFor(Female)) : null;
+            var spans = facts == null ? null : left ? facts.DownL : facts.DownR;
+            if (spans == null || spans.Length < 2) return null;
+            for (var i = 0; i + 1 < spans.Length; i += 2) if (_fullT >= spans[i] && _fullT <= spans[i + 1]) return true;
+            return false;
         }
 
         /// <summary>Each foot's lowest sole point over its ground after the fight's feet (m; left, right), and whether each is
@@ -781,9 +850,10 @@ namespace SecondFace.Game.Fighting
 
         /// <summary>Where a foot goes (its ankle): down on its ground where the clip has it down (<paramref name="e"/>: its lowest
         /// sole point over its ground now), held, stepped or following as <see cref="Feet"/> says.</summary>
-        private Vector3 Place(ref Foot f, Vector3 a, float e, float dt, bool pin, bool otherStepping, float k)
+        private Vector3 Place(ref Foot f, Vector3 a, float e, float dt, bool pin, bool otherStepping, float k, bool lifted = false)
         {
-            var down = Mathf.Clamp01((0.04f - e) / 0.02f);
+            // (a foot the clip's own record lifts is left as the clip has it, wherever its sole stands)
+            var down = lifted ? 0f : Mathf.Clamp01((0.04f - e) / 0.02f);
             var want = new Vector3(a.x, a.y - e * down, a.z);
             var speed = f.HaveWas ? Flat(a - f.Was).magnitude / dt : 0f;
             f.Was = a; f.HaveWas = true;

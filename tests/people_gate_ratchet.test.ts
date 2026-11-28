@@ -38,17 +38,18 @@ describe('the motion gate ratchet', () => {
   });
 
   it('leaves out a new measure (introduced) while the measures differ, from the keys and the totals; then compares it', () => {
-    expect(Object.keys(spec.introduced ?? {})).toEqual(expect.arrayContaining(['FY1', 'FY2']));
+    // (its own spec, not the live file's: the live `introduced` empties once a verdict is committed on the new measure's code, as the file's rule says)
+    const withNew = { ...spec, introduced: { FY1: 'a new measure (test)', FY2: 'a new measure (test)' } };
     const now = { set: 'full', measures: 'm2', date: 'now', byMeasure: { ...base.byMeasure, 'FY1 combat:aim': 30, 'FY2 combat:ready': 9 } };
-    expect(worse(base, now, spec)).toEqual([]);
-    const r = judge(base, now, spec, [], ['before', 'now']);
+    expect(worse(base, now, withNew)).toEqual([]);
+    const r = judge(base, now, withNew, [], ['before', 'now']);
     expect(r.problems).toEqual([]);
     expect(r.totals.now).toEqual(r.totals.before);
     // committed on its code (the same measures' hash), a new measure is compared as any other
     const later = { ...now, measures: 'm2', byMeasure: { ...now.byMeasure, 'FY1 combat:aim': 31 } };
-    expect(worse(now, later, spec).map((w) => w.key)).toEqual(['FY1 combat:aim']);
+    expect(worse(now, later, withNew).map((w) => w.key)).toEqual(['FY1 combat:aim']);
     // and never hides an old measure's regression
-    expect(worse(base, { ...now, byMeasure: { ...now.byMeasure, W3: 3 } }, spec).map((w) => w.key)).toEqual(['W3']);
+    expect(worse(base, { ...now, byMeasure: { ...now.byMeasure, W3: 3 } }, withNew).map((w) => w.key)).toEqual(['W3']);
   });
 
   it('compares only the same set', () => {

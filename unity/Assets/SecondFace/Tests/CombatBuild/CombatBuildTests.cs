@@ -273,5 +273,107 @@ namespace SecondFace.Tests
             Assert.That(set.WeaponOf("rifle_auto"), Is.Not.Null);
             Assert.That(set.Beat("unarmed_jab", false, "impact"), Is.GreaterThan(0f).And.LessThan(1f));
         }
+
+        /// <summary>The whole-body clips' turns onto their actors (CombatSet.ClipTurn, docs/COMBAT_ROOT_CAUSE.md 19) were baked
+        /// from the clips and skeletons there are now (a clip or a body changed and the set not baked again fails here), every
+        /// whole-body clip has one for every body skeleton of the game's people, and baking two of them again gives the same.</summary>
+        [Test]
+        public void TheClipTurnsAreBakedFromTheClipsAndSkeletonsThereAre()
+        {
+            var set = AssetDatabase.LoadAssetAtPath<CombatSet>(CombatAnimatorBuild.SetPath);
+            if (set == null) Assert.Ignore("not built (Second Face/Build the fight's motion and weapons)");
+            var skels = CombatAnimatorBuild.Skeletons();
+            Assert.That(skels.Count, Is.GreaterThan(0), "the people's skeletons");
+            var clips = CombatAnimatorBuild.WholeBodyClips();
+            Assert.That(set.TurnStamp, Is.EqualTo(CombatAnimatorBuild.TurnStamp(clips, skels.Keys)),
+                "the turns were baked from other clips or skeletons: bake them again (CombatAnimatorBuild.RefreshFacts)");
+            var wrong = new System.Collections.Generic.List<string>();
+            foreach (var c in clips)
+            {
+                var f = set.ClipOf(c);
+                if (f == null) { wrong.Add($"{c}: no facts"); continue; }
+                foreach (var k in skels.Keys)
+                {
+                    var tu = f.Turns.FirstOrDefault(x => x.Skeleton == k);
+                    var fl = tu?.Floats();
+                    if (tu == null || tu.Keys < 2 || fl.Length != tu.Keys * CombatSet.ClipTurn.Stride) { wrong.Add($"{c}: no turn for skeleton {k}"); continue; }
+                    var times = Enumerable.Range(0, tu.Keys).Select(i => fl[i * CombatSet.ClipTurn.Stride]).ToArray();
+                    if (times[0] != 0f || times[^1] != 1f || times.Zip(times.Skip(1), (a, b) => b > a).Any(x => !x)) wrong.Add($"{c} on {k}: its keys' times");
+                }
+            }
+            foreach (var c in new[] { "fist_guard_accad", "club_overhead_cmu" }.Where(clips.Contains))
+                foreach (var (k, v) in skels)
+                {
+                    var again = CombatAnimatorBuild.BakeTurn(c, k, v.Prefab, out _, out _, out _).Floats();
+                    var was = set.ClipOf(c).Turns.First(x => x.Skeleton == k).Floats();
+                    if (again.Length != was.Length) { wrong.Add($"{c} on {k}: baked again {again.Length} floats, stored {was.Length}"); continue; }
+                    var off = again.Zip(was, (a, b) => Mathf.Abs(a - b)).Max();
+                    if (off > 1e-4f) wrong.Add($"{c} on {k}: baked again differs by up to {off}");
+                }
+            Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
+        }
+
+        /// <summary>The record of contact the foot plant holds a moving foot by (StepRecord, LocomotionBuild.Steps) is built from
+        /// the clips the people's base layer plays and their sidecars as committed: the stamp matches, every clip with recorded
+        /// stances has its spans (two numbers a stance, each in the clip's normalized time), and it built again equals the stored.</summary>
+        [Test]
+        public void TheStepsAreBuiltFromTheClipsOwnRecords()
+        {
+            var rec = AssetDatabase.LoadAssetAtPath<SecondFace.Game.People.StepRecord>(LocomotionBuild.StepsPath);
+            if (rec == null) Assert.Fail("no record of contact (LocomotionBuild.RefreshSteps)");
+            var ctl = AssetDatabase.LoadAssetAtPath<AnimatorController>(LocomotionBuild.ControllerPath);
+            var clips = LocomotionBuild.BaseClips(ctl);
+            Assert.That(rec.Stamp, Is.EqualTo(LocomotionBuild.StepStamp(clips)), "the record was built from other clips or sidecars: build it again (LocomotionBuild.RefreshSteps)");
+            var wrong = new System.Collections.Generic.List<string>();
+            foreach (var c in clips)
+            {
+                var again = LocomotionBuild.StepsOf(c);
+                var was = rec.Clips.FirstOrDefault(x => x.Motion == c);
+                if (again == null) { if (was != null) wrong.Add($"{AssetDatabase.GetAssetPath(c)}: stored with no record in its sidecar"); continue; }
+                if (was == null) { wrong.Add($"{again.Name}: its record not stored"); continue; }
+                foreach (var (a, b, side) in new[] { (again.DownL, was.DownL, "left"), (again.DownR, was.DownR, "right") })
+                {
+                    if (a.Length != b.Length || a.Length % 2 != 0) { wrong.Add($"{again.Name} {side}: {b.Length} numbers stored, {a.Length} built"); continue; }
+                    if (a.Zip(b, (x, y) => Mathf.Abs(x - y)).Any(d => d > 1e-6f)) wrong.Add($"{again.Name} {side}: built again it differs");
+                    if (a.Any(x => x < 0f || x >= 1f)) wrong.Add($"{again.Name} {side}: a span outside the clip's normalized time");
+                }
+            }
+            Assert.That(rec.Clips.Length, Is.GreaterThanOrEqualTo(10), "the gaits' clips carry records (walk, jog, sneak, run and their sets)");
+            Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
+        }
+
+        /// <summary>The sits' turns (CombatSet.Seats, SeatTurn) are baked from the base layer's seated states (the people's
+        /// controller's states tagged "sit") on every body skeleton there is, from the clips as committed: the stamp matches,
+        /// each sit has a turn for each skeleton with ordered keys over the whole clip, and one baked again equals the stored.</summary>
+        [Test]
+        public void TheSeatsTurnsAreBakedFromTheSitsAndSkeletonsThereAre()
+        {
+            var set = AssetDatabase.LoadAssetAtPath<CombatSet>(CombatAnimatorBuild.SetPath);
+            if (set == null) Assert.Ignore("not built (Second Face/Build the fight's motion and weapons)");
+            var skels = CombatAnimatorBuild.Skeletons();
+            var seats = CombatAnimatorBuild.SeatStates();
+            Assert.That(seats.Count, Is.EqualTo(3), "the base layer's sits, tagged: " + string.Join(", ", seats.Select(s => s.State)));
+            Assert.That(set.SeatStamp, Is.EqualTo(CombatAnimatorBuild.SeatStamp(seats, skels.Keys)),
+                "the seats' turns were baked from other sits or skeletons: bake them again (CombatAnimatorBuild.RefreshSeats)");
+            var wrong = new System.Collections.Generic.List<string>();
+            foreach (var (state, clip, path) in seats)
+            {
+                var f = set.Seats.FirstOrDefault(x => x.Name == state);
+                if (f == null) { wrong.Add($"{state}: no turns"); continue; }
+                foreach (var (k, v) in skels)
+                {
+                    var tu = f.Turns.FirstOrDefault(x => x.Skeleton == k);
+                    var fl = tu?.Floats();
+                    if (tu == null || tu.Keys < 2 || fl.Length != tu.Keys * CombatSet.ClipTurn.Stride) { wrong.Add($"{state}: no turn for skeleton {k}"); continue; }
+                    var times = Enumerable.Range(0, tu.Keys).Select(i => fl[i * CombatSet.ClipTurn.Stride]).ToArray();
+                    if (times[0] != 0f || times[^1] != 1f || times.Zip(times.Skip(1), (a, b) => b > a).Any(x => !x)) wrong.Add($"{state} on {k}: its keys' times");
+                    var again = CombatAnimatorBuild.BakeTurnAt(path, clip, k, v.Prefab, out _, out _, out _, out _, out _).Floats();
+                    if (again.Length != fl.Length) { wrong.Add($"{state} on {k}: baked again {again.Length} floats, stored {fl.Length}"); continue; }
+                    var off = again.Zip(fl, (a, b) => Mathf.Abs(a - b)).Max();
+                    if (off > 1e-4f) wrong.Add($"{state} on {k}: baked again differs by up to {off}");
+                }
+            }
+            Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
+        }
     }
 }

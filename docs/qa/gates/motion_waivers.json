@@ -28,8 +28,8 @@
     {
       "key": "C1 combat:crouch",
       "before": 1,
-      "after": 68,
-      "cause": "unknown: the rifle's crouch, 68 of 79 people, the forearm or hand 0.6-1.6 cm into the thigh (p98), as on cast 3's tree (hash 8d5742a5); not traced",
+      "after": 79,
+      "cause": "unknown: the rifle's crouch, 68 of 79 people, the forearm or hand 0.6-1.6 cm into the thigh (p98), as on cast 3's tree (hash 8d5742a5); not traced; 79 of 79 on 2026-11-28T00:54:41Z: the rifle's crouch with the fight's clips turned back onto their actors (this batch), traced on the fight screen to cover_hold_long's arms (docs/COMBAT_ROOT_CAUSE.md 19)",
       "fix": "docs/COMBAT_ROOT_CAUSE.md 18: the fight's largest groups by count from this verdict, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there",
       "since": "2026-11-27T04:34:21Z"
     },
@@ -120,15 +120,115 @@
       "cause": "129 on cast 3's tree from the club's second strike and block on every body (p98 61.9 against 54.9; the women's block 150.9 against 127.9); +25 this round, likely the hips brought down for each planted leg's reach (docs/COMBAT_ROOT_CAUSE.md 17), which bends the knees further: not yet confirmed by an A/B",
       "fix": "docs/COMBAT_ROOT_CAUSE.md 18: the fight's largest groups by count from this verdict, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there; and an A/B of item 17's hips rule on the club states",
       "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "key": "C1 combat:strike",
+      "before": 120,
+      "after": 125,
+      "cause": "the second club's block (dodge:club2_block, folded into strike): 50 men against 44 on the verdict before, the forearm or hand 0.8-3.5 cm into the body at the p98, with the fight's clips turned back onto their actors (this batch, docs/COMBAT_ROOT_CAUSE.md 19); the club's second strike stays at 75; the clip not yet traced bare (unknown)",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 20: the fight's remaining groups by count, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there, after the next batch's trunk convention",
+      "since": "2026-11-28T00:54:41Z"
+    },
+    {
+      "key": "C1 combat:guard",
+      "before": 0,
+      "after": 1,
+      "cause": "unknown: one gear-held man's unarmed guard (cap_Military_Male_03n), p98 0.8 cm against 0.5, with the fight's clips turned back onto their actors (this batch)",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 20: the fight's remaining groups by count, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there, after the next batch's trunk convention",
+      "since": "2026-11-28T00:54:41Z"
+    },
+    {
+      "key": "C1 combat:rise",
+      "before": 2,
+      "after": 4,
+      "cause": "unknown: the unarmed rise, 4 people (two of them new, two of the verdict before's gone), a peak frame each, max 1.6-3.9 cm against the cap 1.5, with the fight's clips turned back onto their actors (this batch)",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 20: the fight's remaining groups by count, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there, after the next batch's trunk convention",
+      "since": "2026-11-28T00:54:41Z"
+    },
+    {
+      "key": "C1 combat:throw",
+      "before": 48,
+      "after": 53,
+      "cause": "unknown: the rifle's throw, 53 people (6 new, 1 gone), mostly a peak frame, max 1.6-3.5 cm against the cap 1.5, with the fight's clips turned back onto their actors (this batch)",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 20: the fight's remaining groups by count, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there, after the next batch's trunk convention",
+      "since": "2026-11-28T00:54:41Z"
+    },
+    {
+      "key": "F1 combat:hit",
+      "before": 0,
+      "after": 1,
+      "cause": "unknown: one woman's rifle hit (Business_Female_03), p98 2.7 cm against 2.5, with the fight's clips turned back onto their actors (this batch)",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 20: the fight's remaining groups by count, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there, after the next batch's trunk convention",
+      "since": "2026-11-28T00:54:41Z"
+    },
+    {
+      "key": "H3 combat:aim",
+      "before": 0,
+      "after": 1,
+      "cause": "unknown: one gear-held man's rifle aim (cap_Police_Male_03n), p98 16.5 against 16.3, with the fight's clips turned back onto their actors (this batch)",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 20: the fight's remaining groups by count, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there, after the next batch's trunk convention",
+      "since": "2026-11-28T00:54:41Z"
+    },
+    {
+      "key": "C1 combat:yield",
+      "before": 0,
+      "after": 8,
+      "cause": "the unarmed yield, eight men (most gear-held), p98 0.7-2.8 cm, with the fight's clips turned back onto their actors (this batch): measured with F4 yield on the fight screen and traced there to the crossfade into yield_enter (docs/COMBAT_ROOT_CAUSE.md 19); the arms' share not traced bare (unknown)",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 20: the fight's remaining groups by count, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there, after the next batch's trunk convention",
+      "since": "2026-11-28T00:54:41Z"
+    },
+    {
+      "key": "F4 combat:yield",
+      "before": 61,
+      "after": 79,
+      "cause": "the unarmed yield's feet, every person now (most a mean of 3.04-3.05 against 3.00; Female_Adult_12 and 14 8.8): the crossfade into yield_enter, the planted feet's first two frames, the pins' own entry, not the turn's blend (docs/COMBAT_ROOT_CAUSE.md 19)",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 20: the fight's remaining groups by count, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there, after the next batch's trunk convention",
+      "since": "2026-11-28T00:54:41Z"
+    },
+    {
+      "key": "FY2 combat:aim",
+      "before": 212,
+      "after": 237,
+      "cause": "clip-level: the rifle's aim, every person now (25 more men at p2 55.5-56.2 against 56.3), with the fight's clips turned back onto their actors (this batch); the clip's own actor fails it too, p2 54.4 against 56.3 (docs/COMBAT_ROOT_CAUSE.md 19)",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 20: the fight's remaining groups by count, each traced to its cause in order (the clip bare on its own actor, then the retarget, the runtime, the prop, the state machine) and removed there, after the next batch's trunk convention",
+      "since": "2026-11-28T00:54:41Z"
     }
   ],
   "failing_tests": [
     {
       "test": "SecondFace.Tests.CombatMotionPlayTests.TheFightsFeetStandOnTheGroundAndStepBetweenStances",
-      "status": "fails (local run on this tree, 2026-11-27)",
-      "cause": "the aim's straighter knee 23.5-25.1° where its clip (CMU 79_96) holds 1.7 (the standing leg as the other foot steps between the ready's and the aim's stances, items 5b and 15, as before this batch's fixes); the fists' lower sole 0.0-1.4 cm over its ground against 1 (1.9-4.6 cm before item 17; the skate gone)",
-      "fix": "docs/COMBAT_ROOT_CAUSE.md 5b, 15 and 17, open",
+      "status": "fails (local run on this batch's tree before the foot plant's catch, 2026-11-27; CI on the batch's commit to confirm; on main too, CI 45941601536)",
+      "cause": "the aim's straighter knee 8.3-8.5° where its clip (CMU 79_96) holds 1.7 (27.6° on main's CI; the standing leg as the other foot steps between the ready's and the aim's stances, items 5b and 15); the lower sole 0.0-1.6 (long gun), 1.7-1.8 (pistol) and 1.9-2.3 cm (fists) over its ground against 1 (0.0-1.5 on main's CI)",
+      "fix": "docs/COMBAT_ROOT_CAUSE.md 5b, 15 and 17, open; with item 20",
       "since": "2026-11-27T04:34:21Z"
+    },
+    {
+      "test": "SecondFace.Tests.PeopleMotionTests.CapturedMotionHoldsHumanPosesWhenBuilt",
+      "status": "fails (local run on this batch's tree before the foot plant's catch, 2026-11-27; CI on the batch's commit to confirm; on main too: there also the idle hands and the walk face)",
+      "cause": "unknown; one item left: at walk phase 0 player_f's left hand stands 5 cm under her Chest bone's height (the limit: within 5 cm, 'held up in front'), the same with the players' trunk stood upright (tried and taken out); suspect the players' trunk and chest-bone convention (docs/MOTION_ROOT_CAUSE.md §17)",
+      "fix": "the trunk convention batch (docs/PROGRESS.md: the next batch, first)",
+      "since": "2026-11-28T00:54:41Z"
+    },
+    {
+      "test": "SecondFace.Tests.PeopleMotionTests.SeatedArmsStayOutOfTheBody",
+      "status": "fails (new on this tree, 2026-11-27: a pre-existing defect the new test found)",
+      "cause": "ArmClearance off while seated (Walker.Planting(false)): the sits' own hands sink into the drawn thighs, the ground sit 7.0-7.1 cm, the chair 0.7-2.2 cm (after the sits' turn; 1.3-8.5 before), the stool 0.0-0.1",
+      "fix": "a seated clearance that holds the hands on the lap's surface (docs/PROGRESS.md: later items, first)",
+      "since": "2026-11-28T00:54:41Z"
+    },
+    {
+      "test": "SecondFace.Tests.WorldTerrainTests.FourChunksRoundShaleMeetAndShaleStandsOnItsPad",
+      "status": "fails on main's CI (5,244 ms against 5,000; 905 ms locally on its own)",
+      "cause": "the streaming test's in-flight preparations (WorldStreamer._preparing, Task.Run, MaxPreparing 2) are not cancelled when it ends and compete with this test's first chunk (run after WorldStreamingTests as CI orders them: 2,357 ms locally against 975 alone); CI's runner 40 % slower on that run (the five world tests 495 s against 338-364 s on earlier runs)",
+      "fix": "the preparations cancelled at a test's end (an owner question, open); the 5,000 ms limit stays",
+      "since": "2026-11-28T00:54:41Z"
+    },
+    {
+      "test": "SecondFace.Tests.HumanMotionGateTests.PeopleStandAndMoveLikePeople",
+      "status": "fails while the gate is red (its assertion; on main it threw before its verdict)",
+      "cause": "gate red: the quick ten's measures past their limits (on main the fight's step destroyed the partners its conversation capture frames, a MissingReferenceException before the verdict; now deactivated for the fight)",
+      "fix": "the gate green (docs/PROGRESS.md)",
+      "since": "2026-11-28T00:54:41Z"
     }
   ]
 }

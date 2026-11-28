@@ -287,6 +287,72 @@ workflow (dotnet) on main (dfc732a4). To be read on CI after the push; never loo
   its ground against 1 (1.9-4.6 before); the skate is gone. Open: the aims' and the guard's foot speeds at the gate's fixed step
   (4-5 % of frames over 10 cm/s against 2 %), then item 18.
 
-**18. Next: the fight's largest groups by count from the batch's verdict** (F1 743, A2 582, C1 416, F3w 333, A1 322, H1 237, Kb 208),
-each traced to its cause in order (the clip bare on its own actor against the same measure, then the retarget, the runtime, the
-prop, the state machine) and removed there; the waived fight keys (`docs/qa/gates/motion_waivers.json`) first.
+**18. The fight's cells clip by clip (2026-11-27, editor owner): each group measured bare before the runtime was touched.**
+- Grouping (the whole cast of 2026-11-27 04:34, `motion_gate_full_<k>.chunk.json`): every failing fight key falls in groups of
+  79, 54 or 25 people (the whole cast, every man, every woman) with near-identical values; only C1 varies by body. So every cause
+  sits in a clip, its retarget or the runtime, never in a body.
+- Measured (`ClipProbeTests`, temporary, not hashed): each of the fight's 76 clips bare (a playable, no Foot IK, no runtime system)
+  at the gate's fixed 1/60 s step, on its own actor (bone measures with MotionProbe's own definitions) and on two bodies a sex
+  with MotionProbe itself, judged by the gate's own limits. Bare equals the game to 0.1 in most clip groups; the retarget keeps
+  every knee angle exactly (bare equals the own actor's).
+  - In the clip or its staging (fails the same on its own actor and bare on every body): the long gun aim's head (H1, bare
+    -30.5/-31.8 against -7.1; the converters do not re-base CMU and 100STYLE heads on the actor's own relaxed stance as the
+    calibration does), the aim's elbows (A2: the staged clip's trigger elbow at most 101°, its arms the staging's IK onto the
+    rifle), the long gun ready's and aim's facing (FY1/FY2), the women's built stances (F3w 14.3 cm in the pistol's and club's
+    ready, the pistol's aim, the hit, the club blow), the throw's stance, the men's melee guard's elbows, the club blow's arms, the
+    thrust's facing, the guard's feet (F4: bare 30 % of frames over 10 cm/s).
+  - In the retarget: the men's punches' upper arm (+10°), the crouch's stance width (12-19 cm on its actor, 5.5-10.7 bare).
+  - In the runtime: the knees (below), the men's aim's upper arm (bare 66°, game 43°), the men's slash's upper arm and head, the
+    club's off hand (WG2), hands up's feet (F1/F2/F4), C1 in most sets.
+  - Definitions (for the gate's owner, nothing changed): the calibration takes the fight's A1/A2 as the per-frame maximum over the
+    two arms (`tools/qa/calibration/combat_states.py`), the gate pools both arms: a CMU jab on its own actor reads pooled A2 p2
+    20.1 (fails 83.9) and per-frame max p2 127.3 (passes); the gate's crouch includes the way down's first, still standing
+    frames, the calibration's crouch only frames with the hips at 0.70 of standing height or lower; F3w is calibrated across the
+    pelvis's front and measured across the root's.
+
+**19. Cause B, the planted feet 7-11 cm apart in height on the bodies where the clips' actors stand them level: Unity's humanoid
+retarget onto the Biped bodies (editor owner, 2026-11-27).** Found under item 18: in the club's blow, the men's guard and the
+crouch's hold both feet are planted by the clips' own record, level on their actors, 7-11 cm apart on every body of a sex; the
+fight's feet then folded one knee to reach (K1 in the club's second strike, Kb in the crouch and the strikes).
+- Traced to its source (`docs/MOTION_ROOT_CAUSE.md` §16, `LegTraceProbeTests`, temporary): not the bodies' proportions (a body
+  with the actor's leg lengths and hip width stands its feet as far apart or further) and not a disagreement at muscle 0. With
+  the same human pose read back on both, the body's whole skeleton stands turned 2-19° from the actor's (Unity reads the body
+  orientation from the joints' positions, and the Biped's clavicles hang from its neck and its thighs from its spine); and on the
+  actors converted from CMU's skeleton (a hip joint bone between the pelvis and each thigh) the thighs stand turned 2-64° more,
+  growing with the hip's bend. Once the hips and the thighs take the actor's rotations (each from its own muscle-zero pose), the
+  shanks and feet match the actor's to 0.00° and the planted feet stand as the actor's directions on the body's own legs put
+  them (the men's guard 7.2 -> 1.0 cm, the actor's 1.2; the women's guard -3.0, the actor's -3.1; the club's blow p98 8.8 -> 3.5,
+  the rest the hip joints' own placement on the body).
+- Fix, at the retarget's output, once per clip and skeleton (`CombatSet.ClipTurn`, baked by `CombatAnimatorBuild.Turns` in
+  `RefreshFacts` and `Build`): every clip the fight's whole-body layer plays, on its own actor and on each body skeleton of the
+  game's people (all 79 people verified by a skeleton key: two skeletons, the 54 men's and the 25 women's), every frame: the
+  hips' turn onto the actor's, each thigh's, and the shift along the ground that puts the middle of the hip joints at the actor's
+  (the height is left to the fight's feet); nothing set by hand; keys left out where easing between their neighbours errs by under
+  0.1° and 1 mm. `ClipTurnFirst` (execution order -30) has `Fighter.TurnOntoTheActor` put it on the hips and thighs before every
+  other system reads the pose: the clip's turn at its time, the next state's across a crossfade by the transition's weight, all
+  by the layer's weight; nothing while the layer weighs nothing (the everyday states untouched). A test fails when a clip or a
+  skeleton changed and the set was not baked again (`TheClipTurnsAreBakedFromTheClipsAndSkeletonsThereAre`, the stamp over the
+  clips' files and the skeletons' keys, and two clips baked again equal to the stored), and one that nothing pops across the
+  crossfades between stances (`TheTurnOntoTheActorEasesAcrossEveryCrossfade`).
+- Size and cost: two body skeletons over the 79, 142 whole-body clips, about 8,200 keys (480 KB as floats in the set, packed in base
+  64); the runtime 5.2 µs a person a frame (the editor, 422,000 calls).
+- (b) is a compensating bake, not a cure (`docs/MOTION_ROOT_CAUSE.md` §16): the rig's re-parent at import ((a), a later batch) must
+  bring the same bake to about nought on every clip, and then the bake and its runtime go.
+- The same turn for the base layer's sits (the walker on a chair: a foot 0.32 m up, the take's 0.05): `CombatSet.Seats` (3 sits x 2
+  skeletons, 766 keys, 46 KB as floats, its own stamp, `TheSeatsTurnsAreBakedFromTheSitsAndSkeletonsThereAre`), applied by
+  `SeatTurn` while a state tagged "sit" plays; the crossfade test covers the sits too.
+- Results: the fight screen on all 79 at the fixed step, against main's code: 3,982 -> 3,320 fight cells (3,315 -> 2,688 without
+  FY1/FY2). Down: F1 strike 422 -> 236, F1 guard 82 -> 0, F1 ready 54 -> 0, F4 guard 77 -> 0, Kb strike 154 -> 7, Kb crouch 54 -> 19,
+  A1 strike 162 -> 110, F2 strike 75 -> 43, F2 crouch 2 -> 0, FY1 aim 189 -> 129. Up, traced: C1 crouch 68 -> 79 (cover_hold_long's
+  arms), C1 yield 0 -> 8 and F4 yield 61 -> 79 (the crossfade into yield_enter: the planted feet's first two frames, the pins' own
+  entry, not the turn's blend), FY2 aim 212 -> 237 (the clip's own actor fails it too: p2 54.4 against 56.3). LegNeed taken out
+  (it folded the planted leg: Kb strike +24). The pop proof: with the crossfade's blend taken out the crossfade test fails (49° in
+  a frame at the pistol's rise from cover); restored, it passes. On the whole cast (the gate, 2026-11-28 00:54, with the foot
+  plant's catch as well): the fight's cells 4,016 -> 3,350 against 71ba0e5b (FY1/FY2 counted); the screen's rises came out as
+  measured (C1 crouch 79, C1 yield 8, F4 yield 79, FY2 aim 237), with C1 throw 48 -> 53, C1 strike 120 -> 125 (the second club's
+  block), C1 rise 2 -> 4, and C1 guard, F1 hit and H3 aim 0 -> 1, one person each (not traced: unknown). All ten are waived
+  (`docs/qa/gates/motion_waivers.json`) against item 20.
+
+**20. Next: the fight's remaining groups by count, as item 18 found them** (each clip bare on its own actor against the same measure,
+then the retarget, the runtime, the prop, the state machine; the waived fight keys first, `docs/qa/gates/motion_waivers.json`), after
+the next batch's trunk convention (`docs/MOTION_ROOT_CAUSE.md` §17), which changes both ends of the retarget at once.

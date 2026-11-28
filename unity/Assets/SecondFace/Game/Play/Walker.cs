@@ -76,6 +76,8 @@ namespace SecondFace.Game.Play
             animator.gameObject.AddComponent<SecondFace.Game.People.Gaze>();
             animator.gameObject.AddComponent<SecondFace.Game.People.ArmClearance>();
             animator.gameObject.AddComponent<SecondFace.Game.People.HandPose>();
+            // (seated, the body turned back onto the sit's actor first in the frame)
+            animator.gameObject.AddComponent<SecondFace.Game.People.SeatTurn>();
         }
 
         private void Awake()
