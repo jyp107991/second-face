@@ -18,14 +18,14 @@ namespace SecondFace.Tests
     public class BurstProbeTemp
     {
         // (the test assembly does not reference Unity.Burst: its options by reflection)
-        private static readonly System.Type BC = System.Type.GetType("Unity.Burst.BurstCompiler, Unity.Burst");
+        private static readonly System.Type BC = System.AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("Unity.Burst.BurstCompiler")).FirstOrDefault(t => t != null);
         private static object Opt => BC.GetProperty("Options").GetValue(null);
         private static bool Get(string p) => (bool)Opt.GetType().GetProperty(p).GetValue(Opt);
         private static void Set(string p, bool v) => Opt.GetType().GetProperty(p).SetValue(Opt, v);
         private static bool IsEnabled => (bool)BC.GetProperty("IsEnabled").GetValue(null);
 
         [UnityTearDown]
-        public IEnumerator CleanUp() { Set("EnableBurstCompilation", true); yield return BootTests.Clear(); }
+        public IEnumerator CleanUp() { if (BC != null) Set("EnableBurstCompilation", true); yield return BootTests.Clear(); }
 
         private static IEnumerator Read(int frames, System.Action<double, long> done)
         {
@@ -49,6 +49,7 @@ namespace SecondFace.Tests
             walk.Walker.Agent.Warp(hit.position);
             boot.Stage.Clock.SetHour(12);
             yield return BootTests.TownSettled(() => town.People.Count, "Shale at noon");
+            Assert.That(BC, Is.Not.Null, "Unity.Burst.BurstCompiler found");
             var lines = new List<string> { $"code optimisation {UnityEditor.Compilation.CompilationPipeline.codeOptimization}, editor attaching {UnityEditor.EditorPrefs.GetBool("AllowAttachedDebuggingOfEditor", true)}, leak detection {Unity.Collections.NativeLeakDetection.Mode}, jobs debugger {Unity.Jobs.LowLevel.Unsafe.JobsUtility.JobDebuggerEnabled}",
                 $"IsEnabled {IsEnabled}, EnableBurstCompilation {Get("EnableBurstCompilation")}, EnableBurstSafetyChecks {Get("EnableBurstSafetyChecks")}, CompileSynchronously {Get("EnableBurstCompileSynchronously")}" };
             foreach (var (on, label) in new[] { (true, "on"), (false, "off"), (true, "on again") })

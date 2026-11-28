@@ -524,9 +524,9 @@ namespace SecondFace.Game.Fighting
         /// <summary>A shot's kick (a pistol's muzzle flips up and back, then settles; a long gun's chest jolt).</summary>
         public void Kick(float strength = 1f)
         {
-            _kickV += KickImpulse * strength;
-            // (the chest rocked back: 0.9° a pistol's shot, 1.8° a long gun's at their peaks, as the game has shown them; HitLook)
-            _hitV += new Vector3(60f, 0f, 0f) * (strength * (Held.Arms == Arms.Rifle ? 1.4f : 0.7f) * HitLook);
+            _kickV += 520f * strength;
+            // (the chest rocked back 1-3°: an impulse of ω0 · degrees / 0.6)
+            _hitV += new Vector3(60f, 0f, 0f) * strength * (Held.Arms == Arms.Rifle ? 1.4f : 0.7f);
         }
 
         /// <summary>A long gun's round (A3): the chest kicked back <paramref name="degrees"/> in the frame it fires and settling
@@ -551,40 +551,11 @@ namespace SecondFace.Game.Fighting
             _hitHead = head ? 1.0f : 0.2f; _hitChest = head ? 0.25f : 0.6f; _hitSpine = legs ? 0.6f : 0.4f;
             // pushed back (-z) leans back, pushed sideways rolls and twists away; a leg buckles forward
             var push = new Vector3(-local.z * (legs ? -0.7f : 1f), -local.x * 0.6f, -local.x * 0.5f) * size;
-            // (an impulse of ω0 · size / 0.6, its first swing peaking at 0.74 of the size, as the game has shown it: HitLook)
-            _hitV += push * (HitOmega / 0.6f * HitLook);
+            // (an impulse whose first swing peaks near the size: ω0 · size / 0.6)
+            _hitV += push * (HitOmega / 0.6f);
         }
 
-        public const float HitOmega = 2f * Mathf.PI * 3.2f, HitDamp = 0.45f, KickOmega = 28f, KickDamp = 0.6f;
-
-        // The two springs were stepped explicitly (v += a dt, then x += v dt), which over-damped them at 60 fps and grew without
-        // bound on frames over 40 ms (the kick) or 64 ms (the hit); they are stepped exactly now (Spring), and their impulses are
-        // scaled so that the exact motion peaks where the explicit step at 60 fps did: the look the game has shown and been
-        // reviewed in is kept, the fix is for stability, not a change of motion (2026-11-28; KnockTests on 71ce5403, a pistol's
-        // kick at NaN on 85 ms frames; CombatMotionPlayTests.TheRecoilAndHitSpringsHoldAtAnyFrameTime). A hit reaction's size
-        // set from a real source would be a decision of its own.
-
-        /// <summary>A shot's kick (deg/s into the kick spring): 520 under the explicit step at 60 fps peaked at 4.66°, and the
-        /// spring's exact motion from 520 peaks at 9.26° (41 ms after the shot), so 520 × 4.66 / 9.26 = 261.6 peaks at 4.66° at
-        /// every frame rate.</summary>
-        public const float KickImpulse = 261.6f;
-
-        /// <summary>The share of the hit spring's impulses that keeps their peaks where the explicit step at 60 fps put them:
-        /// from rest, an impulse of ω0 · size / 0.6 peaked at 7.089° there for a size of 10, and the spring's exact motion from it
-        /// peaks at 9.555° (62 ms after the blow), so 7.089 / 9.555 = 0.7419 (a hit's and a shot's chest rock alike).</summary>
-        public const float HitLook = 0.7419f;
-
-        /// <summary>A damped spring, x'' = -w² x - 2 z w x' with z under 1, stepped exactly over <paramref name="dt"/> (its closed
-        /// form from the state now): the same motion at any frame rate, and stable at any step.</summary>
-        public static void Spring(ref float x, ref float v, float w, float z, float dt)
-        {
-            if (dt <= 0f) return;
-            var wd = w * Mathf.Sqrt(1f - z * z);
-            var e = Mathf.Exp(-z * w * dt); var c = Mathf.Cos(wd * dt); var s = Mathf.Sin(wd * dt);
-            var x1 = e * (x * c + (v + z * w * x) / wd * s);
-            var v1 = e * (v * c - (z * w * v + w * w * x) / wd * s);
-            x = x1; v = v1;
-        }
+        private const float HitOmega = 2f * Mathf.PI * 3.2f, HitDamp = 0.45f, KickOmega = 28f, KickDamp = 0.6f;
 
         /// <summary>The chest's front against up (1 lying face up, -1 face down): which get-up a fallen body needs.</summary>
         public float FrontUp() => _chest != null && _chestFront.sqrMagnitude > 0.5f ? Vector3.Dot((_chest.rotation * _chestFront).normalized, Vector3.up) : 0f;
@@ -926,13 +897,10 @@ namespace SecondFace.Game.Fighting
         {
             if (dt <= 0f) return;
             // the hit: a damped spring back to the pose
-            // (each stepped exactly, Spring: the explicit step it replaces, v += a dt then x += v dt, grew without bound on any
-            // frame over 40 ms (the kick) or 64 ms (the hit), to infinity and then NaN: on 85 ms frames a pistol's kick went to NaN
-            // and stayed there, and its next aim put the grip at NaN, KnockTests on 71ce5403, 2026-11-28)
-            Spring(ref _hitA.x, ref _hitV.x, HitOmega, HitDamp, dt);
-            Spring(ref _hitA.y, ref _hitV.y, HitOmega, HitDamp, dt);
-            Spring(ref _hitA.z, ref _hitV.z, HitOmega, HitDamp, dt);
-            Spring(ref _kick, ref _kickV, KickOmega, KickDamp, dt);
+            _hitV += (-HitOmega * HitOmega * _hitA - 2f * HitDamp * HitOmega * _hitV) * dt;
+            _hitA += _hitV * dt;
+            _kickV += (-KickOmega * KickOmega * _kick - 2f * KickDamp * KickOmega * _kickV) * dt;
+            _kick += _kickV * dt;
             // a long gun's recoil (author.py's model: the kick k pitches the chest back k°, the head forward 0.6 k°, the stock's
             // shoulder back 1.2 k°, settling as exp(-t / 0.1 s))
             if (_recoil > 0.01f)
