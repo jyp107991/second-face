@@ -55,11 +55,12 @@ namespace SecondFace.Tests
             public int FirstFlip = -1, Flips, Rejoins, PairFramesApart, EndApart; public string FirstFlipWho = "";
             public float DegBefore, MBefore, EndDeg, EndM;
             // at a flip or a rejoin: how far one twin's hand moved that frame beyond the other's (cm, degrees), and each hand's own step
-            public float PopCm, PopDeg; public string PopWhere = ""; public readonly List<float> StepCm = new(), StepDeg = new();
+            public float PopCm, PopDeg; public string PopWhere = ""; public readonly List<float> StepCm = new(), StepDeg = new(), StepCmB = new(), StepDegB = new();
             private static float P98(List<float> x) { if (x.Count == 0) return 0f; var a = x.ToArray(); System.Array.Sort(a); return a[(int)(0.98f * (a.Length - 1))]; }
             public string Note(string what) => $"{what}: bones {Deg:0.00000}° ({WhereDeg}), {M * 1000f:0.0000} mm ({WhereM}); reports {Diag:0.000000} ({WhereDiag}); traces {Trace:0.000000} ({WhereTrace}); index differences {IdxDiff}; frames {Frames}; the job's clone fell back {Fallbacks}"
                 + $"; flips {Flips} (first at the sequence's frame {FirstFlip} {FirstFlipWho}), rejoins {Rejoins}, pair-frames apart {PairFramesApart}; before the first flip {DegBefore:0.00000}° {MBefore * 1000f:0.0000} mm; at the end {EndApart} pairs apart, {EndDeg:0.00000}° {EndM * 1000f:0.0000} mm"
-                + $"; at a flip a hand moved {PopCm:0.000} cm {PopDeg:0.000}° beyond its twin ({PopWhere}); a hand's own step a frame p98 {P98(StepCm):0.000} cm {P98(StepDeg):0.000}°, max {(StepCm.Count > 0 ? StepCm.Max() : 0f):0.000} cm {(StepDeg.Count > 0 ? StepDeg.Max() : 0f):0.000}°";
+                + $"; at a flip a hand moved {PopCm:0.000} cm {PopDeg:0.000}° beyond its twin ({PopWhere}); a hand's own step a frame p98 {P98(StepCm):0.000} cm {P98(StepDeg):0.000}°, max {(StepCm.Count > 0 ? StepCm.Max() : 0f):0.000} cm {(StepDeg.Count > 0 ? StepDeg.Max() : 0f):0.000}° (twin B: p98 {P98(StepCmB):0.000} cm {P98(StepDegB):0.000}°, p90 {P90(StepDeg):0.000}° / {P90(StepDegB):0.000}°)";
+            private static float P90(List<float> x) { if (x.Count == 0) return 0f; var a = x.ToArray(); System.Array.Sort(a); return a[(int)(0.9f * (a.Length - 1))]; }
         }
 
         /// <summary>The angle between two turns (degrees), in double from their relative turn: Quaternion.Angle reads any angle
@@ -144,6 +145,7 @@ namespace SecondFace.Tests
                 if (p.HasPrev)
                 {
                     w.StepCm.Add((pa - p.PA[h]).magnitude * 100f); w.StepDeg.Add((float)Ang(p.QA[h], qa));
+                    w.StepCmB.Add((pb - p.PB[h]).magnitude * 100f); w.StepDegB.Add((float)Ang(p.QB[h], qb));
                     if (changed)
                     {
                         var cm = ((pa - p.PA[h]) - (pb - p.PB[h])).magnitude * 100f;
@@ -391,7 +393,10 @@ namespace SecondFace.Tests
                 var report = new List<string>(); var wrong = new List<string>();
                 // (TEMP, relaunch 16: CLEAR_PASSES=perturbed runs the twins both managed, then both on the job, with CLEAR_PERTURB's shift)
                 var perturbed = System.Environment.GetEnvironmentVariable("CLEAR_PASSES") == "perturbed";
-                var passes = perturbed ? new[] { (true, false), (true, true) } : new[] { (true, false), (false, false), (false, true) };
+                // (TEMP, relaunch 16: CLEAR_PASSES=off, the twins with their arm clearance off: what the rest of the body does there)
+                var off = System.Environment.GetEnvironmentVariable("CLEAR_PASSES") == "off";
+                if (off) { perturbed = true; foreach (var p in pairs) { p.CA.enabled = false; p.CB.enabled = false; } }
+                var passes = off ? new[] { (true, false) } : perturbed ? new[] { (true, false), (true, true) } : new[] { (true, false), (false, false), (false, true) };
                 foreach (var (control, trace) in passes)
                 {
                     // (perturbed: the first pass both managed, the second both on the job; the second's trace flag reused as "both on the job")
@@ -416,7 +421,7 @@ namespace SecondFace.Tests
                                 w.EndM = Mathf.Max(w.EndM, ((a.position - p.A.transform.position) - (b.position - p.B.transform.position)).magnitude);
                             }
                         }
-                        var label = perturbed ? $"perturbed twins, {(bothJob ? "both on the job" : "both managed")}, {what}" : $"{(control ? "control (both managed)" : "managed against the job")}, traces {(trace ? "on" : "off")}, {what}";
+                        var label = perturbed ? $"perturbed twins, {(off ? "the clearance off" : bothJob ? "both on the job" : "both managed")}, {what}" : $"{(control ? "control (both managed)" : "managed against the job")}, traces {(trace ? "on" : "off")}, {what}";
                         long skinN = ArmClearance.JobSkinSteps - skin0, secN = ArmClearance.JobSectionSteps - sec0;
                         report.Add(w.Note(label) + $"; the job's steps: {skinN} on the skin, {secN} on the sections");
                         // (each way taken where it should be: the no-skin twin on the sections throughout, everyone far off)
