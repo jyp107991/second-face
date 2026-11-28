@@ -1042,15 +1042,9 @@ namespace SecondFace.Game.Play
             Settle();
         }
 
-        private IEnumerator Responding(Interactable who, string verb)
-        {
-            // (a sequence in flight that keeps Unity points across frames: the floating origin waits for it, §19.1)
-            var hold = WorldOrigin.Hold("a word (" + verb + ")", 30f);
-            try { yield return RespondingBody(who, verb); }
-            finally { WorldOrigin.Release(hold); }
-        }
+        private IEnumerator Responding(Interactable who, string verb) => RespondingBody(who, verb);
 
-                private IEnumerator RespondingBody(Interactable who, string verb)
+        private IEnumerator RespondingBody(Interactable who, string verb)
         {
             if (Walker == null || who == null) yield break;
             var person = who.transform;
@@ -1063,16 +1057,23 @@ namespace SecondFace.Game.Play
             var walkerHead = walkerAnim != null && walkerAnim.isHuman ? walkerAnim.GetBoneTransform(HumanBodyBones.Head) : Walker.transform;
             if (verb == "talk" || verb == "trade")
             {
-                var away = Walker.transform.position - person.position;
-                away.y = 0;
-                var spot = person.position + (away.sqrMagnitude > 0.01f ? away.normalized : person.forward) * 1.3f;
-                if (Walker.GoTo(spot))
+                // (the approach and the turn keep Unity points across frames: the floating origin waits for them, §19.1; what follows
+                // waits on states and transforms, so a fight begun from the word re-centres at once, MRC §19.4)
+                var hold = WorldOrigin.Hold("a word's approach (" + verb + ")", 30f);
+                try
                 {
-                    var t0 = Time.time;
-                    while (Walker != null && Walker.Goal != null && Time.time - t0 < 10f) yield return null;
+                    var away = Walker.transform.position - person.position;
+                    away.y = 0;
+                    var spot = person.position + (away.sqrMagnitude > 0.01f ? away.normalized : person.forward) * 1.3f;
+                    if (Walker.GoTo(spot))
+                    {
+                        var t0 = Time.time;
+                        while (Walker != null && Walker.Goal != null && Time.time - t0 < 10f) yield return null;
+                    }
+                    if (Walker == null || person == null) yield break;
+                    yield return Face(person, Walker.transform.position);
                 }
-                if (Walker == null || person == null) yield break;
-                yield return Face(person, Walker.transform.position);
+                finally { WorldOrigin.Release(hold); }
             }
             if (person == null) yield break;
             if (gaze != null) gaze.Target = walkerHead;

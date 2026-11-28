@@ -686,6 +686,43 @@ namespace SecondFace.Tests
             Assert.That(fails, Is.Empty, string.Join("\n", fails));
         }
 
+        /// <summary>(c, the fight re-centred) A fight begun while a word is under way (the walker talking to someone, the one talked to turned
+        /// on them) re-centres before its first turn: a word holds the world still only while it walks up and turns to face (its Unity
+        /// points), not while it waits on the conversation or the fight it asked for (MRC §19.4).</summary>
+        [UnityTest, Timeout(1800000)]
+        public IEnumerator AFightBegunDuringAWordReCentresBeforeItsFirstTurn()
+        {
+            Bootstrap boot = null;
+            yield return BootTests.Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            yield return BootTests.TownSettled(() => walk.Townsfolk, "the town's people");
+            // (the world a chunk off along both axes, so the fight does not begin near the origin by the walk's own rebase)
+            WorldOrigin.Rebase(new Vector3(WorldOrigin.Step, 0f, -WorldOrigin.Step));
+            yield return Frames(4);
+            var speaker = Object.FindObjectsByType<Interactable>(FindObjectsSortMode.None)
+                .Where(i => i.GetComponent<Townsperson>() != null && Registry.Npcs.TryGetValue(i.Id, out var n) && !string.IsNullOrEmpty(n.Dialogue))
+                .OrderBy(i => Vector3.Distance(i.transform.position, walk.Walker.transform.position)).FirstOrDefault();
+            if (speaker == null) { Assert.Inconclusive("no one to talk to near the walker"); yield break; }
+            walk.StartCoroutine(walk.Respond(speaker, "talk"));
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 30f && (walk.Conversation == null || !walk.Conversation.IsOpen)) yield return null;
+            Assert.That(walk.Conversation != null && walk.Conversation.IsOpen, Is.True, "the word under way (the conversation open)");
+            var rebases = WorldOrigin.Rebases;
+            Assert.That(walk.Combat.Begin(speaker.GetComponent<Townsperson>()), Is.True, "the one talked to turns on the walker");
+            walk.Conversation.Close();
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 15f && (!walk.Combat.Active || walk.Combat.Acting == null)) yield return null;
+            Assert.That(walk.Combat.Active, Is.True, "the fight began");
+            Assert.That(walk.Combat.Acting, Is.Not.Null, "its first turn began");
+            var units = walk.Combat.Battle.Units.Where(u => u.Alive).Select(u => WorldOrigin.ToUnity(u.PX, 0, u.PZ)).ToList();
+            var centre = new Vector3((units.Min(p => p.x) + units.Max(p => p.x)) * 0.5f, 0f, (units.Min(p => p.z) + units.Max(p => p.z)) * 0.5f);
+            Debug.Log($"FloatingOriginTests: a fight begun during a word: re-centred by {walk.Combat.LastRecentre}, its centre at Unity {centre} before its first turn (holds then: {WorldOrigin.Holding})");
+            Assert.That(WorldOrigin.Rebases, Is.GreaterThan(rebases), "the fight began with a rebase");
+            Assert.That(walk.Combat.LastRecentre, Is.Not.EqualTo(Vector3.zero), "re-centred (not held off by the word)");
+            Assert.That(Mathf.Abs(centre.x), Is.LessThanOrEqualTo(WorldOrigin.FightStep * 0.5f + 0.01f), "the fight's centre within 32 m along x");
+            Assert.That(Mathf.Abs(centre.z), Is.LessThanOrEqualTo(WorldOrigin.FightStep * 0.5f + 0.01f), "the fight's centre within 32 m along z");
+        }
+
         /// <summary>(d) The streamer's preparations in flight survive a rebase: the chunks being prepared when the world moved are built
         /// where the world now is (each chunk's terrain at its world corner less the offset).</summary>
         [UnityTest, Timeout(900000)]

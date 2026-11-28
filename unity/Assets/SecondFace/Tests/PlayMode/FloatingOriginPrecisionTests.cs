@@ -26,8 +26,8 @@ namespace SecondFace.Tests
     /// <para>(a1) Each system that is continuous in its inputs, alone, against the float step's curve:</para>
     /// <list type="bullet">
     /// <item>the town's (the Animator in the town's states, the skin) at the box's farthest point, within the curve's own value there ×1.5;</item>
-    /// <item>the fight's (the Animator's fight layer, Fighter's TwoBone, PistolAim and springs) at 32 m, the farthest a re-centred fight's
-    /// centre stands, within the near-origin control's (the twin 16 m out) ×2;</item>
+    /// <item>the fight's (the Animator's fight layer, Fighter's PistolAim and springs, the skin) at 32, 64 and 112 m (a re-centred fight's
+    /// centre and its farthest fighter) within one pixel at the closest fight view, the near-origin control (16 m) and TwoBone recorded;</item>
     /// <item>Shale through the origin (the world started about it): the town's within the curve at 128 m ×1.5.</item>
     /// </list>
     /// <para>(a2) The branching systems (FootPlant, ArmClearance) part twin from twin at any rounding (their branch choices are not
@@ -48,13 +48,28 @@ namespace SecondFace.Tests
         //                              2048 m 3.11, 0.476, 6.08 | Shale 7.38, 1.50, 27.6
         //   the springs, a heavy hit:  16 m 0.567, 0.157, 0.558 | 128 m 0.569, 0.164, 0.221 | 512-908 m 1.08, 0.183, 2.17 | 1024 m 1.09, 0.187, 2.23
         //                              2048 m 3.87, 0.517, 6.23 | Shale 8.63, 1.08, 27.9
+        // The fight's systems near the origin (2026-11-28, the same, three offsets each): the fight layer 16 m 0.178, 0.057, 0.021 | 32 m 0.446,
+        // 0.140, 0.038 | 64 m 0.711, 0.199, 0.119 | 112 m 0.415, 0.123, 0.119; PistolAim 0.598, 0.195, 0.069 | 0.608, 0.200, 0.236 | 0.608, 0.200,
+        // 0.236 | 0.608, 0.200, 0.234; the springs 0.567, 0.157, 0.558 | 0.572, 0.157, 0.560 | 0.689, 0.180, 0.426 | 0.563, 0.180, 0.240; TwoBone
+        // 0.061, 0.049 | 0.209, 0.164 | 0.734, 0.579 | 0.609, 0.481 (its singular gain and its reach clamp: item (iv)).
         // The town box (WorldOrigin.Box 768 m, its farthest standing person at 908 m) keeps the town's systems at 0.21 mm and 0.05°; the fight's
         // grow with the step from the origin on, so a fight is re-centred (WorldOrigin.Recentre: its centre within 32 m).
 
         /// <summary>The farthest a person stands while the walker is inside the box (Box 768 m + PeopleService.Leave 140 m, along x and z).</summary>
         private static readonly Vector3 BoxEdge = new(908f, 0f, 908f);
-        /// <summary>The farthest a re-centred fight's centre stands (half a FightStep along x and z).</summary>
-        private static readonly Vector3 FightEdge = new(32f, 0f, 32f);
+        /// <summary>The fight's distances: the farthest a re-centred fight's centre stands (half a FightStep, 32 m), and its farthest fighter
+        /// (32 m plus the half-extent Combat.AllyReach, 80 m, allows: 112 m; 64 m between), with the near-origin control (16 m) recorded.</summary>
+        private static readonly float[] FightDistances = { 16f, 32f, 64f, 112f };
+
+        // One pixel at the closest fight view (MRC §19.4). The fight's camera is the walk's rig (OrbitRig): its nearest distance MinDistance
+        // 8 m, a vertical field of view of 28° (its lens), its steepest pitch MaxPitch 62°. The nearest a fighter's body comes to the camera
+        // there is a 1.8 m person's head at the steepest pitch: 8 − 1.8 × sin 62° = 6.41 m, where the view is 2 × 6.41 × tan 14° = 3.20 m high.
+        // On the Mid tier's screen, 1080 rows (BUILD_PLAN's 1080p UI reference, held landscape; Mid renders at 0.85, 918 rows, a coarser
+        // pixel, so 1080 is the stricter), a pixel there is 2.96 mm. A turn is within a pixel when it moves the end of a 0.5 m thigh no
+        // more: 2.96 mm / 0.5 m = 0.34°. An error under a pixel cannot be seen as a misplacement.
+        private const float LensDeg = 28f, Head = 1.8f, Rows = 1080f, Thigh = 0.5f;
+        private static float PixelM => 2f * (OrbitRig.MinDistance - Head * Mathf.Sin(OrbitRig.MaxPitch * Mathf.Deg2Rad)) * Mathf.Tan(LensDeg * 0.5f * Mathf.Deg2Rad) / Rows;
+        private static Bound Pixel => new(PixelM * 1000f, PixelM / Thigh * Mathf.Rad2Deg, PixelM * 1000f);
         private static readonly Vector3 Shale = new(15369f, 39f, 4493f);
 
         private readonly struct Bound
@@ -67,11 +82,6 @@ namespace SecondFace.Tests
         private static readonly Bound TownAtTheEdge = new Bound(0.213f, 0.0513f, 0.110f).Times(1.5f);
         // Shale through the origin: the twin about 115 m out (the world started on Shale's chunk), the curve at 128 m ×1.5
         private static readonly Bound TownAt128 = new Bound(0.039f, 0.0252f, 0.028f).Times(1.5f);
-        // the fight's at 32 m: the near-origin control (16 m) ×2
-        private static readonly Bound FightLayerControl = new Bound(0.178f, 0.0571f, 0.021f).Times(2f);
-        private static readonly Bound TwoBoneControl = new Bound(0.059f, 0.0409f, 0.021f).Times(2f);
-        private static readonly Bound PistolAimControl = new Bound(0.598f, 0.1952f, 0.121f).Times(2f);
-        private static readonly Bound SpringsControl = new Bound(0.567f, 0.1569f, 0.558f).Times(2f);
 
         private static readonly string[] Bodies = { "Female_Adult_01", "Business_Female_02", "Male_Adult_08", "Construction_Male_03" };
         private static readonly HumanBodyBones[] Chain =
@@ -355,41 +365,55 @@ namespace SecondFace.Tests
             Assert.That(fails, Is.Empty, string.Join("\n", fails));
         }
 
-        /// <summary>(a1) The fight's continuous systems (the Animator's fight layer, every people system off; Fighter alone: TwoBone on the
-        /// rifle, PistolAim, the springs of a heavy hit) at 32 m, the farthest a re-centred fight's centre stands, within the near-origin
-        /// control's (the twin 16 m out) ×2.</summary>
+        /// <summary>(a1) The fight's continuous systems (the Animator's fight layer, every people system off; Fighter alone: PistolAim, the
+        /// springs of a heavy hit) and the skin at every fight distance (32 m, the farthest a re-centred fight's centre stands; 64 m; 112 m, its
+        /// farthest fighter with allies) within one pixel at the closest fight view (<see cref="Pixel"/>: 2.96 mm, 0.34°); the near-origin
+        /// control (16 m) and each ratio to it recorded beside them, and TwoBone recorded only (item (iv)).</summary>
         [UnityTest, Timeout(1800000)]
-        public IEnumerator TheFightsSystemsAtAReCentredFightsEdge()
+        public IEnumerator TheFightsSystemsWithinAPixel()
         {
             if (!Ready()) { Assert.Ignore("the cast, the controller or the world's assets are not built"); yield break; }
             var keep = Time.captureDeltaTime; Time.captureDeltaTime = 1f / 60f;
-            var segs = new List<Seg>();
+            var byDistance = new List<(float D, List<Seg> Segs)>();
             var target = new Vector3(0f, 1.1f, 8f);
             try
             {
-                var pairs = Make(Vector3.zero, FightEdge);
-                yield return Frames(30);
-                Only(pairs);
-                yield return Frames(5);
-                yield return Run("every people system off, the fight's layer", FightLayer(pairs), segs);
-                Only(pairs, typeof(ClipTurnFirst));
-                Views(pairs, "w_carbine556", _watch, _fx, _assets.Combat);
-                yield return Frames(72);
-                Only(pairs, typeof(ClipTurnFirst));
-                yield return Run("Fighter alone: the rifle's aim and fire (TwoBone)", Both(pairs, _watch, (v, r) => AimFire(v, r, target, 3), 12f), segs);
-                Views(pairs, "w_pistol9", _watch, _fx, _assets.Combat);
-                yield return Frames(72);
-                Only(pairs, typeof(ClipTurnFirst));
-                yield return Run("Fighter alone: the pistol's aim and fire (PistolAim)", Both(pairs, _watch, (v, r) => AimFire(v, r, target, 2), 12f), segs);
-                yield return Run("Fighter alone: a heavy hit (the springs)", Both(pairs, _watch, (v, r) => Then(() => v.OnHit(r.position + Vector3.forward * 8f, "torso", "crit"), 2.5f), 6f), segs);
-                foreach (var p in pairs) { p.VA?.OnEnd(); p.VB?.OnEnd(); }
+                foreach (var d in FightDistances)
+                {
+                    var segs = new List<Seg>();
+                    var pairs = Make(Vector3.zero, new Vector3(d, 0f, d));
+                    yield return Frames(30);
+                    Only(pairs);
+                    yield return Frames(5);
+                    yield return Run($"{d} m: every people system off, the fight's layer", FightLayer(pairs), segs);
+                    Only(pairs, typeof(ClipTurnFirst));
+                    Views(pairs, "w_carbine556", _watch, _fx, _assets.Combat);
+                    yield return Frames(72);
+                    Only(pairs, typeof(ClipTurnFirst));
+                    yield return Run($"{d} m: Fighter alone: the rifle's aim and fire (TwoBone, recorded)", Both(pairs, _watch, (v, r) => AimFire(v, r, target, 3), 12f), segs);
+                    Views(pairs, "w_pistol9", _watch, _fx, _assets.Combat);
+                    yield return Frames(72);
+                    Only(pairs, typeof(ClipTurnFirst));
+                    yield return Run($"{d} m: Fighter alone: the pistol's aim and fire (PistolAim)", Both(pairs, _watch, (v, r) => AimFire(v, r, target, 2), 12f), segs);
+                    yield return Run($"{d} m: Fighter alone: a heavy hit (the springs)", Both(pairs, _watch, (v, r) => Then(() => v.OnHit(r.position + Vector3.forward * 8f, "torso", "crit"), 2.5f), 6f), segs);
+                    foreach (var p in pairs) { p.VA?.OnEnd(); p.VB?.OnEnd(); }
+                    byDistance.Add((d, segs));
+                    yield return Clear();
+                }
             }
             finally { Time.captureDeltaTime = keep; }
-            var fails = new List<string>();
-            Within(fails, segs[0], FightLayerControl, "the 16 m control ×2");
-            Within(fails, segs[1], TwoBoneControl, "the 16 m control ×2");
-            Within(fails, segs[2], PistolAimControl, "the 16 m control ×2");
-            Within(fails, segs[3], SpringsControl, "the 16 m control ×2");
+            var pixel = Pixel;
+            var control = byDistance[0].Segs;
+            var fails = new List<string>(); var record = new List<string>();
+            foreach (var (d, segs) in byDistance)
+                for (var k = 0; k < segs.Count; k++)
+                {
+                    var c = control[k];
+                    static string R(float a, float b) => b > 0f ? (a / b).ToString("0.0") : "-";
+                    record.Add($"{segs[k].Name}: {segs[k].Mm:0.000} mm, {segs[k].Deg:0.0000}°, skin {segs[k].SkinMm:0.000} mm (the 16 m control ×{R(segs[k].Mm, c.Mm)}, ×{R(segs[k].Deg, c.Deg)}, ×{R(segs[k].SkinMm, c.SkinMm)})");
+                    if (d > 16f && k != 1) Within(fails, segs[k], pixel, $"one pixel at the closest fight view, {pixel.Mm:0.00} mm and {pixel.Deg:0.00}°");
+                }
+            Debug.Log("FloatingOriginPrecisionTests: the fight's systems (the control and TwoBone recorded):\n" + string.Join("\n", record));
             Assert.That(fails, Is.Empty, string.Join("\n", fails));
         }
 
