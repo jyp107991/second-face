@@ -24,9 +24,9 @@ namespace SecondFace.Tests
     /// not a measured fact, and open to the owner. The rest of the 8 ms carries animation, culling and render submission,
     /// physics, navigation, play and UI, and the people's other passes (feet, gaze, hands).</item>
     /// </list>
-    /// <para>So 8 / 4 / 12 = 0.167 ms. It is measured in the test editor (Debug Mono, the debugger attached), so it is a
-    /// conservative proxy for the device; the frame measured on the device at the end of every phase stays the real test
-    /// (docs/BUILD_PLAN_V1.md §1).</para>
+    /// <para>So 8 / 4 / 12 = 0.167 ms. It is measured in the test editor (Release code, the Mono debugger agent attached, Burst safety checks, leak detection and the jobs debugger on), so it is a
+    /// conservative proxy for the device: 5.2-6.3 ms a person a frame in Shale as the editor runs, 3.7 ms with those checks off: the best proxy we have, no device measured (2026-11-28). The frame measured on the device at the end of every phase stays the real
+    /// test (docs/BUILD_PLAN_V1.md §1).</para>
     /// <para>Read twice, with the same crowd: in Shale at noon once its people have settled, and in the fight the raiders
     /// bring there, each over every person the clearance runs on for <see cref="Frames"/> frames. On 71ce5403 it read 5.2 ms
     /// in the town and 3.1 ms in the fight: the clearance's skin path (BodySkin.Pose and its point scans, managed) for

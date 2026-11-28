@@ -731,7 +731,8 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
     KnockTests waits for the fight; PartyTests measures each step against what the follower's top speed walks in that frame.
     New: `PeopleCostTests.TheArmsClearanceFitsItsShareOfTheFrame`, 0.167 ms a person a frame (8 ms Mid main thread,
     BUILD_PLAN §6.K / a quarter, a design choice open to the owner / 12 close figures, PORT §4), in Shale and in the raiders'
-    fight: 7.36 and 4.07 ms on main (fails, listed in `motion_waivers.json` failing_tests with Knock).
+    fight: 7.36 and 4.07 ms on main (fails, listed in `motion_waivers.json` failing_tests with Knock). Measured in the test
+    editor: Release code, the Mono debugger agent attached, Burst safety checks, leak detection and the jobs debugger on; 5.2-6.3 ms a person a frame in Shale as the editor runs, 3.7 ms with those checks off: the best proxy we have, no device measured (2026-11-28).
 - **2026-11-27/28, the gate batch committed under the waiver policy: the fight's clips turned back onto their actors, a person made
   anywhere keeps their body and face, the sits turned too, the foot plant's catch on the body's present pace (editor owner).**
   Gate: red, 3,351 (the whole cast, 2026-11-28 00:54; 71ba0e5b's 3,351, with FY1/FY2 now counted: 4,018).
