@@ -1123,8 +1123,9 @@ Found under three CI regressions of 71ba0e5b (`CapturedMotionHoldsHumanPosesWhen
   under 0.1 mm (the record's resolution) from the first idle's first recorded frames, before either rule has fired a catch;
   K's code reproduces itself exactly over two runs (0 changes), the toes' trial and the catch, two different codes, agree with
   each other in every one of those states (0 changes; the rocker within 6), and the four's runs show none: a numerical
-  difference that comes with the rebuilt plant, not with what the catch does (recorded; a semantically null edit would test it). The whole cast: CAST_W6. Open for the
-  next batch (`docs/PROGRESS.md`): the stop's blend still lands the foot slow and 4 cm up, the same kind of event as the walk's
+  difference that comes with the rebuilt plant, not with what the catch does (recorded; a semantically null edit would test it).
+  The whole cast (the gate, 2026-11-28 00:54): Medical_Female_01's walk:jog W6 passes, W6 1 -> 0 over the 79, and the everyday
+  cells 2 -> 1 (Female_Adult_01's jog W1 stays, the push-off above). Open for the next batch (`docs/PROGRESS.md`): the stop's blend still lands the foot slow and 4 cm up, the same kind of event as the walk's
   start and stop blends where no clip's record applies; and no test measures W1 or W6 on navigation agents in the game's own
   conditions.
 - **The configured trunks, for the next batch's trunk convention item** (each model's configured T-pose, in its importer: each trunk

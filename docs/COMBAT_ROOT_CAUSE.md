@@ -347,7 +347,11 @@ fight's feet then folded one knee to reach (K1 in the club's second strike, Kb i
   arms), C1 yield 0 -> 8 and F4 yield 61 -> 79 (the crossfade into yield_enter: the planted feet's first two frames, the pins' own
   entry, not the turn's blend), FY2 aim 212 -> 237 (the clip's own actor fails it too: p2 54.4 against 56.3). LegNeed taken out
   (it folded the planted leg: Kb strike +24). The pop proof: with the crossfade's blend taken out the crossfade test fails (49° in
-  a frame at the pistol's rise from cover); restored, it passes. WHOLE_CAST
+  a frame at the pistol's rise from cover); restored, it passes. On the whole cast (the gate, 2026-11-28 00:54, with the foot
+  plant's catch as well): the fight's cells 4,016 -> 3,350 against 71ba0e5b (FY1/FY2 counted); the screen's rises came out as
+  measured (C1 crouch 79, C1 yield 8, F4 yield 79, FY2 aim 237), with C1 throw 48 -> 53, C1 strike 120 -> 125 (the second club's
+  block), C1 rise 2 -> 4, and C1 guard, F1 hit and H3 aim 0 -> 1, one person each (not traced: unknown). All ten are waived
+  (`docs/qa/gates/motion_waivers.json`) against item 20.
 
 **20. Next: the fight's remaining groups by count, as item 18 found them** (each clip bare on its own actor against the same measure,
 then the retarget, the runtime, the prop, the state machine; the waived fight keys first, `docs/qa/gates/motion_waivers.json`), after

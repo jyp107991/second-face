@@ -717,10 +717,25 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
-- **2026-11-27 (later), the gate batch: the fight's clips turned back onto their actors, a person made anywhere keeps their body and
-  face, the sits turned too (editor owner).**
-  Gate: red, VERDICT_TOTAL (the whole cast, VERDICT_DATE; 71ba0e5b's 3,351, with FY1/FY2 now counted: 4,018).
-  - Whole cast: VERDICT_LINE
+- **2026-11-27/28, the gate batch committed under the waiver policy: the fight's clips turned back onto their actors, a person made
+  anywhere keeps their body and face, the sits turned too, the foot plant's catch on the body's present pace (editor owner).**
+  Gate: red, 3,351 (the whole cast, 2026-11-28 00:54; 71ba0e5b's 3,351, with FY1/FY2 now counted: 4,018).
+  - Whole cast of the batch's tree, 79 people: failing cells 4,018 -> 3,351, the everyday states 2 -> 1 (Female_Adult_01's jog
+    W1, later item 7; Medical_Female_01's jog W6 passes, the catch below). By key against 71ba0e5b: F1 strike 422 -> 238, Kb
+    strike 154 -> 6, F4 guard 104 -> 0, F1 guard 84 -> 0, F1 ready 54 -> 0, A1 strike 162 -> 110, FY1 aim 189 -> 141, F2 strike
+    75 -> 43, Kb crouch 54 -> 25, C1 ready 80 -> 75, F2 crouch 2 -> 0, W6 1 -> 0. Ten keys stand worse, listed with their causes
+    and fix items in `docs/qa/gates/motion_waivers.json`: C1 crouch 68 -> 79 (waived at 04:34, its "after" raised) and nine new
+    (since 2026-11-28 00:54): FY2 aim 212 -> 237, F4 yield 61 -> 79, C1 yield 0 -> 8, C1 strike 120 -> 125, C1 throw 48 -> 53,
+    C1 rise 2 -> 4, C1 guard, F1 hit and H3 aim 0 -> 1, all with the fight's clips turned back onto their actors (the first four
+    measured so on the fight screen before the gate, `docs/COMBAT_ROOT_CAUSE.md` 19).
+  - **Hard deadline: the next batch.** Every key waived on the 04:34 verdict must be back at or under its pre-waiver value on
+    the next batch's whole-cast verdict (the second since 04:34), or that batch is blocked (`tools/qa/gate_ratchet.mjs`, rule 3).
+    Key: pre-waiver value, at 04:34 -> on this cast:
+    W1 0: 1 -> 1; W6 0: 1 -> 0 (back); A2 aim 76: 237 -> 237; C1 crouch 1: 68 -> 79; F2 crouch 0: 2 -> 0 (back); F2 strike 3:
+    75 -> 43; F2 yield 0: 25 -> 25; F3w aim_pistol 0: 75 -> 75; F3w crouch 0: 79 -> 79; F3w ready 0: 50 -> 50; F3w throw 25:
+    79 -> 79; F4 guard 0: 104 -> 0 (back); K1 strike 25: 54 -> 54; Kb crouch 25: 54 -> 25 (back); Kb strike 104: 154 -> 6 (back).
+    Ten still over: W1, A2 aim, C1 crouch, F2 strike, F2 yield, the four F3w keys and K1 strike; the next batch must bring each
+    of them back. The nine keys waived on this verdict are due by the batch after next.
   - Causes found and removed at their sources: the fight's whole skeleton stood 2-19° turned from the clips' actors and the thighs
     2-64° more on the CMU actors (Unity's humanoid on the Biped hierarchy, `docs/MOTION_ROOT_CAUSE.md` §16): the turn baked per
     clip and skeleton and put back first in the frame (`docs/COMBAT_ROOT_CAUSE.md` 19; a compensating bake, not a cure: §16 (a)
