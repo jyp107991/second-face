@@ -177,6 +177,7 @@ namespace SecondFace.Game.People
                 Start = k.Start, UsedBones = k.UsedBones, M = k.M, Spacing = k.Spacing, Head = k.Head, Next = k.Next, Cell = k.Cell,
                 Q = k.Q, QDj = k.QDj, QNoj = k.QNoj, QNearj = k.QNearj, QD = k.QD, QN = k.QN, QNear = k.QNear, AskedAt = k.AskedAt, AskedPose = k.AskedPose,
                 AskIdx = k.AskIdx, Runs = k.Runs, Count = k.Count, Clock = k.Clock, DBones = k.DBones, DBind = k.DBind, DqIdx = k.DqIdx,
+                Anchor = _anchor = AnchorTemp ? transform.position : Vector3.zero,
                 Hips = hips, Right3 = transform.right, KMax = Mathf.Clamp(q, 1, 4), Carrying = Carrying, FlankL = FlankL, FlankR = FlankR,
             };
             if (!k.Drawn)
@@ -217,6 +218,7 @@ namespace SecondFace.Game.People
             public NativeArray<byte> B0, B1, XN, XB, Flank, Flags;
             public NativeArray<int> Start, UsedBones, Head, Next, QNearj, QNear, AskedPose, AskIdx, Runs, DBones, DqIdx;
             public NativeArray<int3> Cell;
+            public float3 Anchor;   // TEMP (relaunch 16)
             /// <summary>Each of the renderer's bones' localToWorldMatrix, as the step has them now (it sets them).</summary>
             public NativeArray<float4x4> M, DBind;
             public NativeArray<long> Count;
@@ -287,7 +289,7 @@ namespace SecondFace.Game.People
                 if (Clock[2] == 0) { MeasureSpacing(); Clock[2] = 1; }
                 for (var i = 0; i < Body; i++)
                 {
-                    var c = CellOf(P[i]);
+                    var c = CellOf(P[i] - Anchor);
                     Cell[i] = c;
                     var h = HashOf(c.x, c.y, c.z);
                     Next[i] = Head[h];
@@ -342,7 +344,7 @@ namespace SecondFace.Game.People
                 Count[0] += m; Count[1] += m - k;
                 if (k == 0) return;
                 Runs[0] = 0;
-                new DepthJob { P = P, N = Nn, Head = Head, Next = Next, Cells = Cell, Spacing = Spacing, Flags = Flags, Q = Q, D = QDj, No = QNoj, Near = QNearj, Runs = Runs, Count = k, UseRobust = Drawn != 0 ? 0 : 1 }.Execute();
+                new DepthJob { P = P, N = Nn, Head = Head, Next = Next, Cells = Cell, Anchor = Anchor, Spacing = Spacing, Flags = Flags, Q = Q, D = QDj, No = QNoj, Near = QNearj, Runs = Runs, Count = k, UseRobust = Drawn != 0 ? 0 : 1 }.Execute();
                 Count[2] += Runs[0];
                 for (var j = 0; j < k; j++) { var i = AskIdx[j]; QD[i] = QDj[j]; QN[i] = QNoj[j]; QNear[i] = QNearj[j]; AskedAt[i] = Q[j]; AskedPose[i] = pose; }
                 if (Drawn != 0) DrawnRange(k);
@@ -414,7 +416,7 @@ namespace SecondFace.Game.People
                 Count[0]++;
                 Q[0] = p;
                 Runs[0] = 0;
-                new DepthJob { P = P, N = Nn, Head = Head, Next = Next, Cells = Cell, Spacing = Spacing, Flags = Flags, Q = Q, D = QDj, No = QNoj, Near = QNearj, Runs = Runs, Count = 1, UseRobust = Drawn != 0 ? 0 : 1 }.Execute();
+                new DepthJob { P = P, N = Nn, Head = Head, Next = Next, Cells = Cell, Anchor = Anchor, Spacing = Spacing, Flags = Flags, Q = Q, D = QDj, No = QNoj, Near = QNearj, Runs = Runs, Count = 1, UseRobust = Drawn != 0 ? 0 : 1 }.Execute();
                 Count[2] += Runs[0];
                 Near = QNearj[0];
                 depth = Near >= 0 ? QDj[0] : 0f; normal = Near >= 0 ? QNoj[0] : float3.zero;

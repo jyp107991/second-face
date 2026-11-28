@@ -127,6 +127,10 @@ namespace SecondFace.Tests
                 var g = GameObject.CreatePrimitive(PrimitiveType.Cube); _made.Add(g);
                 g.transform.localScale = new Vector3(30f, 1f, 30f); g.transform.position = g0 + new Vector3(0f, -0.5f, 0f);
             }
+            // identical ground under both twins from the first frame: the cubes' colliders synced where they were put (with the physics'
+            // auto-sync off, the first frames' foot rays found the ground a twin was made on at its creation pose and the other's not,
+            // and the twins' legs parted by 36-98°, MRC §19.3)
+            Physics.SyncTransforms();
             var x = 0f;
             foreach (var id in Bodies)
             {
