@@ -93,10 +93,11 @@ namespace SecondFace.Tests
                         var from = f.position + Vector3.up * up;
                         if (!Physics.Raycast(from, Vector3.down, out var hit, len, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) continue;
                         if (System.Array.IndexOf(Grounds, hit.collider) >= 0) continue;
-                        if (hit.transform.IsChildOf(A.transform)) continue;   // (its own body: the fight's ray leaves it out)
+                        // (its own body or what it holds: FootPlant's ray does not leave it out; the fight's takes its fallback height)
+                        var own = hit.transform.IsChildOf(A.transform) ? 1 : 0;
                         var gy = float.NaN;
                         foreach (var g in Grounds) if (g.Raycast(new Ray(from, Vector3.down), out var gh, len)) gy = gh.point.y;
-                        Out.Append($"{Id},{Time.frameCount},{P?.State},{hb},{who},{hit.collider.name},{hit.collider.transform.root.name},{hit.point.y - gy:0.0000}\n");
+                        Out.Append($"{Id},{Time.frameCount},{P?.State},{hb},{who},{hit.collider.name},{hit.collider.transform.root.name},{hit.point.y - gy:0.0000},{own}\n");
                     }
                 }
             }
@@ -219,7 +220,7 @@ namespace SecondFace.Tests
             Debug.Log($"FIGHT SCREEN config [{label}] rule {(ruleField != null ? ruleField.GetValue(null) : "n/a")} turn {(turnOff == null ? "n/a" : noTurn ? "off" : "on")}");
             var f4trace = new System.Text.StringBuilder("person,state,frame,time,dtms,ankLy,ankRy,vL,vR,pinL,pinR,recL,recR,fullState,fullT,fullW,trans,transT,turn,shiftcm,current\n");
             var ragOut = new System.Text.StringBuilder("person,kind,frame,...\n");
-            var rayOut = new System.Text.StringBuilder("person,frame,state,foot,ray,collider,root,over\n");
+            var rayOut = new System.Text.StringBuilder("person,frame,state,foot,ray,collider,root,over,own\n");
             var knees = new System.Text.StringBuilder("person,state,frame,KLr,KRr,A1Lr,A1Rr,A1Lb,A1Rb,A1La,A1Ra,A2Lr,A2Rr,A2Lb,A2Rb,A2La,A2Ra,KLb,KRb,KLa,KRa,hipsYb,hipsYa,ankLb,ankRb,ankLa,ankRa,sink,soleOverL,soleOverR,current\n");
             foreach (var k in want.OrderBy(x => x))
             {

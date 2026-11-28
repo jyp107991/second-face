@@ -733,6 +733,12 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
     BUILD_PLAN §6.K / a quarter, a design choice open to the owner / 12 close figures, PORT §4), in Shale and in the raiders'
     fight: 7.36 and 4.07 ms on main (fails, listed in `motion_waivers.json` failing_tests with Knock). Measured in the test
     editor: Release code, the Mono debugger agent attached, Burst safety checks, leak detection and the jobs debugger on; 5.2-6.3 ms a person a frame in Shale as the editor runs, 3.7 ms with those checks off: the best proxy we have, no device measured (2026-11-28).
+  - Fix C, the pad (tests only, 2026-11-28; CI run 46117850298): BootTests.PhotoModeAndThePad held the right stick for 20 frames,
+    which turned the view by its rate × their time: on CI's slow frames 232°, read back as -127.5° across the wrap. Its walk,
+    stick turn, settle and quarter turn now hold for their condition within a time bound, each turn summed frame by frame.
+    Verified locally with frames slowed by 80 ms: the old checks fail as on CI (the stick's 20 frames turned the view 671.7°, read back as -48.3°), the new pass (turned 35.6°, a quarter turn of 90.00°, walked 0.84 m),
+    and pass as they run. The other play tests' frame-count loops swept: none else can fail on frame time within any margin
+    seen (the pinch's 60 frames, the reveal's 3 frames at 20 characters a second, the patrol's 5 frames: listed, not changed).
 - **2026-11-27/28, the gate batch committed under the waiver policy: the fight's clips turned back onto their actors, a person made
   anywhere keeps their body and face, the sits turned too, the foot plant's catch on the body's present pace (editor owner).**
   Gate: red, 3,351 (the whole cast, 2026-11-28 00:54; 71ba0e5b's 3,351, with FY1/FY2 now counted: 4,018).
