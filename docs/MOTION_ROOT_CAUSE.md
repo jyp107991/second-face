@@ -1392,3 +1392,120 @@ out and back:
   - The arm clearance's job (A(b)) waits for this decision: the frame decides the rounding both paths see.
   - Its equivalence is judged again after it, with the flips counted against the perturbed managed control: under 0.1 mm the
     job flipped 12 times against managed's 4. The pass choices not in DiagAt are to be exposed first.
+
+### 19.1 The floating origin, stage 1: every holder of a world position (ruled (A), 2026-11-28)
+
+**The method.** A mechanical scan (a script over the source; 205 hits in Game/, Core/ and Editor/) plus a reading of each
+hit. The scan found:
+- every field, property or static of a position-bearing type: Vector3, Vector2, Bounds, Ray, Plane, Matrix4x4, NavMeshPath,
+  Quaternion, lists, dictionaries and tuples of them;
+- every int, float or double field named as a coordinate;
+- every coroutine local of such a type, or set from a position, that lives across a `yield`.
+
+A rebase is a translation, so turns (every Quaternion), directions, local or bind-space values and measures are unchanged by it.
+Values written afresh every frame before they are read are also safe, because the rebase runs at the frame's start. What must move
+is every world point that is carried from one frame to the next. *Shift*: its OnRebase(Δ) adds Δ. *Logical*: it holds the absolute
+world in double or in the save, and converts at the boundary (plus O in, minus O out).
+
+| Holder | What it is | Fix |
+|---|---|---|
+| FootPlant `_endL/_endR` (held points), `_endPosL/R`, `_fromL/R`, `_was`, `_lastL/R`, `_shownL/R`, `_shownLastL/R`, each foot's `Pin`, `From`, `To` | the feet's held and stepping places, carried across frames | shift |
+| FootPlant `_goalPosL/R`, `_pts`, `_solePtsL/R`, `BallL/R`, `Probed` | written each frame (IK goals, scratch, the gate's trace) | none |
+| FootPlant `_heel..._tip`, `_backL/R`, `_hull*`, `StepTravel`, `PitchLow`, `Offsets`, `GoalError`, turns | bone-frame, bind or measures | none |
+| BodySkin `P`, `N` | posed from the bones each frame (world) | none (posed after the rebase) |
+| BodySkin `_askedAt` (with the cells) | the query cache: last asked place against a pose | shift (or bump the pose counter: a miss, not a wrong answer) |
+| BodySkin `P0/P1/N0/N1/D0/D1/XP/XNo/XD/DPos/DDelta/SoleL/R`, `DBind`, `_grad` | bind-space data, scratch | none |
+| ArmClearance `PushAt` | the gate's report point (stale between pushes) | shift |
+| ArmClearance `_axis*`, `_restAxis*`, `Turned` | directions, measures | none |
+| Ragdoll `_snapshot` | the lying pose (world) blended from during the get-up | shift |
+| Ragdoll's Rigidbodies (and Fighter's dropped weapon, CombatPresenter's shells) | simulated bodies | moved with their roots; `Rigidbody.position` set, interpolation reset |
+| Fighter `_aimAt` | the aim's world target, carried | shift |
+| Fighter `HoldGrip`, `TurnShift`, `SoleOver`, `Planted` | this frame's, read by tests | none |
+| Fighter `_holsters`, `_chestFront`, `_heel/_ball*`, `_hitA/_hitV`, `Front`, `RightAx`, turns; Limbs `Centre`, `Frame`, `_thumbAxis`; CombatSet's grips | bone-frame or bind values, directions | none |
+| AnimatedUnitView coroutines: `OnAim` target, `Fly` start and arc, `Rise` lying hips | world points across yields | shift (the view subscribes while a coroutine runs) or re-read after each yield |
+| Walker `Goal`, `_standAt` | the walk's goal, the seat's stand point | shift |
+| Walker coroutine `Moving` `from` | across yields | shift (subscribe) |
+| Townsfolk `Post`, `Target`, `Asked`; PeopleService `Post` | each person's post and goals | shift |
+| PartyFollowers `Asked` | each companion's sent point | shift |
+| OrbitRig `_lastLeader`, `_focus`, `_focusAt` | the camera's caches | shift (`Pan` and `_focusVel` are relative: none) |
+| ConversationCamera `Subject`, `_ph`, `_oh`, `_goalPos` | the conversation's framing | shift |
+| CombatTurn `End`, `At`, `_throwAt`, `_cursor`, `_corners`, `_shots`, `_arc`, `_shieldPts`; the reach's own | the turn's previews | shift (or re-planned: the turn's previews redrawn) |
+| CombatTurn's and Core Battle's coordinates (Battle, BattleActions, BattleQueries, BattleUndo, Surfaces' X/Z, doubles) | the battle's world, in double | logical: `u.Place(pos.x + O.x, ...)`, out minus O |
+| CombatStage coroutines `PlayStep`, `MoveUnit` (`path.corners`, `startAt`, `end`), `AttackUnit` (`at`, `land`), `ThrowUnit` (`from`, `land`) | the fight's moves across yields | the battle's from logical (fine); the Unity-side points shift (subscribe) |
+| CombatPresenter coroutines `Arc`, `OnAim`; `Tracer`'s lines; `Shell` bodies | effects in flight | shift (subscribe); LineRenderer points shifted |
+| CombatOverlay `_pts`, `V`; CombatHud `Over`, `_shieldAt`, `_pointAt` | overlay and HUD anchors | shift (or redrawn the next frame from the turn) |
+| Combat coroutine `Fight` `wp` | the walker's place at the fight's start | shift (subscribe) |
+| Walkabout coroutines `Place` (spot), `Use` (`at`, `spot`, `seat`), `Responding` (`spot`), `Face` (`to`) | the walk's targets across yields | shift (subscribe) or re-read the target's transform |
+| TouchInput `LastTap` | the last tap's ground point | shift |
+| MeasureTour `At`, its coroutine's `bar`, `edge` | the tour's targets (a test tool) | shift |
+| WorldService `Focus` | the streamer's focus | logical (plus O) |
+| WorldNav `Area`, `_pending` (Bounds) | the world NavMesh's built and pending areas | logical: the bounds in world terms, the data re-added at -O |
+| PlaceNav `Centre`, `Size` | local to the place | none |
+| ChunkTerrain `Cx`, `Cz`; `_rv`, `_wn` | chunk indices; scratch | none (placed at `WorldGrid.Origin` minus O) |
+| PlaceInteriors' `CutMin/CutMax` (shader globals) | the cut-away box in world space | shift (set again) |
+| Core GameState `WorldSpot` X/Y/Z, `CompanionSave.WaitingAt`, Party X/Y/Z, Ground's `Pile` X/Y/Z, `BattleSave` positions | saved places | logical (absolute, as today): no format change |
+| Core PlacePlan, PlaceYards (place-local), WorldScatter (world scatter points) | content data | none (WorldScatter placed minus O) |
+| Core MapsModel (tile grid), TravelModel (map km), Grid, Gestures, Rules ints | not world metres | none |
+| Combat `Dirs`, `_panelArea`; PadInput, MapScreen, RadialMenu Vector2s; WeatherLayers `WindTowards`; PlaceMarker `Size`; Figure `Spot` (the studio, 3 km below: it moves with its root) | directions, screen, sizes | none |
+| Editor/Build (PlaceBuilder, RocketboxLayers, TakeStance) | build-time only | none |
+
+**Engine and package holders:**
+- *Cinemachine:* every camera's damping state needs `OnTargetObjectWarped(target, Δ)`.
+- *NavMeshAgent:* the internal place and path. `Warp` to the moved place, then the destination set again (plus Δ).
+- *NavMeshData:* PlaceNav's and WorldNav's instances removed and re-added with `position += Δ`. The data stays as baked.
+- *Terrain:* chunks move with the Terrain root; the streamer places new ones minus O.
+- *Addressables `InstantiateAsync` at a world place (PlaceSpawner):* the place is computed at completion, under the moved root.
+- *ParticleSystem in world space (WeatherLayers):* particles shifted (Get/SetParticles).
+- *LineRenderer (CombatOverlay, CombatPresenter):* points shifted, or set in local space.
+- *Rigidbody interpolation:* reset with `Rigidbody.position`.
+- *Animator IK goals:* set each frame (none).
+- *Probes:* reflection probes are children of the places (they move); the chunks use no light probes.
+- *Async work in flight:* the WorldStreamer's chunk preparations (Tasks) work in chunk indices and logical metres, applied minus O
+  at completion. NavMesh builds (`UpdateNavMeshDataAsync`) use the bounds in force when they started, so the instance is re-added
+  at completion with the then-current offset.
+
+**Residual risk.** A holder the scan cannot see: a lambda capturing a place, or a position inside a struct the scan's types do
+not name. Mitigation: OnRebase is one interface; code review checks every new Vector3 field against it; stage 5's rebase tests
+(mid-walk, mid-fight, mid-fall, mid-conversation) catch what moves.
+
+### 19.2 Stages 2 and 3: the ragdoll's own chaos, and the rebase measured
+
+**The ragdoll's chaos (the survey's fight segments, twins 16 m apart within one float step near the origin).** The twins stand at
+x 40-62, so their ragdolls never meet; one run has a rounding-only difference (16 m exactly), one has 16 m plus 0.1 mm.
+- *The fall:* the twins part by 89-133 mm and 77-90° near the origin. At Shale the same fall parts them by 398 mm and 105°. The
+  fall is chaotic at the rounding level, so at Shale the precision adds about three times the chaos's own spread in place, not
+  more in turn.
+- *The rise* follows from the fall: 97-258 mm near the origin, 387 mm at Shale. The hand-back fix (approved) reads the simulated
+  pose and waits for sleep; it is measured against this band, not against zero.
+- *Fighter's holds near the origin:* TwoBone at the rifle 0.02-0.28° (47° at Shale), PistolAim 0.003°, the springs 0.002°. The
+  holds are stable near the origin, so their Shale numbers are the precision's.
+- Segments after a fall start from the twins' parted states and are not used.
+
+**The rebase measured (a prototype in Shale with its people about; editor, Burst safety checks, the jobs debugger and leak
+detection off, as the device proxy).**
+- *What moved:* 19 roots, 8,695 transforms, 571 colliders (all static), 49 terrain chunks, 27 agents, 5 NavMesh data and 4
+  particle systems; Δ = (15360, 0, 4096), whole chunks.
+- *The rebase's own work, warm (four of six runs; the first, cold, 10.0 ms):* 3.5-5.9 ms.
+  - Moving the roots: 0.05-0.09 ms.
+  - The physics' sync of 571 static colliders: 0.09-0.56 ms.
+  - The NavMesh data re-added: 1.85-4.18 ms, the largest part.
+  - The agents warped and re-routed: 0.04-1.14 ms.
+  - The cameras told (by reflection): 0.6-0.8 ms.
+  - The particles shifted: 0.03-0.19 ms.
+- *The frame after* an outward rebase ran 48.7-57.3 ms against the town's p50 of 41.1 ms: a deferred cost of roughly 8-16 ms in
+  the engine's own update of what moved, for one or two frames.
+- *Confound:* the prototype moved no holders (it shifted none of stage 1's list). After the first rebase, 26 of the 27 agents left
+  the NavMesh: the townsfolk went for their unshifted posts, or the five data's re-add put a stale one under them. That made the
+  later frames cheaper (16.7 ms) and is the failure stage 1's list exists to prevent.
+- *One frame or split:* the transforms and the physics' sync must land together (a raycast between them finds the old ground).
+  The NavMesh re-add and the agents' warp can follow in the next frame with the agents held for it. So the spike is about 2 ms
+  of rebase work plus the engine's deferred update in one frame, and about 2-4 ms in the next.
+- *The device gap:* no phone is attached, so the device number stays open. BUILD_PLAN's device check at the phase's end covers it
+  (a mid phone is perhaps two to four times the editor's host). Walking, a 2 km box rebases every 20-25 minutes, so the hitch is
+  rare; on that number the design keeps the split.
+- *Fast travel and vehicles:*
+  - Fast travel (`Bootstrap.TravelTo`) begins the game again at the destination under the "on the road" card, so the rebase goes
+    there: the origin set to the destination's chunk before its ground comes in, and the spike hides under the card.
+  - No vehicle is built yet; transport's rides are fast travel (`TripLeg` on a network). A vehicle in continuous motion rebases at
+    its own stops where it has them. Otherwise the box is widened with speed (4 km at speed, a step of at most 0.49 mm), so it
+    rebases every few minutes, not every two.
