@@ -13,6 +13,10 @@ namespace SecondFace.Game.Play
     /// the camera eases to them over <see cref="Smoothing"/> s and a released orbit flings on, slowing over
     /// <see cref="FlingSeconds"/> s. Yaw is in the world's frame, not the leader's: turning to walk does not swing the view.
     /// </summary>
+    // (the cameras last, after every people system and in a set order: the fight's camera tick at 40 (CombatCameraTick) sets the rig's
+    // focus, the rig at 41 eases to it, the conversation's camera at 42; Cinemachine's brain moves the camera at 100. A correction,
+    // 2026-11-28: all three ran at 0, in no set order with each other and with the people's own LateUpdates at 0)
+    [DefaultExecutionOrder(41)]
     public sealed class OrbitRig : MonoBehaviour, WorldOrigin.IRebase
     {
         /// <summary>The floating origin's rebase (§19.1): the camera's caches move with the world, and the virtual camera is told its

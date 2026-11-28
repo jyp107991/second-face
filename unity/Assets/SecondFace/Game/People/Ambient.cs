@@ -9,6 +9,9 @@ namespace SecondFace.Game.People
     /// only while they stand still. Talkers lean to talk and argue; others to the rest. The gesture layer's weight follows:
     /// up while a gesture plays, down to nothing after.
     /// </summary>
+    // (10: after the movers' Update at 0, Walker's and Townsperson's, which set the Speed it reads to tell standing from walking; at 0 it
+    // read this frame's speed or the last's in no set order, until 2026-11-28)
+    [DefaultExecutionOrder(10)]
     [RequireComponent(typeof(Animator))]
     public sealed class Ambient : MonoBehaviour
     {
