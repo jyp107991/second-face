@@ -259,7 +259,6 @@ namespace SecondFace.Game.Play
             if (x0 > x1) return;
             LastSpan = Mathf.Max(x1 - x0, z1 - z0);
             if (LastSpan > WorldOrigin.FightStep) Debug.Log($"Combat: the fighters span {LastSpan:0} m, more than a re-centring step ({WorldOrigin.FightStep:0} m): the farthest stand about {LastSpan * 0.5f:0} m from the origin");
-            if (!RecentringTemp) { Debug.Log("Combat: the fight not re-centred: TEMP switch"); return; }   // TEMP (relaunch 16)
             if (WorldOrigin.Held) { Debug.Log($"Combat: the fight not re-centred: the world held still by {WorldOrigin.Holding}"); return; }
             LastRecentre = WorldOrigin.Recentre(new Vector3((x0 + x1) * 0.5f, 0f, (z0 + z1) * 0.5f));
         }
@@ -619,12 +618,6 @@ namespace SecondFace.Game.Play
 
         // ---- the world as the battle sees it -------------------------------------------------------------------------------
 
-        /// <summary>TEMP (relaunch 16): the re-centring switched off for a probe; every geometry query traced.</summary>
-        public static bool RecentringTemp = true;
-        public static List<string> GeoTraceTemp;
-        private static string R(double v) => v.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
-        private static void T(string s) { GeoTraceTemp?.Add(s); }
-
         private sealed class NavField : IBattleField, IBattleGeometry
         {
             private readonly Combat _c;
@@ -639,9 +632,7 @@ namespace SecondFace.Game.Play
             public double Height(double x, double z)
             {
                 var p = WorldOrigin.ToUnity(x, HintY, z);
-                var r = NavMesh.SamplePosition(p, out var hit, 6f, NavMesh.AllAreas) ? hit.position.y : HintY;
-                T($"Height({R(x)},{R(z)}) y {R(HintY)} -> {R(r)}");
-                return r;
+                return NavMesh.SamplePosition(p, out var hit, 6f, NavMesh.AllAreas) ? hit.position.y : HintY;
             }
 
             private static readonly Vector3[] Dirs =
@@ -661,7 +652,6 @@ namespace SecondFace.Game.Play
                     var lvl = Blocked(d, 1.45f) ? "full" : Blocked(d, 0.7f) ? "half" : null;
                     if (lvl != null) l.Add(new CoverPiece(d.x, d.z, lvl));
                 }
-                T($"CoverAround({R(x)},{R(z)}) ground {R(WorldOrigin.WorldX(g.x))},{R(g.y)},{R(WorldOrigin.WorldZ(g.z))} -> {string.Join(" ", l.Select(c => c.DX + "/" + c.DZ + ":" + c.Level))}");
                 return l;
             }
 
@@ -672,16 +662,13 @@ namespace SecondFace.Game.Play
                 if (!NavMesh.CalculatePath(from, to, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete) return System.Array.Empty<(double, double)>();
                 var l = new List<(double X, double Z)>(path.corners.Length + 1) { (u.PX, u.PZ) };
                 for (var i = 1; i < path.corners.Length; i++) l.Add((WorldOrigin.WorldX(path.corners[i].x), WorldOrigin.WorldZ(path.corners[i].z)));
-                T($"Path({u.C.Id} {R(u.PX)},{R(u.PZ)} -> {R(x)},{R(z)}) -> {string.Join(" ", l.Select(c => R(c.X) + "," + R(c.Z)))}");
                 return l;
             }
 
             public bool SightBetween(double ax, double az, double bx, double bz)
             {
                 var y = HintY;
-                var r = Clear(Ground(ax, az, y) + Vector3.up * 1.5f, Ground(bx, bz, y) + Vector3.up * 1.1f);
-                T($"Sight({R(ax)},{R(az)} -> {R(bx)},{R(bz)}) -> {r}");
-                return r;
+                return Clear(Ground(ax, az, y) + Vector3.up * 1.5f, Ground(bx, bz, y) + Vector3.up * 1.1f);
             }
 
             public string GroundAt(double x, double z) => null;
@@ -700,10 +687,8 @@ namespace SecondFace.Game.Play
             {
                 var from = Ground(u.PX, u.PZ, YOf(u)); var to = Ground(x, z, YOf(u));
                 var path = new NavMeshPath();
-                if (!NavMesh.CalculatePath(from, to, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete) { T($"PathLength({u.C.Id} -> {R(x)},{R(z)}) -> inf"); return double.PositiveInfinity; }
-                var len = Combat.PathLength(path);
-                T($"PathLength({u.C.Id} {R(u.PX)},{R(u.PZ)} -> {R(x)},{R(z)}) -> {R(len)}");
-                return len;
+                if (!NavMesh.CalculatePath(from, to, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete) return double.PositiveInfinity;
+                return Combat.PathLength(path);
             }
 
             private static bool Clear(Vector3 eye, Vector3 at)
@@ -720,9 +705,7 @@ namespace SecondFace.Game.Play
             {
                 var eye = WorldOrigin.ToUnity(x, y + 1.5f, z);
                 var at = WorldOrigin.ToUnity(b.PX, YOf(b) + 1.1f, b.PZ);
-                var r = Clear(eye, at);
-                T($"LineOfSight({R(x)},{R(z)} y {R(y)} -> {b.C.Id} {R(b.PX)},{R(b.PZ)} y {R(YOf(b))}) -> {r}");
-                return r;
+                return Clear(eye, at);
             }
 
             public string Cover(BattleUnit att, BattleUnit def)
@@ -734,9 +717,8 @@ namespace SecondFace.Game.Play
                 dir.Normalize();
                 bool Blocked(float h) =>
                     Physics.Raycast(d + Vector3.up * h, dir, out var hit, 1.6f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) && hit.collider.GetComponentInParent<Animator>() == null;
-                var cv = Blocked(1.45f) ? "full" : Blocked(0.7f) ? "half" : "none";
-                T($"Cover({att.C.Id} {R(att.PX)},{R(att.PZ)} -> {def.C.Id} {R(def.PX)},{R(def.PZ)}) -> {cv}");
-                return cv;
+                if (Blocked(1.45f)) return "full";
+                return Blocked(0.7f) ? "half" : "none";
             }
 
             public CombatContext Context(BattleUnit def)
@@ -755,7 +737,7 @@ namespace SecondFace.Game.Play
                     {
                         var ang = k * Mathf.PI / 6 + r * 0.37;
                         var p = WorldOrigin.ToUnity(u.PX + System.Math.Cos(ang) * r, y, u.PZ + System.Math.Sin(ang) * r);
-                        if (NavMesh.SamplePosition(p, out var hit, 1f, NavMesh.AllAreas)) { T($"Candidate({u.C.Id} r {R(r)} k {k}) -> {R(WorldOrigin.WorldX(hit.position.x))},{R(WorldOrigin.WorldZ(hit.position.z))} (Unity {R(hit.position.x)},{R(hit.position.z)})"); yield return (WorldOrigin.WorldX(hit.position.x), WorldOrigin.WorldZ(hit.position.z)); }
+                        if (NavMesh.SamplePosition(p, out var hit, 1f, NavMesh.AllAreas)) yield return (WorldOrigin.WorldX(hit.position.x), WorldOrigin.WorldZ(hit.position.z));
                     }
             }
         }

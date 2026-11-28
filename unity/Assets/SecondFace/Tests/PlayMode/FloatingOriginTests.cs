@@ -282,8 +282,12 @@ namespace SecondFace.Tests
         /// states, 200 frames in; 2 the fall, 40 frames in; -1 none: the control). Every frame recorded into <paramref name="rec"/>; each
         /// segment's rebase point (whether or not it rebases) into <paramref name="atRecord"/>; the rebased segment's Jumps and every
         /// segment's twins apart into the lists.</summary>
+        /// <summary>The record at which the last sequence's fall began (its records from there on), or -1 with no fall.</summary>
+        private int _fallAt = -1;
+
         private IEnumerator BSequence(int segment, List<float[]> rec, List<int> atRecord, List<string> jumps, List<string> apart)
         {
+            _fallAt = -1;
             var pairs = new List<Pair>();
             yield return Make(pairs, Vector3.zero, new Vector3(WorldOrigin.Step, 0f, 0f));
             var (w, _) = Watch(pairs);
@@ -358,6 +362,7 @@ namespace SecondFace.Tests
                 yield return Frames(60);
                 rebased.Clear();
                 Reset(w); w.On = true;
+                _fallAt = rec.Count;
                 foreach (var p in pairs) { p.VA?.OnFall(p.RA.position + Vector3.forward * 2f); p.VB?.OnFall(p.RB.position + Vector3.forward * 2f); }
                 yield return Frames(40);
                 if (segment == 2) { WorldOrigin.Rebase(new Vector3(-WorldOrigin.Step, 0f, 0f)); rebased.Add(Time.frameCount); }
@@ -375,10 +380,10 @@ namespace SecondFace.Tests
             yield return null; yield return null;
         }
 
-        /// <summary>The whole people stack is deterministic: the same twins and sequence (the walk, the fight's states, the fall), every
-        /// people system on, twice from the same fixed clock, bit-identical on every frame (each bone's root-relative place and turn). Without
-        /// it no twin comparison and no control proves anything; it is (b)'s precondition too. The clock is started a frame before anyone is
-        /// made (the frame it is set in still runs on real time).</summary>
+        /// <summary>The whole people stack is deterministic: the same twins and sequence (the walk, the fight's states), every people system
+        /// on, twice from the same fixed clock, bit-identical on every frame (each bone's root-relative place and turn). Without it no twin
+        /// comparison and no control proves anything; it is (b)'s precondition too. The clock is started a frame before anyone is made (the
+        /// frame it is set in still runs on real time). The fall that follows is recorded only (the reason below).</summary>
         [UnityTest, Timeout(1800000)]
         public IEnumerator TwoRunsOfThePeopleStackAreBitIdentical()
         {
@@ -389,26 +394,40 @@ namespace SecondFace.Tests
             {
                 var one = new List<float[]>(); var two = new List<float[]>(); var at1 = new List<int>(); var at2 = new List<int>();
                 yield return BSequence(-1, one, at1, new List<string>(), new List<string>());
+                var fall1 = _fallAt;
                 yield return BSequence(-1, two, at2, new List<string>(), new List<string>());
+                var fall2 = _fallAt;
                 Assert.That(two.Count, Is.EqualTo(one.Count), "the same frames in both runs");
+                Assert.That(fall2, Is.EqualTo(fall1), "the fall begins at the same record in both runs");
+                var covered = fall1 >= 0 ? fall1 : one.Count;
                 var segs = new[] { "the walk", "the fight's states", "the fall" };
-                for (var r = 0; r < one.Count; r++)
+                // (the fall is recorded only, ruled 2026-11-28: two runs' falls part at their first step after the ragdoll is handed the body, with
+                // PhysX's Enhanced Determinism off, as the project has it, and on alike (measured both ways, 2026-11-28), the actors added and
+                // removed between runs; the walk and the fight's states before it are bit-identical, and a missed holder in the fall shows as a
+                // jump in a twin's own step, which (b) checks)
+                for (var r = 0; r < covered; r++)
                     for (var e = 0; e < one[r].Length; e++)
                         if (one[r][e] != two[r][e])
                         {
                             var seg = at1.Count(a => a <= r) - 1;
                             Assert.Fail($"the two runs part at record {r} of {one.Count} ({(seg >= 0 && seg < segs.Length ? "after " + segs[seg] + "'s point" : "before the walk's point")}), {Chain[(e / 8) % Chain.Length]} [{e % 8}]: {one[r][e]:R} against {two[r][e]:R}");
                         }
-                Debug.Log($"FloatingOriginTests: the people stack, two runs bit-identical over {one.Count} frames");
+                var part = -1;
+                for (var r = covered; r < one.Count && part < 0; r++)
+                    for (var e = 0; e < one[r].Length; e++)
+                        if (one[r][e] != two[r][e]) { part = r; break; }
+                Debug.Log($"FloatingOriginTests: the people stack, two runs bit-identical over {covered} frames (the walk and the fight's states); " +
+                          $"the fall (records {covered}-{one.Count - 1}, recorded only) {(part < 0 ? "bit-identical too" : $"parts at record {part}, its step {part - covered + 1}")}");
             }
             finally { Time.captureDeltaTime = keep; }
         }
 
         /// <summary>(b) A rebase mid-walk, mid-fight's states and mid-fall moves no bone of anyone. Against a control: the same twins and
-        /// sequence twice, without the rebase and with it. The two must be bit-identical on every frame before the rebase (a drifting
-        /// control, the capture clock's real-time start, §18, proves nothing: the test fails on it and says so); in the rebase's frame and
-        /// the next, every bone's root-relative step equals the control's within the float step at the bone's coordinates. Each twin's own
-        /// step in the rebase's frames is also no more than its neighbours' (Jumps). How far the twins part is recorded: the branching
+        /// sequence twice, without the rebase and with it. The two must be bit-identical on every frame of the walk and the fight's states
+        /// before the rebase (a drifting control, the capture clock's real-time start, §18, proves nothing: the test fails on it and says
+        /// so); in the rebase's frame and the next, every bone's root-relative step equals the control's within the float step at the
+        /// bone's coordinates. Mid-fall the control's guard is recorded only (the fall does not repeat: the reason below); each twin's own
+        /// step in every rebase's frames is no more than its neighbours' (Jumps). How far the twins part is recorded: the branching
         /// systems have no bound until item (iv).</summary>
         [UnityTest, Timeout(1800000)]
         public IEnumerator ARebaseMovesNoBoneMidWalkMidFightAndMidFall()
@@ -423,6 +442,11 @@ namespace SecondFace.Tests
                 var segs = new[] { "mid-walk", "mid-fight", "mid-fall" };
                 var control = new List<float[]>(); var atC = new List<int>();
                 yield return BSequence(-1, control, atC, new List<string>(), new List<string>());
+                var fallC = _fallAt;
+                // (the fall is recorded only, ruled 2026-11-28: two runs' falls part at their first step after the ragdoll is handed the body, with
+                // PhysX's Enhanced Determinism off, as the project has it, and on alike (measured both ways, 2026-11-28), the actors added and
+                // removed between runs; the walk and the fight's states before it are bit-identical, and a missed holder in the fall shows as a
+                // jump in a twin's own step, which (b) checks)
                 var worst = new List<string>(); var fails = new List<string>(); var jumpsAll = new List<string>(); var apartAll = new List<string>();
                 const int Stride = 8;
                 for (var r = 0; r < segs.Length && r < atC.Count; r++)
@@ -431,8 +455,10 @@ namespace SecondFace.Tests
                     yield return BSequence(r, moved, atM, jumps, apart);
                     Assert.That(atM, Is.EqualTo(atC), $"{segs[r]}: the rebase points at the same records in both runs");
                     Assert.That(moved.Count, Is.EqualTo(control.Count), $"{segs[r]}: the same frames in both runs");
-                    // the precondition: bit-identical on every frame before the rebase
-                    for (var k = 0; k < atC[r]; k++)
+                    Assert.That(_fallAt, Is.EqualTo(fallC), $"{segs[r]}: the fall begins at the same record in both runs");
+                    // the precondition: bit-identical on every frame before the rebase, the fall's excepted
+                    var pre = fallC >= 0 ? System.Math.Min(atC[r], fallC) : atC[r];
+                    for (var k = 0; k < pre; k++)
                         for (var e = 0; e < control[k].Length; e++)
                             if (control[k][e] != moved[k][e])
                                 Assert.Fail($"{segs[r]}: the control is not bit-identical to the rebased run before the rebase (record {k} of {atC[r]}, entry {e}: {control[k][e]:R} against {moved[k][e]:R}); a guard against a drifting control proves nothing (§18: the capture clock's real-time start)");
@@ -450,8 +476,13 @@ namespace SecondFace.Tests
                             if (ulps > maxUlps) { maxUlps = ulps; where = $"record {k}, {Chain[(e / Stride) % Chain.Length]}: {(sm - sc).magnitude * 1000f:0.0000} mm, a step there {Spacing(mag) * 1000f:0.0000} mm"; }
                         }
                     }
-                    worst.Add($"{segs[r]} {maxUlps:0.0} float steps ({where})");
-                    if (maxUlps > 1f) fails.Add($"{segs[r]}: a bone's step {maxUlps:0.0} float steps off the control's ({where})");
+                    var inFall = fallC >= 0 && atC[r] >= fallC;
+                    var partedAt = -1;
+                    for (var k = pre; k < atC[r] && partedAt < 0; k++)
+                        for (var e = 0; e < control[k].Length; e++)
+                            if (control[k][e] != moved[k][e]) { partedAt = k; break; }
+                    worst.Add($"{segs[r]} {maxUlps:0.0} float steps ({where}){(inFall ? $", recorded only (the fall from record {fallC}: the control {(partedAt < 0 ? "bit-identical to the rebased run up to the rebase" : $"parted from the rebased run at record {partedAt}")})" : "")}");
+                    if (maxUlps > 1f && !inFall) fails.Add($"{segs[r]}: a bone's step {maxUlps:0.0} float steps off the control's ({where})");
                     jumpsAll.Add(jumps[r]); apartAll.Add(r < apart.Count ? apart[r] : "");
                 }
                 Debug.Log($"FloatingOriginTests: (b) against the control: {string.Join("; ", worst)}; Jumps [{string.Join("] [", jumpsAll)}]; the twins apart (recorded): {string.Join("; ", apartAll)}");

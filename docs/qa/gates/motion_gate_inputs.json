@@ -38,7 +38,9 @@
     "unity/Assets/SecondFace/Editor/Build/PeopleImportPostprocessor.cs",
     "unity/Assets/SecondFace/People/Rocketbox/*/*.fbx.meta",
     "unity/Assets/SecondFace/Combat/Motion/*.fbx.meta",
-    "unity/Assets/SecondFace/Combat/Weapons/*/*.json"
+    "unity/Assets/SecondFace/Combat/Weapons/*/*.json",
+    "unity/ProjectSettings/DynamicsManager.asset",
+    "unity/ProjectSettings/TimeManager.asset"
   ],
   "measures": [
     "unity/Assets/SecondFace/Tests/PlayMode/MotionProbe.cs",
