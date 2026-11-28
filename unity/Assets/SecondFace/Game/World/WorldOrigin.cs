@@ -22,6 +22,10 @@ namespace SecondFace.Game.World
     /// raycast between them would find the old ground), and every holder of a position is told (<see cref="IRebase"/>); the
     /// navigation agents are held (not moved by their agents, stopped); in the next the NavMesh data are re-added at their new place
     /// (<see cref="INavRebase"/>), then every held agent is warped where its body now stands and sent on to its shifted goal.</para>
+    /// <para>Containers (<see cref="Container"/>: an object that only holds others, its own place meaning nothing) keep their identity
+    /// transform: the rebase moves their children instead, through nested containers. Moved as roots, they went 16 km out with the first
+    /// rebase and their people kept 16 km in their local coordinates, so their world places stayed rounded to a millimetre (the party's
+    /// follower 0.53 mm off its own agent, MRC §19.3). FloatingOriginTests checks every transform for it.</para>
     /// </summary>
     public static class WorldOrigin
     {
@@ -50,6 +54,28 @@ namespace SecondFace.Game.World
 
         /// <summary>A holder of a Unity position across frames (§19.1): told the shift in the rebase's frame.</summary>
         public interface IRebase { void OnRebase(Vector3 delta); }
+
+        /// <summary>Marks an object that only holds others (the boot's object, the party's, the townsfolk's, the terrain's, the props',
+        /// the places'): it stays at Unity's origin with an identity transform, and a rebase moves what it holds.</summary>
+        public sealed class Container : MonoBehaviour { }
+
+        /// <summary>Marks <paramref name="g"/> a <see cref="Container"/> (once) and gives it back.</summary>
+        public static GameObject Contain(GameObject g)
+        {
+            if (g != null && !g.TryGetComponent<Container>(out _)) g.AddComponent<Container>();
+            return g;
+        }
+
+        /// <summary>Moves a transform by <paramref name="delta"/> (world m): a container's children instead of the container itself.</summary>
+        private static void Move(Transform t, Vector3 delta)
+        {
+            if (t.TryGetComponent<Container>(out _))
+            {
+                for (var i = 0; i < t.childCount; i++) Move(t.GetChild(i), delta);
+                return;
+            }
+            t.position += delta;
+        }
         /// <summary>A holder of NavMesh data: re-adds it at its new place in the frame after the rebase (before the agents move).</summary>
         public interface INavRebase { void OnNavRebase(Vector3 delta); }
         private static readonly List<IRebase> Holders = new();
@@ -130,7 +156,7 @@ namespace SecondFace.Game.World
                 var sc = SceneManager.GetSceneAt(s);
                 if (!sc.isLoaded) continue;
                 sc.GetRootGameObjects(Roots);
-                foreach (var g in Roots) g.transform.position += delta;
+                foreach (var g in Roots) Move(g.transform, delta);
             }
             Keeper.MoveKept(delta);
             Physics.SyncTransforms();
@@ -212,7 +238,7 @@ namespace SecondFace.Game.World
             {
                 if (_me == null) return;
                 _me.gameObject.scene.GetRootGameObjects(Kept);
-                foreach (var g in Kept) if (g != _me.gameObject) g.transform.position += delta;
+                foreach (var g in Kept) if (g != _me.gameObject) Move(g.transform, delta);
             }
 
             private void FixedUpdate() { if (_pending != Vector3.zero) Settle(); }

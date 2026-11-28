@@ -457,6 +457,115 @@ namespace SecondFace.Tests
             public int GetHashCode(Vector3 v) => 0;
         }
 
+        // ------------------------------------------------------------------------------------------------ the containers
+
+        /// <summary>Every transform whose local place is farther out than its world place by more than the hard box: the child of a holder a
+        /// rebase moved off Unity's origin (a holder not marked <see cref="WorldOrigin.Container"/>), which keeps the old origin in its local
+        /// coordinates and with it the old origin's rounding (MRC §19.3). Grouped by the holder (its path and how many it holds so), then
+        /// the first of them by path.</summary>
+        private static List<string> FarLocals()
+        {
+            var bad = new List<Transform>();
+            foreach (var t in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (t.parent != null && t.localPosition.magnitude > t.position.magnitude + WorldOrigin.HardBox) bad.Add(t);
+            if (bad.Count == 0) return new List<string>();
+            var lines = bad.GroupBy(t => PathOf(t.parent)).OrderByDescending(gr => gr.Count()).Take(30)
+                .Select(gr => $"under {gr.Key} (at {gr.First().parent.position}): {gr.Count()}").ToList();
+            lines.AddRange(bad.Take(12).Select(t => $"{PathOf(t)}: local {t.localPosition}, world {t.position}"));
+            return lines;
+        }
+        private static string PathOf(Transform t) { var s = t.name; for (var p = t.parent; p != null; p = p.parent) s = p.name + "/" + s; return s; }
+
+        private static void Check(List<string> fails, string when)
+        {
+            var bad = FarLocals();
+            Debug.Log($"FloatingOriginTests: {when}: {(bad.Count == 0 ? "no transform keeps the old origin" : string.Join("; ", bad))}");
+            if (bad.Count > 0) fails.Add($"{when}: {string.Join("; ", bad)}");
+        }
+
+        /// <summary>(c, the containers) In Shale, after the walk's own rebase and three steps out and back, and in a fight before and after a
+        /// rebase, no transform keeps the old origin in its local place.</summary>
+        [UnityTest, Timeout(1800000)]
+        public IEnumerator NoTransformKeepsTheOldOriginInTownOrInAFight()
+        {
+            Bootstrap boot = null;
+            yield return BootTests.Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            yield return BootTests.TownSettled(() => walk.Townsfolk, "the town's people");
+            var fails = new List<string>();
+            Check(fails, "in Shale after the walk's own rebase");
+            for (var k = 1; k <= 3; k++) { WorldOrigin.Rebase(new Vector3(WorldOrigin.Step, 0f, 0f)); yield return Frames(4); Check(fails, $"{k} out"); }
+            for (var k = 1; k <= 3; k++) { WorldOrigin.Rebase(new Vector3(-WorldOrigin.Step, 0f, 0f)); yield return Frames(4); Check(fails, $"{k} back"); }
+            // a fight: the raiders' tribute, begun as PartyTests begins it
+            var g = walk.Game;
+            foreach (var id in new[] { "npc_rd_t1", "npc_rd_t2", "npc_rd_t3", "npc_rd_t4" }) g.Npcs[id] = new SecondFace.Core.State.NpcSave { Hp = 1 };
+            g.SetFlag("tribute_day", true);
+            walk.Settle();
+            Townsperson raider = null;
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 60f && (raider = walk.People.StandingPeople.FirstOrDefault(p => p != null && p.Def != null && p.Def.Id == "npc_rd_t1")) == null)
+            {
+                PartyTests.Quiet(walk);
+                yield return null;
+            }
+            Assert.That(raider, Is.Not.Null, "the raiders came to the town");
+            var near = raider.transform.position + (walk.Walker.transform.position - raider.transform.position).normalized * 9f;
+            if (UnityEngine.AI.NavMesh.SamplePosition(near, out var nh, 4f, UnityEngine.AI.NavMesh.AllAreas) && walk.Walker.GoTo(nh.position))
+            {
+                t0 = Time.realtimeSinceStartup;
+                while (Time.realtimeSinceStartup - t0 < 60f && walk.Walker.Goal != null) { PartyTests.Quiet(walk); yield return null; }
+            }
+            g.SetFlag("tribute_fight", true);
+            walk.Settle();
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 30f && !walk.Combat.Active)
+            {
+                PartyTests.Quiet(walk);
+                if (!walk.Busy) walk.Combat.Check(true);
+                for (var i = 0; i < 30; i++) yield return null;
+            }
+            Assert.That(walk.Combat.Active, Is.True, "the fight began");
+            yield return Frames(60);
+            Check(fails, "in the fight");
+            WorldOrigin.Rebase(new Vector3(WorldOrigin.Step, 0f, WorldOrigin.Step));
+            yield return Frames(4);
+            Check(fails, "in the fight, rebased");
+            Assert.That(fails, Is.Empty, string.Join("\n", fails));
+        }
+
+        /// <summary>(c, the containers) After a fast travel (Shale to the Rust Dogs' camp: the game begun again under the road's card) and a
+        /// rebase there, no transform keeps the old origin in its local place.</summary>
+        [UnityTest, Timeout(1800000)]
+        public IEnumerator NoTransformKeepsTheOldOriginAfterAFastTravel()
+        {
+            Bootstrap boot = null;
+            yield return BootTests.Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            yield return BootTests.TownSettled(() => walk.Townsfolk, "the town's people");
+            var fails = new List<string>();
+            Check(fails, "in Shale");
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 30f)
+            {
+                yield return Frames(30);
+                if (walk.Conversation != null && walk.Conversation.IsOpen) { walk.Conversation.Close(); continue; }
+                if (!walk.Busy) break;
+            }
+            Assert.That(walk.Busy, Is.False, "free to set out");
+            boot.TravelTo("shale", "rustdogs");
+            yield return null;
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 420f && (boot.Walkabout == null || !boot.Walkabout.Ready || !boot.Walkabout.Placed)) yield return null;
+            Assert.That(boot.Walkabout != null && boot.Walkabout.Ready, Is.True, "set down at the Rust Dogs' camp");
+            Assert.That(boot.Walkabout.Game.LocationId, Is.EqualTo("rustdogs"));
+            yield return Frames(120);
+            Check(fails, "after the fast travel");
+            WorldOrigin.Rebase(new Vector3(0f, 0f, -WorldOrigin.Step));
+            yield return Frames(4);
+            Check(fails, "after the fast travel, rebased");
+            Assert.That(fails, Is.Empty, string.Join("\n", fails));
+        }
+
         /// <summary>(d) The streamer's preparations in flight survive a rebase: the chunks being prepared when the world moved are built
         /// where the world now is (each chunk's terrain at its world corner less the offset).</summary>
         [UnityTest, Timeout(900000)]

@@ -110,6 +110,7 @@ namespace SecondFace.Game
             if (UI != null) UI.BackUnhandled += () => { if (Walkabout != null && Walkabout.Walker != null && Tour == null) OpenPause(); };
             var overlay = DebugOverlay.Ensure();
             if (World == null) yield break;
+            WorldOrigin.Contain(gameObject);   // (the boot's object holds the walk's people, piles and overlays: it stays at the origin)
             Stage = gameObject.AddComponent<WorldStage>();
             Stage.Assets = World;
             Stage.Camera = Camera.main;

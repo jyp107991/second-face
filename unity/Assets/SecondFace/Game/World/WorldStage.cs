@@ -27,14 +27,14 @@ namespace SecondFace.Game.World
         public IEnumerator Raise()
         {
             if (Assets == null || !Assets.Complete) { Status = "world assets missing (Second Face/Build world assets)"; yield break; }
-            World = new GameObject("World").AddComponent<WorldService>();
+            World = WorldOrigin.Contain(new GameObject("World")).AddComponent<WorldService>();
             yield return World.Load();
             if (!World.Ready) { Status = "world failed: " + World.Error; yield break; }
-            Streamer = new GameObject("Streamer").AddComponent<WorldStreamer>();
+            Streamer = WorldOrigin.Contain(new GameObject("Streamer")).AddComponent<WorldStreamer>();
             Streamer.World = World; Streamer.Layers = Assets.Layers; Streamer.Catalog = Assets.Catalog; Streamer.Details = Assets.Details; Streamer.Places = Assets.Places;
             yield return Streamer.Prewarm();
 
-            var skyGo = new GameObject("Sky");
+            var skyGo = WorldOrigin.Contain(new GameObject("Sky"));
             Clock = skyGo.AddComponent<TimeService>(); Clock.Paused = true; Clock.SetHour(Hour);
             // the world's sun: the scene's own directional light, never the studio's (portraits light their faces with
             // lights of their own, off between pictures, on their own layer: taken for the sun, the sky turned a dead

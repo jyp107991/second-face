@@ -683,7 +683,7 @@ namespace SecondFace.Game.Play
             get
             {
                 // under the walkabout's own object as the townsfolk are (never under a place: a place hides what is under it)
-                if (_root == null) { _root = new GameObject("party").transform; _root.SetParent(transform, false); }
+                if (_root == null) { _root = WorldOrigin.Contain(new GameObject("party")).transform; _root.SetParent(transform, false); }
                 return _root;
             }
         }

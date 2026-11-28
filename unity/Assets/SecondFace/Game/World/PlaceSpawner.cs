@@ -66,7 +66,7 @@ namespace SecondFace.Game.World
                 if (d <= ShowWithin && !_live.ContainsKey(e.Id))
                 {
                     var at = WorldOrigin.ToUnity(info.Centre[0], World.Gen.Pad(info).level, info.Centre[1]);
-                    if (_root == null) _root = new GameObject("Places").transform;
+                    if (_root == null) _root = WorldOrigin.Contain(new GameObject("Places")).transform;
                     _pendingStamp = WorldOrigin.Stamp;
                     var h = Addressables.InstantiateAsync(e.Address, at, Quaternion.identity, _root);
                     _live[e.Id] = h;

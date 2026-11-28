@@ -121,7 +121,7 @@ namespace SecondFace.Game.Play
         {
             if (_game == null || place == null || _towns.ContainsKey(id)) return;
             var main = World != null && World.Layout.Places.TryGetValue(id, out var info) && !string.IsNullOrEmpty(info.Map) ? info.Map : id;
-            var folk = new GameObject("people_" + id).AddComponent<Townsfolk>();
+            var folk = WorldOrigin.Contain(new GameObject("people_" + id)).AddComponent<Townsfolk>();
             folk.transform.SetParent(transform, false);
             folk.Clock = Clock;
             folk.Bind(place, main);
