@@ -21,17 +21,13 @@ using UnityEditor;
 namespace SecondFace.Tests
 {
     /// <summary>
-    /// The floating origin (Game/World/WorldOrigin.cs, docs/MOTION_ROOT_CAUSE.md §19): the people the game makes stand as they do at
-    /// Unity's origin wherever the box lets them stand; a rebase moves no bone of anyone, mid-walk, mid-fight, mid-fall or
-    /// mid-conversation, and no agent loses its way; a save round-trips across a rebase; the streamer's preparations in flight land
-    /// where the world now is.
+    /// The floating origin (Game/World/WorldOrigin.cs, docs/MOTION_ROOT_CAUSE.md §19): a rebase moves no bone of anyone, mid-walk,
+    /// mid-fight, mid-fall or mid-conversation, and no agent loses its way; a save round-trips across a rebase; no transform keeps the old
+    /// origin in its local place (the containers); a fight begins re-centred and ends with the world whole; the streamer's preparations in
+    /// flight land where the world now is. How alike the people stand at the box's edge is FloatingOriginPrecisionTests'.
     /// </summary>
     public class FloatingOriginTests
     {
-        // the twins' tolerances: what a 0.1 mm move of a twin near the origin gave (§19, e1, the managed clearance), a quarter over
-        private const float TownDeg = 1.25f, TownM = 0.0103f, FightDeg = 0.05f, FightM = 0.00023f;
-        // the farthest a person can stand while the walker is inside the box (WorldOrigin.Box 768 m + PeopleService's 140 m)
-        private static readonly Vector3 BoxEdge = new(908f, 0f, 908f);
         private static readonly string[] Bodies = { "Female_Adult_01", "Business_Female_02", "Male_Adult_08", "Construction_Male_03" };
         private static readonly HumanBodyBones[] Chain =
         {
@@ -233,67 +229,6 @@ namespace SecondFace.Tests
             }
         }
 
-        /// <summary>(a) The same people at the farthest place the box lets anyone stand and at Unity's origin: alike within what a 0.1 mm
-        /// move of a twin gives near the origin, in town and in the fight's states.</summary>
-        [UnityTest, Timeout(1800000)]
-        public IEnumerator PeopleAtTheBoxsEdgeStandAsAtTheOrigin()
-        {
-            var keep = Time.captureDeltaTime; Time.captureDeltaTime = 1f / 60f;
-            SetManaged(true);
-            try
-            {
-                var pairs = new List<Pair>();
-                yield return Make(pairs, Vector3.zero, BoxEdge);
-                var (w, _) = Watch(pairs);
-                yield return Frames(30);
-                Reset(w); w.On = true; yield return Town(pairs); w.On = false;
-                var town = (w.Deg, w.M, w.Where);
-                Reset(w); w.On = true; yield return FightLayer(pairs); w.On = false;
-                var fight = (w.Deg, w.M, w.Where);
-                Debug.Log($"FloatingOriginTests: at the box's edge {BoxEdge}: town {town.Item1:0.0000}° {town.Item2 * 1000f:0.000} mm ({town.Item3}); fight {fight.Item1:0.0000}° {fight.Item2 * 1000f:0.000} mm ({fight.Item3})");
-                Assert.That(town.Item1, Is.LessThanOrEqualTo(TownDeg), $"town, turns ({town.Item3})");
-                Assert.That(town.Item2, Is.LessThanOrEqualTo(TownM), $"town, places ({town.Item3})");
-                Assert.That(fight.Item1, Is.LessThanOrEqualTo(FightDeg), $"the fight's states, turns ({fight.Item3})");
-                Assert.That(fight.Item2, Is.LessThanOrEqualTo(FightM), $"the fight's states, places ({fight.Item3})");
-            }
-            finally { Time.captureDeltaTime = keep; }
-        }
-
-        /// <summary>(a, before and after) Shale's place: raw (as the game stood before the floating origin, 16 km out: for the record) and
-        /// through the origin (the world rebased about Shale, as the game now places it: within the twins' tolerances).</summary>
-        [UnityTest, Timeout(1800000)]
-        public IEnumerator ShaleBeforeAndAfterTheFloatingOrigin()
-        {
-            var keep = Time.captureDeltaTime; Time.captureDeltaTime = 1f / 60f;
-            SetManaged(true);
-            try
-            {
-                var shale = new Vector3(15369f, 39f, 4493f);
-                var results = new List<string>();
-                foreach (var after in new[] { false, true })
-                {
-                    WorldOrigin.Reset();
-                    if (after) WorldOrigin.StartAt(shale.x, shale.z);
-                    var pairs = new List<Pair>();
-                    yield return Make(pairs, Vector3.zero, WorldOrigin.ToUnity(shale));
-                    var (w, _) = Watch(pairs);
-                    yield return Frames(30);
-                    Reset(w); w.On = true; yield return Town(pairs); w.On = false;
-                    results.Add($"{(after ? "after" : "before")}: twin at Unity {WorldOrigin.ToUnity(shale)}: town {w.Deg:0.000}° {w.M * 1000f:0.0} mm ({w.Where})");
-                    if (after)
-                    {
-                        Assert.That(w.Deg, Is.LessThanOrEqualTo(TownDeg), "after: town, turns " + w.Where);
-                        Assert.That(w.M, Is.LessThanOrEqualTo(TownM), "after: town, places " + w.Where);
-                    }
-                    foreach (var g in _made) if (g != null) Object.Destroy(g);
-                    _made.Clear();
-                    yield return null;
-                }
-                Debug.Log("FloatingOriginTests: Shale " + string.Join("; ", results));
-            }
-            finally { Time.captureDeltaTime = keep; WorldOrigin.Reset(); }
-        }
-
         /// <summary>The frame of a rebase against its neighbours: no bone's own root-relative step in it is more than its neighbours'
         /// largest and the floor (m, degrees).</summary>
         private static string Jumps(Watcher w, List<int> rebased, float floorM = 0.001f, float floorDeg = 0.5f)
@@ -316,8 +251,8 @@ namespace SecondFace.Tests
             return string.Join("; ", bad);
         }
 
-        /// <summary>(b) A rebase mid-walk, mid-fight's states and mid-fall moves no bone of anyone (each twin's own step in the rebase's
-        /// frames no more than its neighbours'), and the twins stay as alike as without one.</summary>
+        /// <summary>(b) A rebase mid-walk, mid-fight's states and mid-fall moves no bone of anyone: each twin's own step in the rebase's
+        /// frames no more than its neighbours' (how far the twins part is recorded: the branching systems have no bound until item (iv)).</summary>
         [UnityTest, Timeout(1800000)]
         public IEnumerator ARebaseMovesNoBoneMidWalkMidFightAndMidFall()
         {
@@ -333,12 +268,13 @@ namespace SecondFace.Tests
                 var rebased = new List<int>();
                 Reset(w); w.On = true; yield return Town(pairs, 150, new Vector3(-WorldOrigin.Step, 0f, 0f), rebased); w.On = false;
                 var walk = Jumps(w, rebased);
-                Assert.That(w.Deg, Is.LessThanOrEqualTo(TownDeg), "mid-walk: the twins alike, turns " + w.Where);
-                Assert.That(w.M, Is.LessThanOrEqualTo(TownM), "mid-walk: the twins alike, places " + w.Where);
+                // (the twins alike, recorded: with the branching systems on they part at any rounding, item (iv), MRC §19.4; the
+                // continuous systems' precision is FloatingOriginPrecisionTests')
+                var apart = $"walk {w.Deg:0.000}° {w.M * 1000f:0.0} mm ({w.Where})";
                 rebased.Clear();
                 Reset(w); w.On = true; yield return FightLayer(pairs, 200, new Vector3(WorldOrigin.Step, 0f, 0f), rebased); w.On = false;
                 var fight = Jumps(w, rebased);
-                Assert.That(w.Deg, Is.LessThanOrEqualTo(FightDeg), "mid-fight: the twins alike, turns " + w.Where);
+                apart += $"; the fight's states {w.Deg:0.000}° {w.M * 1000f:0.0} mm ({w.Where})";
                 // the fall: the fight's own views, the ragdoll handed the body, a rebase while it falls
 #if UNITY_EDITOR
                 var assets = AssetDatabase.LoadAssetAtPath<WorldAssets>("Assets/SecondFace/World/WorldAssets.asset");
@@ -374,7 +310,7 @@ namespace SecondFace.Tests
                     // would show as a jump in a twin's own step, which is what is checked)
                     fall = Jumps(w, rebased, 0.02f, 5f);
                 }
-                Debug.Log($"FloatingOriginTests: mid-walk [{walk}] mid-fight [{fight}] mid-fall [{fall}]");
+                Debug.Log($"FloatingOriginTests: mid-walk [{walk}] mid-fight [{fight}] mid-fall [{fall}]; the twins apart (recorded): {apart}");
                 Assert.That(walk, Is.Empty, "mid-walk: no bone jumps in the rebase's frames");
                 Assert.That(fight, Is.Empty, "mid-fight: no bone jumps in the rebase's frames");
                 Assert.That(fall, Is.Empty, "mid-fall: no bone jumps in the rebase's frames");
@@ -496,34 +432,7 @@ namespace SecondFace.Tests
             Check(fails, "in Shale after the walk's own rebase");
             for (var k = 1; k <= 3; k++) { WorldOrigin.Rebase(new Vector3(WorldOrigin.Step, 0f, 0f)); yield return Frames(4); Check(fails, $"{k} out"); }
             for (var k = 1; k <= 3; k++) { WorldOrigin.Rebase(new Vector3(-WorldOrigin.Step, 0f, 0f)); yield return Frames(4); Check(fails, $"{k} back"); }
-            // a fight: the raiders' tribute, begun as PartyTests begins it
-            var g = walk.Game;
-            foreach (var id in new[] { "npc_rd_t1", "npc_rd_t2", "npc_rd_t3", "npc_rd_t4" }) g.Npcs[id] = new SecondFace.Core.State.NpcSave { Hp = 1 };
-            g.SetFlag("tribute_day", true);
-            walk.Settle();
-            Townsperson raider = null;
-            var t0 = Time.realtimeSinceStartup;
-            while (Time.realtimeSinceStartup - t0 < 60f && (raider = walk.People.StandingPeople.FirstOrDefault(p => p != null && p.Def != null && p.Def.Id == "npc_rd_t1")) == null)
-            {
-                PartyTests.Quiet(walk);
-                yield return null;
-            }
-            Assert.That(raider, Is.Not.Null, "the raiders came to the town");
-            var near = raider.transform.position + (walk.Walker.transform.position - raider.transform.position).normalized * 9f;
-            if (UnityEngine.AI.NavMesh.SamplePosition(near, out var nh, 4f, UnityEngine.AI.NavMesh.AllAreas) && walk.Walker.GoTo(nh.position))
-            {
-                t0 = Time.realtimeSinceStartup;
-                while (Time.realtimeSinceStartup - t0 < 60f && walk.Walker.Goal != null) { PartyTests.Quiet(walk); yield return null; }
-            }
-            g.SetFlag("tribute_fight", true);
-            walk.Settle();
-            t0 = Time.realtimeSinceStartup;
-            while (Time.realtimeSinceStartup - t0 < 30f && !walk.Combat.Active)
-            {
-                PartyTests.Quiet(walk);
-                if (!walk.Busy) walk.Combat.Check(true);
-                for (var i = 0; i < 30; i++) yield return null;
-            }
+            yield return TributeFight(walk);
             Assert.That(walk.Combat.Active, Is.True, "the fight began");
             yield return Frames(60);
             Check(fails, "in the fight");
@@ -563,6 +472,106 @@ namespace SecondFace.Tests
             WorldOrigin.Rebase(new Vector3(0f, 0f, -WorldOrigin.Step));
             yield return Frames(4);
             Check(fails, "after the fast travel, rebased");
+            Assert.That(fails, Is.Empty, string.Join("\n", fails));
+        }
+
+        /// <summary>The raiders' tribute in Shale, begun as PartyTests begins it: the raiders come to the town, the walker goes within 9 m
+        /// of their lead, the fight is asked for; until it is on (at most 30 s).</summary>
+        private static IEnumerator TributeFight(Walkabout walk)
+        {
+            var g = walk.Game;
+            foreach (var id in new[] { "npc_rd_t1", "npc_rd_t2", "npc_rd_t3", "npc_rd_t4" }) g.Npcs[id] = new SecondFace.Core.State.NpcSave { Hp = 1 };
+            g.SetFlag("tribute_day", true);
+            walk.Settle();
+            Townsperson raider = null;
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 60f && (raider = walk.People.StandingPeople.FirstOrDefault(p => p != null && p.Def != null && p.Def.Id == "npc_rd_t1")) == null)
+            {
+                PartyTests.Quiet(walk);
+                yield return null;
+            }
+            Assert.That(raider, Is.Not.Null, "the raiders came to the town");
+            var near = raider.transform.position + (walk.Walker.transform.position - raider.transform.position).normalized * 9f;
+            if (UnityEngine.AI.NavMesh.SamplePosition(near, out var nh, 4f, UnityEngine.AI.NavMesh.AllAreas) && walk.Walker.GoTo(nh.position))
+            {
+                t0 = Time.realtimeSinceStartup;
+                while (Time.realtimeSinceStartup - t0 < 60f && walk.Walker.Goal != null) { PartyTests.Quiet(walk); yield return null; }
+            }
+            g.SetFlag("tribute_fight", true);
+            walk.Settle();
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 30f && !walk.Combat.Active)
+            {
+                PartyTests.Quiet(walk);
+                if (!walk.Busy) walk.Combat.Check(true);
+                for (var i = 0; i < 30; i++) yield return null;
+            }
+        }
+
+        private static int AgentsOnTheMesh() => Object.FindObjectsByType<UnityEngine.AI.NavMeshAgent>(FindObjectsSortMode.None).Count(a => a.isActiveAndEnabled && a.isOnNavMesh);
+        private static int AgentsOff() => Object.FindObjectsByType<UnityEngine.AI.NavMeshAgent>(FindObjectsSortMode.None).Count(a => a.isActiveAndEnabled && !a.isOnNavMesh);
+
+        /// <summary>(c, the fight re-centred, MRC §19.4) A fight begun away from Unity's origin (the world moved a chunk off first) begins with
+        /// its centre within 32 m of it along x and z (WorldOrigin.Recentre, whole 64 m steps); every fighter's body stands at its battle
+        /// place and that place is the world's own (the battle's logical places unchanged); no agent leaves the NavMesh; and when it is over
+        /// the world is whole, as after any rebase: no transform keeps the old origin, every agent on the NavMesh, a rebase after it the same.
+        /// The fighters' extent is said (wider than a 64 m step, the farthest stand that much off the origin).</summary>
+        [UnityTest, Timeout(1800000)]
+        public IEnumerator AFightBeginsReCentredAndEndsWithTheWorldWhole()
+        {
+            Bootstrap boot = null;
+            yield return BootTests.Boot(b => boot = b);
+            var walk = boot.Walkabout;
+            yield return BootTests.TownSettled(() => walk.Townsfolk, "the town's people");
+            // (anywhere: the world a chunk off along both axes, so the fight does not begin near the origin by the walk's own rebase)
+            WorldOrigin.Rebase(new Vector3(WorldOrigin.Step, 0f, -WorldOrigin.Step));
+            yield return Frames(4);
+            var rebases = WorldOrigin.Rebases;
+            yield return TributeFight(walk);
+            Assert.That(walk.Combat.Active, Is.True, "the fight began");
+            var t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 10f && WorldOrigin.Rebases == rebases) yield return null;
+            yield return Frames(2);
+            var battle = walk.Combat.Battle;
+            Assert.That(battle, Is.Not.Null, "the battle");
+            var units = battle.Units.Where(u => u.Alive).ToList();
+            var at = units.Select(u => WorldOrigin.ToUnity(u.PX, 0, u.PZ)).ToList();
+            float x0 = at.Min(p => p.x), x1 = at.Max(p => p.x), z0 = at.Min(p => p.z), z1 = at.Max(p => p.z);
+            var centre = new Vector3((x0 + x1) * 0.5f, 0f, (z0 + z1) * 0.5f);
+            Debug.Log($"FloatingOriginTests: the fight re-centred by {walk.Combat.LastRecentre}: its centre at Unity {centre}, its fighters spanning {walk.Combat.LastSpan:0.0} m ({units.Count} of them)");
+            Assert.That(WorldOrigin.Rebases, Is.GreaterThan(rebases), "the fight began with a rebase");
+            Assert.That(Mathf.Abs(centre.x), Is.LessThanOrEqualTo(WorldOrigin.FightStep * 0.5f + 0.01f), "the fight's centre within 32 m along x");
+            Assert.That(Mathf.Abs(centre.z), Is.LessThanOrEqualTo(WorldOrigin.FightStep * 0.5f + 0.01f), "the fight's centre within 32 m along z");
+            if (walk.Combat.LastSpan > WorldOrigin.FightStep) Debug.Log($"FloatingOriginTests: the fighters span {walk.Combat.LastSpan:0} m, more than a step: the farthest stand {walk.Combat.LastSpan * 0.5f:0} m off the origin");
+            // every fighter where the battle has them, and the battle's places the world's own
+            var misplaced = new List<string>();
+            foreach (var u in units)
+            {
+                var body = walk.Combat.BodyOf(u);
+                if (body == null) { misplaced.Add($"{u.C.Id} without a body"); continue; }
+                var p = body.position; var want = WorldOrigin.ToUnity(u.PX, p.y, u.PZ);
+                var off = new Vector2(p.x - want.x, p.z - want.z).magnitude;
+                if (off > 0.3f) misplaced.Add($"{u.C.Id} {off:0.00} m from its battle place");
+            }
+            Assert.That(misplaced, Is.Empty, "every fighter at its battle place: " + string.Join("; ", misplaced));
+            Assert.That(AgentsOff(), Is.Zero, "no agent off the NavMesh after the re-centring");
+            // the fight to its end, the player's turns by the AI
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 600f && walk.Combat.Active)
+            {
+                if (walk.Combat.PlayersTurn) yield return walk.Combat.PlayerTurnByAi();
+                yield return null;
+            }
+            Assert.That(walk.Combat.Active, Is.False, "the fight ended");
+            yield return Frames(120);
+            var fails = new List<string>();
+            Check(fails, "after the fight");
+            Assert.That(AgentsOff(), Is.Zero, "every agent on the NavMesh after the fight");
+            WorldOrigin.Rebase(new Vector3(-WorldOrigin.Step, 0f, 0f));
+            yield return Frames(4);
+            Check(fails, "after the fight, rebased");
+            Assert.That(AgentsOff(), Is.Zero, "every agent on the NavMesh after a rebase after the fight");
+            Assert.That(walk.Ready, Is.True, "the walker on the NavMesh");
             Assert.That(fails, Is.Empty, string.Join("\n", fails));
         }
 

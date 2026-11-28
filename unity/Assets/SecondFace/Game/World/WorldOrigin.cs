@@ -11,13 +11,16 @@ namespace SecondFace.Game.World
     /// arm clearance, Fighter's holds, the Animator's own foot IK and the skinning lost that precision there (the hips 12.4 cm out,
     /// the feet turned over, the hands 17.5°; §19). The world's own coordinates (Core's battle, the saves, the content) stay logical:
     /// <see cref="ToUnity(double, double, double)"/> on the way in, <see cref="ToWorld"/> on the way out.
-    /// <para>The offset moves in whole chunks (<see cref="Step"/>, 512 m): every position and the shift are then multiples of one float
-    /// step, so a rebase rounds nothing.</para>
-    /// <para>The box (<see cref="Box"/>), from the precision the people need: a person stands at most PeopleService.Leave (140 m) from
-    /// the one who walks, so with the walker within 768 m of Unity's origin along x and z every standing person is within 1024 m,
-    /// where a float's step is 2^-14 m = 0.061 mm, under the 0.1 mm the twins' test (§19, e1) showed to be nearly harmless. After a
-    /// rebase the walker is within 256 m of the origin (the shift rounds to the nearest chunk), so the next comes after at least
-    /// 512 m of travel: some 6-10 minutes on foot.</para>
+    /// <para>The offset moves in whole chunks (<see cref="Step"/>, 512 m), or in a fight's whole <see cref="FightStep"/>s: a shift that is a
+    /// multiple of every float step under it, so a point carried toward the origin (the walker and everyone near them) is moved exactly. A
+    /// point carried outward into a larger power of two rounds to that range's step; only things far from the walker move that way.</para>
+    /// <para>The box (<see cref="Box"/>), from the float step's curve (MRC §19.4: each system alone, twin against twin, the twin at
+    /// 16 m to 16 km): the town's own systems (the Animator in the town's states, the skin) part by about 2.5 float steps, at most
+    /// 0.21 mm and 0.051° at the box's farthest point (the walker within 768 m of Unity's origin along x and z and everyone standing
+    /// within PeopleService.Leave, 140 m, of them: 908 m, where a float's step is 0.061 mm). The fight's own (the fight layer's foot IK,
+    /// 35-95 float steps; TwoBone) lose precision from the origin on, so a fight is re-centred as it begins (<see cref="Recentre"/>),
+    /// its centre within 32 m. After a rebase the walker is within 256 m of the origin (the shift rounds to the nearest chunk), so the
+    /// next comes after at least 512 m of travel: some 6-10 minutes on foot.</para>
     /// <para>The rebase is split over two frames (§19.2): in the first the roots move and the physics' poses are synced together (a
     /// raycast between them would find the old ground), and every holder of a position is told (<see cref="IRebase"/>); the
     /// navigation agents are held (not moved by their agents, stopped); in the next the NavMesh data are re-added at their new place
@@ -34,7 +37,8 @@ namespace SecondFace.Game.World
         /// <summary>How far the walker may stand from Unity's origin along x or z before the world is rebased (m; the derivation above).</summary>
         public const float Box = 768f;
 
-        /// <summary>The offset: a world point is a Unity point plus this (m; whole <see cref="Step"/>s; y is never moved).</summary>
+        /// <summary>The offset: a world point is a Unity point plus this (m; whole <see cref="Step"/>s, or <see cref="FightStep"/>s since a fight;
+        /// y is never moved).</summary>
         public static double OX { get; private set; }
         public static double OZ { get; private set; }
 
@@ -88,6 +92,21 @@ namespace SecondFace.Game.World
         /// <summary>How far past the box the walker may go while a sequence holds the rebase off (m): the people still stand within
         /// 1024 m (884 + 140), where a float's step is 0.061 mm.</summary>
         public const float HardBox = 884f;
+
+        /// <summary>A fight's re-centring step (m): a fight begins with a rebase in whole steps of this, so its centre stands within half of
+        /// it (32 m) of Unity's origin along x and z, where the fight's own systems are at the near-origin control's level (MRC §19.4).</summary>
+        public const float FightStep = 64f;
+
+        /// <summary>Brings a Unity point within half a <paramref name="step"/> of Unity's origin along x and z: a rebase in whole steps, both of
+        /// its frames at once (the NavMesh moved and the agents warped now: the caller goes on in the same frame). The shift, zero if none.</summary>
+        public static Vector3 Recentre(Vector3 unity, float step = FightStep)
+        {
+            var d = new Vector3(-Mathf.Round(unity.x / step) * step, 0f, -Mathf.Round(unity.z / step) * step);
+            if (d == Vector3.zero) return d;
+            Rebase(d);
+            Settle();
+            return d;
+        }
         // (sequences in flight that keep Unity points across frames: an action of the fight, a throw, the walk's use of a thing; a
         // hold ends when released or after its own bound, so a coroutine stopped before its finally cannot hold the world forever)
         private static readonly Dictionary<int, float> Holds = new();

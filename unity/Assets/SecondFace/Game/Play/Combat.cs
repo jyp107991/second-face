@@ -240,6 +240,29 @@ namespace SecondFace.Game.Play
             return u;
         }
 
+        /// <summary>The last fight's fighters' extent (m, the larger of x and z) and the re-centring's shift (tests).</summary>
+        public float LastSpan { get; private set; }
+        public Vector3 LastRecentre { get; private set; }
+
+        /// <summary>Re-centres the world on the fighters (their bodies' extent's middle): unless a sequence still holds it, a rebase in whole
+        /// <see cref="WorldOrigin.FightStep"/>s; a fight wider than a step is said (its farthest fighters then stand that much off the origin).</summary>
+        private void Recentre(List<BattleUnit> units)
+        {
+            LastRecentre = Vector3.zero;
+            float x0 = float.MaxValue, x1 = float.MinValue, z0 = float.MaxValue, z1 = float.MinValue;
+            foreach (var u in units)
+                if (_bodies.TryGetValue(u, out var b) && b != null)
+                {
+                    var p = b.position;
+                    x0 = Mathf.Min(x0, p.x); x1 = Mathf.Max(x1, p.x); z0 = Mathf.Min(z0, p.z); z1 = Mathf.Max(z1, p.z);
+                }
+            if (x0 > x1) return;
+            LastSpan = Mathf.Max(x1 - x0, z1 - z0);
+            if (LastSpan > WorldOrigin.FightStep) Debug.Log($"Combat: the fighters span {LastSpan:0} m, more than a re-centring step ({WorldOrigin.FightStep:0} m): the farthest stand about {LastSpan * 0.5f:0} m from the origin");
+            if (WorldOrigin.Held) { Debug.Log("Combat: the fight not re-centred: a sequence still holds the world"); return; }
+            LastRecentre = WorldOrigin.Recentre(new Vector3((x0 + x1) * 0.5f, 0f, (z0 + z1) * 0.5f));
+        }
+
         private IEnumerator Fight(List<Townsperson> hostiles, bool ourMove = false, PitTerms pit = null)
         {
             var g = Walkabout.Game;
@@ -288,6 +311,12 @@ namespace SecondFace.Game.Play
             if (unaware.Count > 0) _battle.Surprise(unaware);
             Debug.Log("Combat: " + string.Join(", ", units.Select(x => $"{x.C.Name} ({(x == _player ? "you" : x.Hostile ? "hostile" : "ally")}, hp {x.C.Sheet.Hp})")) + (unaware.Count > 0 ? $"; {unaware.Count} caught unaware" : ""));
             Walkabout.Walker.GoTo(Walkabout.Walker.transform.position);
+            // the fight re-centred before its views, its camera and its first turn (MRC §19.4): once no sequence in flight holds the world
+            // still (a word or a use ending; at most 2 s), a rebase brings its centre within 32 m of Unity's origin, where the fight's own
+            // systems keep the precision they have there
+            var held0 = Time.unscaledTime;
+            while (WorldOrigin.Held && Time.unscaledTime - held0 < 2f) yield return null;
+            Recentre(units);
             // the views, the ground's marks, the camera
             _fx ??= new CombatFx(transform);
             foreach (var u in units) ViewOf(u);
