@@ -324,6 +324,8 @@ namespace SecondFace.Game.Play
             _overlay.Clear();
             _pace = Pace != null ? Pace() : CombatPace.Normal;
             _camera = new CombatCamera(Walkabout.Rig) { Pace = _pace };
+            if (!TryGetComponent<CombatCameraTick>(out var tick)) tick = gameObject.AddComponent<CombatCameraTick>();
+            tick.Combat = this;
             ShowBar(true);
             Say(Strings.Get("combat.start"));
             if (unaware.Count > 0)
@@ -501,9 +503,11 @@ namespace SecondFace.Game.Play
 
         /// <summary>The turn order and the bars over heads, every frame of a fight (people move; the camera turns); their
         /// marks (cover, flank, sight of the preview, held shots, intents, a throw's catch) when anything has changed.</summary>
+        /// <summary>The fight camera's tick, from <see cref="CombatCameraTick"/> at 40 (with the cameras, after the people).</summary>
+        internal void TickCamera() { if (_camera != null && Active) _camera.Tick(); }
+
         private void LateUpdate()
         {
-            if (_camera != null && Active) _camera.Tick();
             // (on through the fight's last seconds too: the last numbers rise, the end is read)
             if (_hud == null || _battle == null || _hud.Root.parent == null) return;
             _cam = Walkabout != null && Walkabout.Stage != null ? Walkabout.Stage.Camera : UnityEngine.Camera.main;

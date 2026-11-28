@@ -15,7 +15,9 @@ namespace SecondFace.Game.People
     /// only as far as the fight's whole-body layer leaves the base. A compensating bake, not a cure: the import's re-parent of
     /// the Biped's thighs and clavicles (§16 (a)) takes it to nought on every clip, and then it goes.
     /// </summary>
-    [DefaultExecutionOrder(-30)]
+    // (-31: the sit's turn is put on before the fight clip's, ClipTurnFirst at -30. Both stood at -30 in no set order until 2026-11-28;
+    // the order made explicit, ruled: the A/B of a seated aim found no frame where both act, the two orders' hips 0.0000° apart)
+    [DefaultExecutionOrder(-31)]
     public sealed class SeatTurn : MonoBehaviour
     {
         public const string Tag = "sit";
