@@ -820,6 +820,10 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
        applies: the blend's own landing, at its source.
     9. W1 and W6 on navigation agents in the game's own conditions: no test measures them (`PartyTests` jogs the company 30 m and
        stops it, and its catch fires on the same 138 frames under the old and the new pace; neither W1 nor W6 is measured there).
+    10. The arm clearance's branch flips (`docs/MOTION_ROOT_CAUSE.md` §19, item (iv)): its choices (the deepest point, a pass's
+        choice) are not continuous in their inputs, so a rounding-sized change flips them for a frame and the hand snaps out and
+        back (0.1 mm twins: 0.82 cm, 0.99°; the job against managed: 2.17 cm, 16.8°; at Shale: 5.3 cm, 9.5°; H3's limit is 10°).
+        A defect of the algorithm, managed and job alike: the choices exposed and made continuous, with gate evidence. Not built.
   - The arm clearance's level of detail stays as it is (the perf item below).
 - **2026-11-27, the gate batch committed under the waiver policy: the runtime reads the drawn body (editor owner).**
   Gate: red, 3,351 (the whole cast, 2026-11-27 04:34; dfc732a4's 6,460; the fight's new FY1/FY2, 667, exempt as introduced).
