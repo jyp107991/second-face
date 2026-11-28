@@ -198,6 +198,17 @@ namespace SecondFace.Tests
             private void LateUpdate() { if (On) foreach (var p in Pairs) Compare(p, W, Trace); }
         }
 
+        /// <summary>TEMP (relaunch 16): CLEAR_PERTURB "dx" or "x,y,z" (m): twin B made that far from twin A.</summary>
+        private static Vector3 Perturb
+        {
+            get
+            {
+                var v = (System.Environment.GetEnvironmentVariable("CLEAR_PERTURB") ?? "").Split(',');
+                float F(int i) => i < v.Length && float.TryParse(v[i], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var f) ? f : 0f;
+                return v.Length >= 3 ? new Vector3(F(0), F(1), F(2)) : new Vector3(F(0), 0f, 0f);
+            }
+        }
+
         private IEnumerator Make(List<Pair> pairs)
         {
 #if UNITY_EDITOR
@@ -209,6 +220,12 @@ namespace SecondFace.Tests
             if (cat == null || controller == null) { Assert.Ignore("the cast's catalogue or the locomotion controller are not built"); yield break; }
             var ground = GameObject.CreatePrimitive(PrimitiveType.Cube); _made.Add(ground);
             ground.transform.localScale = new Vector3(20f, 1f, 20f); ground.transform.position = new Vector3(0f, -0.5f, 0f);
+            if (Perturb.magnitude > 1f)
+            {
+                // (the moved twins' own ground, as the origin's under the others)
+                var far = GameObject.CreatePrimitive(PrimitiveType.Cube); _made.Add(far);
+                far.transform.localScale = new Vector3(20f, 1f, 20f); far.transform.position = Perturb + new Vector3(0f, -0.5f, 0f);
+            }
             // (the grounds' colliders where they were put before anyone stands on them: with the physics' auto-sync off, the first
             // frames' foot rays found a cube at its creation pose, MRC §19.3)
             Physics.SyncTransforms();
@@ -222,7 +239,9 @@ namespace SecondFace.Tests
                 var at = new Vector3(x, 0f, 0f); x += 1.6f;
                 for (var k = 0; k < 2; k++)
                 {
-                    var walker = SecondFace.Game.Play.Walker.Create(prefab, controller, at, 0f, p?.Male ?? id.Contains("Male"));
+                    // (TEMP, relaunch 16: CLEAR_PERTURB moves twin B by that much, a change of rounding only)
+                    var shift = k == 1 ? Perturb : Vector3.zero;
+                    var walker = SecondFace.Game.Play.Walker.Create(prefab, controller, at + shift, 0f, p?.Male ?? id.Contains("Male"));
                     walker.gameObject.name = "clearance twin " + id;   // (alike: the same name, the same seeds)
                     _made.Add(walker.gameObject);
                     RbDress.Apply(walker.gameObject, SecondFace.Core.Npc.RbPeople.DyesFor(p, "walker_" + id, p?.Roles?.FirstOrDefault() ?? "settler", null));
@@ -375,14 +394,22 @@ namespace SecondFace.Tests
                 watch.Pairs = pairs;
                 yield return Frames(30);
                 var report = new List<string>(); var wrong = new List<string>();
-                foreach (var (control, trace) in new[] { (true, false), (false, false), (false, true) })
+                // (TEMP, relaunch 16: CLEAR_PASSES=perturbed runs the twins both managed, then both on the job, with CLEAR_PERTURB's shift)
+                var perturbed = System.Environment.GetEnvironmentVariable("CLEAR_PASSES") == "perturbed";
+                // (TEMP, relaunch 16: CLEAR_PASSES=off, the twins with their arm clearance off: what the rest of the body does there)
+                var off = System.Environment.GetEnvironmentVariable("CLEAR_PASSES") == "off";
+                if (off) { perturbed = true; foreach (var p in pairs) { p.CA.enabled = false; p.CB.enabled = false; } }
+                var passes = off ? new[] { (true, false) } : perturbed ? new[] { (true, false), (true, true) } : new[] { (true, false), (false, false), (false, true) };
+                foreach (var (control, trace) in passes)
                 {
+                    // (perturbed: the first pass both managed, the second both on the job; the second's trace flag reused as "both on the job")
+                    var bothJob = perturbed && trace;
                     foreach (var p in pairs) { p.Apart = false; p.HasPrev = false; }   // (a pass's twins counted from level)
-                    foreach (var p in pairs) { p.CA.ForceManaged = true; p.CB.ForceManaged = control; p.CA.TraceStages = trace; p.CB.TraceStages = trace; }
+                    foreach (var p in pairs) { p.CA.ForceManaged = !bothJob; p.CB.ForceManaged = control && !bothJob; p.CA.TraceStages = !perturbed && trace; p.CB.TraceStages = !perturbed && trace; }
                     foreach (var (what, seq) in new (string, System.Func<List<Pair>, IEnumerator>)[] { ("town", Town), ("fight", Fight), ("town past the skin's range", Far) })
                     {
                         var w = new Worst();
-                        watch.W = w; watch.Trace = trace; watch.On = true;
+                        watch.W = w; watch.Trace = !perturbed && trace; watch.On = true;
                         long skin0 = ArmClearance.JobSkinSteps, sec0 = ArmClearance.JobSectionSteps;
                         yield return seq(pairs);
                         watch.On = false;
@@ -397,7 +424,7 @@ namespace SecondFace.Tests
                                 w.EndM = Mathf.Max(w.EndM, ((a.position - p.A.transform.position) - (b.position - p.B.transform.position)).magnitude);
                             }
                         }
-                        var label = $"{(control ? "control (both managed)" : "managed against the job")}, traces {(trace ? "on" : "off")}, {what}";
+                        var label = perturbed ? $"perturbed twins, {(off ? "the clearance off" : bothJob ? "both on the job" : "both managed")}, {what}" : $"{(control ? "control (both managed)" : "managed against the job")}, traces {(trace ? "on" : "off")}, {what}";
                         long skinN = ArmClearance.JobSkinSteps - skin0, secN = ArmClearance.JobSectionSteps - sec0;
                         report.Add(w.Note(label) + $"; the job's steps: {skinN} on the skin, {secN} on the sections");
                         // (each way taken where it should be: the no-skin twin on the sections throughout, everyone far off)
