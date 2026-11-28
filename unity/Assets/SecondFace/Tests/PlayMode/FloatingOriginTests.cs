@@ -68,10 +68,33 @@ namespace SecondFace.Tests
         {
             public List<Pair> Pairs; public bool On;
             public float Deg, M; public string Where = "";
+            /// <summary>When set: every frame, for each pair, twin and bone of the chain, its root-relative place and turn (x, y, z; x, y, z, w)
+            /// and its world place's largest coordinate, appended (the guard's runs).</summary>
+            public List<float[]> Rec;
             // each frame's largest own step (root-relative, m and degrees) per twin, for the continuity check
             public readonly List<(int Frame, float M, float Deg)> Steps = new();
             private void LateUpdate()
             {
+                if (Rec != null)
+                {
+                    var row = new float[Pairs.Count * 2 * Chain.Length * 8];
+                    var k = 0;
+                    foreach (var p in Pairs)
+                        foreach (var (an, root) in new[] { (p.A, p.RA), (p.B, p.RB) })
+                        {
+                            var inv = Quaternion.Inverse(root.rotation);
+                            for (var i = 0; i < Chain.Length; i++, k += 8)
+                            {
+                                var t = an.GetBoneTransform(Chain[i]);
+                                if (t == null) continue;
+                                var rp = inv * (t.position - root.position); var rq = inv * t.rotation; var wp = t.position;
+                                row[k] = rp.x; row[k + 1] = rp.y; row[k + 2] = rp.z;
+                                row[k + 3] = rq.x; row[k + 4] = rq.y; row[k + 5] = rq.z; row[k + 6] = rq.w;
+                                row[k + 7] = Mathf.Max(Mathf.Abs(wp.x), Mathf.Max(Mathf.Abs(wp.y), Mathf.Abs(wp.z)));
+                            }
+                        }
+                    Rec.Add(row);
+                }
                 if (!On) return;
                 float sm = 0f, sd = 0f;
                 foreach (var p in Pairs)
@@ -251,8 +274,113 @@ namespace SecondFace.Tests
             return string.Join("; ", bad);
         }
 
-        /// <summary>(b) A rebase mid-walk, mid-fight's states and mid-fall moves no bone of anyone: each twin's own step in the rebase's
-        /// frames no more than its neighbours' (how far the twins part is recorded: the branching systems have no bound until item (iv)).</summary>
+        /// <summary>A float's step at a coordinate's magnitude (m).</summary>
+        private static float Spacing(float v) => v < 1e-30f ? 1.4e-45f : Mathf.Pow(2f, Mathf.Floor(Mathf.Log(v, 2f)) - 23f);
+
+        /// <summary>(b)'s sequence on fresh twins (a chunk apart: the rebase takes one to the origin and the other a chunk the other way): the
+        /// walk, the fight's states, the fall; one rebase, in segment <paramref name="segment"/> (0 the walk, 150 frames in; 1 the fight's
+        /// states, 200 frames in; 2 the fall, 40 frames in; -1 none: the control). Every frame recorded into <paramref name="rec"/>; each
+        /// segment's rebase point (whether or not it rebases) into <paramref name="atRecord"/>; the rebased segment's Jumps and every
+        /// segment's twins apart into the lists.</summary>
+        private IEnumerator BSequence(int segment, List<float[]> rec, List<int> atRecord, List<string> jumps, List<string> apart)
+        {
+            var pairs = new List<Pair>();
+            yield return Make(pairs, Vector3.zero, new Vector3(WorldOrigin.Step, 0f, 0f));
+            var (w, _) = Watch(pairs);
+            w.Rec = rec;
+            yield return Frames(30);
+            var rebased = new List<int>();
+            void Note() { atRecord.Add(rec.Count); }
+            // the walk
+            Reset(w); w.On = true;
+            {
+                var f = 0;
+                foreach (var (speed, sneak, n) in new[] { (0f, false, 90), (1.4f, false, 120), (3.2f, false, 90), (1f, true, 90), (0f, false, 60) })
+                {
+                    Set(pairs, a => { a.SetFloat("Speed", speed); a.SetBool("Sneak", sneak); });
+                    for (var i = 0; i < n; i++, f++)
+                    {
+                        if (f == 150) { if (segment == 0) { WorldOrigin.Rebase(new Vector3(-WorldOrigin.Step, 0f, 0f)); rebased.Add(Time.frameCount); } Note(); }
+                        yield return null;
+                    }
+                }
+            }
+            w.On = false;
+            jumps.Add(segment == 0 ? Jumps(w, rebased) : "");
+            apart.Add($"walk {w.Deg:0.000}° {w.M * 1000f:0.0} mm ({w.Where})");
+            rebased.Clear();
+            Reset(w); w.On = true;
+            {
+                var layer = pairs[0].A.GetLayerIndex(CombatMotion.FullLayer);
+                Set(pairs, a => { a.SetLayerWeight(layer, 1f); var c = a.GetComponent<ArmClearance>(); if (c != null) c.Holding = true; });
+                var f = 0;
+                foreach (var st in CombatMotion.States.Where(st => st.Layer == CombatMotion.FullLayer && (st.Gate == "guard" || st.Gate == "ready" || st.Gate == "aim" || st.Gate == "strike")).Take(8))
+                {
+                    foreach (var p in pairs)
+                    {
+                        if (st.Only == (p.Female ? "m" : "f") || !p.A.HasState(layer, Animator.StringToHash(st.Name))) continue;
+                        p.A.CrossFadeInFixedTime(st.Name, 0.1f, layer); p.B.CrossFadeInFixedTime(st.Name, 0.1f, layer);
+                    }
+                    for (var i = 0; i < 60; i++, f++)
+                    {
+                        if (f == 200) { if (segment == 1) { WorldOrigin.Rebase(new Vector3(WorldOrigin.Step, 0f, 0f)); rebased.Add(Time.frameCount); } Note(); }
+                        yield return null;
+                    }
+                }
+                Set(pairs, a => { a.SetLayerWeight(layer, 0f); var c = a.GetComponent<ArmClearance>(); if (c != null) c.Holding = false; });
+                yield return Frames(30);
+            }
+            w.On = false;
+            jumps.Add(segment == 1 ? Jumps(w, rebased) : "");
+            apart.Add($"the fight's states {w.Deg:0.000}° {w.M * 1000f:0.0} mm ({w.Where})");
+            // the fall: the fight's own views, the ragdoll handed the body, a rebase while it falls
+#if UNITY_EDITOR
+            var assets = AssetDatabase.LoadAssetAtPath<WorldAssets>("Assets/SecondFace/World/WorldAssets.asset");
+#else
+            WorldAssets assets = null;
+#endif
+            if (assets != null && assets.Combat != null)
+            {
+                if (Registry.Items.Count == 0)
+                {
+                    var db = new ContentDb();
+                    foreach (var name in ContentDb.Registries) db.Load(name, System.IO.File.ReadAllText(System.IO.Path.Combine(Application.streamingAssetsPath, "content", name + ".json")));
+                    Registry.Load(db);
+                }
+                var fxRoot = new GameObject("origin fx"); _made.Add(fxRoot);
+                var fx = new CombatFx(fxRoot.transform);
+                foreach (var p in pairs)
+                {
+                    BattleUnit U() { var u = new BattleUnit { C = new Combatant { Id = p.Id, Name = p.Id, Team = "gate", Sheet = Sheet.Empty(p.Id), Inv = Inv.Empty(), Ap = 8, Morale = 60 } }; u.Place(0, 0); return u; }
+                    p.VA = CombatViews.ForBody(U(), p.RA, w, fx, assets.Combat, p.Female, theirs: false);
+                    p.VB = CombatViews.ForBody(U(), p.RB, w, fx, assets.Combat, p.Female, theirs: false);
+                }
+                yield return Frames(60);
+                rebased.Clear();
+                Reset(w); w.On = true;
+                foreach (var p in pairs) { p.VA?.OnFall(p.RA.position + Vector3.forward * 2f); p.VB?.OnFall(p.RB.position + Vector3.forward * 2f); }
+                yield return Frames(40);
+                if (segment == 2) { WorldOrigin.Rebase(new Vector3(-WorldOrigin.Step, 0f, 0f)); rebased.Add(Time.frameCount); }
+                Note();
+                yield return Frames(150);
+                w.On = false;
+                // (the fall is chaotic: the twins part by the ragdoll's own band, 89-133 mm near the origin, §19.2; a missed holder
+                // would show as a jump in a twin's own step, which is what is checked)
+                jumps.Add(segment == 2 ? Jumps(w, rebased, 0.02f, 5f) : "");
+            }
+            w.Rec = null;
+            foreach (var g in _made) if (g != null) Object.Destroy(g);
+            _made.Clear();
+            WorldOrigin.Reset();   // (the next run from the same origin)
+            yield return null; yield return null;
+        }
+
+        /// <summary>(b) A rebase mid-walk, mid-fight's states and mid-fall moves no bone of anyone. Against a control: the same twins and
+        /// sequence twice, without the rebase and with it. The two must be bit-identical on every frame before the rebase (a drifting
+        /// control, the capture clock's real-time start, §18, proves nothing: the test fails on it and says so); in the rebase's frame and
+        /// the next, every bone's root-relative step equals the control's within the float step at the bone's coordinates. Each twin's own
+        /// step in the rebase's frames is also no more than its neighbours' (Jumps). How far the twins part is recorded: the branching
+        /// systems have no bound until item (iv).</summary>
         [UnityTest, Timeout(1800000)]
         public IEnumerator ARebaseMovesNoBoneMidWalkMidFightAndMidFall()
         {
@@ -260,60 +388,43 @@ namespace SecondFace.Tests
             SetManaged(true);
             try
             {
-                var pairs = new List<Pair>();
-                // (both twins within the box, a chunk apart: the rebase takes one to the origin and the other a chunk the other way)
-                yield return Make(pairs, Vector3.zero, new Vector3(WorldOrigin.Step, 0f, 0f));
-                var (w, _) = Watch(pairs);
-                yield return Frames(30);
-                var rebased = new List<int>();
-                Reset(w); w.On = true; yield return Town(pairs, 150, new Vector3(-WorldOrigin.Step, 0f, 0f), rebased); w.On = false;
-                var walk = Jumps(w, rebased);
-                // (the twins alike, recorded: with the branching systems on they part at any rounding, item (iv), MRC §19.4; the
-                // continuous systems' precision is FloatingOriginPrecisionTests')
-                var apart = $"walk {w.Deg:0.000}° {w.M * 1000f:0.0} mm ({w.Where})";
-                rebased.Clear();
-                Reset(w); w.On = true; yield return FightLayer(pairs, 200, new Vector3(WorldOrigin.Step, 0f, 0f), rebased); w.On = false;
-                var fight = Jumps(w, rebased);
-                apart += $"; the fight's states {w.Deg:0.000}° {w.M * 1000f:0.0} mm ({w.Where})";
-                // the fall: the fight's own views, the ragdoll handed the body, a rebase while it falls
-#if UNITY_EDITOR
-                var assets = AssetDatabase.LoadAssetAtPath<WorldAssets>("Assets/SecondFace/World/WorldAssets.asset");
-#else
-                WorldAssets assets = null;
-#endif
-                var fall = "";
-                if (assets != null && assets.Combat != null)
+                var segs = new[] { "mid-walk", "mid-fight", "mid-fall" };
+                var control = new List<float[]>(); var atC = new List<int>();
+                yield return BSequence(-1, control, atC, new List<string>(), new List<string>());
+                var worst = new List<string>(); var fails = new List<string>(); var jumpsAll = new List<string>(); var apartAll = new List<string>();
+                const int Stride = 8;
+                for (var r = 0; r < segs.Length && r < atC.Count; r++)
                 {
-                    if (Registry.Items.Count == 0)
+                    var moved = new List<float[]>(); var atM = new List<int>(); var jumps = new List<string>(); var apart = new List<string>();
+                    yield return BSequence(r, moved, atM, jumps, apart);
+                    Assert.That(atM, Is.EqualTo(atC), $"{segs[r]}: the rebase points at the same records in both runs");
+                    Assert.That(moved.Count, Is.EqualTo(control.Count), $"{segs[r]}: the same frames in both runs");
+                    // the precondition: bit-identical on every frame before the rebase
+                    for (var k = 0; k < atC[r]; k++)
+                        for (var e = 0; e < control[k].Length; e++)
+                            if (control[k][e] != moved[k][e])
+                                Assert.Fail($"{segs[r]}: the control is not bit-identical to the rebased run before the rebase (record {k} of {atC[r]}, entry {e}: {control[k][e]:R} against {moved[k][e]:R}); a guard against a drifting control proves nothing (§18: the capture clock's real-time start)");
+                    // the guard: in the rebase's frame and the next, each bone's root-relative step the control's within the float step there
+                    float maxUlps = 0f; var where = "";
+                    for (var k = atC[r]; k <= atC[r] + 1 && k < control.Count; k++)
                     {
-                        var db = new ContentDb();
-                        foreach (var name in ContentDb.Registries) db.Load(name, System.IO.File.ReadAllText(System.IO.Path.Combine(Application.streamingAssetsPath, "content", name + ".json")));
-                        Registry.Load(db);
+                        if (k < 1) continue;
+                        for (var e = 0; e + Stride <= control[k].Length; e += Stride)
+                        {
+                            var sc = new Vector3(control[k][e] - control[k - 1][e], control[k][e + 1] - control[k - 1][e + 1], control[k][e + 2] - control[k - 1][e + 2]);
+                            var sm = new Vector3(moved[k][e] - moved[k - 1][e], moved[k][e + 1] - moved[k - 1][e + 1], moved[k][e + 2] - moved[k - 1][e + 2]);
+                            var mag = Mathf.Max(Mathf.Max(control[k][e + 7], control[k - 1][e + 7]), Mathf.Max(moved[k][e + 7], moved[k - 1][e + 7]));
+                            var ulps = (sm - sc).magnitude / Spacing(mag);
+                            if (ulps > maxUlps) { maxUlps = ulps; where = $"record {k}, {Chain[(e / Stride) % Chain.Length]}: {(sm - sc).magnitude * 1000f:0.0000} mm, a step there {Spacing(mag) * 1000f:0.0000} mm"; }
+                        }
                     }
-                    var fxRoot = new GameObject("origin fx"); _made.Add(fxRoot);
-                    var fx = new CombatFx(fxRoot.transform);
-                    foreach (var p in pairs)
-                    {
-                        BattleUnit U() { var u = new BattleUnit { C = new Combatant { Id = p.Id, Name = p.Id, Team = "gate", Sheet = Sheet.Empty(p.Id), Inv = Inv.Empty(), Ap = 8, Morale = 60 } }; u.Place(0, 0); return u; }
-                        p.VA = CombatViews.ForBody(U(), p.RA, w, fx, assets.Combat, p.Female, theirs: false);
-                        p.VB = CombatViews.ForBody(U(), p.RB, w, fx, assets.Combat, p.Female, theirs: false);
-                    }
-                    yield return Frames(60);
-                    rebased.Clear();
-                    Reset(w); w.On = true;
-                    foreach (var p in pairs) { p.VA?.OnFall(p.RA.position + Vector3.forward * 2f); p.VB?.OnFall(p.RB.position + Vector3.forward * 2f); }
-                    yield return Frames(40);
-                    WorldOrigin.Rebase(new Vector3(-WorldOrigin.Step, 0f, 0f)); rebased.Add(Time.frameCount);
-                    yield return Frames(150);
-                    w.On = false;
-                    // (the fall is chaotic: the twins part by the ragdoll's own band, 89-133 mm near the origin, §19.2; a missed holder
-                    // would show as a jump in a twin's own step, which is what is checked)
-                    fall = Jumps(w, rebased, 0.02f, 5f);
+                    worst.Add($"{segs[r]} {maxUlps:0.0} float steps ({where})");
+                    if (maxUlps > 1f) fails.Add($"{segs[r]}: a bone's step {maxUlps:0.0} float steps off the control's ({where})");
+                    jumpsAll.Add(jumps[r]); apartAll.Add(r < apart.Count ? apart[r] : "");
                 }
-                Debug.Log($"FloatingOriginTests: mid-walk [{walk}] mid-fight [{fight}] mid-fall [{fall}]; the twins apart (recorded): {apart}");
-                Assert.That(walk, Is.Empty, "mid-walk: no bone jumps in the rebase's frames");
-                Assert.That(fight, Is.Empty, "mid-fight: no bone jumps in the rebase's frames");
-                Assert.That(fall, Is.Empty, "mid-fall: no bone jumps in the rebase's frames");
+                Debug.Log($"FloatingOriginTests: (b) against the control: {string.Join("; ", worst)}; Jumps [{string.Join("] [", jumpsAll)}]; the twins apart (recorded): {string.Join("; ", apartAll)}");
+                for (var r = 0; r < jumpsAll.Count; r++) Assert.That(jumpsAll[r], Is.Empty, $"{segs[r]}: no bone jumps in the rebase's frames");
+                Assert.That(fails, Is.Empty, string.Join("\n", fails));
             }
             finally { Time.captureDeltaTime = keep; }
         }
