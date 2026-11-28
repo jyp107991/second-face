@@ -527,9 +527,9 @@ ModelImporter:
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000001, y: 1.0000001, z: 1.0000002}
     - name: Bip01 R Thigh
-      parentName: Bip01 Pelvis
-      position: {x: -0.000046670437, y: -0.0053529995, z: -0.08836832}
-      rotation: {x: 0.000000029802294, y: 1, z: 0, w: -0.00000002980235}
+      parentName: Bip01 Spine
+      position: {x: 0.12021278, y: -0.003724451, z: -0.08836849}
+      rotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
       scale: {x: 0.9999998, y: 1, z: 0.99999994}
     - name: Bip01 R Calf
       parentName: Bip01 R Thigh
@@ -547,9 +547,9 @@ ModelImporter:
       rotation: {x: 0, y: 0, z: 0.7071068, w: -0.7071068}
       scale: {x: 0.9999997, y: 0.9999996, z: 0.9999998}
     - name: Bip01 L Thigh
-      parentName: Bip01 Pelvis
-      position: {x: -0.000046670437, y: -0.0053534913, z: 0.08836864}
-      rotation: {x: 0.000000029802294, y: 1, z: 0, w: -0.00000002980235}
+      parentName: Bip01 Spine
+      position: {x: 0.12021278, y: -0.0037249422, z: 0.08836847}
+      rotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
       scale: {x: 0.9999996, y: 1.0000002, z: 0.9999997}
     - name: Bip01 L Calf
       parentName: Bip01 L Thigh
@@ -582,9 +582,9 @@ ModelImporter:
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1.0000005, y: 1.0000006, z: 1.0000002}
     - name: Bip01 R Clavicle
-      parentName: Bip01 Spine2
-      position: {x: -0.13707626, y: 0.022722473, z: -0.0728218}
-      rotation: {x: 0.7071068, y: -0.00000003090861, z: 0.7071068, w: -0.00000003090861}
+      parentName: Bip01 Neck
+      position: {x: 0.062065426, y: 0.007088661, z: -0.072821826}
+      rotation: {x: 0.7071068, y: -0.000000030908623, z: 0.7071068, w: -0.000000030908623}
       scale: {x: 0.99999994, y: 0.9999997, z: 0.9999998}
     - name: Bip01 R UpperArm
       parentName: Bip01 R Clavicle
@@ -677,9 +677,9 @@ ModelImporter:
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 0.9999998, y: 0.9999996, z: 0.9999997}
     - name: Bip01 L Clavicle
-      parentName: Bip01 Spine2
-      position: {x: -0.13707626, y: 0.022722052, z: 0.072821945}
-      rotation: {x: 0.7071068, y: -0.00000003090861, z: -0.7071068, w: 0.00000003090861}
+      parentName: Bip01 Neck
+      position: {x: 0.062065426, y: 0.0070882416, z: 0.07282192}
+      rotation: {x: 0.7071068, y: -0.000000030908623, z: -0.7071068, w: 0.000000030908623}
       scale: {x: 1, y: 0.9999996, z: 0.9999998}
     - name: Bip01 L UpperArm
       parentName: Bip01 L Clavicle

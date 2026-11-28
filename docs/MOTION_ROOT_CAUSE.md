@@ -914,6 +914,15 @@ the clips' actors stand them level.
   - So "the same bake must read about nought on every clip" does not hold: the bake stays, re-baked on the new skeletons, for every
     whole-body clip, not only for the crouches. The re-parent is measured as a fix of its own (the fight screen, the everyday screen
     and each clip's closeness to its actor, against main), not as the bake's retirement.
+  - *Measured as a fix, and not kept.* Each clip's closeness to its own actor (bare, BM01 and BF01): in the base layer's locomotion,
+    which has no bake, the re-parent alone brings the thighs from 7.2° to 1.8° (p98, the median clip; the sneak 25° to 0.4-1.6°) and the
+    planted feet from 3.4 to 0.4 cm; in the fight, with the new bake, the thighs 0.11 -> 0.10° and the planted feet 0.78 -> 0.40 cm at
+    the median, 26 of 98 clip-body rows a little further in one column (the long gun chain's planted feet 0.73 -> 1.12 cm at the
+    median). On the fight screen of all 79 against main's own: K1 strike 54 -> 6 (the club blow's planted feet, as traced), C1 strike
+    125 -> 89, C1 crouch 79 -> 68; but H3 aim 1 -> 237, H1 aim_pistol 0 -> 108, FY1 aim 141 -> 237, C1 carry 42 -> 52, Kb crouch
+    19 -> 25 (3,342 -> 3,666 cells): with the clavicles on the upper chest, the aim's head and chest no longer stand as the
+    compensations built on the Biped hierarchy expect (the gaze's own-joint turn, the aim's trunk share, `Fighter`'s bones above the
+    legs, which now include the spine). Reverted, 2026-11-28; the compensations are to be traced before the re-parent comes back.
   - A correction to the plan: the eight states traced bare before it was built (relaunch 16's `leg1`: guards, readies, the long gun's
     aim, the club blow, the throw, the crouch, the duck) put the standing clips within 0.5-2.8° of their actors; over every clip the
     CMU punches and the dodges are not (4.1-4.8°, the dodge's pelvis 8.9°): eight states overstated the standing clips.
