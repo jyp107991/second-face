@@ -525,8 +525,8 @@ namespace SecondFace.Game.Fighting
         public void Kick(float strength = 1f)
         {
             _kickV += KickImpulse * strength;
-            // (the chest rocked back 1-3°: an impulse of ω0 · degrees / 0.6)
-            _hitV += new Vector3(60f, 0f, 0f) * strength * (Held.Arms == Arms.Rifle ? 1.4f : 0.7f);
+            // (the chest rocked back: 0.9° a pistol's shot, 1.8° a long gun's at their peaks, as the game has shown them; HitLook)
+            _hitV += new Vector3(60f, 0f, 0f) * (strength * (Held.Arms == Arms.Rifle ? 1.4f : 0.7f) * HitLook);
         }
 
         /// <summary>A long gun's round (A3): the chest kicked back <paramref name="degrees"/> in the frame it fires and settling
@@ -551,18 +551,28 @@ namespace SecondFace.Game.Fighting
             _hitHead = head ? 1.0f : 0.2f; _hitChest = head ? 0.25f : 0.6f; _hitSpine = legs ? 0.6f : 0.4f;
             // pushed back (-z) leans back, pushed sideways rolls and twists away; a leg buckles forward
             var push = new Vector3(-local.z * (legs ? -0.7f : 1f), -local.x * 0.6f, -local.x * 0.5f) * size;
-            // (an impulse whose first swing peaks near the size: ω0 · size / 0.6)
-            _hitV += push * (HitOmega / 0.6f);
+            // (an impulse of ω0 · size / 0.6, its first swing peaking at 0.74 of the size, as the game has shown it: HitLook)
+            _hitV += push * (HitOmega / 0.6f * HitLook);
         }
 
         public const float HitOmega = 2f * Mathf.PI * 3.2f, HitDamp = 0.45f, KickOmega = 28f, KickDamp = 0.6f;
 
-        /// <summary>A shot's kick (deg/s into the kick spring). The kick has no spec of its own; the fix that steps it exactly is
-        /// for stability, not a change of motion, so it keeps what was seen: 520 under the explicit step at 60 fps peaked at
-        /// 4.66°, and the spring's exact motion from 520 peaks at 9.26° (41 ms after the shot), so 520 × 4.66 / 9.26 = 261.6
-        /// peaks at 4.66° at every frame rate. (The hits' impulses keep their own: "ω0 · size / 0.6" is specified to peak near
-        /// the size, and the exact motion does, 0.955 of it; the explicit step at 60 fps gave 0.74.) 2026-11-28.</summary>
+        // The two springs were stepped explicitly (v += a dt, then x += v dt), which over-damped them at 60 fps and grew without
+        // bound on frames over 40 ms (the kick) or 64 ms (the hit); they are stepped exactly now (Spring), and their impulses are
+        // scaled so that the exact motion peaks where the explicit step at 60 fps did: the look the game has shown and been
+        // reviewed in is kept, the fix is for stability, not a change of motion (2026-11-28; KnockTests on 71ce5403, a pistol's
+        // kick at NaN on 85 ms frames; CombatMotionPlayTests.TheRecoilAndHitSpringsHoldAtAnyFrameTime). A hit reaction's size
+        // set from a real source would be a decision of its own.
+
+        /// <summary>A shot's kick (deg/s into the kick spring): 520 under the explicit step at 60 fps peaked at 4.66°, and the
+        /// spring's exact motion from 520 peaks at 9.26° (41 ms after the shot), so 520 × 4.66 / 9.26 = 261.6 peaks at 4.66° at
+        /// every frame rate.</summary>
         public const float KickImpulse = 261.6f;
+
+        /// <summary>The share of the hit spring's impulses that keeps their peaks where the explicit step at 60 fps put them:
+        /// from rest, an impulse of ω0 · size / 0.6 peaked at 7.089° there for a size of 10, and the spring's exact motion from it
+        /// peaks at 9.555° (62 ms after the blow), so 7.089 / 9.555 = 0.7419 (a hit's and a shot's chest rock alike).</summary>
+        public const float HitLook = 0.7419f;
 
         /// <summary>A damped spring, x'' = -w² x - 2 z w x' with z under 1, stepped exactly over <paramref name="dt"/> (its closed
         /// form from the state now): the same motion at any frame rate, and stable at any step.</summary>

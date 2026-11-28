@@ -348,10 +348,7 @@ namespace SecondFace.Game.People
         }
 
         /// <summary>Turns a range of points (one arm's, after its bone is turned) about a pivot.</summary>
-        [System.NonSerialized] public double Prof_TurnMs; [System.NonSerialized] public long Prof_TurnN;
         public void Turn(int from, int to, Vector3 pivot, Quaternion q)
-        { var __t = System.Diagnostics.Stopwatch.GetTimestamp(); Turn_T(from, to, pivot, q); Prof_TurnMs += (System.Diagnostics.Stopwatch.GetTimestamp() - __t) * 1000.0 / System.Diagnostics.Stopwatch.Frequency; Prof_TurnN++; }
-        public void Turn_T(int from, int to, Vector3 pivot, Quaternion q)
         {
             for (var i = from; i < to; i++)
             {
@@ -455,10 +452,7 @@ namespace SecondFace.Game.People
 
         /// <summary>Asks <see cref="Depth"/> of points <paramref name="from"/>..<paramref name="to"/> (every
         /// <paramref name="stride"/>th) at once; the answers in <see cref="QD"/>, <see cref="QN"/>, <see cref="QNear"/>.</summary>
-        [System.NonSerialized] public double Prof_RangeMs; [System.NonSerialized] public long Prof_RangeN;
         public void DepthRange(int from, int to, int stride = 1)
-        { var __t = System.Diagnostics.Stopwatch.GetTimestamp(); DepthRange_T(from, to, stride); Prof_RangeMs += (System.Diagnostics.Stopwatch.GetTimestamp() - __t) * 1000.0 / System.Diagnostics.Stopwatch.Frequency; Prof_RangeN++; }
-        public void DepthRange_T(int from, int to, int stride = 1)
         {
             if (to <= from || !_nP.IsCreated) return;
             var m = (to - from + stride - 1) / stride;

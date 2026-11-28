@@ -764,10 +764,9 @@ namespace SecondFace.Tests
         /// The kick's and the hit's springs (<see cref="Fighter.Spring"/>) hold at any frame time and move alike at every frame
         /// rate: from a shot's kick and a hit's impulse, stepped by 16.7, 33.3, 85 and 250 ms frames, each stays finite and dies
         /// away, and reaches the same peak (stepped to the peak's moment, the last step the remainder) within float tolerance;
-        /// the kick's peak is the 4.66° the explicit step showed at 60 fps (its impulse scaled to keep it), the hit's 0.955 of
-        /// its size (its impulse's spec: "peaks near the size"). The explicit step these replace grew without bound on frames
-        /// over 40 ms (the kick) and 64 ms (the hit): on 85 ms frames a pistol's kick went to NaN (KnockTests on 71ce5403,
-        /// 2026-11-28).
+        /// each peak is the one the explicit step showed at 60 fps (the impulses scaled to keep it: the kick 4.66°, a hit of size
+        /// 10 7.089°). The explicit step these replace grew without bound on frames over 40 ms (the kick) and 64 ms (the hit):
+        /// on 85 ms frames a pistol's kick went to NaN (KnockTests on 71ce5403, 2026-11-28).
         /// </summary>
         [Test]
         public void TheRecoilAndHitSpringsHoldAtAnyFrameTime()
@@ -775,7 +774,7 @@ namespace SecondFace.Tests
             var springs = new[]
             {
                 ("kick", Fighter.KickOmega, Fighter.KickDamp, Fighter.KickImpulse, 4.6607f),
-                ("hit", Fighter.HitOmega, Fighter.HitDamp, Fighter.HitOmega * 10f / 0.6f, 0.9555f * 10f),
+                ("hit", Fighter.HitOmega, Fighter.HitDamp, Fighter.HitOmega * 10f / 0.6f * Fighter.HitLook, 7.0888f),
             };
             var steps = new[] { 1f / 60f, 1f / 30f, 0.085f, 0.25f };
             var rows = new List<string>();
