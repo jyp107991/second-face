@@ -30,6 +30,10 @@ namespace SecondFace.Game.People
             for (var i = 0; i < _endL.Length; i++) { _endL[i] += d; _endR[i] += d; }
             _endPosL += d; _endPosR += d; _fromL += d; _fromR += d; _was += d; _lastL += d; _lastR += d;
             _shownL += d; _shownR += d; _shownLastL += d; _shownLastR += d;
+            // (each foot's sole points the frame before, for the sole's speed along the ground: an array filled through a parameter, which
+            // stage 1's scan and its nested-types re-scan both read as written before it is read; in a rebase's frame each sole read the
+            // whole shift as its speed, FloatingOriginTests (b) mid-walk: the right foot's step 6.77 mm off the control's, MRC §19.5)
+            for (var i = 0; i < _solePtsL.Length; i++) { _solePtsL[i] += d; _solePtsR[i] += d; }
             _l.Pin += d; _l.From += d; _l.To += d; _r.Pin += d; _r.From += d; _r.To += d;
             // (the locks' held and let-go places: missed by stage 1's scan, which read no struct's members; a locked foot jumped 1 m
             // toward its old place in a rebase's frame, FloatingOriginTests (b), MRC §19.3)
