@@ -18,12 +18,7 @@ namespace SecondFace.Game.World
     {
         /// <summary>The floating origin's rebase, its second frame (§19.1): the data re-added at its new place (a build in flight is
         /// moved when it is done).</summary>
-        public void OnNavRebase(Vector3 d)
-        {
-            if (_build != null && !_build.isDone) { _navShift += d; return; }
-            Move(d);
-        }
-        private Vector3 _navShift;
+        public void OnNavRebase(Vector3 d) => Move(d);
         private NavMeshData _data;
         private void Move(Vector3 d)
         {
@@ -129,7 +124,7 @@ namespace SecondFace.Game.World
         private void Update()
         {
             if (!Ready && _build != null && _build.isDone) Ready = true;
-            if (_navShift != Vector3.zero && _build != null && _build.isDone) { Move(_navShift); _navShift = Vector3.zero; }
+
         }
 
         /// <summary>Takes away every place's own mesh (the world's has come: a place loaded before it built one, and a

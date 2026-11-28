@@ -15,13 +15,14 @@ namespace SecondFace.Game.World
     {
         /// <summary>The floating origin's rebase (§19.1): the built and pending areas move with the world at once.</summary>
         public void OnRebase(Vector3 d) { Area = new Bounds(Area.center + d, Area.size); _pending.center += d; }
-        /// <summary>The rebase's second frame: the data re-added at its new place (a build in flight is moved when it is done).</summary>
+        /// <summary>The rebase's second frame: the data re-added at its new place at once (the agents are warped onto it next); a build
+        /// in flight was asked for the old frame's area, so the area is built again once it is done.</summary>
         public void OnNavRebase(Vector3 d)
         {
-            if (_build != null && !_build.isDone) { _navShift += d; return; }
             Move(d);
+            if (_build != null && !_build.isDone) _rebuildAfter = true;
         }
-        private Vector3 _navShift;
+        private bool _rebuildAfter;
         private void Move(Vector3 d)
         {
             if (_data == null || d == Vector3.zero) return;
@@ -67,7 +68,7 @@ namespace SecondFace.Game.World
             {
                 if (!_build.isDone) return;
                 _build = null; Area = _pending; Ready = true; Builds++;
-                if (_navShift != Vector3.zero) { Move(_navShift); _navShift = Vector3.zero; }
+                if (_rebuildAfter && Target != null) { _rebuildAfter = false; Rebuild(Target.position); return; }
             }
             var p = Target.position;
             var inner = Size / 2 - Margin;

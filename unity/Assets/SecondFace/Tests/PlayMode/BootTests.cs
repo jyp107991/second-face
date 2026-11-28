@@ -910,7 +910,7 @@ namespace SecondFace.Tests
             Debug.Log($"BootTests: Shale {residents} people, {standing} standing; near 25 m: some gone, back again {town.People.Count}");
             // another place: set down at Cistern 9's mouth, its people stand; Shale (770 m off, still standing) keeps its
             // people as data, none of them in the world
-            var mouth = boot.Stage.World.PlaceCentre("cistern9");
+            var mouth = boot.Stage.World.PlaceCentreWorld("cistern9");   // (a saved spot is the world's own place)
             walk.Game.Spot = new SecondFace.Core.State.WorldSpot { X = mouth.x, Y = mouth.y, Z = mouth.z, CamYaw = 30f, CamPitch = 50f, CamDistance = 20f };
             walk.Begin(walk.Game);
             var t0 = Time.realtimeSinceStartup;
@@ -931,7 +931,7 @@ namespace SecondFace.Tests
                 Assert.That(p.Body.StartsWith("base_") ? p.Body == "base_m" : cast[p.Body].Male, Is.EqualTo(SecondFace.Core.Npc.Routine.Male(p.Def.Look)), $"{p.Id} in a body of their sex");
             // down in the shelter among them
             var one = shelter.People.OrderBy(p => p.Id).First();
-            var at = one.transform.position + one.transform.forward * 1.6f;
+            var at = WorldOrigin.ToWorld(one.transform.position + one.transform.forward * 1.6f);   // (the world's own place)
             walk.Game.Spot = new SecondFace.Core.State.WorldSpot { X = at.x, Y = one.transform.position.y, Z = at.z, Yaw = one.transform.eulerAngles.y + 180f, CamYaw = one.transform.eulerAngles.y + 200f, CamPitch = 45f, CamDistance = 9f };
             var before = walk.Walker;
             walk.Begin(walk.Game);   // as a load does: the people are brought again for the game

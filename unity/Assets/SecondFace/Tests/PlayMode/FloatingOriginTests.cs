@@ -434,6 +434,8 @@ namespace SecondFace.Tests
             var stageGo = new GameObject("origin stage"); _made.Add(stageGo);
             var stage = stageGo.AddComponent<WorldStage>();
             stage.Assets = assets;
+            var camGo = new GameObject("origin camera"); _made.Add(camGo);
+            stage.Camera = camGo.AddComponent<Camera>();
             yield return stage.Raise();
             Assert.That(stage.Raised, Is.True, stage.Status);
             var shaleW = stage.World.PlaceCentreWorld("shale");
