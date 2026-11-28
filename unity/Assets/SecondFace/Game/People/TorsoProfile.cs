@@ -67,23 +67,6 @@ namespace SecondFace.Game.People
             }
         }
 
-        /// <summary>For the arm clearance's job (ArmClearance.Job.cs): what Sample adds over the bare sections: the widest worn
-        /// garment's widths (null: none), and each shape's weight now as Sample reads it (0 where the mesh has none or under 1e-3).</summary>
-        internal float[] WornRx => _wornRx;
-        internal float[] WornRz => _wornRz;
-        internal float ShapeWeight(int s)
-        {
-            if (Body == null || Body.sharedMesh == null || Shapes.Count == 0 || s < 0 || s >= Shapes.Count) return 0f;
-            if (_shapeIndex == null || _shapeIndex.Length != Shapes.Count)
-            {
-                _shapeIndex = new int[Shapes.Count];
-                for (var k = 0; k < Shapes.Count; k++) _shapeIndex[k] = Body.sharedMesh.GetBlendShapeIndex(Shapes[k].Name);
-            }
-            if (_shapeIndex[s] < 0) return 0f;
-            var w = Body.GetBlendShapeWeight(_shapeIndex[s]) / 100f;
-            return Mathf.Abs(w) < 1e-3f ? 0f : w;
-        }
-
         /// <summary>The cross-section at a height in the frame (false above or below the measured torso).</summary>
         public bool Sample(float y, out float cx, out float cz, out float rx, out float rz)
         {
