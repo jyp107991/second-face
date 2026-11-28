@@ -375,6 +375,35 @@ namespace SecondFace.Tests
             yield return null; yield return null;
         }
 
+        /// <summary>The whole people stack is deterministic: the same twins and sequence (the walk, the fight's states, the fall), every
+        /// people system on, twice from the same fixed clock, bit-identical on every frame (each bone's root-relative place and turn). Without
+        /// it no twin comparison and no control proves anything; it is (b)'s precondition too. The clock is started a frame before anyone is
+        /// made (the frame it is set in still runs on real time).</summary>
+        [UnityTest, Timeout(1800000)]
+        public IEnumerator TwoRunsOfThePeopleStackAreBitIdentical()
+        {
+            var keep = Time.captureDeltaTime; Time.captureDeltaTime = 1f / 60f;
+            yield return null;
+            SetManaged(true);
+            try
+            {
+                var one = new List<float[]>(); var two = new List<float[]>(); var at1 = new List<int>(); var at2 = new List<int>();
+                yield return BSequence(-1, one, at1, new List<string>(), new List<string>());
+                yield return BSequence(-1, two, at2, new List<string>(), new List<string>());
+                Assert.That(two.Count, Is.EqualTo(one.Count), "the same frames in both runs");
+                var segs = new[] { "the walk", "the fight's states", "the fall" };
+                for (var r = 0; r < one.Count; r++)
+                    for (var e = 0; e < one[r].Length; e++)
+                        if (one[r][e] != two[r][e])
+                        {
+                            var seg = at1.Count(a => a <= r) - 1;
+                            Assert.Fail($"the two runs part at record {r} of {one.Count} ({(seg >= 0 && seg < segs.Length ? "after " + segs[seg] + "'s point" : "before the walk's point")}), {Chain[(e / 8) % Chain.Length]} [{e % 8}]: {one[r][e]:R} against {two[r][e]:R}");
+                        }
+                Debug.Log($"FloatingOriginTests: the people stack, two runs bit-identical over {one.Count} frames");
+            }
+            finally { Time.captureDeltaTime = keep; }
+        }
+
         /// <summary>(b) A rebase mid-walk, mid-fight's states and mid-fall moves no bone of anyone. Against a control: the same twins and
         /// sequence twice, without the rebase and with it. The two must be bit-identical on every frame before the rebase (a drifting
         /// control, the capture clock's real-time start, §18, proves nothing: the test fails on it and says so); in the rebase's frame and
@@ -385,6 +414,9 @@ namespace SecondFace.Tests
         public IEnumerator ARebaseMovesNoBoneMidWalkMidFightAndMidFall()
         {
             var keep = Time.captureDeltaTime; Time.captureDeltaTime = 1f / 60f;
+            // (the fixed clock a frame before anyone is made: the frame it is set in still runs on real time, and twins made in it stepped
+            // differently from those made later, MRC §19.3)
+            yield return null;
             SetManaged(true);
             try
             {
