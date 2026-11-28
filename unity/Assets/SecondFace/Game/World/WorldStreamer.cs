@@ -97,7 +97,7 @@ namespace SecondFace.Game.World
         }
         public Terrain TerrainAt(int cx, int cz) => _built.TryGetValue((cx, cz), out var t) ? t : null;
 
-        private void Awake() => _root = WorldOrigin.Contain(new GameObject("Terrain")).transform;
+        private void Awake() { _root = WorldOrigin.Contain(new GameObject("Terrain")).transform; PlaceNav.WorldGeometry(_root); }   // (the NavMesh's ground)
 
         /// <summary>Creates the pool of terrains ahead (one a frame, while the title shows): creating a terrain is the
         /// expensive part of a chunk write (~90 ms in the editor against ~10 ms to re-fill a pooled one).</summary>

@@ -7,11 +7,14 @@ namespace SecondFace.Game.World
 {
     /// <summary>
     /// A place's NavMesh, built at runtime when the place is put in the world (BUILD_PLAN §6.A.5, P3.5), asynchronously,
-    /// over the place's footprint and a margin (and a shelter under it). Sources are the render meshes in that volume (the streamed terrain
-    /// included, which has no collider): the place's generated meshes and the kits' (imported readable for this) go in
-    /// whole; a mesh the player cannot read (the nature scans', imported without CPU copies to save memory) stands in as
-    /// its bounding box, which is what a boulder or a dead tree needs. Anything under a NavMeshModifier set to ignore (the doors) is left out, so doorways
-    /// stay open. Built for a walker of <see cref="AgentRadius"/> and <see cref="AgentHeight"/> on the default agent type
+    /// over the place's footprint and a margin (and a shelter under it). Sources are the world's own static geometry in that volume
+    /// (<see cref="WorldSources"/>): the render meshes under the streamed terrain's root (the terrain included, which has no collider),
+    /// the scatter's and each place's; never a person, what they carry, a bundle on the ground or the fight's marks, which move (a
+    /// person's weapons, unreadable meshes, stood in the mesh as boxes at hand height and cut a hole round them at every build, MRC
+    /// §19.5). The place's generated meshes and the kits' (imported readable for this) go in whole; a mesh the player cannot read (the
+    /// nature scans', imported without CPU copies to save memory) stands in as its bounding box, which is what a boulder or a dead tree
+    /// needs. Anything under a NavMeshModifier set to ignore (the doors, built open and never moved) is left out, so doorways stay
+    /// open. Built for a walker of <see cref="AgentRadius"/> and <see cref="AgentHeight"/> on the default agent type
     /// (P6's NavMeshAgents use the same).
     /// </summary>
     public sealed class PlaceNav : MonoBehaviour, WorldOrigin.INavRebase
@@ -39,6 +42,13 @@ namespace SecondFace.Game.World
         /// two meshes over the same ground do not join.</summary>
         public static bool Disabled;
         private static readonly List<PlaceNav> Live = new();
+        /// <summary>The roots of the world's static geometry besides the places (each place's root carries its PlaceNav): the streamed
+        /// terrain's and the scatter's, given by their spawners (<see cref="WorldGeometry"/>).</summary>
+        private static readonly List<Transform> Grounds = new();
+
+        /// <summary>A root whose hierarchy is the world's own static geometry (the streamer's terrain, the scatter's props): the NavMesh
+        /// is built from these and the places alone.</summary>
+        public static void WorldGeometry(Transform root) { if (root != null && !Grounds.Contains(root)) Grounds.Add(root); }
         private AsyncOperation _build;
         private NavMeshDataInstance _instance;
 
@@ -96,15 +106,49 @@ namespace SecondFace.Game.World
             return settings;
         }
 
-        /// <summary>The sources in a volume: render meshes and terrains, a mesh the player cannot read as its bounding box,
-        /// anything under a NavMeshModifier set to ignore (the doors) left out.</summary>
-        public static List<NavMeshBuildSource> Collect(Bounds world)
+        /// <summary>The world's own static geometry in a volume, as collected (each source keeps its component): the render meshes and
+        /// terrains under the terrain's, the scatter's and the places' roots whose box meets the volume, anything under a NavMeshModifier
+        /// set to ignore (the doors) left out. Nothing under a person, a bundle on the ground or the fight's own objects is in it: they are
+        /// not under these roots.</summary>
+        public static List<NavMeshBuildSource> WorldSources(Bounds world)
         {
             var markups = new List<NavMeshBuildMarkup>();
             foreach (var m in FindObjectsByType<NavMeshModifier>(FindObjectsSortMode.None))
                 if (m.ignoreFromBuild) markups.Add(new NavMeshBuildMarkup { root = m.transform, ignoreFromBuild = true });
             var sources = new List<NavMeshBuildSource>();
-            NavMeshBuilder.CollectSources(world, ~0, NavMeshCollectGeometry.RenderMeshes, 0, markups, sources);
+            var part = new List<NavMeshBuildSource>();
+            Grounds.RemoveAll(r => r == null);
+            var roots = new List<Transform>(Grounds);
+            foreach (var p in Live) if (p != null) roots.Add(p.transform);
+            foreach (var r in roots)
+            {
+                if (!r.gameObject.activeInHierarchy) continue;
+                part.Clear();
+                NavMeshBuilder.CollectSources(r, ~0, NavMeshCollectGeometry.RenderMeshes, 0, markups, part);
+                foreach (var s in part) if (world.Intersects(Box(s))) sources.Add(s);
+            }
+            return sources;
+        }
+
+        /// <summary>A source's box in the world (what the volume is tested against).</summary>
+        private static Bounds Box(NavMeshBuildSource s)
+        {
+            Bounds local;
+            if (s.shape == NavMeshBuildSourceShape.Mesh && s.sourceObject is Mesh mesh) local = mesh.bounds;
+            else if (s.shape == NavMeshBuildSourceShape.Terrain && s.sourceObject is TerrainData td) local = td.bounds;
+            else local = new Bounds(Vector3.zero, s.size);
+            var m = s.transform;
+            var b = new Bounds(m.MultiplyPoint3x4(local.center), Vector3.zero);
+            for (var i = 0; i < 8; i++)
+                b.Encapsulate(m.MultiplyPoint3x4(local.center + Vector3.Scale(local.extents, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1))));
+            return b;
+        }
+
+        /// <summary>The sources a build takes in a volume: the world's own static geometry (<see cref="WorldSources"/>), a mesh the
+        /// player cannot read as its bounding box.</summary>
+        public static List<NavMeshBuildSource> Collect(Bounds world)
+        {
+            var sources = WorldSources(world);
             for (var i = 0; i < sources.Count; i++)
             {
                 var s = sources[i];

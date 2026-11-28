@@ -13,9 +13,6 @@ namespace SecondFace.Game.People
     /// where the hips face, and blends from the lying pose to the animation. No get-up clip yet (none captured): the blend
     /// is the bridge.
     /// </summary>
-    // (-1: before the gaze, at 0. The two never act on a body at once (a fallen body has no gaze); the order is set so that it is not
-    // left to chance, 2026-11-28)
-    [DefaultExecutionOrder(-1)]
     [RequireComponent(typeof(Animator))]
     public sealed class Ragdoll : MonoBehaviour, WorldOrigin.IRebase
     {

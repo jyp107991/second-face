@@ -7,7 +7,6 @@ namespace SecondFace.Game.Fighting
     /// after the Animator, before the standing foot plant (-20), the gaze (0), the hands (5), the arms' clearance (10) and the
     /// fighter itself (30), so each of them works on the pose as the actor stood it. Added by <see cref="Fighter.Bind"/>.
     /// </summary>
-    // (after the sit's turn, SeatTurn at -31: explicit since 2026-11-28, when the two stood at -30 in no set order)
     [DefaultExecutionOrder(-30)]
     public sealed class ClipTurnFirst : MonoBehaviour
     {
