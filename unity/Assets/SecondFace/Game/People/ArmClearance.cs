@@ -459,7 +459,10 @@ namespace SecondFace.Game.People
         public float RestReachMax = 24f;
         private float _restW, _flexVar = float.NaN, _frontVar, _adaptL, _adaptR, _wantGapL = 0.01f, _wantGapR = 0.01f;
 
+        [System.NonSerialized] public double Prof_RestArmMs; [System.NonSerialized] public long Prof_RestArmN;
         private void RestArm(Transform upper, Transform lower, Transform hand, int side, BodySkin.Part first, float w)
+        { var __t = System.Diagnostics.Stopwatch.GetTimestamp(); RestArm_T(upper, lower, hand, side, first, w); Prof_RestArmMs += (System.Diagnostics.Stopwatch.GetTimestamp() - __t) * 1000.0 / System.Diagnostics.Stopwatch.Frequency; Prof_RestArmN++; }
+        private void RestArm_T(Transform upper, Transform lower, Transform hand, int side, BodySkin.Part first, float w)
         {
             if (w <= 0.001f || upper == null || lower == null || hand == null) return;
             var (hip, knee) = side < 0 ? (_tl, _kl) : (_tr, _kr);
@@ -1210,7 +1213,10 @@ namespace SecondFace.Game.People
 
         /// <summary>The nearest a set of the arm's points comes to the body's surface (m; negative: inside), or
         /// <paramref name="far"/> when none is near.</summary>
+        [System.NonSerialized] public double Prof_GapMs; [System.NonSerialized] public long Prof_GapN;
         private float Gap(int from, int to, int stride, float far, Vector3? within = null, float radius = 0f, float soft = 0f)
+        { var __t = System.Diagnostics.Stopwatch.GetTimestamp(); var __r = Gap_T(from, to, stride, far, within, radius, soft); Prof_GapMs += (System.Diagnostics.Stopwatch.GetTimestamp() - __t) * 1000.0 / System.Diagnostics.Stopwatch.Frequency; Prof_GapN++; return __r; }
+        private float Gap_T(int from, int to, int stride, float far, Vector3? within = null, float radius = 0f, float soft = 0f)
         {
             var gap = float.MaxValue;
             _gapArm = _gapBody = -1;
@@ -1328,7 +1334,10 @@ namespace SecondFace.Game.People
         /// <summary>With the body's skin: the upper arm turned at the shoulder just enough to bring the deepest point of
         /// the arm (the lower upper arm, the forearm, the hand and fingers) <see cref="SkinMargin"/> out of the body or its
         /// clothes, then again for what is left (twice); the turn comes at once and goes at <see cref="Release"/>° a second.</summary>
+        [System.NonSerialized] public double Prof_ClearMs; [System.NonSerialized] public long Prof_ClearN;
         private void SkinClear(Transform upper, BodySkin.Part first, ref float angle, ref Vector3 axis, float dt)
+        { var __t = System.Diagnostics.Stopwatch.GetTimestamp(); SkinClear_T(upper, first, ref angle, ref axis, dt); Prof_ClearMs += (System.Diagnostics.Stopwatch.GetTimestamp() - __t) * 1000.0 / System.Diagnostics.Stopwatch.Frequency; Prof_ClearN++; }
+        private void SkinClear_T(Transform upper, BodySkin.Part first, ref float angle, ref Vector3 axis, float dt)
         {
             if (upper == null) return;
             var left = first == BodySkin.Part.UpperArmL;
@@ -1643,7 +1652,10 @@ namespace SecondFace.Game.People
         /// <summary>The turn about <paramref name="pivot"/> (the elbow) that brings the deepest of the arm's points
         /// <paramref name="from"/>..<paramref name="to"/> <see cref="SkinMargin"/> out of the body, and its axis (as
         /// <see cref="SkinNeed"/> does about the shoulder; the points within 12 cm of the elbow left out).</summary>
+        [System.NonSerialized] public double Prof_NeedAboutMs; [System.NonSerialized] public long Prof_NeedAboutN;
         private (float Angle, Vector3 Axis) SkinNeedAbout(Vector3 pivot, int from, int to, BodySkin.Part first)
+        { var __t = System.Diagnostics.Stopwatch.GetTimestamp(); var __r = SkinNeedAbout_T(pivot, from, to, first); Prof_NeedAboutMs += (System.Diagnostics.Stopwatch.GetTimestamp() - __t) * 1000.0 / System.Diagnostics.Stopwatch.Frequency; Prof_NeedAboutN++; return __r; }
+        private (float Angle, Vector3 Axis) SkinNeedAbout_T(Vector3 pivot, int from, int to, BodySkin.Part first)
         {
             var best = 0f; var axis = Vector3.zero;
             var hand = _skin.Begin(first + 2);
@@ -1673,7 +1685,10 @@ namespace SecondFace.Game.People
         }
         private int _needAt = -1;
 
+        [System.NonSerialized] public double Prof_NeedMs; [System.NonSerialized] public long Prof_NeedN;
         private (float Angle, Vector3 Axis) SkinNeed(Transform upper, BodySkin.Part first, bool lowerOnly = false, bool noHand = false, bool nearElbow = false)
+        { var __t = System.Diagnostics.Stopwatch.GetTimestamp(); var __r = SkinNeed_T(upper, first, lowerOnly, noHand, nearElbow); Prof_NeedMs += (System.Diagnostics.Stopwatch.GetTimestamp() - __t) * 1000.0 / System.Diagnostics.Stopwatch.Frequency; Prof_NeedN++; return __r; }
+        private (float Angle, Vector3 Axis) SkinNeed_T(Transform upper, BodySkin.Part first, bool lowerOnly = false, bool noHand = false, bool nearElbow = false)
         {
             var shoulder = upper.position;
             var best = 0f; var axis = Vector3.zero; _needAt = -1;
