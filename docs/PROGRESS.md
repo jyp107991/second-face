@@ -717,6 +717,21 @@ tested, reviewed as a critic) before it is handed over. Order (each line is seve
   Earlier note: the upper arm's
   peaks of 23-25° (A1) are the skin push for the upper arm against the chest's side in the idles' weight shifts, at
   once and released at 90°/s, while the controller's own abduction stays 8-12°.
+- **2026-11-28, CI's four timing failures on 71ce5403 traced; the tests wait for what they wait for, and the people's cost has a
+  test of its own (editor owner).** Gate: red, 3,351 (unchanged: no people input touched).
+  - Cause A (all four): the batch's Gaze fix (correct) put the people of places away from the origin where they stand; until
+    then their bodies were 16 km off and ArmClearance's skin path (managed, 3-7 ms a person a frame in the test editor) ran
+    for almost no one in a town. Bisected: dc6f4a4b's code with 71ce5403's Gaze.cs alone gives 71ce5403's frame times (Party's
+    fight 19 -> 104 ms; LateUpdate 14.5 -> 96 ms, ArmClearance 103 of it). Fix: the Burst pass over the same points, rule and
+    passes (in the batch: it changes people inputs, so it waits for the batch's whole cast).
+  - Cause B (Knock): Fighter.Springs' explicit step diverges on frames over 40 ms; on the slow fight frames a pistol's kick
+    went to NaN and its next aim asserted in TwoBone. Fix: the springs stepped exactly (in the batch).
+  - Fix C (this commit, tests only): BootTests.PeopleComeAndGoWithTheWalker and TheWalkerSneaksPastInTheDark wait for the town
+    to settle (its count held through a whole look of PeopleService) and for the walker's animator to stand in the sneak;
+    KnockTests waits for the fight; PartyTests measures each step against what the follower's top speed walks in that frame.
+    New: `PeopleCostTests.TheArmsClearanceFitsItsShareOfTheFrame`, 0.167 ms a person a frame (8 ms Mid main thread,
+    BUILD_PLAN §6.K / a quarter, a design choice open to the owner / 12 close figures, PORT §4), in Shale and in the raiders'
+    fight: 7.36 and 4.07 ms on main (fails, listed in `motion_waivers.json` failing_tests with Knock).
 - **2026-11-27/28, the gate batch committed under the waiver policy: the fight's clips turned back onto their actors, a person made
   anywhere keeps their body and face, the sits turned too, the foot plant's catch on the body's present pace (editor owner).**
   Gate: red, 3,351 (the whole cast, 2026-11-28 00:54; 71ba0e5b's 3,351, with FY1/FY2 now counted: 4,018).

@@ -163,7 +163,10 @@ namespace SecondFace.Tests
             Assert.That(walk.People.StandingPeople.Any(p => p.Def.Id == "npc_kn_out_lead"), Is.True, "the outriders stand in the square");
             g.Flags["kn_out_fight"] = true;
             walk.Settle();
-            yield return Wait(1f);
+            // (until the fight is on; the bound only the failure's: a fixed 1 s ran out on a slow runner while the fighters were
+            // still being set up, CI on 71ce5403, 2026-11-28)
+            t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 30f && !walk.Combat.Active) yield return null;
             Assert.That(walk.Combat.Active, Is.True, "the fight began");
             var lead = walk.People.StandingPeople.First(p => p.Def.Id == "npc_kn_out_lead").transform;
             walk.Rig.Follow(lead);

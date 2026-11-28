@@ -760,6 +760,58 @@ namespace SecondFace.Tests
             Assert.That(wrong, Is.Empty, string.Join("\n", wrong));
         }
 
+        /// <summary>
+        /// The kick's and the hit's springs (<see cref="Fighter.Spring"/>) hold at any frame time and move alike at every frame
+        /// rate: from a shot's kick and a hit's impulse, stepped by 16.7, 33.3, 85 and 250 ms frames, each stays finite and dies
+        /// away, and reaches the same peak (stepped to the peak's moment, the last step the remainder) within float tolerance;
+        /// the kick's peak is the 4.66° the explicit step showed at 60 fps (its impulse scaled to keep it), the hit's 0.955 of
+        /// its size (its impulse's spec: "peaks near the size"). The explicit step these replace grew without bound on frames
+        /// over 40 ms (the kick) and 64 ms (the hit): on 85 ms frames a pistol's kick went to NaN (KnockTests on 71ce5403,
+        /// 2026-11-28).
+        /// </summary>
+        [Test]
+        public void TheRecoilAndHitSpringsHoldAtAnyFrameTime()
+        {
+            var springs = new[]
+            {
+                ("kick", Fighter.KickOmega, Fighter.KickDamp, Fighter.KickImpulse, 4.6607f),
+                ("hit", Fighter.HitOmega, Fighter.HitDamp, Fighter.HitOmega * 10f / 0.6f, 0.9555f * 10f),
+            };
+            var steps = new[] { 1f / 60f, 1f / 30f, 0.085f, 0.25f };
+            var rows = new List<string>();
+            foreach (var (name, w, z, v0, want) in springs)
+            {
+                var wd = w * Mathf.Sqrt(1f - z * z);
+                var at = Mathf.Atan(wd / (z * w)) / wd;   // the first peak's moment
+                var peaks = new List<float>();
+                foreach (var h in steps)
+                {
+                    // to the peak's moment: whole frames, then the remainder
+                    float x = 0f, v = v0, t = 0f;
+                    while (t + h <= at) { Fighter.Spring(ref x, ref v, w, z, h); t += h; }
+                    Fighter.Spring(ref x, ref v, w, z, at - t);
+                    peaks.Add(x);
+                    // and on for 2,000 frames: finite throughout, and settled
+                    float y = 0f, u = v0, top = 0f;
+                    for (var i = 0; i < 2000; i++)
+                    {
+                        Fighter.Spring(ref y, ref u, w, z, h);
+                        Assert.That(float.IsFinite(y) && float.IsFinite(u), Is.True, $"{name} at {h * 1000f:0.0} ms frames: finite at frame {i}");
+                        top = Mathf.Max(top, Mathf.Abs(y));
+                    }
+                    Assert.That(Mathf.Abs(y), Is.LessThan(1e-3f), $"{name} at {h * 1000f:0.0} ms frames: settled");
+                    Assert.That(top, Is.LessThanOrEqualTo(want * 1.0001f), $"{name} at {h * 1000f:0.0} ms frames: never past its peak");
+                    rows.Add($"{name} {h * 1000f:0.0} ms: peak {x:0.0000}, the most seen in frames {top:0.0000}");
+                }
+                foreach (var p in peaks)
+                {
+                    Assert.That(p, Is.EqualTo(peaks[0]).Within(1e-4f * want), $"{name}: the same peak at every frame time ({string.Join(", ", peaks.Select(q => q.ToString("0.00000")))})");
+                    Assert.That(p, Is.EqualTo(want).Within(0.005f * want), $"{name}: the peak its impulse is set for ({want:0.000})");
+                }
+            }
+            Debug.Log("CombatMotionPlayTests: the springs: " + string.Join("; ", rows));
+        }
+
         /// <summary>The importer's clip settings as the table says (Humanoid, looping as the sidecar says, root motion by the
         /// travel table) and the controller's fight layers built from it.</summary>
         [Test]

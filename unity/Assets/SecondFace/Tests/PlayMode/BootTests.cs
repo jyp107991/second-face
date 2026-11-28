@@ -69,6 +69,28 @@ namespace SecondFace.Tests
         /// <summary>The saves of a test's app, apart from the device's (emptied first).</summary>
         public static string SavesDir => Path.Combine(Application.temporaryCachePath, "boot-saves-test");
 
+        /// <summary>
+        /// Waits until a place's standing people have settled: their count unchanged through a whole
+        /// <see cref="PeopleService.Tick"/> (unscaled seconds). The fill makes <see cref="PeopleService.SpawnsPerFrame"/>
+        /// bodies a frame from a queue its look refills once a tick, and removes the far ones in that same look, so a count that
+        /// holds through a whole tick has had a look in it that brought and took away no one, and every body queued before it
+        /// made. The bound is only the failure's: a fixed wait (4 s) took Shale's count mid-fill on a slow runner, 10 of 29
+        /// standing, and the check after it saw 16 (CI on 71ce5403, 2026-11-28).
+        /// </summary>
+        internal static IEnumerator TownSettled(System.Func<int> count, string what, float bound = 120f)
+        {
+            var t0 = Time.realtimeSinceStartup;
+            var was = -1; var since = 0f;
+            while (Time.realtimeSinceStartup - t0 < bound)
+            {
+                var n = count();
+                if (n != was) { was = n; since = Time.unscaledTime; }
+                else if (Time.unscaledTime - since > PeopleService.Tick) yield break;
+                yield return null;
+            }
+            Assert.Fail($"{what}: the count never held through a look in {bound} s ({count()} standing)");
+        }
+
         internal static void Press(UnityEngine.UIElements.Button b)
         {
             Assert.That(b, Is.Not.Null, "the button");
@@ -831,13 +853,13 @@ namespace SecondFace.Tests
             UnityEngine.AI.NavMesh.SamplePosition(plaza, out var hit, 3f, UnityEngine.AI.NavMesh.AllAreas);
             walk.Walker.Agent.Warp(hit.position);
             boot.Stage.Clock.SetHour(12);
-            yield return Wait(4f);
+            yield return TownSettled(() => town.People.Count, "Shale at noon");
             var residents = people.ResidentsOf("shale").Count;
             var standing = town.People.Count;
             Assert.That(standing, Is.GreaterThanOrEqualTo(10), "those about stand in the world");
             // seen in full only close by (gestures, gaze, feet planted)
             people.Full = 10f;
-            yield return Wait(1f);
+            yield return TownSettled(() => town.People.Count, "Shale seen in full within 10 m");   // (a look sets who is in full)
             var me = walk.Walker.transform.position;
             foreach (var p in town.People)
             {
@@ -849,14 +871,14 @@ namespace SecondFace.Tests
             Assert.That(town.People.Any(p => !p.Full), Is.True, "someone further off");
             // beyond reach the bodies go and the people stay as data
             people.Near = 25f; people.Leave = 35f;
-            yield return Wait(1.5f);
+            yield return TownSettled(() => town.People.Count, "Shale within 35 m");
             Assert.That(town.People.Count, Is.LessThan(standing), "the far ones' bodies gone");
             foreach (var p in town.People)
                 Assert.That(Flat(p.transform.position, walk.Walker.transform.position), Is.LessThan(37f), $"{p.Id} near");
             Assert.That(people.ResidentsOf("shale").Count, Is.EqualTo(residents), "everyone still there as data");
             Assert.That(people.ResidentsOf("shale").Count(r => r.Person != null), Is.EqualTo(town.People.Count));
             people.Near = 120f; people.Leave = 140f; people.Full = 60f;
-            yield return Wait(4f);
+            yield return TownSettled(() => town.People.Count, "Shale's people back");
             Assert.That(town.People.Count, Is.GreaterThanOrEqualTo(standing - 1), "and they come back where the hour has them");
             Debug.Log($"BootTests: Shale {residents} people, {standing} standing; near 25 m: some gone, back again {town.People.Count}");
             // another place: set down at Cistern 9's mouth, its people stand; Shale (770 m off, still standing) keeps its
@@ -923,7 +945,7 @@ namespace SecondFace.Tests
             walk.Walker.Agent.Warp(hit.position);
             boot.Stage.Clock.SetHour(12);
             boot.Stage.Sky.Apply();
-            yield return Wait(4f);
+            yield return TownSettled(() => town.People.Count, "Shale at noon");
             // someone standing with open ground six metres before and behind them
             Vector3 Spot(Vector3 from, Vector3 to) =>
                 UnityEngine.AI.NavMesh.SamplePosition(to, out var h, 1f, UnityEngine.AI.NavMesh.AllAreas) && !UnityEngine.AI.NavMesh.Raycast(from, h.position, out _, UnityEngine.AI.NavMesh.AllAreas)
@@ -959,7 +981,11 @@ namespace SecondFace.Tests
             var hips = walk.Walker.Animator.GetBoneTransform(HumanBodyBones.Hips);
             var standing = hips.position.y - walk.Walker.transform.position.y;
             walk.ToggleSneak();
-            yield return Wait(1.2f);
+            // (until the walker's animator stands in the sneak, its crossfade done; the bound only the failure's: a fixed 1.2 s
+            // ended mid-crossfade on a slow runner, CI on 71ce5403, 2026-11-28)
+            var sneakT0 = Time.realtimeSinceStartup;
+            var wa = walk.Walker.Animator;
+            while (Time.realtimeSinceStartup - sneakT0 < 30f && (wa.IsInTransition(0) || !wa.GetCurrentAnimatorStateInfo(0).IsName("sneak"))) yield return null;
             Assert.That(walk.Walker.Sneaking, Is.True);
             Assert.That(walk.Walker.Animator.GetCurrentAnimatorStateInfo(0).IsName("sneak"), Is.True, "in the sneak");
             var crouched = hips.position.y - walk.Walker.transform.position.y;

@@ -923,6 +923,9 @@ the clips' actors stand them level.
     19 -> 25 (3,342 -> 3,666 cells): with the clavicles on the upper chest, the aim's head and chest no longer stand as the
     compensations built on the Biped hierarchy expect (the gaze's own-joint turn, the aim's trunk share, `Fighter`'s bones above the
     legs, which now include the spine). Reverted, 2026-11-28; the compensations are to be traced before the re-parent comes back.
+    The clavicles' move is the likely source of the aim regressions (the aims' head, chest and arms are what got worse; the thighs'
+    move is what brought K1 and the feet back); a re-parent of the thighs alone is an untested hypothesis for later, not to be tried
+    now.
   - A correction to the plan: the eight states traced bare before it was built (relaunch 16's `leg1`: guards, readies, the long gun's
     aim, the club blow, the throw, the crouch, the duck) put the standing clips within 0.5-2.8° of their actors; over every clip the
     CMU punches and the dodges are not (4.1-4.8°, the dodge's pelvis 8.9°): eight states overstated the standing clips.

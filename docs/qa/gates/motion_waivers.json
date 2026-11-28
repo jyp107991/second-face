@@ -229,6 +229,20 @@
       "cause": "gate red: the quick ten's measures past their limits (on main the fight's step destroyed the partners its conversation capture frames, a MissingReferenceException before the verdict; now deactivated for the fight)",
       "fix": "the gate green (docs/PROGRESS.md)",
       "since": "2026-11-28T00:54:41Z"
+    },
+    {
+      "test": "SecondFace.Tests.PeopleCostTests.TheArmsClearanceFitsItsShareOfTheFrame",
+      "status": "fails on main (new, 2026-11-28; local run on 71ce5403 with this test: 7.36 ms a person a frame in Shale at noon, 26.7 people on, and 4.07 ms in the raiders' fight there, 35.0 on, against 0.167)",
+      "cause": "cause A of CI's four timing failures on 71ce5403: ArmClearance's skin path (BodySkin.Pose and the clearance's point scans, managed C# on the main thread) runs every frame for everyone within its SkinRange (1,000 m); before 71ce5403, Gaze's round trip put the bodies of people made away from the world's origin 16 km off, so in a town it ran for almost no one and the cost was never paid. The budget: 8 ms of main thread a frame on the Mid tier at 30 fps (docs/BUILD_PLAN_V1.md 6.K) / a quarter for the arms' clearance (a design choice, the coordinator's, 2026-11-28: not a measured fact, open to the owner) / 12 skinned figures at close LOD on Mid (docs/PORT.md 4) = 0.167 ms a person a frame; measured in the test editor (Debug Mono), a conservative proxy for the device, whose frame measured at each phase's end stays the real test",
+      "fix": "the Burst pass (batch)",
+      "since": "2026-11-28"
+    },
+    {
+      "test": "SecondFace.Tests.KnockTests.TheOpeningPlaysAtHome",
+      "status": "fails on main (CI on 71ce5403: 'the fight began' after a fixed 1 s, now waited for; locally, on 71ce5403 and with this commit: Unity's 'CompareApproximately(det, 1.0F, .005f)' and 'fRoot >= epsilon' assertions, 8 a run)",
+      "cause": "cause B: Fighter.Springs steps the kick and hit springs explicitly (v += a dt, then x += v dt), which grows without bound on any frame over 40 ms (the kick: w 28, z 0.6) or 64 ms (the hit); on the fight's frames of cause A (85 ms median locally) a pistol's kick went to infinity and then NaN, and its next aim put PistolAim's grip at NaN: FromToRotation in TwoBone.Solve (Limbs.cs:31, from Fighter.cs:1038) asserts",
+      "fix": "the springs stepped exactly (batch: fix B)",
+      "since": "2026-11-28"
     }
   ]
 }

@@ -46,7 +46,7 @@ namespace SecondFace.Tests
         private static float Flat(Vector3 a, Vector3 b) { a.y = 0; b.y = 0; return Vector3.Distance(a, b); }
 
         /// <summary>A new game at Shale, from the title through creation, until the walker stands on the NavMesh.</summary>
-        private static IEnumerator Boot(System.Action<Bootstrap> done)
+        internal static IEnumerator Boot(System.Action<Bootstrap> done)
         {
             if (Directory.Exists(SavesDir)) Directory.Delete(SavesDir, true);
             Bootstrap.MakeSession = () => new Session(new DirectoryBackend(SavesDir));
@@ -74,7 +74,7 @@ namespace SecondFace.Tests
 
         /// <summary>Whatever conversation the moment brought (a trigger, someone come to say a word) closed: the party's
         /// moves are what is tested here.</summary>
-        private static void Quiet(Walkabout walk)
+        internal static void Quiet(Walkabout walk)
         {
             if (walk.Conversation != null && walk.Conversation.IsOpen) walk.Conversation.Close();
         }
@@ -100,13 +100,68 @@ namespace SecondFace.Tests
 
         /// <summary>Walks the walker to a point, watching a follower every frame: the nearest they came to the player, the
         /// largest jump in a frame (a placement in view), and the highest pace their locomotion was set to.</summary>
-        private sealed class Watch { public float Nearest = float.MaxValue, Jump, Pace; }
+        private sealed class Watch
+        {
+            public float Nearest = float.MaxValue, Pace;
+            /// <summary>The frame whose step went furthest past what the follower can walk in it: by how much (m; at or under
+            /// nought, a walk), the step and what their top speed walks in that frame.</summary>
+            public float Excess = float.NegativeInfinity, Step, Allow;
+        }
+
+        /// <summary>
+        /// A follower's step each frame against what they can walk in it: measured in LateUpdate, after the frame's
+        /// navigation has moved them (the agent moves in the frame's AI update, before the scripts' LateUpdate, by that frame's
+        /// time step), against their top speed times the frame's <see cref="Time.deltaTime"/>. The top speed is the agent's
+        /// configured speed now or the fastest the party sends a follower at, <see cref="Walker.JogSpeed"/> (PartyFollowers
+        /// uses only the walker's walk and jog), whichever is more; the only allowance beyond it is float32's spacing at their
+        /// distance from the world's origin (each coordinate of the two positions rounded to it: 2 of its steps; 2 mm in
+        /// Shale, 16 km out). A step past that is a placement, not a walk. A fixed 1 m a frame failed on a slow runner's
+        /// 440-590 ms frames as the companion jogged (1.067 m, CI on 71ce5403, 2026-11-28).
+        /// </summary>
+        [DefaultExecutionOrder(10000)]
+        private sealed class StepWatch : MonoBehaviour
+        {
+            public Townsperson Follower;
+            public Watch Into;
+            private Vector3 _last;
+            private bool _have;
+
+            private static float Spacing(float v)
+            {
+                v = Mathf.Abs(v);
+                return v < 1e-30f ? 0f : Mathf.Pow(2f, Mathf.Floor(Mathf.Log(v, 2f)) - 23f);
+            }
+
+            private void LateUpdate()
+            {
+                if (Follower == null || Into == null) { _have = false; return; }
+                var p = Follower.transform.position;
+                var agent = Follower.Agent;
+                if (_have && agent != null && agent.enabled)
+                {
+                    var step = Flat(p, _last);
+                    var allow = Mathf.Max(agent.speed, Walker.JogSpeed) * Time.deltaTime + 2f * Spacing(Mathf.Max(Mathf.Abs(p.x), Mathf.Abs(p.z)));
+                    if (step - allow > Into.Excess) { Into.Excess = step - allow; Into.Step = step; Into.Allow = allow; }
+                }
+                _last = p; _have = true;
+            }
+        }
+
+        private static StepWatch Steps(Townsperson follower, Watch watch)
+        {
+            if (follower == null) return null;
+            var w = new GameObject("party test: step watch").AddComponent<StepWatch>();
+            w.Follower = follower; w.Into = watch;
+            return w;
+        }
+
+        private static void Done(StepWatch w) { if (w != null) Object.Destroy(w.gameObject); }
 
         private static IEnumerator WalkTo(Walkabout walk, Vector3 to, Townsperson follower, Watch watch, float timeout = 45f)
         {
             Assert.That(walk.Walker.GoTo(to), Is.True, $"the walker can go to {to}");
             var anim = follower != null ? follower.Animator : null;
-            var last = follower != null ? follower.transform.position : Vector3.zero;
+            var steps = Steps(follower, watch);
             var t0 = Time.realtimeSinceStartup;
             yield return null;
             while (Time.realtimeSinceStartup - t0 < timeout && walk.Walker != null && walk.Walker.Goal != null)
@@ -116,12 +171,11 @@ namespace SecondFace.Tests
                 {
                     var p = follower.transform.position;
                     watch.Nearest = Mathf.Min(watch.Nearest, Flat(p, walk.Walker.transform.position));
-                    watch.Jump = Mathf.Max(watch.Jump, Flat(p, last));
-                    last = p;
                     if (anim != null) watch.Pace = Mathf.Max(watch.Pace, anim.GetFloat("Speed"));
                 }
                 yield return null;
             }
+            Done(steps);
             Assert.That(walk.Walker.Goal, Is.Null, $"the walker arrived ({Flat(walk.Walker.transform.position, to):0.0} m short)");
         }
 
@@ -129,17 +183,16 @@ namespace SecondFace.Tests
         private static IEnumerator Settled(Walkabout walk, Townsperson follower, Watch watch, float timeout = 12f)
         {
             var t0 = Time.realtimeSinceStartup;
-            var last = follower.transform.position;
+            var steps = Steps(follower, watch);
             var still = 0f;
             while (Time.realtimeSinceStartup - t0 < timeout && still < 1f)
             {
                 var p = follower.transform.position;
                 watch.Nearest = Mathf.Min(watch.Nearest, Flat(p, walk.Walker.transform.position));
-                watch.Jump = Mathf.Max(watch.Jump, Flat(p, last));
-                last = p;
                 still = follower.Agent != null && follower.Agent.enabled && follower.Agent.velocity.magnitude < 0.05f ? still + Time.deltaTime : 0f;
                 yield return null;
             }
+            Done(steps);
         }
 
         private static int HudShown(Bootstrap boot) => boot.Hud.Party.Children().Count(c => c.resolvedStyle.display == DisplayStyle.Flex);
@@ -201,11 +254,11 @@ namespace SecondFace.Tests
             yield return WalkTo(walk, dest.Value, follower, watch);
             yield return Settled(walk, follower, watch);
             var gap = Flat(follower.transform.position, walk.Walker.transform.position);
-            Debug.Log($"PartyTests: after 30 m the companion stands {gap:0.00} m off (nearest {watch.Nearest:0.00} m, largest step in a frame {watch.Jump:0.00} m, top pace {watch.Pace:0.00})");
+            Debug.Log($"PartyTests: after 30 m the companion stands {gap:0.00} m off (nearest {watch.Nearest:0.00} m, the step furthest past its frame's walk {watch.Step:0.000} m against {watch.Allow:0.000}, top pace {watch.Pace:0.00})");
             Assert.That(gap, Is.LessThanOrEqualTo(4f), "kept up: a few metres off when the player stops");
             Assert.That(gap, Is.GreaterThan(0.9f), "beside, not on top of the player");
             Assert.That(watch.Nearest, Is.GreaterThan(0.45f), "never inside the player");
-            Assert.That(watch.Jump, Is.LessThan(1f), "walked the whole way (no jump in view)");
+            Assert.That(watch.Excess, Is.LessThanOrEqualTo(0f), $"walked the whole way (no jump in view): a step of {watch.Step:0.000} m in a frame its top speed walks {watch.Allow:0.000} m in");
             Assert.That(watch.Pace, Is.GreaterThan(1f), "their legs went at the pace (the locomotion's Speed)");
 
             // ---- a fight: they are among the player's side; down, they get up, never dead ----
